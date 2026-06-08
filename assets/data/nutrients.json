@@ -1,0 +1,40 @@
+{
+  "nutrients": [
+    {
+      "key": "magnesium",
+      "name": "Magnesium",
+      "variants": ["Glycinate", "Citrate", "Oxide", "Lactate", "Taurate", "Threonate"]
+    },
+    {
+      "key": "calcium",
+      "name": "Calcium",
+      "variants": ["Citrate", "Carbonate", "Hydroxyapatite"]
+    },
+    {
+      "key": "zinc",
+      "name": "Zinc",
+      "variants": ["Picolinate", "Gluconate", "Bisglycinate"]
+    },
+    {
+      "key": "vitamin_d3",
+      "name": "Vitamin D3",
+      "variants": []
+    },
+    {
+      "key": "vitamin_c",
+      "name": "Vitamin C",
+      "variants": []
+    },
+    {
+      "key": "omega_3",
+      "name": "Omega 3",
+      "variants": ["Fish Oil", "Krill Oil", "Algae Oil"],
+      "components": ["EPA", "DHA"]
+    },
+    {
+      "key": "multivitamin",
+      "name": "Multivitamin",
+      "variants": []
+    }
+  ]
+}
