@@ -1,6 +1,6 @@
 # Trạng thái dự án
 
-Cập nhật 22/11/2026. Agent cập nhật tệp này khi xong một việc.
+Cập nhật 23/11/2026. Agent cập nhật tệp này khi xong một việc.
 
 ## Đã xong
 
@@ -8,7 +8,11 @@ Cập nhật 22/11/2026. Agent cập nhật tệp này khi xong một việc.
 - **Gói dữ liệu** (`tools/build_pack.py`): 40 chất × 16 nhóm (14–18 đến >70, mang thai, cho con bú), UL đúng phạm vi, phương trình EER 2023 (người lớn, mang thai quý 2–3, cho con bú), AMDR, giới hạn đường bổ sung, 57 hoạt động có MET, hệ số đổi IU. 102 ô đối chiếu bảng gốc qua.
 - **Engine Dart** (`packages/health_engine`): nhóm DRI, mục tiêu RDA/AI, cờ UL theo ngày và trung bình 7 ngày, EER, tỷ lệ đạm/béo/bột đường, đường bổ sung theo ngày và theo bữa, calo buổi tập, phút vừa/mạnh, gợi ý mức vận động, đổi đơn vị. Test qua CI.
 - **MVP Flutter** (`app/`): hồ sơ, nhật ký ăn (nhập tay), bổ sung (đổi IU), buổi tập, tổng kết ngày, ẩn số calo. Lưu trong bộ nhớ (`InMemoryJournalRepository`). Test qua CI.
-- **CI** GitHub Actions.
+- **CI** GitHub Actions; build APK debug.
+- **Thư mục Android** (mã ứng dụng `vn.wholewell.app`, tên hiển thị WholeWell) – PR #3.
+- **Quy trình đặc tả → UX → test → code** có cổng duyệt (AGENTS.md); mẫu `docs/specs/_template.md`, `docs/design/_template.md`, nguyên tắc `docs/design/README.md`.
+
+Lưu ý: màn hình trong `app/lib/ui/` là khung tạm để thử engine, chưa qua thiết kế UX.
 
 ### Kiểm sớm bằng tài liệu (chưa thử trên máy thật)
 
@@ -22,9 +26,10 @@ Cập nhật 22/11/2026. Agent cập nhật tệp này khi xong một việc.
 
 ## Việc tiếp theo (theo thứ tự)
 
-1. **Chạy trên máy:** `flutter create --platforms=android,windows --org vn.wholewell .` trong `app/`, chạy thử trên máy ảo và điện thoại, commit thư mục nền tảng.
-2. **CSDL mã hóa** (thứ tự MVP mục 2): drift + SQLite3MultipleCiphers, khóa trong flutter_secure_storage; lược đồ hồ sơ, nhật ký, sản phẩm, kho, lịch uống; thay `InMemoryJournalRepository`; loại CSDL khỏi sao lưu tự động của hệ điều hành.
-3. **Thư viện món:** script nhập USDA FoodData Central (Foundation, SR Legacy, FNDDS) vào gói dữ liệu; tra món, khẩu phần quen thuộc; danh sách món Việt không có trong USDA.
+1. **UX tổng thể MVP** (chỉ tài liệu, chưa code): `docs/design/mvp-overview.md` gồm sơ đồ màn hình, điều hướng, luồng chính (lần đầu mở app, ghi món, ghi bổ sung, xem tổng kết, nhận cảnh báo), bộ thành phần dùng chung. Cần duyệt trước mọi tính năng có giao diện.
+2. **CSDL mã hóa** (thứ tự MVP mục 2; cần đặc tả, không cần UX): drift + SQLite3MultipleCiphers, khóa trong flutter_secure_storage; lược đồ hồ sơ, nhật ký, sản phẩm, kho, lịch uống; thay `InMemoryJournalRepository`; loại CSDL khỏi sao lưu tự động của hệ điều hành.
+3. Từ đây mỗi mục cần **đặc tả + thiết kế UX đã duyệt** trước khi code.
+   **Thư viện món:** script nhập USDA FoodData Central (Foundation, SR Legacy, FNDDS) vào gói dữ liệu; tra món, khẩu phần quen thuộc; danh sách món Việt không có trong USDA.
 4. **Khảo sát ban đầu** (chỉ hỏi có/không), nhập nước.
 5. **Chụp nhãn, mã vạch, kho, hạn dùng** (cần thử OCR trên máy thật trước).
 6. **Lịch uống, nhắc giờ Android, nút "Đã uống"** trên thông báo và trong app.

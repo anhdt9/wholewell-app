@@ -47,7 +47,7 @@ Plan đầy đủ: [docs/plan.md](docs/plan.md). Trạng thái và việc tiếp
 ## Cấu trúc repo
 
 ```
-docs/                     plan.md (plan đầy đủ), tools.md, status.md, specs/ (đặc tả từng tính năng)
+docs/                     plan.md, tools.md, status.md, specs/ (đặc tả), design/ (thiết kế UX + nguyên tắc)
 tools/                    Python: nguồn số liệu và kiểm tra
   build_pack.py           NGUỒN SỐ LIỆU DUY NHẤT → sinh reference_pack.json (engine + app)
   verify_pack.py          kiểm cấu trúc + ô đối chiếu bảng NASEM gốc
@@ -78,8 +78,26 @@ cd app && flutter pub get && flutter analyze && flutter test && flutter run
 2. **Đổi logic engine thì đổi cả `tools/reference_engine.py`** và sinh lại fixtures; test Dart so với kết quả Python.
 3. Tiêu chí bắt buộc: **0 vi phạm UL, 0 lỗi đơn vị**. UL đúng phạm vi: magie chỉ tính bổ sung; niacin, vitamin E chỉ dạng tổng hợp (bổ sung + thực phẩm tăng cường); vitamin A chỉ retinol; folate chỉ axit folic.
 4. Engine và giao diện chỉ gọi interface cho phần phụ thuộc nền tảng: NotificationScheduler, BackgroundJobs, SecureKeyStore, OcrEngine, BarcodeScanner, SpeechInput, GoogleAuth, BackupProvider, OnDeviceAi, HomeWidgetBridge, AdService. Mỗi interface có bản giả để test.
-5. Mỗi tính năng: đặc tả ngắn trong `docs/specs/` → test trước → code trên nhánh riêng → PR. Chủ dự án duyệt và gộp; agent không tự gộp vào `main`, không tự phát hành.
+5. **Không code tính năng khi chưa có đặc tả và thiết kế UX đã duyệt** (xem mục "Quy trình bắt buộc" bên dưới). Chủ dự án duyệt và gộp; agent không tự gộp vào `main`, không tự phát hành.
 6. Commit nhỏ, thông điệp tiếng Việt, mô tả việc đã làm.
+7. Xong việc nào thì cập nhật `docs/status.md` trong cùng PR.
+
+## Quy trình bắt buộc cho mỗi tính năng
+
+Agent **dừng lại chờ chủ dự án duyệt** ở cuối bước 1 và bước 2. Không gộp các bước, không làm trước bước sau.
+
+| Bước | Đầu ra | Dừng chờ duyệt |
+|---|---|---|
+| 1. Đặc tả | `docs/specs/<tính-năng>.md` theo `_template.md`: mục tiêu, ràng buộc, nguồn, thiết kế kỹ thuật (dữ liệu, interface, luồng xử lý), tiêu chí đạt, ngoài phạm vi | **Có** |
+| 2. Thiết kế UX | `docs/design/<tính-năng>.md` theo `docs/design/_template.md`: luồng người dùng, danh sách màn hình, wireframe từng màn (ASCII hoặc Mermaid), mọi trạng thái (trống, đang tải, lỗi, cảnh báo), nội dung chữ tiếng Việt; tuân `docs/design/README.md` | **Có** |
+| 3. Test | Chuyển tiêu chí đạt thành test (engine: thêm vào `reference_engine.py` và fixtures) | Không |
+| 4. Code | Trên nhánh riêng, tới khi test và CI qua | Không |
+| 5. PR | Mô tả liên kết đặc tả và thiết kế; chủ dự án duyệt và gộp | **Có** |
+
+- Đặc tả và thiết kế được coi là đã duyệt khi dòng `Trạng thái` ở đầu tệp là `Đã duyệt` (chủ dự án đổi, hoặc agent đổi sau khi chủ dự án nói rõ "duyệt").
+- Việc không cần bước 1–2: hạ tầng (CI, thư mục nền tảng, nâng phiên bản gói), sửa lỗi nhỏ không đổi giao diện hay hành vi, sửa tài liệu. Ghi rõ trong PR là việc loại này.
+- Màn hình trong `app/lib/ui/` hiện tại là **khung tạm** để thử engine, chưa qua thiết kế UX; sẽ làm lại theo thiết kế đã duyệt.
+- Khi được giao một tính năng mà chưa có đặc tả, câu trả lời đầu tiên của agent là bản nháp đặc tả, không phải code.
 
 ## Giới hạn đã biết
 
