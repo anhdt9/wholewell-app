@@ -39,3 +39,10 @@ jobs:
           flutter pub get
           flutter analyze
           flutter test
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Build Android (debug)
+        working-directory: app
+        run: flutter build apk --debug
