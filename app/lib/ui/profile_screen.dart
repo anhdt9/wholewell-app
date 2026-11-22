@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:health_engine/health_engine.dart';
 
 import '../state/app_scope.dart';
@@ -126,7 +126,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (_sex == Sex.female) ...[
             const SizedBox(height: 12),
             DropdownButtonFormField<LifeStage>(
-              value: _stage,
+              key: ValueKey(_stage),
+              initialValue: _stage,
               decoration: const InputDecoration(labelText: 'Mang thai hoặc cho con bú'),
               items: [
                 for (final s in LifeStage.values) DropdownMenuItem(value: s, child: Text(stageLabel(s))),
@@ -141,7 +142,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 validator: (s) => _range(s, 1, 42, 'Tuần thai'),
               ),
               DropdownButtonFormField<BmiClass>(
-                value: _bmi,
+                key: ValueKey(_bmi),
+                initialValue: _bmi,
                 decoration: const InputDecoration(labelText: 'Cân nặng trước khi mang thai'),
                 items: [
                   for (final b in BmiClass.values) DropdownMenuItem(value: b, child: Text(bmiLabel(b))),
@@ -159,7 +161,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
           const SizedBox(height: 12),
           DropdownButtonFormField<ActivityLevel>(
-            value: _level,
+            key: ValueKey(_level),
+            initialValue: _level,
             decoration: const InputDecoration(labelText: 'Mức vận động thường ngày'),
             items: [
               for (final l in ActivityLevel.values) DropdownMenuItem(value: l, child: Text(levelLabel(l))),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:health_engine/health_engine.dart';
 
 import '../state/app_scope.dart';
@@ -73,16 +73,18 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
             child: Text('${selected.nameVi}: MET ${fmt(selected.met)}, khoảng ${kcal!.round()} kcal'),
           ),
         Expanded(
-          child: ListView(children: [
-            for (final a in acts)
-              RadioListTile<String>(
-                value: a.code,
-                groupValue: _code,
-                onChanged: (v) => setState(() => _code = v),
-                title: Text(a.nameVi),
-                subtitle: Text('MET ${fmt(a.met)}'),
-              ),
-          ]),
+          child: RadioGroup<String>(
+            groupValue: _code,
+            onChanged: (v) => setState(() => _code = v),
+            child: ListView(children: [
+              for (final a in acts)
+                RadioListTile<String>(
+                  value: a.code,
+                  title: Text(a.nameVi),
+                  subtitle: Text('MET ${fmt(a.met)}'),
+                ),
+            ]),
+          ),
         ),
       ]),
     );
