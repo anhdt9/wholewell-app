@@ -1,0 +1,2105 @@
+{
+ "schema": 1,
+ "version": "2026.11.22-1",
+ "retrieved": "2026-11-22",
+ "groups": [
+  "m14_18",
+  "m19_30",
+  "m31_50",
+  "m51_70",
+  "m71",
+  "f14_18",
+  "f19_30",
+  "f31_50",
+  "f51_70",
+  "f71",
+  "p14_18",
+  "p19_30",
+  "p31_50",
+  "l14_18",
+  "l19_30",
+  "l31_50"
+ ],
+ "sources": [
+  {
+   "id": "nasem_dri_summary",
+   "label": "A",
+   "title": "NASEM – bảng tóm tắt DRI (RDA, AI, UL), cập nhật 2019",
+   "url": "https://www.nationalacademies.org/read/25353/chapter/28",
+   "via": "https://ods.od.nih.gov/healthinformation/nutrientrecommendations/"
+  },
+  {
+   "id": "nasem_energy_2023",
+   "label": "A",
+   "title": "NASEM – Dietary Reference Intakes for Energy (2023), phương trình EER",
+   "url": "https://www.nationalacademies.org/read/26818/chapter/7"
+  },
+  {
+   "id": "nasem_amdr",
+   "label": "A",
+   "title": "NASEM – AMDR (khoảng phân bố năng lượng từ đạm, béo, bột đường)",
+   "url": "https://nap.nationalacademies.org/read/10490/chapter/13"
+  },
+  {
+   "id": "dga_2025_2030",
+   "label": "A",
+   "title": "USDA, HHS – Dietary Guidelines for Americans 2025–2030",
+   "url": "https://cdn.realfood.gov/DGA.pdf"
+  },
+  {
+   "id": "compendium_2024",
+   "label": "A",
+   "title": "2024 Adult Compendium of Physical Activities (miễn phí cả cho mục đích thương mại)",
+   "url": "https://pacompendium.com/adult-compendium/"
+  },
+  {
+   "id": "pag_2",
+   "label": "A",
+   "title": "HHS – Physical Activity Guidelines for Americans, bản 2",
+   "url": "https://health.gov/sites/default/files/2019-09/Physical_Activity_Guidelines_2nd_edition.pdf"
+  }
+ ],
+ "nutrients": [
+  {
+   "id": "vitA",
+   "nameVi": "Vitamin A",
+   "unit": "ug_RAE",
+   "group": "vitamin",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 900,
+    "m19_30": 900,
+    "m31_50": 900,
+    "m51_70": 900,
+    "m71": 900,
+    "f14_18": 700,
+    "f19_30": 700,
+    "f31_50": 700,
+    "f51_70": 700,
+    "f71": 700,
+    "p14_18": 750,
+    "p19_30": 770,
+    "p31_50": 770,
+    "l14_18": 1200,
+    "l19_30": 1300,
+    "l31_50": 1300
+   },
+   "ul": {
+    "m14_18": 2800,
+    "m19_30": 3000,
+    "m31_50": 3000,
+    "m51_70": 3000,
+    "m71": 3000,
+    "f14_18": 2800,
+    "f19_30": 3000,
+    "f31_50": 3000,
+    "f51_70": 3000,
+    "f71": 3000,
+    "p14_18": 2800,
+    "p19_30": 3000,
+    "p31_50": 3000,
+    "l14_18": 2800,
+    "l19_30": 3000,
+    "l31_50": 3000
+   },
+   "ulScope": "total",
+   "ulKey": "retinol",
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "retinol",
+   "nameVi": "Vitamin A dạng có sẵn (retinol)",
+   "unit": "ug",
+   "group": "vitamin",
+   "kind": "NONE",
+   "target": {},
+   "ul": {
+    "m14_18": 2800,
+    "m19_30": 3000,
+    "m31_50": 3000,
+    "m51_70": 3000,
+    "m71": 3000,
+    "f14_18": 2800,
+    "f19_30": 3000,
+    "f31_50": 3000,
+    "f51_70": 3000,
+    "f71": 3000,
+    "p14_18": 2800,
+    "p19_30": 3000,
+    "p31_50": 3000,
+    "l14_18": 2800,
+    "l19_30": 3000,
+    "l31_50": 3000
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "vitC",
+   "nameVi": "Vitamin C",
+   "unit": "mg",
+   "group": "vitamin",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 75,
+    "m19_30": 90,
+    "m31_50": 90,
+    "m51_70": 90,
+    "m71": 90,
+    "f14_18": 65,
+    "f19_30": 75,
+    "f31_50": 75,
+    "f51_70": 75,
+    "f71": 75,
+    "p14_18": 80,
+    "p19_30": 85,
+    "p31_50": 85,
+    "l14_18": 115,
+    "l19_30": 120,
+    "l31_50": 120
+   },
+   "ul": {
+    "m14_18": 1800,
+    "m19_30": 2000,
+    "m31_50": 2000,
+    "m51_70": 2000,
+    "m71": 2000,
+    "f14_18": 1800,
+    "f19_30": 2000,
+    "f31_50": 2000,
+    "f51_70": 2000,
+    "f71": 2000,
+    "p14_18": 1800,
+    "p19_30": 2000,
+    "p31_50": 2000,
+    "l14_18": 1800,
+    "l19_30": 2000,
+    "l31_50": 2000
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "vitD",
+   "nameVi": "Vitamin D",
+   "unit": "ug",
+   "group": "vitamin",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 15,
+    "m19_30": 15,
+    "m31_50": 15,
+    "m51_70": 15,
+    "m71": 20,
+    "f14_18": 15,
+    "f19_30": 15,
+    "f31_50": 15,
+    "f51_70": 15,
+    "f71": 20,
+    "p14_18": 15,
+    "p19_30": 15,
+    "p31_50": 15,
+    "l14_18": 15,
+    "l19_30": 15,
+    "l31_50": 15
+   },
+   "ul": {
+    "m14_18": 100,
+    "m19_30": 100,
+    "m31_50": 100,
+    "m51_70": 100,
+    "m71": 100,
+    "f14_18": 100,
+    "f19_30": 100,
+    "f31_50": 100,
+    "f51_70": 100,
+    "f71": 100,
+    "p14_18": 100,
+    "p19_30": 100,
+    "p31_50": 100,
+    "l14_18": 100,
+    "l19_30": 100,
+    "l31_50": 100
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "vitE",
+   "nameVi": "Vitamin E (alpha-tocopherol)",
+   "unit": "mg",
+   "group": "vitamin",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 15,
+    "m19_30": 15,
+    "m31_50": 15,
+    "m51_70": 15,
+    "m71": 15,
+    "f14_18": 15,
+    "f19_30": 15,
+    "f31_50": 15,
+    "f51_70": 15,
+    "f71": 15,
+    "p14_18": 15,
+    "p19_30": 15,
+    "p31_50": 15,
+    "l14_18": 19,
+    "l19_30": 19,
+    "l31_50": 19
+   },
+   "ul": {
+    "m14_18": 800,
+    "m19_30": 1000,
+    "m31_50": 1000,
+    "m51_70": 1000,
+    "m71": 1000,
+    "f14_18": 800,
+    "f19_30": 1000,
+    "f31_50": 1000,
+    "f51_70": 1000,
+    "f71": 1000,
+    "p14_18": 800,
+    "p19_30": 1000,
+    "p31_50": 1000,
+    "l14_18": 800,
+    "l19_30": 1000,
+    "l31_50": 1000
+   },
+   "ulScope": "synthetic",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "vitK",
+   "nameVi": "Vitamin K",
+   "unit": "ug",
+   "group": "vitamin",
+   "kind": "AI",
+   "target": {
+    "m14_18": 75,
+    "m19_30": 120,
+    "m31_50": 120,
+    "m51_70": 120,
+    "m71": 120,
+    "f14_18": 75,
+    "f19_30": 90,
+    "f31_50": 90,
+    "f51_70": 90,
+    "f71": 90,
+    "p14_18": 75,
+    "p19_30": 90,
+    "p31_50": 90,
+    "l14_18": 75,
+    "l19_30": 90,
+    "l31_50": 90
+   },
+   "ul": {},
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "thiamin",
+   "nameVi": "Vitamin B1 (thiamin)",
+   "unit": "mg",
+   "group": "vitamin",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 1.2,
+    "m19_30": 1.2,
+    "m31_50": 1.2,
+    "m51_70": 1.2,
+    "m71": 1.2,
+    "f14_18": 1.0,
+    "f19_30": 1.1,
+    "f31_50": 1.1,
+    "f51_70": 1.1,
+    "f71": 1.1,
+    "p14_18": 1.4,
+    "p19_30": 1.4,
+    "p31_50": 1.4,
+    "l14_18": 1.4,
+    "l19_30": 1.4,
+    "l31_50": 1.4
+   },
+   "ul": {},
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "riboflavin",
+   "nameVi": "Vitamin B2 (riboflavin)",
+   "unit": "mg",
+   "group": "vitamin",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 1.3,
+    "m19_30": 1.3,
+    "m31_50": 1.3,
+    "m51_70": 1.3,
+    "m71": 1.3,
+    "f14_18": 1.0,
+    "f19_30": 1.1,
+    "f31_50": 1.1,
+    "f51_70": 1.1,
+    "f71": 1.1,
+    "p14_18": 1.4,
+    "p19_30": 1.4,
+    "p31_50": 1.4,
+    "l14_18": 1.6,
+    "l19_30": 1.6,
+    "l31_50": 1.6
+   },
+   "ul": {},
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "niacin",
+   "nameVi": "Vitamin B3 (niacin)",
+   "unit": "mg_NE",
+   "group": "vitamin",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 16,
+    "m19_30": 16,
+    "m31_50": 16,
+    "m51_70": 16,
+    "m71": 16,
+    "f14_18": 14,
+    "f19_30": 14,
+    "f31_50": 14,
+    "f51_70": 14,
+    "f71": 14,
+    "p14_18": 18,
+    "p19_30": 18,
+    "p31_50": 18,
+    "l14_18": 17,
+    "l19_30": 17,
+    "l31_50": 17
+   },
+   "ul": {
+    "m14_18": 30,
+    "m19_30": 35,
+    "m31_50": 35,
+    "m51_70": 35,
+    "m71": 35,
+    "f14_18": 30,
+    "f19_30": 35,
+    "f31_50": 35,
+    "f51_70": 35,
+    "f71": 35,
+    "p14_18": 30,
+    "p19_30": 35,
+    "p31_50": 35,
+    "l14_18": 30,
+    "l19_30": 35,
+    "l31_50": 35
+   },
+   "ulScope": "synthetic",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "vitB6",
+   "nameVi": "Vitamin B6",
+   "unit": "mg",
+   "group": "vitamin",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 1.3,
+    "m19_30": 1.3,
+    "m31_50": 1.3,
+    "m51_70": 1.7,
+    "m71": 1.7,
+    "f14_18": 1.2,
+    "f19_30": 1.3,
+    "f31_50": 1.3,
+    "f51_70": 1.5,
+    "f71": 1.5,
+    "p14_18": 1.9,
+    "p19_30": 1.9,
+    "p31_50": 1.9,
+    "l14_18": 2.0,
+    "l19_30": 2.0,
+    "l31_50": 2.0
+   },
+   "ul": {
+    "m14_18": 80,
+    "m19_30": 100,
+    "m31_50": 100,
+    "m51_70": 100,
+    "m71": 100,
+    "f14_18": 80,
+    "f19_30": 100,
+    "f31_50": 100,
+    "f51_70": 100,
+    "f71": 100,
+    "p14_18": 80,
+    "p19_30": 100,
+    "p31_50": 100,
+    "l14_18": 80,
+    "l19_30": 100,
+    "l31_50": 100
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "folate",
+   "nameVi": "Folate",
+   "unit": "ug_DFE",
+   "group": "vitamin",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 400,
+    "m19_30": 400,
+    "m31_50": 400,
+    "m51_70": 400,
+    "m71": 400,
+    "f14_18": 400,
+    "f19_30": 400,
+    "f31_50": 400,
+    "f51_70": 400,
+    "f71": 400,
+    "p14_18": 600,
+    "p19_30": 600,
+    "p31_50": 600,
+    "l14_18": 500,
+    "l19_30": 500,
+    "l31_50": 500
+   },
+   "ul": {
+    "m14_18": 800,
+    "m19_30": 1000,
+    "m31_50": 1000,
+    "m51_70": 1000,
+    "m71": 1000,
+    "f14_18": 800,
+    "f19_30": 1000,
+    "f31_50": 1000,
+    "f51_70": 1000,
+    "f71": 1000,
+    "p14_18": 800,
+    "p19_30": 1000,
+    "p31_50": 1000,
+    "l14_18": 800,
+    "l19_30": 1000,
+    "l31_50": 1000
+   },
+   "ulScope": "total",
+   "ulKey": "folicAcid",
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "folicAcid",
+   "nameVi": "Axit folic (dạng tổng hợp)",
+   "unit": "ug",
+   "group": "vitamin",
+   "kind": "NONE",
+   "target": {},
+   "ul": {
+    "m14_18": 800,
+    "m19_30": 1000,
+    "m31_50": 1000,
+    "m51_70": 1000,
+    "m71": 1000,
+    "f14_18": 800,
+    "f19_30": 1000,
+    "f31_50": 1000,
+    "f51_70": 1000,
+    "f71": 1000,
+    "p14_18": 800,
+    "p19_30": 1000,
+    "p31_50": 1000,
+    "l14_18": 800,
+    "l19_30": 1000,
+    "l31_50": 1000
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "vitB12",
+   "nameVi": "Vitamin B12",
+   "unit": "ug",
+   "group": "vitamin",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 2.4,
+    "m19_30": 2.4,
+    "m31_50": 2.4,
+    "m51_70": 2.4,
+    "m71": 2.4,
+    "f14_18": 2.4,
+    "f19_30": 2.4,
+    "f31_50": 2.4,
+    "f51_70": 2.4,
+    "f71": 2.4,
+    "p14_18": 2.6,
+    "p19_30": 2.6,
+    "p31_50": 2.6,
+    "l14_18": 2.8,
+    "l19_30": 2.8,
+    "l31_50": 2.8
+   },
+   "ul": {},
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "pantothenic",
+   "nameVi": "Vitamin B5 (axit pantothenic)",
+   "unit": "mg",
+   "group": "vitamin",
+   "kind": "AI",
+   "target": {
+    "m14_18": 5,
+    "m19_30": 5,
+    "m31_50": 5,
+    "m51_70": 5,
+    "m71": 5,
+    "f14_18": 5,
+    "f19_30": 5,
+    "f31_50": 5,
+    "f51_70": 5,
+    "f71": 5,
+    "p14_18": 6,
+    "p19_30": 6,
+    "p31_50": 6,
+    "l14_18": 7,
+    "l19_30": 7,
+    "l31_50": 7
+   },
+   "ul": {},
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "biotin",
+   "nameVi": "Biotin",
+   "unit": "ug",
+   "group": "vitamin",
+   "kind": "AI",
+   "target": {
+    "m14_18": 25,
+    "m19_30": 30,
+    "m31_50": 30,
+    "m51_70": 30,
+    "m71": 30,
+    "f14_18": 25,
+    "f19_30": 30,
+    "f31_50": 30,
+    "f51_70": 30,
+    "f71": 30,
+    "p14_18": 30,
+    "p19_30": 30,
+    "p31_50": 30,
+    "l14_18": 35,
+    "l19_30": 35,
+    "l31_50": 35
+   },
+   "ul": {},
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "choline",
+   "nameVi": "Choline",
+   "unit": "mg",
+   "group": "vitamin",
+   "kind": "AI",
+   "target": {
+    "m14_18": 550,
+    "m19_30": 550,
+    "m31_50": 550,
+    "m51_70": 550,
+    "m71": 550,
+    "f14_18": 400,
+    "f19_30": 425,
+    "f31_50": 425,
+    "f51_70": 425,
+    "f71": 425,
+    "p14_18": 450,
+    "p19_30": 450,
+    "p31_50": 450,
+    "l14_18": 550,
+    "l19_30": 550,
+    "l31_50": 550
+   },
+   "ul": {
+    "m14_18": 3000,
+    "m19_30": 3500,
+    "m31_50": 3500,
+    "m51_70": 3500,
+    "m71": 3500,
+    "f14_18": 3000,
+    "f19_30": 3500,
+    "f31_50": 3500,
+    "f51_70": 3500,
+    "f71": 3500,
+    "p14_18": 3000,
+    "p19_30": 3500,
+    "p31_50": 3500,
+    "l14_18": 3000,
+    "l19_30": 3500,
+    "l31_50": 3500
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "calcium",
+   "nameVi": "Canxi",
+   "unit": "mg",
+   "group": "mineral",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 1300,
+    "m19_30": 1000,
+    "m31_50": 1000,
+    "m51_70": 1000,
+    "m71": 1200,
+    "f14_18": 1300,
+    "f19_30": 1000,
+    "f31_50": 1000,
+    "f51_70": 1200,
+    "f71": 1200,
+    "p14_18": 1300,
+    "p19_30": 1000,
+    "p31_50": 1000,
+    "l14_18": 1300,
+    "l19_30": 1000,
+    "l31_50": 1000
+   },
+   "ul": {
+    "m14_18": 3000,
+    "m19_30": 2500,
+    "m31_50": 2500,
+    "m51_70": 2000,
+    "m71": 2000,
+    "f14_18": 3000,
+    "f19_30": 2500,
+    "f31_50": 2500,
+    "f51_70": 2000,
+    "f71": 2000,
+    "p14_18": 3000,
+    "p19_30": 2500,
+    "p31_50": 2500,
+    "l14_18": 3000,
+    "l19_30": 2500,
+    "l31_50": 2500
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "chromium",
+   "nameVi": "Crom",
+   "unit": "ug",
+   "group": "mineral",
+   "kind": "AI",
+   "target": {
+    "m14_18": 35,
+    "m19_30": 35,
+    "m31_50": 35,
+    "m51_70": 30,
+    "m71": 30,
+    "f14_18": 24,
+    "f19_30": 25,
+    "f31_50": 25,
+    "f51_70": 20,
+    "f71": 20,
+    "p14_18": 29,
+    "p19_30": 30,
+    "p31_50": 30,
+    "l14_18": 44,
+    "l19_30": 45,
+    "l31_50": 45
+   },
+   "ul": {},
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "copper",
+   "nameVi": "Đồng",
+   "unit": "ug",
+   "group": "mineral",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 890,
+    "m19_30": 900,
+    "m31_50": 900,
+    "m51_70": 900,
+    "m71": 900,
+    "f14_18": 890,
+    "f19_30": 900,
+    "f31_50": 900,
+    "f51_70": 900,
+    "f71": 900,
+    "p14_18": 1000,
+    "p19_30": 1000,
+    "p31_50": 1000,
+    "l14_18": 1300,
+    "l19_30": 1300,
+    "l31_50": 1300
+   },
+   "ul": {
+    "m14_18": 8000,
+    "m19_30": 10000,
+    "m31_50": 10000,
+    "m51_70": 10000,
+    "m71": 10000,
+    "f14_18": 8000,
+    "f19_30": 10000,
+    "f31_50": 10000,
+    "f51_70": 10000,
+    "f71": 10000,
+    "p14_18": 8000,
+    "p19_30": 10000,
+    "p31_50": 10000,
+    "l14_18": 8000,
+    "l19_30": 10000,
+    "l31_50": 10000
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "fluoride",
+   "nameVi": "Florua",
+   "unit": "mg",
+   "group": "mineral",
+   "kind": "AI",
+   "target": {
+    "m14_18": 3,
+    "m19_30": 4,
+    "m31_50": 4,
+    "m51_70": 4,
+    "m71": 4,
+    "f14_18": 3,
+    "f19_30": 3,
+    "f31_50": 3,
+    "f51_70": 3,
+    "f71": 3,
+    "p14_18": 3,
+    "p19_30": 3,
+    "p31_50": 3,
+    "l14_18": 3,
+    "l19_30": 3,
+    "l31_50": 3
+   },
+   "ul": {
+    "m14_18": 10,
+    "m19_30": 10,
+    "m31_50": 10,
+    "m51_70": 10,
+    "m71": 10,
+    "f14_18": 10,
+    "f19_30": 10,
+    "f31_50": 10,
+    "f51_70": 10,
+    "f71": 10,
+    "p14_18": 10,
+    "p19_30": 10,
+    "p31_50": 10,
+    "l14_18": 10,
+    "l19_30": 10,
+    "l31_50": 10
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "iodine",
+   "nameVi": "Iốt",
+   "unit": "ug",
+   "group": "mineral",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 150,
+    "m19_30": 150,
+    "m31_50": 150,
+    "m51_70": 150,
+    "m71": 150,
+    "f14_18": 150,
+    "f19_30": 150,
+    "f31_50": 150,
+    "f51_70": 150,
+    "f71": 150,
+    "p14_18": 220,
+    "p19_30": 220,
+    "p31_50": 220,
+    "l14_18": 290,
+    "l19_30": 290,
+    "l31_50": 290
+   },
+   "ul": {
+    "m14_18": 900,
+    "m19_30": 1100,
+    "m31_50": 1100,
+    "m51_70": 1100,
+    "m71": 1100,
+    "f14_18": 900,
+    "f19_30": 1100,
+    "f31_50": 1100,
+    "f51_70": 1100,
+    "f71": 1100,
+    "p14_18": 900,
+    "p19_30": 1100,
+    "p31_50": 1100,
+    "l14_18": 900,
+    "l19_30": 1100,
+    "l31_50": 1100
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "iron",
+   "nameVi": "Sắt",
+   "unit": "mg",
+   "group": "mineral",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 11,
+    "m19_30": 8,
+    "m31_50": 8,
+    "m51_70": 8,
+    "m71": 8,
+    "f14_18": 15,
+    "f19_30": 18,
+    "f31_50": 18,
+    "f51_70": 8,
+    "f71": 8,
+    "p14_18": 27,
+    "p19_30": 27,
+    "p31_50": 27,
+    "l14_18": 10,
+    "l19_30": 9,
+    "l31_50": 9
+   },
+   "ul": {
+    "m14_18": 45,
+    "m19_30": 45,
+    "m31_50": 45,
+    "m51_70": 45,
+    "m71": 45,
+    "f14_18": 45,
+    "f19_30": 45,
+    "f31_50": 45,
+    "f51_70": 45,
+    "f71": 45,
+    "p14_18": 45,
+    "p19_30": 45,
+    "p31_50": 45,
+    "l14_18": 45,
+    "l19_30": 45,
+    "l31_50": 45
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "magnesium",
+   "nameVi": "Magie",
+   "unit": "mg",
+   "group": "mineral",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 410,
+    "m19_30": 400,
+    "m31_50": 420,
+    "m51_70": 420,
+    "m71": 420,
+    "f14_18": 360,
+    "f19_30": 310,
+    "f31_50": 320,
+    "f51_70": 320,
+    "f71": 320,
+    "p14_18": 400,
+    "p19_30": 350,
+    "p31_50": 360,
+    "l14_18": 360,
+    "l19_30": 310,
+    "l31_50": 320
+   },
+   "ul": {
+    "m14_18": 350,
+    "m19_30": 350,
+    "m31_50": 350,
+    "m51_70": 350,
+    "m71": 350,
+    "f14_18": 350,
+    "f19_30": 350,
+    "f31_50": 350,
+    "f51_70": 350,
+    "f71": 350,
+    "p14_18": 350,
+    "p19_30": 350,
+    "p31_50": 350,
+    "l14_18": 350,
+    "l19_30": 350,
+    "l31_50": 350
+   },
+   "ulScope": "supplement",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "manganese",
+   "nameVi": "Mangan",
+   "unit": "mg",
+   "group": "mineral",
+   "kind": "AI",
+   "target": {
+    "m14_18": 2.2,
+    "m19_30": 2.3,
+    "m31_50": 2.3,
+    "m51_70": 2.3,
+    "m71": 2.3,
+    "f14_18": 1.6,
+    "f19_30": 1.8,
+    "f31_50": 1.8,
+    "f51_70": 1.8,
+    "f71": 1.8,
+    "p14_18": 2.0,
+    "p19_30": 2.0,
+    "p31_50": 2.0,
+    "l14_18": 2.6,
+    "l19_30": 2.6,
+    "l31_50": 2.6
+   },
+   "ul": {
+    "m14_18": 9,
+    "m19_30": 11,
+    "m31_50": 11,
+    "m51_70": 11,
+    "m71": 11,
+    "f14_18": 9,
+    "f19_30": 11,
+    "f31_50": 11,
+    "f51_70": 11,
+    "f71": 11,
+    "p14_18": 9,
+    "p19_30": 11,
+    "p31_50": 11,
+    "l14_18": 9,
+    "l19_30": 11,
+    "l31_50": 11
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "molybdenum",
+   "nameVi": "Molypden",
+   "unit": "ug",
+   "group": "mineral",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 43,
+    "m19_30": 45,
+    "m31_50": 45,
+    "m51_70": 45,
+    "m71": 45,
+    "f14_18": 43,
+    "f19_30": 45,
+    "f31_50": 45,
+    "f51_70": 45,
+    "f71": 45,
+    "p14_18": 50,
+    "p19_30": 50,
+    "p31_50": 50,
+    "l14_18": 50,
+    "l19_30": 50,
+    "l31_50": 50
+   },
+   "ul": {
+    "m14_18": 1700,
+    "m19_30": 2000,
+    "m31_50": 2000,
+    "m51_70": 2000,
+    "m71": 2000,
+    "f14_18": 1700,
+    "f19_30": 2000,
+    "f31_50": 2000,
+    "f51_70": 2000,
+    "f71": 2000,
+    "p14_18": 1700,
+    "p19_30": 2000,
+    "p31_50": 2000,
+    "l14_18": 1700,
+    "l19_30": 2000,
+    "l31_50": 2000
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "phosphorus",
+   "nameVi": "Phốt pho",
+   "unit": "mg",
+   "group": "mineral",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 1250,
+    "m19_30": 700,
+    "m31_50": 700,
+    "m51_70": 700,
+    "m71": 700,
+    "f14_18": 1250,
+    "f19_30": 700,
+    "f31_50": 700,
+    "f51_70": 700,
+    "f71": 700,
+    "p14_18": 1250,
+    "p19_30": 700,
+    "p31_50": 700,
+    "l14_18": 1250,
+    "l19_30": 700,
+    "l31_50": 700
+   },
+   "ul": {
+    "m14_18": 4000,
+    "m19_30": 4000,
+    "m31_50": 4000,
+    "m51_70": 4000,
+    "m71": 3000,
+    "f14_18": 4000,
+    "f19_30": 4000,
+    "f31_50": 4000,
+    "f51_70": 4000,
+    "f71": 3000,
+    "p14_18": 3500,
+    "p19_30": 3500,
+    "p31_50": 3500,
+    "l14_18": 4000,
+    "l19_30": 4000,
+    "l31_50": 4000
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "selenium",
+   "nameVi": "Selen",
+   "unit": "ug",
+   "group": "mineral",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 55,
+    "m19_30": 55,
+    "m31_50": 55,
+    "m51_70": 55,
+    "m71": 55,
+    "f14_18": 55,
+    "f19_30": 55,
+    "f31_50": 55,
+    "f51_70": 55,
+    "f71": 55,
+    "p14_18": 60,
+    "p19_30": 60,
+    "p31_50": 60,
+    "l14_18": 70,
+    "l19_30": 70,
+    "l31_50": 70
+   },
+   "ul": {
+    "m14_18": 400,
+    "m19_30": 400,
+    "m31_50": 400,
+    "m51_70": 400,
+    "m71": 400,
+    "f14_18": 400,
+    "f19_30": 400,
+    "f31_50": 400,
+    "f51_70": 400,
+    "f71": 400,
+    "p14_18": 400,
+    "p19_30": 400,
+    "p31_50": 400,
+    "l14_18": 400,
+    "l19_30": 400,
+    "l31_50": 400
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "zinc",
+   "nameVi": "Kẽm",
+   "unit": "mg",
+   "group": "mineral",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 11,
+    "m19_30": 11,
+    "m31_50": 11,
+    "m51_70": 11,
+    "m71": 11,
+    "f14_18": 9,
+    "f19_30": 8,
+    "f31_50": 8,
+    "f51_70": 8,
+    "f71": 8,
+    "p14_18": 12,
+    "p19_30": 11,
+    "p31_50": 11,
+    "l14_18": 13,
+    "l19_30": 12,
+    "l31_50": 12
+   },
+   "ul": {
+    "m14_18": 34,
+    "m19_30": 40,
+    "m31_50": 40,
+    "m51_70": 40,
+    "m71": 40,
+    "f14_18": 34,
+    "f19_30": 40,
+    "f31_50": 40,
+    "f51_70": 40,
+    "f71": 40,
+    "p14_18": 34,
+    "p19_30": 40,
+    "p31_50": 40,
+    "l14_18": 34,
+    "l19_30": 40,
+    "l31_50": 40
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "potassium",
+   "nameVi": "Kali",
+   "unit": "mg",
+   "group": "mineral",
+   "kind": "AI",
+   "target": {
+    "m14_18": 3000,
+    "m19_30": 3400,
+    "m31_50": 3400,
+    "m51_70": 3400,
+    "m71": 3400,
+    "f14_18": 2300,
+    "f19_30": 2600,
+    "f31_50": 2600,
+    "f51_70": 2600,
+    "f71": 2600,
+    "p14_18": 2600,
+    "p19_30": 2900,
+    "p31_50": 2900,
+    "l14_18": 2500,
+    "l19_30": 2800,
+    "l31_50": 2800
+   },
+   "ul": {},
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "sodium",
+   "nameVi": "Natri",
+   "unit": "mg",
+   "group": "mineral",
+   "kind": "AI",
+   "target": {
+    "m14_18": 1500,
+    "m19_30": 1500,
+    "m31_50": 1500,
+    "m51_70": 1500,
+    "m71": 1500,
+    "f14_18": 1500,
+    "f19_30": 1500,
+    "f31_50": 1500,
+    "f51_70": 1500,
+    "f71": 1500,
+    "p14_18": 1500,
+    "p19_30": 1500,
+    "p31_50": 1500,
+    "l14_18": 1500,
+    "l19_30": 1500,
+    "l31_50": 1500
+   },
+   "ul": {},
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "chloride",
+   "nameVi": "Clorua",
+   "unit": "mg",
+   "group": "mineral",
+   "kind": "AI",
+   "target": {
+    "m14_18": 2300,
+    "m19_30": 2300,
+    "m31_50": 2300,
+    "m51_70": 2000,
+    "m71": 1800,
+    "f14_18": 2300,
+    "f19_30": 2300,
+    "f31_50": 2300,
+    "f51_70": 2000,
+    "f71": 1800,
+    "p14_18": 2300,
+    "p19_30": 2300,
+    "p31_50": 2300,
+    "l14_18": 2300,
+    "l19_30": 2300,
+    "l31_50": 2300
+   },
+   "ul": {
+    "m14_18": 3600,
+    "m19_30": 3600,
+    "m31_50": 3600,
+    "m51_70": 3600,
+    "m71": 3600,
+    "f14_18": 3600,
+    "f19_30": 3600,
+    "f31_50": 3600,
+    "f51_70": 3600,
+    "f71": 3600,
+    "p14_18": 3600,
+    "p19_30": 3600,
+    "p31_50": 3600,
+    "l14_18": 3600,
+    "l19_30": 3600,
+    "l31_50": 3600
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "boron",
+   "nameVi": "Bo",
+   "unit": "mg",
+   "group": "mineral",
+   "kind": "NONE",
+   "target": {},
+   "ul": {
+    "m14_18": 17,
+    "m19_30": 20,
+    "m31_50": 20,
+    "m51_70": 20,
+    "m71": 20,
+    "f14_18": 17,
+    "f19_30": 20,
+    "f31_50": 20,
+    "f51_70": 20,
+    "f71": 20,
+    "p14_18": 17,
+    "p19_30": 20,
+    "p31_50": 20,
+    "l14_18": 17,
+    "l19_30": 20,
+    "l31_50": 20
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "nickel",
+   "nameVi": "Niken",
+   "unit": "mg",
+   "group": "mineral",
+   "kind": "NONE",
+   "target": {},
+   "ul": {
+    "m14_18": 1.0,
+    "m19_30": 1.0,
+    "m31_50": 1.0,
+    "m51_70": 1.0,
+    "m71": 1.0,
+    "f14_18": 1.0,
+    "f19_30": 1.0,
+    "f31_50": 1.0,
+    "f51_70": 1.0,
+    "f71": 1.0,
+    "p14_18": 1.0,
+    "p19_30": 1.0,
+    "p31_50": 1.0,
+    "l14_18": 1.0,
+    "l19_30": 1.0,
+    "l31_50": 1.0
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "vanadium",
+   "nameVi": "Vanadi",
+   "unit": "mg",
+   "group": "mineral",
+   "kind": "NONE",
+   "target": {},
+   "ul": {
+    "m19_30": 1.8,
+    "m31_50": 1.8,
+    "m51_70": 1.8,
+    "m71": 1.8,
+    "f19_30": 1.8,
+    "f31_50": 1.8,
+    "f51_70": 1.8,
+    "f71": 1.8
+   },
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "water",
+   "nameVi": "Tổng nước (gồm nước trong thức ăn)",
+   "unit": "L",
+   "group": "macro",
+   "kind": "AI",
+   "target": {
+    "m14_18": 3.3,
+    "m19_30": 3.7,
+    "m31_50": 3.7,
+    "m51_70": 3.7,
+    "m71": 3.7,
+    "f14_18": 2.3,
+    "f19_30": 2.7,
+    "f31_50": 2.7,
+    "f51_70": 2.7,
+    "f71": 2.7,
+    "p14_18": 3.0,
+    "p19_30": 3.0,
+    "p31_50": 3.0,
+    "l14_18": 3.8,
+    "l19_30": 3.8,
+    "l31_50": 3.8
+   },
+   "ul": {},
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "carbohydrate",
+   "nameVi": "Bột đường (carbohydrate)",
+   "unit": "g",
+   "group": "macro",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 130,
+    "m19_30": 130,
+    "m31_50": 130,
+    "m51_70": 130,
+    "m71": 130,
+    "f14_18": 130,
+    "f19_30": 130,
+    "f31_50": 130,
+    "f51_70": 130,
+    "f71": 130,
+    "p14_18": 175,
+    "p19_30": 175,
+    "p31_50": 175,
+    "l14_18": 210,
+    "l19_30": 210,
+    "l31_50": 210
+   },
+   "ul": {},
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "fiber",
+   "nameVi": "Chất xơ",
+   "unit": "g",
+   "group": "macro",
+   "kind": "AI",
+   "target": {
+    "m14_18": 38,
+    "m19_30": 38,
+    "m31_50": 38,
+    "m51_70": 30,
+    "m71": 30,
+    "f14_18": 26,
+    "f19_30": 25,
+    "f31_50": 25,
+    "f51_70": 21,
+    "f71": 21,
+    "p14_18": 28,
+    "p19_30": 28,
+    "p31_50": 28,
+    "l14_18": 29,
+    "l19_30": 29,
+    "l31_50": 29
+   },
+   "ul": {},
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "protein",
+   "nameVi": "Đạm (protein)",
+   "unit": "g",
+   "group": "macro",
+   "kind": "RDA",
+   "target": {
+    "m14_18": 52,
+    "m19_30": 56,
+    "m31_50": 56,
+    "m51_70": 56,
+    "m71": 56,
+    "f14_18": 46,
+    "f19_30": 46,
+    "f31_50": 46,
+    "f51_70": 46,
+    "f71": 46,
+    "p14_18": 71,
+    "p19_30": 71,
+    "p31_50": 71,
+    "l14_18": 71,
+    "l19_30": 71,
+    "l31_50": 71
+   },
+   "ul": {},
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "linoleic",
+   "nameVi": "Axit linoleic (omega-6)",
+   "unit": "g",
+   "group": "macro",
+   "kind": "AI",
+   "target": {
+    "m14_18": 16,
+    "m19_30": 17,
+    "m31_50": 17,
+    "m51_70": 14,
+    "m71": 14,
+    "f14_18": 11,
+    "f19_30": 12,
+    "f31_50": 12,
+    "f51_70": 11,
+    "f71": 11,
+    "p14_18": 13,
+    "p19_30": 13,
+    "p31_50": 13,
+    "l14_18": 13,
+    "l19_30": 13,
+    "l31_50": 13
+   },
+   "ul": {},
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  },
+  {
+   "id": "ala",
+   "nameVi": "Axit alpha-linolenic (omega-3)",
+   "unit": "g",
+   "group": "macro",
+   "kind": "AI",
+   "target": {
+    "m14_18": 1.6,
+    "m19_30": 1.6,
+    "m31_50": 1.6,
+    "m51_70": 1.6,
+    "m71": 1.6,
+    "f14_18": 1.1,
+    "f19_30": 1.1,
+    "f31_50": 1.1,
+    "f51_70": 1.1,
+    "f71": 1.1,
+    "p14_18": 1.4,
+    "p19_30": 1.4,
+    "p31_50": 1.4,
+    "l14_18": 1.3,
+    "l19_30": 1.3,
+    "l31_50": 1.3
+   },
+   "ul": {},
+   "ulScope": "total",
+   "ulKey": null,
+   "source": "nasem_dri_summary"
+  }
+ ],
+ "proteinPerKg": {
+  "adult19": 0.8,
+  "source": "nasem_dri_summary",
+  "note": "RDA 0,8 g/kg cân nặng/ngày cho người 19+; nhóm khác dùng g/ngày trong bảng"
+ },
+ "eer": {
+  "source": "nasem_energy_2023",
+  "minAge": 19,
+  "palRanges19": {
+   "inactive": [
+    1.0,
+    1.53
+   ],
+   "lowActive": [
+    1.53,
+    1.68
+   ],
+   "active": [
+    1.68,
+    1.85
+   ],
+   "veryActive": [
+    1.85,
+    2.5
+   ]
+  },
+  "adult": {
+   "male": {
+    "inactive": {
+     "a": 753.07,
+     "age": -10.83,
+     "height": 6.5,
+     "weight": 14.1
+    },
+    "lowActive": {
+     "a": 581.47,
+     "age": -10.83,
+     "height": 8.3,
+     "weight": 14.94
+    },
+    "active": {
+     "a": 1004.82,
+     "age": -10.83,
+     "height": 6.52,
+     "weight": 15.91
+    },
+    "veryActive": {
+     "a": -517.88,
+     "age": -10.83,
+     "height": 15.61,
+     "weight": 19.11
+    }
+   },
+   "female": {
+    "inactive": {
+     "a": 584.9,
+     "age": -7.01,
+     "height": 5.72,
+     "weight": 11.71
+    },
+    "lowActive": {
+     "a": 575.77,
+     "age": -7.01,
+     "height": 6.6,
+     "weight": 12.14
+    },
+    "active": {
+     "a": 710.25,
+     "age": -7.01,
+     "height": 6.54,
+     "weight": 12.34
+    },
+    "veryActive": {
+     "a": 511.83,
+     "age": -7.01,
+     "height": 9.07,
+     "weight": 12.56
+    }
+   }
+  },
+  "pregnancy": {
+   "inactive": {
+    "a": 1131.2,
+    "age": -2.04,
+    "height": 0.34,
+    "weight": 12.15,
+    "gestWeek": 9.16
+   },
+   "lowActive": {
+    "a": 693.35,
+    "age": -2.04,
+    "height": 5.73,
+    "weight": 10.2,
+    "gestWeek": 9.16
+   },
+   "active": {
+    "a": -223.84,
+    "age": -2.04,
+    "height": 13.23,
+    "weight": 8.15,
+    "gestWeek": 9.16
+   },
+   "veryActive": {
+    "a": -779.72,
+    "age": -2.04,
+    "height": 18.45,
+    "weight": 8.73,
+    "gestWeek": 9.16
+   }
+  },
+  "pregnancyFirstTrimesterMaxWeek": 13,
+  "pregnancyDeposition": {
+   "underweight": 300,
+   "normal": 200,
+   "overweight": 150,
+   "obese": -50
+  },
+  "lactation": {
+   "0_6": {
+    "milk": 540,
+    "mobilization": 140
+   },
+   "7_12": {
+    "milk": 380,
+    "mobilization": 0
+   }
+  },
+  "note": "EER là mức giữ cân; không thiết kế cho mục tiêu tăng hoặc giảm cân"
+ },
+ "amdr": {
+  "source": "nasem_amdr",
+  "adult19": {
+   "protein": [
+    10,
+    35
+   ],
+   "fat": [
+    20,
+    35
+   ],
+   "carbohydrate": [
+    45,
+    65
+   ]
+  },
+  "age4_18": {
+   "protein": [
+    10,
+    30
+   ],
+   "fat": [
+    25,
+    35
+   ],
+   "carbohydrate": [
+    45,
+    65
+   ]
+  }
+ },
+ "addedSugar": {
+  "source": "dga_2025_2030",
+  "maxPercentEnergyPerDay": 10,
+  "maxGramsPerMeal": 10
+ },
+ "energyPerGram": {
+  "protein": 4,
+  "carbohydrate": 4,
+  "fat": 9,
+  "alcohol": 7,
+  "note": "hệ số Atwater chung"
+ },
+ "activities": [
+  {
+   "code": "17152",
+   "met": 2.8,
+   "nameVi": "Đi bộ chậm (3,2–3,9 km/h)",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "17170",
+   "met": 3.0,
+   "nameVi": "Đi bộ 4 km/h",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "17190",
+   "met": 3.8,
+   "nameVi": "Đi bộ vừa (4,5–5,5 km/h)",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "17200",
+   "met": 4.8,
+   "nameVi": "Đi bộ nhanh (5,6–6,3 km/h)",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "17220",
+   "met": 5.5,
+   "nameVi": "Đi bộ rất nhanh (6,4–7,1 km/h)",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "17230",
+   "met": 7.0,
+   "nameVi": "Đi bộ rất nhanh (7,2–7,9 km/h)",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "17160",
+   "met": 3.5,
+   "nameVi": "Đi dạo",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "17080",
+   "met": 6.0,
+   "nameVi": "Leo núi, đi bộ đường dài",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "17131",
+   "met": 6.8,
+   "nameVi": "Leo cầu thang",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "12020",
+   "met": 7.5,
+   "nameVi": "Chạy bộ nhẹ (tự chọn tốc độ)",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "12028",
+   "met": 6.5,
+   "nameVi": "Chạy 6,4–6,8 km/h",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "12030",
+   "met": 8.5,
+   "nameVi": "Chạy 8,0–8,4 km/h",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "12050",
+   "met": 9.3,
+   "nameVi": "Chạy 9,7–10,1 km/h",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "12060",
+   "met": 10.5,
+   "nameVi": "Chạy 10,8 km/h",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "12070",
+   "met": 11.0,
+   "nameVi": "Chạy 11,3 km/h",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "12090",
+   "met": 12.0,
+   "nameVi": "Chạy 12,9 km/h",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "12110",
+   "met": 13.0,
+   "nameVi": "Chạy 14,5 km/h",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "12120",
+   "met": 14.8,
+   "nameVi": "Chạy 16,1 km/h",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "01010",
+   "met": 4.0,
+   "nameVi": "Đạp xe nhẹ (dưới 16 km/h)",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "01011",
+   "met": 6.8,
+   "nameVi": "Đạp xe đi làm",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "01020",
+   "met": 6.8,
+   "nameVi": "Đạp xe 16–19 km/h",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "01030",
+   "met": 8.0,
+   "nameVi": "Đạp xe 19–22 km/h",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "01040",
+   "met": 10.0,
+   "nameVi": "Đạp xe 22–25 km/h",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "01214",
+   "met": 4.0,
+   "nameVi": "Xe đạp tập, nhẹ",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "01220",
+   "met": 6.0,
+   "nameVi": "Xe đạp tập, vừa",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "01236",
+   "met": 10.8,
+   "nameVi": "Xe đạp tập, mạnh",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "02054",
+   "met": 3.5,
+   "nameVi": "Tập tạ nhiều bài, 8–15 lần",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "02050",
+   "met": 6.0,
+   "nameVi": "Tập tạ nặng, thể hình",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "02024",
+   "met": 2.8,
+   "nameVi": "Bài tập thể lực nhẹ (plank, gập bụng)",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "02022",
+   "met": 3.8,
+   "nameVi": "Bài tập thể lực vừa (chống đẩy, lunge)",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "02020",
+   "met": 7.5,
+   "nameVi": "Bài tập thể lực mạnh (burpee, nhảy)",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "02150",
+   "met": 2.3,
+   "nameVi": "Yoga Hatha",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "02160",
+   "met": 4.0,
+   "nameVi": "Power yoga",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "02105",
+   "met": 2.8,
+   "nameVi": "Pilates",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "02048",
+   "met": 5.0,
+   "nameVi": "Máy elliptical, vừa",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "02071",
+   "met": 5.0,
+   "nameVi": "Máy chèo thuyền, vừa",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "02035",
+   "met": 5.0,
+   "nameVi": "Circuit training, vừa",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "02040",
+   "met": 7.5,
+   "nameVi": "Circuit training, mạnh",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "02210",
+   "met": 7.0,
+   "nameVi": "HIIT, vừa",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "02214",
+   "met": 11.0,
+   "nameVi": "HIIT, mạnh",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "02068",
+   "met": 11.0,
+   "nameVi": "Nhảy dây",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "02101",
+   "met": 2.3,
+   "nameVi": "Giãn cơ nhẹ",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "15030",
+   "met": 5.5,
+   "nameVi": "Cầu lông phong trào",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "15020",
+   "met": 7.0,
+   "nameVi": "Cầu lông thi đấu",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "15610",
+   "met": 7.0,
+   "nameVi": "Bóng đá phong trào",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "15605",
+   "met": 9.5,
+   "nameVi": "Bóng đá thi đấu",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "15055",
+   "met": 7.5,
+   "nameVi": "Bóng rổ",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "15720",
+   "met": 3.0,
+   "nameVi": "Bóng chuyền phong trào",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "15675",
+   "met": 6.8,
+   "nameVi": "Quần vợt, vừa",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "15660",
+   "met": 4.0,
+   "nameVi": "Bóng bàn",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "15670",
+   "met": 3.3,
+   "nameVi": "Thái cực quyền, khí công",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "18240",
+   "met": 5.8,
+   "nameVi": "Bơi sải chậm",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "18230",
+   "met": 9.8,
+   "nameVi": "Bơi sải nhanh",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "18310",
+   "met": 6.0,
+   "nameVi": "Bơi thư giãn",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "18265",
+   "met": 5.3,
+   "nameVi": "Bơi ếch",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "18255",
+   "met": 4.8,
+   "nameVi": "Bơi ngửa",
+   "source": "compendium_2024"
+  },
+  {
+   "code": "18355",
+   "met": 5.5,
+   "nameVi": "Thể dục dưới nước",
+   "source": "compendium_2024"
+  }
+ ],
+ "pag": {
+  "source": "pag_2",
+  "moderateMinMet": 3.0,
+  "vigorousMinMet": 6.0,
+  "weeklyModerateMin": [
+   150,
+   300
+  ],
+  "weeklyVigorousMin": [
+   75,
+   150
+  ],
+  "strengthDaysPerWeek": 2
+ },
+ "palSuggestion": {
+  "kind": "app_heuristic",
+  "moderateEquivalentMinPerDay": {
+   "lowActive": 30,
+   "active": 60,
+   "veryActive": 120
+  },
+  "note": "Chỉ là gợi ý; người dùng tự xác nhận mức vận động"
+ },
+ "unitConversions": {
+  "vitD_IU_to_ug": 0.025,
+  "vitA_retinol_IU_to_ug_RAE": 0.3,
+  "vitA_supplemental_betacarotene_IU_to_ug_RAE": 0.3,
+  "vitE_natural_IU_to_mg": 0.67,
+  "vitE_synthetic_IU_to_mg": 0.45,
+  "folicAcid_ug_to_ug_DFE": 1.7,
+  "source": "nasem_dri_summary",
+  "note": "hệ số đổi IU theo NIH ODS (fact sheet vitamin A, D, E)"
+ }
+}
