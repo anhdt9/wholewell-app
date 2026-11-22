@@ -6,9 +6,22 @@ Mọi dữ liệu ở trên máy. Engine thuần Dart, không mạng, không I/O
 
 - [Plan: hướng tiếp cận và lộ trình](docs/plan.md)
 - [Công cụ cần cho dự án](docs/tools.md)
+- [Trạng thái và việc tiếp theo](docs/status.md)
+- [AGENTS.md](AGENTS.md): ngữ cảnh và quy tắc cho agent (CLAUDE.md, GEMINI.md trỏ về đây)
+
+## Làm việc với Claude Code trong Antigravity
+
+1. Cài extension **Dart**, **Flutter**, **Claude Code** trong Antigravity; mở thư mục repo.
+2. Đăng nhập Claude Code, rồi cài plugin Flutter chính thức trong terminal:
+   ```bash
+   claude plugin marketplace add flutter/agent-plugins
+   claude plugin install dart-flutter@dart-flutter
+   ```
+3. Dart MCP server đã khai báo sẵn trong `.mcp.json` (Claude Code) và `.agents/mcp_config.json` (agent của Antigravity); chấp nhận khi được hỏi.
+4. Câu mở đầu gợi ý: *"Đọc docs/status.md và làm việc tiếp theo."*
 
 ```
-docs/                      plan, công cụ
+docs/                      plan, công cụ, trạng thái, specs/
 tools/                     Python: sinh và kiểm tra gói dữ liệu, bản tham chiếu engine
   build_pack.py            nguồn số liệu (RDA/AI, UL, EER 2023, AMDR, đường bổ sung, MET)
   verify_pack.py           kiểm cấu trúc + 102 ô đối chiếu với bảng NASEM gốc
