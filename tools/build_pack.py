@@ -9,6 +9,10 @@ Kết quả: packages/health_engine/assets/reference_pack.json
 """
 import json
 import pathlib
+import sys
+
+# Console Windows mặc định cp1252, không in được tiếng Việt.
+sys.stdout.reconfigure(encoding="utf-8")
 
 PACK_VERSION = "2026.11.22-1"
 RETRIEVED = "2026-11-22"

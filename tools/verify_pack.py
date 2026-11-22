@@ -9,6 +9,9 @@ import json
 import pathlib
 import sys
 
+# Console Windows mặc định cp1252, không in được tiếng Việt.
+sys.stdout.reconfigure(encoding="utf-8")
+
 PACK = pathlib.Path(__file__).resolve().parent.parent / "packages/health_engine/assets/reference_pack.json"
 p = json.loads(PACK.read_text(encoding="utf-8"))
 errors = []

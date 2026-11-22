@@ -9,6 +9,10 @@ Chạy: python3 tools/reference_engine.py
 """
 import json
 import pathlib
+import sys
+
+# Console Windows mặc định cp1252, không in được tiếng Việt.
+sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PACK = json.loads((ROOT / "packages/health_engine/assets/reference_pack.json").read_text(encoding="utf-8"))
