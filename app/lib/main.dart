@@ -12,19 +12,19 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final pack = ReferencePack.fromJsonString(
       await rootBundle.loadString('assets/reference_pack.json'));
-  runApp(SucKhoeApp(state: AppState(pack: pack, repo: InMemoryJournalRepository())));
+  runApp(WholeWellApp(state: AppState(pack: pack, repo: InMemoryJournalRepository())));
 }
 
-class SucKhoeApp extends StatelessWidget {
+class WholeWellApp extends StatelessWidget {
   final AppState state;
-  const SucKhoeApp({super.key, required this.state});
+  const WholeWellApp({super.key, required this.state});
 
   @override
   Widget build(BuildContext context) {
     return AppScope(
       state: state,
       child: MaterialApp(
-        title: 'Sức khỏe',
+        title: 'WholeWell',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
         home: ListenableBuilder(

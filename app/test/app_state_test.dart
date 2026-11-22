@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:health_engine/health_engine.dart';
-import 'package:suc_khoe_app/state/app_state.dart';
-import 'package:suc_khoe_app/state/journal_repository.dart';
+import 'package:wholewell/state/app_state.dart';
+import 'package:wholewell/state/journal_repository.dart';
 
 void main() {
   final pack = ReferencePack.fromJsonString(File('assets/reference_pack.json').readAsStringSync());
