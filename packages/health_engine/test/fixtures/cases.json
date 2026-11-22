@@ -1,0 +1,1661 @@
+{
+ "profiles": {
+  "man30": {
+   "age": 30,
+   "sex": "male",
+   "height": 170,
+   "weight": 65,
+   "level": "inactive"
+  },
+  "man45_active": {
+   "age": 45,
+   "sex": "male",
+   "height": 175,
+   "weight": 78,
+   "level": "active"
+  },
+  "man72_very": {
+   "age": 72,
+   "sex": "male",
+   "height": 165,
+   "weight": 60,
+   "level": "veryActive"
+  },
+  "woman25_low": {
+   "age": 25,
+   "sex": "female",
+   "height": 158,
+   "weight": 52,
+   "level": "lowActive"
+  },
+  "woman55": {
+   "age": 55,
+   "sex": "female",
+   "height": 155,
+   "weight": 58,
+   "level": "inactive"
+  },
+  "woman18": {
+   "age": 18,
+   "sex": "female",
+   "height": 156,
+   "weight": 48,
+   "level": "inactive"
+  },
+  "preg_t1": {
+   "age": 29,
+   "sex": "female",
+   "height": 160,
+   "weight": 55,
+   "level": "inactive",
+   "stage": "pregnant",
+   "gestWeek": 10
+  },
+  "preg_t2": {
+   "age": 29,
+   "sex": "female",
+   "height": 160,
+   "weight": 58,
+   "level": "lowActive",
+   "stage": "pregnant",
+   "gestWeek": 24,
+   "bmi": "normal"
+  },
+  "preg_t3_obese": {
+   "age": 34,
+   "sex": "female",
+   "height": 162,
+   "weight": 85,
+   "level": "inactive",
+   "stage": "pregnant",
+   "gestWeek": 32,
+   "bmi": "obese"
+  },
+  "preg_nobmi": {
+   "age": 29,
+   "sex": "female",
+   "height": 160,
+   "weight": 58,
+   "level": "inactive",
+   "stage": "pregnant",
+   "gestWeek": 20
+  },
+  "lact_4m": {
+   "age": 31,
+   "sex": "female",
+   "height": 157,
+   "weight": 56,
+   "level": "inactive",
+   "stage": "lactating",
+   "monthsPostpartum": 4
+  },
+  "lact_9m": {
+   "age": 31,
+   "sex": "female",
+   "height": 157,
+   "weight": 56,
+   "level": "active",
+   "stage": "lactating",
+   "monthsPostpartum": 9
+  }
+ },
+ "days": {
+  "balanced": [
+   {
+    "label": "x",
+    "source": "food",
+    "n": {
+     "energyKcal": 550,
+     "protein": 25,
+     "fat": 15,
+     "carbohydrate": 78,
+     "addedSugar": 4,
+     "vitC": 30,
+     "iron": 3,
+     "calcium": 200
+    },
+    "meal": "breakfast"
+   },
+   {
+    "label": "x",
+    "source": "food",
+    "n": {
+     "energyKcal": 750,
+     "protein": 35,
+     "fat": 22,
+     "carbohydrate": 100,
+     "addedSugar": 6,
+     "vitC": 40,
+     "iron": 5,
+     "calcium": 300
+    },
+    "meal": "lunch"
+   },
+   {
+    "label": "x",
+    "source": "food",
+    "n": {
+     "energyKcal": 650,
+     "protein": 30,
+     "fat": 20,
+     "carbohydrate": 88,
+     "addedSugar": 3,
+     "vitC": 25,
+     "iron": 4,
+     "calcium": 250
+    },
+    "meal": "dinner"
+   }
+  ],
+  "sweet_fatty": [
+   {
+    "label": "x",
+    "source": "food",
+    "n": {
+     "energyKcal": 900,
+     "protein": 15,
+     "fat": 50,
+     "carbohydrate": 95,
+     "addedSugar": 40
+    },
+    "meal": "snack"
+   },
+   {
+    "label": "x",
+    "source": "food",
+    "n": {
+     "energyKcal": 800,
+     "protein": 30,
+     "fat": 40,
+     "carbohydrate": 80,
+     "addedSugar": 8
+    },
+    "meal": "lunch"
+   }
+  ],
+  "supplements_heavy": [
+   {
+    "label": "x",
+    "source": "food",
+    "n": {
+     "energyKcal": 1800,
+     "protein": 70,
+     "fat": 60,
+     "carbohydrate": 240,
+     "magnesium": 300,
+     "niacin": 20,
+     "retinol": 400,
+     "vitA": 700,
+     "zinc": 9,
+     "vitD": 3
+    }
+   },
+   {
+    "label": "x",
+    "source": "supplement",
+    "n": {
+     "magnesium": 400,
+     "niacin": 50,
+     "vitD": 125,
+     "zinc": 30,
+     "retinol": 3000,
+     "vitA": 3000
+    }
+   },
+   {
+    "label": "x",
+    "source": "fortified",
+    "n": {
+     "niacin": 5,
+     "folicAcid": 200,
+     "folate": 340
+    }
+   }
+  ],
+  "fortified_folic": [
+   {
+    "label": "x",
+    "source": "food",
+    "n": {
+     "energyKcal": 2000,
+     "protein": 80,
+     "fat": 65,
+     "carbohydrate": 270,
+     "folate": 300
+    }
+   },
+   {
+    "label": "x",
+    "source": "fortified",
+    "n": {
+     "folicAcid": 600,
+     "folate": 1020
+    }
+   },
+   {
+    "label": "x",
+    "source": "supplement",
+    "n": {
+     "folicAcid": 500,
+     "folate": 850
+    }
+   }
+  ]
+ },
+ "workoutSets": {
+  "none": [],
+  "light": [
+   [
+    "17190",
+    20
+   ],
+   [
+    "17190",
+    20
+   ],
+   [
+    "17190",
+    20
+   ]
+  ],
+  "moderate": [
+   [
+    "17200",
+    45
+   ],
+   [
+    "17200",
+    45
+   ],
+   [
+    "17200",
+    45
+   ],
+   [
+    "17200",
+    45
+   ],
+   [
+    "17200",
+    45
+   ],
+   [
+    "17200",
+    45
+   ],
+   [
+    "17200",
+    45
+   ]
+  ],
+  "mixed": [
+   [
+    "12050",
+    40
+   ],
+   [
+    "12050",
+    40
+   ],
+   [
+    "12050",
+    40
+   ],
+   [
+    "17200",
+    60
+   ],
+   [
+    "17200",
+    60
+   ],
+   [
+    "15030",
+    60
+   ]
+  ],
+  "athlete": [
+   [
+    "12090",
+    60
+   ],
+   [
+    "12090",
+    60
+   ],
+   [
+    "12090",
+    60
+   ],
+   [
+    "12090",
+    60
+   ],
+   [
+    "12090",
+    60
+   ],
+   [
+    "12090",
+    60
+   ],
+   [
+    "12090",
+    60
+   ],
+   [
+    "02050",
+    60
+   ],
+   [
+    "02050",
+    60
+   ],
+   [
+    "02050",
+    60
+   ]
+  ]
+ },
+ "expect": {
+  "eer": {
+   "man30": {
+    "kcal": 2450,
+    "reason": null
+   },
+   "man45_active": {
+    "kcal": 2899,
+    "reason": null
+   },
+   "man72_very": {
+    "kcal": 2425,
+    "reason": null
+   },
+   "woman25_low": {
+    "kcal": 2075,
+    "reason": null
+   },
+   "woman55": {
+    "kcal": 1765,
+    "reason": null
+   },
+   "woman18": {
+    "kcal": null,
+    "reason": "eerUnderAge19"
+   },
+   "preg_t1": {
+    "kcal": 1941,
+    "reason": null
+   },
+   "preg_t2": {
+    "kcal": 2562,
+    "reason": null
+   },
+   "preg_t3_obese": {
+    "kcal": 2393,
+    "reason": null
+   },
+   "preg_nobmi": {
+    "kcal": null,
+    "reason": "missingPrePregnancyBmi"
+   },
+   "lact_4m": {
+    "kcal": 2321,
+    "reason": null
+   },
+   "lact_9m": {
+    "kcal": 2591,
+    "reason": null
+   }
+  },
+  "group": {
+   "man30": "m19_30",
+   "man45_active": "m31_50",
+   "man72_very": "m71",
+   "woman25_low": "f19_30",
+   "woman55": "f51_70",
+   "woman18": "f14_18",
+   "preg_t1": "p19_30",
+   "preg_t2": "p19_30",
+   "preg_t3_obese": "p31_50",
+   "preg_nobmi": "p19_30",
+   "lact_4m": "l31_50",
+   "lact_9m": "l31_50"
+  },
+  "targets": {
+   "man30": {
+    "protein": 52.0,
+    "iron": 8,
+    "calcium": 1000,
+    "vitD": 15,
+    "folate": 400,
+    "fiber": 38,
+    "potassium": 3400,
+    "vitK": 120,
+    "magnesium": 400
+   },
+   "man45_active": {
+    "protein": 62.4,
+    "iron": 8,
+    "calcium": 1000,
+    "vitD": 15,
+    "folate": 400,
+    "fiber": 38,
+    "potassium": 3400,
+    "vitK": 120,
+    "magnesium": 420
+   },
+   "man72_very": {
+    "protein": 48.0,
+    "iron": 8,
+    "calcium": 1200,
+    "vitD": 20,
+    "folate": 400,
+    "fiber": 30,
+    "potassium": 3400,
+    "vitK": 120,
+    "magnesium": 420
+   },
+   "woman25_low": {
+    "protein": 41.6,
+    "iron": 18,
+    "calcium": 1000,
+    "vitD": 15,
+    "folate": 400,
+    "fiber": 25,
+    "potassium": 2600,
+    "vitK": 90,
+    "magnesium": 310
+   },
+   "woman55": {
+    "protein": 46.4,
+    "iron": 8,
+    "calcium": 1200,
+    "vitD": 15,
+    "folate": 400,
+    "fiber": 21,
+    "potassium": 2600,
+    "vitK": 90,
+    "magnesium": 320
+   },
+   "woman18": {
+    "protein": 46,
+    "iron": 15,
+    "calcium": 1300,
+    "vitD": 15,
+    "folate": 400,
+    "fiber": 26,
+    "potassium": 2300,
+    "vitK": 75,
+    "magnesium": 360
+   },
+   "preg_t1": {
+    "protein": 71,
+    "iron": 27,
+    "calcium": 1000,
+    "vitD": 15,
+    "folate": 600,
+    "fiber": 28,
+    "potassium": 2900,
+    "vitK": 90,
+    "magnesium": 350
+   },
+   "preg_t2": {
+    "protein": 71,
+    "iron": 27,
+    "calcium": 1000,
+    "vitD": 15,
+    "folate": 600,
+    "fiber": 28,
+    "potassium": 2900,
+    "vitK": 90,
+    "magnesium": 350
+   },
+   "preg_t3_obese": {
+    "protein": 71,
+    "iron": 27,
+    "calcium": 1000,
+    "vitD": 15,
+    "folate": 600,
+    "fiber": 28,
+    "potassium": 2900,
+    "vitK": 90,
+    "magnesium": 360
+   },
+   "preg_nobmi": {
+    "protein": 71,
+    "iron": 27,
+    "calcium": 1000,
+    "vitD": 15,
+    "folate": 600,
+    "fiber": 28,
+    "potassium": 2900,
+    "vitK": 90,
+    "magnesium": 350
+   },
+   "lact_4m": {
+    "protein": 71,
+    "iron": 9,
+    "calcium": 1000,
+    "vitD": 15,
+    "folate": 500,
+    "fiber": 29,
+    "potassium": 2800,
+    "vitK": 90,
+    "magnesium": 320
+   },
+   "lact_9m": {
+    "protein": 71,
+    "iron": 9,
+    "calcium": 1000,
+    "vitD": 15,
+    "folate": 500,
+    "fiber": 29,
+    "potassium": 2800,
+    "vitK": 90,
+    "magnesium": 320
+   }
+  },
+  "ulDay": {
+   "man30|balanced": [],
+   "man30|sweet_fatty": [],
+   "man30|supplements_heavy": [
+    {
+     "id": "niacin",
+     "amount": 55.0,
+     "ul": 35
+    },
+    {
+     "id": "vitD",
+     "amount": 128.0,
+     "ul": 100
+    },
+    {
+     "id": "magnesium",
+     "amount": 400.0,
+     "ul": 350
+    },
+    {
+     "id": "retinol",
+     "amount": 3400.0,
+     "ul": 3000
+    }
+   ],
+   "man30|fortified_folic": [
+    {
+     "id": "folicAcid",
+     "amount": 1100.0,
+     "ul": 1000
+    }
+   ],
+   "man45_active|balanced": [],
+   "man45_active|sweet_fatty": [],
+   "man45_active|supplements_heavy": [
+    {
+     "id": "niacin",
+     "amount": 55.0,
+     "ul": 35
+    },
+    {
+     "id": "vitD",
+     "amount": 128.0,
+     "ul": 100
+    },
+    {
+     "id": "magnesium",
+     "amount": 400.0,
+     "ul": 350
+    },
+    {
+     "id": "retinol",
+     "amount": 3400.0,
+     "ul": 3000
+    }
+   ],
+   "man45_active|fortified_folic": [
+    {
+     "id": "folicAcid",
+     "amount": 1100.0,
+     "ul": 1000
+    }
+   ],
+   "man72_very|balanced": [],
+   "man72_very|sweet_fatty": [],
+   "man72_very|supplements_heavy": [
+    {
+     "id": "niacin",
+     "amount": 55.0,
+     "ul": 35
+    },
+    {
+     "id": "vitD",
+     "amount": 128.0,
+     "ul": 100
+    },
+    {
+     "id": "magnesium",
+     "amount": 400.0,
+     "ul": 350
+    },
+    {
+     "id": "retinol",
+     "amount": 3400.0,
+     "ul": 3000
+    }
+   ],
+   "man72_very|fortified_folic": [
+    {
+     "id": "folicAcid",
+     "amount": 1100.0,
+     "ul": 1000
+    }
+   ],
+   "woman25_low|balanced": [],
+   "woman25_low|sweet_fatty": [],
+   "woman25_low|supplements_heavy": [
+    {
+     "id": "niacin",
+     "amount": 55.0,
+     "ul": 35
+    },
+    {
+     "id": "vitD",
+     "amount": 128.0,
+     "ul": 100
+    },
+    {
+     "id": "magnesium",
+     "amount": 400.0,
+     "ul": 350
+    },
+    {
+     "id": "retinol",
+     "amount": 3400.0,
+     "ul": 3000
+    }
+   ],
+   "woman25_low|fortified_folic": [
+    {
+     "id": "folicAcid",
+     "amount": 1100.0,
+     "ul": 1000
+    }
+   ],
+   "woman55|balanced": [],
+   "woman55|sweet_fatty": [],
+   "woman55|supplements_heavy": [
+    {
+     "id": "niacin",
+     "amount": 55.0,
+     "ul": 35
+    },
+    {
+     "id": "vitD",
+     "amount": 128.0,
+     "ul": 100
+    },
+    {
+     "id": "magnesium",
+     "amount": 400.0,
+     "ul": 350
+    },
+    {
+     "id": "retinol",
+     "amount": 3400.0,
+     "ul": 3000
+    }
+   ],
+   "woman55|fortified_folic": [
+    {
+     "id": "folicAcid",
+     "amount": 1100.0,
+     "ul": 1000
+    }
+   ],
+   "woman18|balanced": [],
+   "woman18|sweet_fatty": [],
+   "woman18|supplements_heavy": [
+    {
+     "id": "niacin",
+     "amount": 55.0,
+     "ul": 30
+    },
+    {
+     "id": "vitD",
+     "amount": 128.0,
+     "ul": 100
+    },
+    {
+     "id": "retinol",
+     "amount": 3400.0,
+     "ul": 2800
+    },
+    {
+     "id": "zinc",
+     "amount": 39.0,
+     "ul": 34
+    },
+    {
+     "id": "magnesium",
+     "amount": 400.0,
+     "ul": 350
+    }
+   ],
+   "woman18|fortified_folic": [
+    {
+     "id": "folicAcid",
+     "amount": 1100.0,
+     "ul": 800
+    }
+   ],
+   "preg_t1|balanced": [],
+   "preg_t1|sweet_fatty": [],
+   "preg_t1|supplements_heavy": [
+    {
+     "id": "niacin",
+     "amount": 55.0,
+     "ul": 35
+    },
+    {
+     "id": "vitD",
+     "amount": 128.0,
+     "ul": 100
+    },
+    {
+     "id": "magnesium",
+     "amount": 400.0,
+     "ul": 350
+    },
+    {
+     "id": "retinol",
+     "amount": 3400.0,
+     "ul": 3000
+    }
+   ],
+   "preg_t1|fortified_folic": [
+    {
+     "id": "folicAcid",
+     "amount": 1100.0,
+     "ul": 1000
+    }
+   ],
+   "preg_t2|balanced": [],
+   "preg_t2|sweet_fatty": [],
+   "preg_t2|supplements_heavy": [
+    {
+     "id": "niacin",
+     "amount": 55.0,
+     "ul": 35
+    },
+    {
+     "id": "vitD",
+     "amount": 128.0,
+     "ul": 100
+    },
+    {
+     "id": "magnesium",
+     "amount": 400.0,
+     "ul": 350
+    },
+    {
+     "id": "retinol",
+     "amount": 3400.0,
+     "ul": 3000
+    }
+   ],
+   "preg_t2|fortified_folic": [
+    {
+     "id": "folicAcid",
+     "amount": 1100.0,
+     "ul": 1000
+    }
+   ],
+   "preg_t3_obese|balanced": [],
+   "preg_t3_obese|sweet_fatty": [],
+   "preg_t3_obese|supplements_heavy": [
+    {
+     "id": "niacin",
+     "amount": 55.0,
+     "ul": 35
+    },
+    {
+     "id": "vitD",
+     "amount": 128.0,
+     "ul": 100
+    },
+    {
+     "id": "magnesium",
+     "amount": 400.0,
+     "ul": 350
+    },
+    {
+     "id": "retinol",
+     "amount": 3400.0,
+     "ul": 3000
+    }
+   ],
+   "preg_t3_obese|fortified_folic": [
+    {
+     "id": "folicAcid",
+     "amount": 1100.0,
+     "ul": 1000
+    }
+   ],
+   "preg_nobmi|balanced": [],
+   "preg_nobmi|sweet_fatty": [],
+   "preg_nobmi|supplements_heavy": [
+    {
+     "id": "niacin",
+     "amount": 55.0,
+     "ul": 35
+    },
+    {
+     "id": "vitD",
+     "amount": 128.0,
+     "ul": 100
+    },
+    {
+     "id": "magnesium",
+     "amount": 400.0,
+     "ul": 350
+    },
+    {
+     "id": "retinol",
+     "amount": 3400.0,
+     "ul": 3000
+    }
+   ],
+   "preg_nobmi|fortified_folic": [
+    {
+     "id": "folicAcid",
+     "amount": 1100.0,
+     "ul": 1000
+    }
+   ],
+   "lact_4m|balanced": [],
+   "lact_4m|sweet_fatty": [],
+   "lact_4m|supplements_heavy": [
+    {
+     "id": "niacin",
+     "amount": 55.0,
+     "ul": 35
+    },
+    {
+     "id": "vitD",
+     "amount": 128.0,
+     "ul": 100
+    },
+    {
+     "id": "magnesium",
+     "amount": 400.0,
+     "ul": 350
+    },
+    {
+     "id": "retinol",
+     "amount": 3400.0,
+     "ul": 3000
+    }
+   ],
+   "lact_4m|fortified_folic": [
+    {
+     "id": "folicAcid",
+     "amount": 1100.0,
+     "ul": 1000
+    }
+   ],
+   "lact_9m|balanced": [],
+   "lact_9m|sweet_fatty": [],
+   "lact_9m|supplements_heavy": [
+    {
+     "id": "niacin",
+     "amount": 55.0,
+     "ul": 35
+    },
+    {
+     "id": "vitD",
+     "amount": 128.0,
+     "ul": 100
+    },
+    {
+     "id": "magnesium",
+     "amount": 400.0,
+     "ul": 350
+    },
+    {
+     "id": "retinol",
+     "amount": 3400.0,
+     "ul": 3000
+    }
+   ],
+   "lact_9m|fortified_folic": [
+    {
+     "id": "folicAcid",
+     "amount": 1100.0,
+     "ul": 1000
+    }
+   ]
+  },
+  "macros": {
+   "man30|balanced": {
+    "protein": {
+     "pct": 18.58544140423335,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 26.484254001032525,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.930304594734125,
+     "status": "within"
+    }
+   },
+   "man30|sweet_fatty": {
+    "protein": {
+     "pct": 10.650887573964498,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 47.928994082840234,
+     "status": "above"
+    },
+    "carbohydrate": {
+     "pct": 41.42011834319527,
+     "status": "below"
+    }
+   },
+   "man30|supplements_heavy": {
+    "protein": {
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "man30|fortified_folic": {
+    "protein": {
+     "pct": 16.120906801007557,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 29.47103274559194,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.40806045340051,
+     "status": "within"
+    }
+   },
+   "man45_active|balanced": {
+    "protein": {
+     "pct": 18.58544140423335,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 26.484254001032525,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.930304594734125,
+     "status": "within"
+    }
+   },
+   "man45_active|sweet_fatty": {
+    "protein": {
+     "pct": 10.650887573964498,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 47.928994082840234,
+     "status": "above"
+    },
+    "carbohydrate": {
+     "pct": 41.42011834319527,
+     "status": "below"
+    }
+   },
+   "man45_active|supplements_heavy": {
+    "protein": {
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "man45_active|fortified_folic": {
+    "protein": {
+     "pct": 16.120906801007557,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 29.47103274559194,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.40806045340051,
+     "status": "within"
+    }
+   },
+   "man72_very|balanced": {
+    "protein": {
+     "pct": 18.58544140423335,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 26.484254001032525,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.930304594734125,
+     "status": "within"
+    }
+   },
+   "man72_very|sweet_fatty": {
+    "protein": {
+     "pct": 10.650887573964498,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 47.928994082840234,
+     "status": "above"
+    },
+    "carbohydrate": {
+     "pct": 41.42011834319527,
+     "status": "below"
+    }
+   },
+   "man72_very|supplements_heavy": {
+    "protein": {
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "man72_very|fortified_folic": {
+    "protein": {
+     "pct": 16.120906801007557,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 29.47103274559194,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.40806045340051,
+     "status": "within"
+    }
+   },
+   "woman25_low|balanced": {
+    "protein": {
+     "pct": 18.58544140423335,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 26.484254001032525,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.930304594734125,
+     "status": "within"
+    }
+   },
+   "woman25_low|sweet_fatty": {
+    "protein": {
+     "pct": 10.650887573964498,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 47.928994082840234,
+     "status": "above"
+    },
+    "carbohydrate": {
+     "pct": 41.42011834319527,
+     "status": "below"
+    }
+   },
+   "woman25_low|supplements_heavy": {
+    "protein": {
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "woman25_low|fortified_folic": {
+    "protein": {
+     "pct": 16.120906801007557,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 29.47103274559194,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.40806045340051,
+     "status": "within"
+    }
+   },
+   "woman55|balanced": {
+    "protein": {
+     "pct": 18.58544140423335,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 26.484254001032525,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.930304594734125,
+     "status": "within"
+    }
+   },
+   "woman55|sweet_fatty": {
+    "protein": {
+     "pct": 10.650887573964498,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 47.928994082840234,
+     "status": "above"
+    },
+    "carbohydrate": {
+     "pct": 41.42011834319527,
+     "status": "below"
+    }
+   },
+   "woman55|supplements_heavy": {
+    "protein": {
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "woman55|fortified_folic": {
+    "protein": {
+     "pct": 16.120906801007557,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 29.47103274559194,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.40806045340051,
+     "status": "within"
+    }
+   },
+   "woman18|balanced": {
+    "protein": {
+     "pct": 18.58544140423335,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 26.484254001032525,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.930304594734125,
+     "status": "within"
+    }
+   },
+   "woman18|sweet_fatty": {
+    "protein": {
+     "pct": 10.650887573964498,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 47.928994082840234,
+     "status": "above"
+    },
+    "carbohydrate": {
+     "pct": 41.42011834319527,
+     "status": "below"
+    }
+   },
+   "woman18|supplements_heavy": {
+    "protein": {
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "woman18|fortified_folic": {
+    "protein": {
+     "pct": 16.120906801007557,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 29.47103274559194,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.40806045340051,
+     "status": "within"
+    }
+   },
+   "preg_t1|balanced": {
+    "protein": {
+     "pct": 18.58544140423335,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 26.484254001032525,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.930304594734125,
+     "status": "within"
+    }
+   },
+   "preg_t1|sweet_fatty": {
+    "protein": {
+     "pct": 10.650887573964498,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 47.928994082840234,
+     "status": "above"
+    },
+    "carbohydrate": {
+     "pct": 41.42011834319527,
+     "status": "below"
+    }
+   },
+   "preg_t1|supplements_heavy": {
+    "protein": {
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "preg_t1|fortified_folic": {
+    "protein": {
+     "pct": 16.120906801007557,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 29.47103274559194,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.40806045340051,
+     "status": "within"
+    }
+   },
+   "preg_t2|balanced": {
+    "protein": {
+     "pct": 18.58544140423335,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 26.484254001032525,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.930304594734125,
+     "status": "within"
+    }
+   },
+   "preg_t2|sweet_fatty": {
+    "protein": {
+     "pct": 10.650887573964498,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 47.928994082840234,
+     "status": "above"
+    },
+    "carbohydrate": {
+     "pct": 41.42011834319527,
+     "status": "below"
+    }
+   },
+   "preg_t2|supplements_heavy": {
+    "protein": {
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "preg_t2|fortified_folic": {
+    "protein": {
+     "pct": 16.120906801007557,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 29.47103274559194,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.40806045340051,
+     "status": "within"
+    }
+   },
+   "preg_t3_obese|balanced": {
+    "protein": {
+     "pct": 18.58544140423335,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 26.484254001032525,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.930304594734125,
+     "status": "within"
+    }
+   },
+   "preg_t3_obese|sweet_fatty": {
+    "protein": {
+     "pct": 10.650887573964498,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 47.928994082840234,
+     "status": "above"
+    },
+    "carbohydrate": {
+     "pct": 41.42011834319527,
+     "status": "below"
+    }
+   },
+   "preg_t3_obese|supplements_heavy": {
+    "protein": {
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "preg_t3_obese|fortified_folic": {
+    "protein": {
+     "pct": 16.120906801007557,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 29.47103274559194,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.40806045340051,
+     "status": "within"
+    }
+   },
+   "preg_nobmi|balanced": {
+    "protein": {
+     "pct": 18.58544140423335,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 26.484254001032525,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.930304594734125,
+     "status": "within"
+    }
+   },
+   "preg_nobmi|sweet_fatty": {
+    "protein": {
+     "pct": 10.650887573964498,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 47.928994082840234,
+     "status": "above"
+    },
+    "carbohydrate": {
+     "pct": 41.42011834319527,
+     "status": "below"
+    }
+   },
+   "preg_nobmi|supplements_heavy": {
+    "protein": {
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "preg_nobmi|fortified_folic": {
+    "protein": {
+     "pct": 16.120906801007557,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 29.47103274559194,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.40806045340051,
+     "status": "within"
+    }
+   },
+   "lact_4m|balanced": {
+    "protein": {
+     "pct": 18.58544140423335,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 26.484254001032525,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.930304594734125,
+     "status": "within"
+    }
+   },
+   "lact_4m|sweet_fatty": {
+    "protein": {
+     "pct": 10.650887573964498,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 47.928994082840234,
+     "status": "above"
+    },
+    "carbohydrate": {
+     "pct": 41.42011834319527,
+     "status": "below"
+    }
+   },
+   "lact_4m|supplements_heavy": {
+    "protein": {
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "lact_4m|fortified_folic": {
+    "protein": {
+     "pct": 16.120906801007557,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 29.47103274559194,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.40806045340051,
+     "status": "within"
+    }
+   },
+   "lact_9m|balanced": {
+    "protein": {
+     "pct": 18.58544140423335,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 26.484254001032525,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.930304594734125,
+     "status": "within"
+    }
+   },
+   "lact_9m|sweet_fatty": {
+    "protein": {
+     "pct": 10.650887573964498,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 47.928994082840234,
+     "status": "above"
+    },
+    "carbohydrate": {
+     "pct": 41.42011834319527,
+     "status": "below"
+    }
+   },
+   "lact_9m|supplements_heavy": {
+    "protein": {
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "lact_9m|fortified_folic": {
+    "protein": {
+     "pct": 16.120906801007557,
+     "status": "within"
+    },
+    "fat": {
+     "pct": 29.47103274559194,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "pct": 54.40806045340051,
+     "status": "within"
+    }
+   }
+  },
+  "sugar": {
+   "balanced": {
+    "pct": 2.666666666666667,
+    "overDaily": false,
+    "mealsOver": []
+   },
+   "sweet_fatty": {
+    "pct": 11.294117647058824,
+    "overDaily": true,
+    "mealsOver": [
+     "snack"
+    ]
+   },
+   "supplements_heavy": {
+    "pct": 0.0,
+    "overDaily": false,
+    "mealsOver": []
+   },
+   "fortified_folic": {
+    "pct": 0.0,
+    "overDaily": false,
+    "mealsOver": []
+   }
+  },
+  "ulAvg": {
+   "man30|1heavy6balanced": []
+  },
+  "suggest": {
+   "none": "inactive",
+   "light": "inactive",
+   "moderate": "lowActive",
+   "mixed": "active",
+   "athlete": "veryActive"
+  },
+  "workoutKcal": {
+   "man30": 302.25,
+   "man45_active": 362.70000000000005,
+   "man72_very": 279.0,
+   "woman25_low": 241.8,
+   "woman55": 269.70000000000005,
+   "woman18": 223.20000000000002,
+   "preg_t1": 255.75000000000003,
+   "preg_t2": 269.70000000000005,
+   "preg_t3_obese": 395.25000000000006,
+   "preg_nobmi": 269.70000000000005,
+   "lact_4m": 260.40000000000003,
+   "lact_9m": 260.40000000000003
+  }
+ }
+}

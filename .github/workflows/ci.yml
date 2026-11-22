@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  data-and-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Sinh và kiểm gói dữ liệu
+        run: |
+          python3 tools/build_pack.py
+          python3 tools/verify_pack.py
+          python3 tools/reference_engine.py
+          git diff --exit-code -- packages/health_engine/assets app/assets packages/health_engine/test/fixtures
+      - uses: dart-lang/setup-dart@v1
+      - name: Test engine
+        working-directory: packages/health_engine
+        run: |
+          dart pub get
+          dart analyze
+          dart test
+
+  app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Test app
+        working-directory: app
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test

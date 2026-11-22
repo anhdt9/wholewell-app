@@ -1,0 +1,355 @@
+#!/usr/bin/env python3
+"""Sinh gói dữ liệu tham chiếu (reference_pack.json) cho engine.
+
+Chỉ lưu số liệu (sự kiện) theo cấu trúc riêng của dự án, kèm nguồn và link.
+Không chép văn bản hay bố cục bảng của NASEM / LPI.
+
+Chạy:  python3 tools/build_pack.py
+Kết quả: packages/health_engine/assets/reference_pack.json
+"""
+import json
+import pathlib
+
+PACK_VERSION = "2026.11.22-1"
+RETRIEVED = "2026-11-22"
+
+# ---------------------------------------------------------------- nguồn
+SOURCES = [
+    {"id": "nasem_dri_summary", "label": "A",
+     "title": "NASEM – bảng tóm tắt DRI (RDA, AI, UL), cập nhật 2019",
+     "url": "https://www.nationalacademies.org/read/25353/chapter/28",
+     "via": "https://ods.od.nih.gov/healthinformation/nutrientrecommendations/"},
+    {"id": "nasem_energy_2023", "label": "A",
+     "title": "NASEM – Dietary Reference Intakes for Energy (2023), phương trình EER",
+     "url": "https://www.nationalacademies.org/read/26818/chapter/7"},
+    {"id": "nasem_amdr", "label": "A",
+     "title": "NASEM – AMDR (khoảng phân bố năng lượng từ đạm, béo, bột đường)",
+     "url": "https://nap.nationalacademies.org/read/10490/chapter/13"},
+    {"id": "dga_2025_2030", "label": "A",
+     "title": "USDA, HHS – Dietary Guidelines for Americans 2025–2030",
+     "url": "https://cdn.realfood.gov/DGA.pdf"},
+    {"id": "compendium_2024", "label": "A",
+     "title": "2024 Adult Compendium of Physical Activities (miễn phí cả cho mục đích thương mại)",
+     "url": "https://pacompendium.com/adult-compendium/"},
+    {"id": "pag_2", "label": "A",
+     "title": "HHS – Physical Activity Guidelines for Americans, bản 2",
+     "url": "https://health.gov/sites/default/files/2019-09/Physical_Activity_Guidelines_2nd_edition.pdf"},
+]
+
+GROUPS = ["m14_18", "m19_30", "m31_50", "m51_70", "m71",
+          "f14_18", "f19_30", "f31_50", "f51_70", "f71",
+          "p14_18", "p19_30", "p31_50",
+          "l14_18", "l19_30", "l31_50"]
+
+
+def row(m14, m19, m31, m51, m71, f14, f19, f31, f51, f71, p14, p19, p31, l14, l19, l31):
+    vals = [m14, m19, m31, m51, m71, f14, f19, f31, f51, f71, p14, p19, p31, l14, l19, l31]
+    return {g: v for g, v in zip(GROUPS, vals) if v is not None}
+
+
+def ul_adult(v14, v19_50, v51_70, v71, p14, p19, l14, l19):
+    """UL theo nhóm; nam và nữ giống nhau ở mọi chất có UL cho người lớn."""
+    d = {}
+    for sex in ("m", "f"):
+        d[f"{sex}14_18"] = v14
+        d[f"{sex}19_30"] = v19_50
+        d[f"{sex}31_50"] = v19_50
+        d[f"{sex}51_70"] = v51_70
+        d[f"{sex}71"] = v71
+    d["p14_18"] = p14
+    d["p19_30"] = p19
+    d["p31_50"] = p19
+    d["l14_18"] = l14
+    d["l19_30"] = l19
+    d["l31_50"] = l19
+    return {k: v for k, v in d.items() if v is not None}
+
+
+# ul_scope:
+#   total        – mọi nguồn (thực phẩm + tăng cường + bổ sung)
+#   supplement   – chỉ từ thuốc/bổ sung (magie)
+#   synthetic    – dạng tổng hợp từ bổ sung + thực phẩm tăng cường (niacin, vitamin E)
+#   ul_key       – UL so với một khóa khác (vitamin A: retinol; folate: folic acid)
+NUTRIENTS = []
+
+
+def nut(id_, name_vi, unit, kind, rda, ul=None, ul_scope="total", ul_key=None, group="vitamin"):
+    NUTRIENTS.append({
+        "id": id_, "nameVi": name_vi, "unit": unit, "group": group,
+        "kind": kind, "target": rda, "ul": ul or {}, "ulScope": ul_scope,
+        "ulKey": ul_key, "source": "nasem_dri_summary",
+    })
+
+
+# ---------------------------------------------------------------- vitamin
+nut("vitA", "Vitamin A", "ug_RAE", "RDA",
+    row(900, 900, 900, 900, 900, 700, 700, 700, 700, 700, 750, 770, 770, 1200, 1300, 1300),
+    ul_adult(2800, 3000, 3000, 3000, 2800, 3000, 2800, 3000), "total", ul_key="retinol")
+nut("retinol", "Vitamin A dạng có sẵn (retinol)", "ug", "NONE", {},
+    ul_adult(2800, 3000, 3000, 3000, 2800, 3000, 2800, 3000), "total")
+nut("vitC", "Vitamin C", "mg", "RDA",
+    row(75, 90, 90, 90, 90, 65, 75, 75, 75, 75, 80, 85, 85, 115, 120, 120),
+    ul_adult(1800, 2000, 2000, 2000, 1800, 2000, 1800, 2000))
+nut("vitD", "Vitamin D", "ug", "RDA",
+    row(15, 15, 15, 15, 20, 15, 15, 15, 15, 20, 15, 15, 15, 15, 15, 15),
+    ul_adult(100, 100, 100, 100, 100, 100, 100, 100))
+nut("vitE", "Vitamin E (alpha-tocopherol)", "mg", "RDA",
+    row(15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 19, 19, 19),
+    ul_adult(800, 1000, 1000, 1000, 800, 1000, 800, 1000), "synthetic")
+nut("vitK", "Vitamin K", "ug", "AI",
+    row(75, 120, 120, 120, 120, 75, 90, 90, 90, 90, 75, 90, 90, 75, 90, 90))
+nut("thiamin", "Vitamin B1 (thiamin)", "mg", "RDA",
+    row(1.2, 1.2, 1.2, 1.2, 1.2, 1.0, 1.1, 1.1, 1.1, 1.1, 1.4, 1.4, 1.4, 1.4, 1.4, 1.4))
+nut("riboflavin", "Vitamin B2 (riboflavin)", "mg", "RDA",
+    row(1.3, 1.3, 1.3, 1.3, 1.3, 1.0, 1.1, 1.1, 1.1, 1.1, 1.4, 1.4, 1.4, 1.6, 1.6, 1.6))
+nut("niacin", "Vitamin B3 (niacin)", "mg_NE", "RDA",
+    row(16, 16, 16, 16, 16, 14, 14, 14, 14, 14, 18, 18, 18, 17, 17, 17),
+    ul_adult(30, 35, 35, 35, 30, 35, 30, 35), "synthetic")
+nut("vitB6", "Vitamin B6", "mg", "RDA",
+    row(1.3, 1.3, 1.3, 1.7, 1.7, 1.2, 1.3, 1.3, 1.5, 1.5, 1.9, 1.9, 1.9, 2.0, 2.0, 2.0),
+    ul_adult(80, 100, 100, 100, 80, 100, 80, 100))
+nut("folate", "Folate", "ug_DFE", "RDA",
+    row(400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 600, 600, 600, 500, 500, 500),
+    ul_adult(800, 1000, 1000, 1000, 800, 1000, 800, 1000), "total", ul_key="folicAcid")
+nut("folicAcid", "Axit folic (dạng tổng hợp)", "ug", "NONE", {},
+    ul_adult(800, 1000, 1000, 1000, 800, 1000, 800, 1000), "total")
+nut("vitB12", "Vitamin B12", "ug", "RDA",
+    row(2.4, 2.4, 2.4, 2.4, 2.4, 2.4, 2.4, 2.4, 2.4, 2.4, 2.6, 2.6, 2.6, 2.8, 2.8, 2.8))
+nut("pantothenic", "Vitamin B5 (axit pantothenic)", "mg", "AI",
+    row(5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 7, 7, 7))
+nut("biotin", "Biotin", "ug", "AI",
+    row(25, 30, 30, 30, 30, 25, 30, 30, 30, 30, 30, 30, 30, 35, 35, 35))
+nut("choline", "Choline", "mg", "AI",
+    row(550, 550, 550, 550, 550, 400, 425, 425, 425, 425, 450, 450, 450, 550, 550, 550),
+    ul_adult(3000, 3500, 3500, 3500, 3000, 3500, 3000, 3500))
+
+# ---------------------------------------------------------------- khoáng
+G = "mineral"
+nut("calcium", "Canxi", "mg", "RDA",
+    row(1300, 1000, 1000, 1000, 1200, 1300, 1000, 1000, 1200, 1200, 1300, 1000, 1000, 1300, 1000, 1000),
+    ul_adult(3000, 2500, 2000, 2000, 3000, 2500, 3000, 2500), group=G)
+nut("chromium", "Crom", "ug", "AI",
+    row(35, 35, 35, 30, 30, 24, 25, 25, 20, 20, 29, 30, 30, 44, 45, 45), group=G)
+nut("copper", "Đồng", "ug", "RDA",
+    row(890, 900, 900, 900, 900, 890, 900, 900, 900, 900, 1000, 1000, 1000, 1300, 1300, 1300),
+    ul_adult(8000, 10000, 10000, 10000, 8000, 10000, 8000, 10000), group=G)
+nut("fluoride", "Florua", "mg", "AI",
+    row(3, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3),
+    ul_adult(10, 10, 10, 10, 10, 10, 10, 10), group=G)
+nut("iodine", "Iốt", "ug", "RDA",
+    row(150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 220, 220, 220, 290, 290, 290),
+    ul_adult(900, 1100, 1100, 1100, 900, 1100, 900, 1100), group=G)
+nut("iron", "Sắt", "mg", "RDA",
+    row(11, 8, 8, 8, 8, 15, 18, 18, 8, 8, 27, 27, 27, 10, 9, 9),
+    ul_adult(45, 45, 45, 45, 45, 45, 45, 45), group=G)
+nut("magnesium", "Magie", "mg", "RDA",
+    row(410, 400, 420, 420, 420, 360, 310, 320, 320, 320, 400, 350, 360, 360, 310, 320),
+    ul_adult(350, 350, 350, 350, 350, 350, 350, 350), "supplement", group=G)
+nut("manganese", "Mangan", "mg", "AI",
+    row(2.2, 2.3, 2.3, 2.3, 2.3, 1.6, 1.8, 1.8, 1.8, 1.8, 2.0, 2.0, 2.0, 2.6, 2.6, 2.6),
+    ul_adult(9, 11, 11, 11, 9, 11, 9, 11), group=G)
+nut("molybdenum", "Molypden", "ug", "RDA",
+    row(43, 45, 45, 45, 45, 43, 45, 45, 45, 45, 50, 50, 50, 50, 50, 50),
+    ul_adult(1700, 2000, 2000, 2000, 1700, 2000, 1700, 2000), group=G)
+nut("phosphorus", "Phốt pho", "mg", "RDA",
+    row(1250, 700, 700, 700, 700, 1250, 700, 700, 700, 700, 1250, 700, 700, 1250, 700, 700),
+    ul_adult(4000, 4000, 4000, 3000, 3500, 3500, 4000, 4000), group=G)
+nut("selenium", "Selen", "ug", "RDA",
+    row(55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 60, 60, 60, 70, 70, 70),
+    ul_adult(400, 400, 400, 400, 400, 400, 400, 400), group=G)
+nut("zinc", "Kẽm", "mg", "RDA",
+    row(11, 11, 11, 11, 11, 9, 8, 8, 8, 8, 12, 11, 11, 13, 12, 12),
+    ul_adult(34, 40, 40, 40, 34, 40, 34, 40), group=G)
+nut("potassium", "Kali", "mg", "AI",
+    row(3000, 3400, 3400, 3400, 3400, 2300, 2600, 2600, 2600, 2600, 2600, 2900, 2900, 2500, 2800, 2800), group=G)
+nut("sodium", "Natri", "mg", "AI",
+    row(*([1500] * 16)), group=G)
+nut("chloride", "Clorua", "mg", "AI",
+    row(2300, 2300, 2300, 2000, 1800, 2300, 2300, 2300, 2000, 1800, 2300, 2300, 2300, 2300, 2300, 2300),
+    ul_adult(3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600), group=G)
+nut("boron", "Bo", "mg", "NONE", {},
+    ul_adult(17, 20, 20, 20, 17, 20, 17, 20), group=G)
+nut("nickel", "Niken", "mg", "NONE", {},
+    ul_adult(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0), group=G)
+nut("vanadium", "Vanadi", "mg", "NONE", {},
+    ul_adult(None, 1.8, 1.8, 1.8, None, None, None, None), group=G)
+
+# ---------------------------------------------------------------- đa lượng
+M = "macro"
+nut("water", "Tổng nước (gồm nước trong thức ăn)", "L", "AI",
+    row(3.3, 3.7, 3.7, 3.7, 3.7, 2.3, 2.7, 2.7, 2.7, 2.7, 3.0, 3.0, 3.0, 3.8, 3.8, 3.8), group=M)
+nut("carbohydrate", "Bột đường (carbohydrate)", "g", "RDA",
+    row(130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 175, 175, 175, 210, 210, 210), group=M)
+nut("fiber", "Chất xơ", "g", "AI",
+    row(38, 38, 38, 30, 30, 26, 25, 25, 21, 21, 28, 28, 28, 29, 29, 29), group=M)
+nut("protein", "Đạm (protein)", "g", "RDA",
+    row(52, 56, 56, 56, 56, 46, 46, 46, 46, 46, 71, 71, 71, 71, 71, 71), group=M)
+nut("linoleic", "Axit linoleic (omega-6)", "g", "AI",
+    row(16, 17, 17, 14, 14, 11, 12, 12, 11, 11, 13, 13, 13, 13, 13, 13), group=M)
+nut("ala", "Axit alpha-linolenic (omega-3)", "g", "AI",
+    row(1.6, 1.6, 1.6, 1.6, 1.6, 1.1, 1.1, 1.1, 1.1, 1.1, 1.4, 1.4, 1.4, 1.3, 1.3, 1.3), group=M)
+
+# đạm theo cân nặng cho người lớn không mang thai, không cho con bú
+PROTEIN_PER_KG = {"adult19": 0.8, "source": "nasem_dri_summary",
+                  "note": "RDA 0,8 g/kg cân nặng/ngày cho người 19+; nhóm khác dùng g/ngày trong bảng"}
+
+# ---------------------------------------------------------------- năng lượng
+# TEE = a + b*tuổi + c*cao(cm) + d*nặng(kg) [+ e*tuần thai]
+EER = {
+    "source": "nasem_energy_2023",
+    "minAge": 19,
+    "palRanges19": {"inactive": [1.00, 1.53], "lowActive": [1.53, 1.68],
+                    "active": [1.68, 1.85], "veryActive": [1.85, 2.50]},
+    "adult": {
+        "male": {
+            "inactive":   {"a": 753.07, "age": -10.83, "height": 6.50, "weight": 14.10},
+            "lowActive":  {"a": 581.47, "age": -10.83, "height": 8.30, "weight": 14.94},
+            "active":     {"a": 1004.82, "age": -10.83, "height": 6.52, "weight": 15.91},
+            "veryActive": {"a": -517.88, "age": -10.83, "height": 15.61, "weight": 19.11},
+        },
+        "female": {
+            "inactive":   {"a": 584.90, "age": -7.01, "height": 5.72, "weight": 11.71},
+            "lowActive":  {"a": 575.77, "age": -7.01, "height": 6.60, "weight": 12.14},
+            "active":     {"a": 710.25, "age": -7.01, "height": 6.54, "weight": 12.34},
+            "veryActive": {"a": 511.83, "age": -7.01, "height": 9.07, "weight": 12.56},
+        },
+    },
+    # quý 2 và 3; quý 1 dùng phương trình nữ không mang thai
+    "pregnancy": {
+        "inactive":   {"a": 1131.20, "age": -2.04, "height": 0.34, "weight": 12.15, "gestWeek": 9.16},
+        "lowActive":  {"a": 693.35, "age": -2.04, "height": 5.73, "weight": 10.20, "gestWeek": 9.16},
+        "active":     {"a": -223.84, "age": -2.04, "height": 13.23, "weight": 8.15, "gestWeek": 9.16},
+        "veryActive": {"a": -779.72, "age": -2.04, "height": 18.45, "weight": 8.73, "gestWeek": 9.16},
+    },
+    "pregnancyFirstTrimesterMaxWeek": 13,
+    # năng lượng tích lũy theo BMI trước khi mang thai (kcal/ngày)
+    "pregnancyDeposition": {"underweight": 300, "normal": 200, "overweight": 150, "obese": -50},
+    # cho con bú: cộng chi phí tạo sữa, trừ năng lượng huy động từ mô
+    "lactation": {"0_6": {"milk": 540, "mobilization": 140}, "7_12": {"milk": 380, "mobilization": 0}},
+    "note": "EER là mức giữ cân; không thiết kế cho mục tiêu tăng hoặc giảm cân",
+}
+
+AMDR = {"source": "nasem_amdr",
+        "adult19": {"protein": [10, 35], "fat": [20, 35], "carbohydrate": [45, 65]},
+        "age4_18": {"protein": [10, 30], "fat": [25, 35], "carbohydrate": [45, 65]}}
+
+ADDED_SUGAR = {"source": "dga_2025_2030", "maxPercentEnergyPerDay": 10, "maxGramsPerMeal": 10}
+
+ENERGY_PER_GRAM = {"protein": 4, "carbohydrate": 4, "fat": 9, "alcohol": 7,
+                   "note": "hệ số Atwater chung"}
+
+# ---------------------------------------------------------------- vận động
+ACTIVITIES = [
+    # code, MET, tên tiếng Việt
+    ("17152", 2.8, "Đi bộ chậm (3,2–3,9 km/h)"),
+    ("17170", 3.0, "Đi bộ 4 km/h"),
+    ("17190", 3.8, "Đi bộ vừa (4,5–5,5 km/h)"),
+    ("17200", 4.8, "Đi bộ nhanh (5,6–6,3 km/h)"),
+    ("17220", 5.5, "Đi bộ rất nhanh (6,4–7,1 km/h)"),
+    ("17230", 7.0, "Đi bộ rất nhanh (7,2–7,9 km/h)"),
+    ("17160", 3.5, "Đi dạo"),
+    ("17080", 6.0, "Leo núi, đi bộ đường dài"),
+    ("17131", 6.8, "Leo cầu thang"),
+    ("12020", 7.5, "Chạy bộ nhẹ (tự chọn tốc độ)"),
+    ("12028", 6.5, "Chạy 6,4–6,8 km/h"),
+    ("12030", 8.5, "Chạy 8,0–8,4 km/h"),
+    ("12050", 9.3, "Chạy 9,7–10,1 km/h"),
+    ("12060", 10.5, "Chạy 10,8 km/h"),
+    ("12070", 11.0, "Chạy 11,3 km/h"),
+    ("12090", 12.0, "Chạy 12,9 km/h"),
+    ("12110", 13.0, "Chạy 14,5 km/h"),
+    ("12120", 14.8, "Chạy 16,1 km/h"),
+    ("01010", 4.0, "Đạp xe nhẹ (dưới 16 km/h)"),
+    ("01011", 6.8, "Đạp xe đi làm"),
+    ("01020", 6.8, "Đạp xe 16–19 km/h"),
+    ("01030", 8.0, "Đạp xe 19–22 km/h"),
+    ("01040", 10.0, "Đạp xe 22–25 km/h"),
+    ("01214", 4.0, "Xe đạp tập, nhẹ"),
+    ("01220", 6.0, "Xe đạp tập, vừa"),
+    ("01236", 10.8, "Xe đạp tập, mạnh"),
+    ("02054", 3.5, "Tập tạ nhiều bài, 8–15 lần"),
+    ("02050", 6.0, "Tập tạ nặng, thể hình"),
+    ("02024", 2.8, "Bài tập thể lực nhẹ (plank, gập bụng)"),
+    ("02022", 3.8, "Bài tập thể lực vừa (chống đẩy, lunge)"),
+    ("02020", 7.5, "Bài tập thể lực mạnh (burpee, nhảy)"),
+    ("02150", 2.3, "Yoga Hatha"),
+    ("02160", 4.0, "Power yoga"),
+    ("02105", 2.8, "Pilates"),
+    ("02048", 5.0, "Máy elliptical, vừa"),
+    ("02071", 5.0, "Máy chèo thuyền, vừa"),
+    ("02035", 5.0, "Circuit training, vừa"),
+    ("02040", 7.5, "Circuit training, mạnh"),
+    ("02210", 7.0, "HIIT, vừa"),
+    ("02214", 11.0, "HIIT, mạnh"),
+    ("02068", 11.0, "Nhảy dây"),
+    ("02101", 2.3, "Giãn cơ nhẹ"),
+    ("15030", 5.5, "Cầu lông phong trào"),
+    ("15020", 7.0, "Cầu lông thi đấu"),
+    ("15610", 7.0, "Bóng đá phong trào"),
+    ("15605", 9.5, "Bóng đá thi đấu"),
+    ("15055", 7.5, "Bóng rổ"),
+    ("15720", 3.0, "Bóng chuyền phong trào"),
+    ("15675", 6.8, "Quần vợt, vừa"),
+    ("15660", 4.0, "Bóng bàn"),
+    ("15670", 3.3, "Thái cực quyền, khí công"),
+    ("18240", 5.8, "Bơi sải chậm"),
+    ("18230", 9.8, "Bơi sải nhanh"),
+    ("18310", 6.0, "Bơi thư giãn"),
+    ("18265", 5.3, "Bơi ếch"),
+    ("18255", 4.8, "Bơi ngửa"),
+    ("18355", 5.5, "Thể dục dưới nước"),
+]
+
+PAG = {"source": "pag_2", "moderateMinMet": 3.0, "vigorousMinMet": 6.0,
+       "weeklyModerateMin": [150, 300], "weeklyVigorousMin": [75, 150],
+       "strengthDaysPerWeek": 2}
+
+# Gợi ý mức vận động cho EER từ nhật ký (heuristic của app, KHÔNG phải chuẩn):
+# phút tương đương vừa mỗi ngày (phút mạnh tính gấp đôi, như PAG) trung bình 7 ngày.
+PAL_SUGGESTION = {"kind": "app_heuristic",
+                  "moderateEquivalentMinPerDay": {"lowActive": 30, "active": 60, "veryActive": 120},
+                  "note": "Chỉ là gợi ý; người dùng tự xác nhận mức vận động"}
+
+UNIT_CONVERSIONS = {
+    "vitD_IU_to_ug": 0.025,
+    "vitA_retinol_IU_to_ug_RAE": 0.3,
+    "vitA_supplemental_betacarotene_IU_to_ug_RAE": 0.3,
+    "vitE_natural_IU_to_mg": 0.67,
+    "vitE_synthetic_IU_to_mg": 0.45,
+    "folicAcid_ug_to_ug_DFE": 1.7,
+    "source": "nasem_dri_summary",
+    "note": "hệ số đổi IU theo NIH ODS (fact sheet vitamin A, D, E)",
+}
+
+
+def main():
+    pack = {
+        "schema": 1,
+        "version": PACK_VERSION,
+        "retrieved": RETRIEVED,
+        "groups": GROUPS,
+        "sources": SOURCES,
+        "nutrients": NUTRIENTS,
+        "proteinPerKg": PROTEIN_PER_KG,
+        "eer": EER,
+        "amdr": AMDR,
+        "addedSugar": ADDED_SUGAR,
+        "energyPerGram": ENERGY_PER_GRAM,
+        "activities": [{"code": c, "met": m, "nameVi": n, "source": "compendium_2024"}
+                       for c, m, n in ACTIVITIES],
+        "pag": PAG,
+        "palSuggestion": PAL_SUGGESTION,
+        "unitConversions": UNIT_CONVERSIONS,
+    }
+    out = pathlib.Path(__file__).resolve().parent.parent / "packages/health_engine/assets/reference_pack.json"
+    text = json.dumps(pack, ensure_ascii=False, indent=1)
+    out.write_text(text, encoding="utf-8")
+    # bản sao cho app Flutter (đóng gói cùng bản cài)
+    app_asset = out.parents[3] / "app/assets/reference_pack.json"
+    app_asset.parent.mkdir(parents=True, exist_ok=True)
+    app_asset.write_text(text, encoding="utf-8")
+    print(f"wrote {out} và {app_asset} ({len(NUTRIENTS)} chất, {len(ACTIVITIES)} hoạt động)")
+
+
+if __name__ == "__main__":
+    main()
