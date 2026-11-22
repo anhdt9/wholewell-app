@@ -61,10 +61,10 @@ Quy ước: ngày là `TEXT` dạng `YYYY-MM-DD` theo giờ máy; thời điểm
 | `workouts` | id, person_id, day, activity_code, minutes, created_at | 2 |
 | `water_logs` | id, person_id, day, ml, created_at | 4 (nhập nước) |
 | `products` | id, short_name, full_name?, dosage_form, units_per_serving, servings_per_container?, barcode?, label_photo_path?, confirmed, created_at | 5 |
-| `product_nutrients` | product_id (FK, xóa theo), nutrient_id, chemical_form?, amount_per_serving, unit, source (`supplement`/`fortified`) | 5 |
+| `product_nutrients` | product_id (FK, xóa theo), nutrient_id, chemical_form ('' khi nhãn không ghi), amount_per_serving, unit, source (`supplement`/`fortified`); PK (product_id, nutrient_id, chemical_form) | 5 |
 | `inventory_boxes` | id, product_id, units_remaining, opened_on?, expires_on?, discarded, created_at | 5 |
-| `regimens` | id, person_id, kind (`supplement`/`water`), product_id?, units_per_dose?, water_ml?, minute_of_day (0–1439), with_meal, weekdays (bitmask, 127 = mọi ngày), remind_repeat, remind_interval_min, active, created_at | 6 |
-| `dose_logs` | id, regimen_id, day, minute_of_day, status (`taken`/`skipped`/`late`), taken_at?, box_id?, intake_entry_id?; UNIQUE (regimen_id, day, minute_of_day) | 6 |
+| `regimens` | id, person_id, kind (`supplement`/`water`), product_id?, units_per_dose?, water_ml?, minute_of_day (CHECK 0–1439), with_meal, weekdays (bitmask, 127 = mọi ngày), remind_repeat, remind_interval_min, active, created_at | 6 |
+| `dose_logs` | id, regimen_id, day, minute_of_day, status (`taken`/`skipped`/`late`), taken_at?, box_id?; UNIQUE (regimen_id, day, minute_of_day). Liên kết với tổng nạp qua `intake_entries.dose_log_id` (một chiều) | 6 |
 
 - `people` gồm cả người không có hồ sơ (trẻ em chỉ được tính vào kho, plan mục “An toàn người dùng”); `profiles` chỉ cho người từ 18 tuổi.
 - MVP chỉ có một người chính (`is_primary = 1`); nhiều hồ sơ người lớn là giai đoạn 2.
@@ -116,19 +116,19 @@ abstract class JournalRepository {
 
 ## Tiêu chí đạt
 
-Mỗi dòng là một test (`app/test/data/`), chạy bằng `flutter test` trên máy phát triển và trong CI.
+Mỗi dòng là một test trong `app/test/data/`, `app/test/app_state_test.dart`, `app/test/android_backup_test.dart`; chạy bằng `flutter test` trên máy phát triển và trong CI.
 
-- [ ] `PRAGMA cipher` trả về giá trị khác rỗng trong bản SQLite mà test dùng (chứng minh hook `sqlite3mc` có hiệu lực).
-- [ ] 16 byte đầu tệp CSDL **không** phải `SQLite format 3\0`, và không đọc được tên bảng hay chuỗi đã ghi (vd. nhãn món) trong nội dung thô của tệp.
-- [ ] Mở lại cùng tệp với khóa khác → `DatabaseOpenError(wrongKeyOrCorrupt)`; có tệp mà không có khóa → `keyMissing`; cả hai trường hợp tệp vẫn còn nguyên.
-- [ ] Khóa sinh một lần: dài 64 ký tự hex, lần mở thứ hai dùng lại đúng khóa đó.
-- [ ] Hồ sơ, cờ ẩn calo, món ăn (đủ các chất, `source`, `mealId`), buổi tập: ghi, đóng CSDL, mở lại, đọc ra **bằng hệt** (test hợp đồng chạy với cả bản drift và bản trong bộ nhớ).
-- [ ] Xóa một món thì các dòng `intake_nutrients` của nó cũng mất.
-- [ ] Đơn vị trong CSDL khác gói → `UnitMismatch`; khóa chất lạ → `UnknownNutrient`.
-- [ ] Mỗi bảng trong lược đồ phiên bản 1 tồn tại, khóa ngoại được bật (`PRAGMA foreign_keys` = 1).
-- [ ] `AppState` dùng `DriftJournalRepository`: thêm món, mở lại app, `report()` cho cùng kết quả UL và calo như trước khi đóng.
-- [ ] 30 ngày × 20 món × 15 chất: đọc khoảng 7 ngày dưới 200 ms trên máy phát triển (in số đo; trong CI chỉ chặn ở mức 2 s để tránh dao động).
-- [ ] `AndroidManifest.xml` có `allowBackup="false"` và `dataExtractionRules` loại trừ đủ các miền (test đọc tệp, chạy sau khi có thư mục `android/`).
+- [x] `PRAGMA cipher` trả về giá trị khác rỗng trong bản SQLite mà test dùng (chứng minh hook `sqlite3mc` có hiệu lực).
+- [x] 16 byte đầu tệp CSDL **không** phải `SQLite format 3\0`, và không đọc được tên bảng hay chuỗi đã ghi (vd. nhãn món) trong nội dung thô của tệp.
+- [x] Mở lại cùng tệp với khóa khác → `DatabaseOpenError(wrongKeyOrCorrupt)`; có tệp mà không có khóa → `keyMissing`; cả hai trường hợp tệp vẫn còn nguyên.
+- [x] Khóa sinh một lần: dài 64 ký tự hex, lần mở thứ hai dùng lại đúng khóa đó.
+- [x] Hồ sơ, cờ ẩn calo, món ăn (đủ các chất, `source`, `mealId`), buổi tập: ghi, đóng CSDL, mở lại, đọc ra **bằng hệt** (test hợp đồng chạy với cả bản drift và bản trong bộ nhớ).
+- [x] Xóa một món thì các dòng `intake_nutrients` của nó cũng mất.
+- [x] Đơn vị trong CSDL khác gói → `UnitMismatch`; khóa chất lạ → `UnknownNutrient`.
+- [x] Mỗi bảng trong lược đồ phiên bản 1 tồn tại, khóa ngoại được bật (`PRAGMA foreign_keys` = 1).
+- [x] `AppState` dùng `DriftJournalRepository`: thêm món, mở lại app, `report()` cho cùng kết quả UL và calo như trước khi đóng.
+- [x] 30 ngày × 20 món × 15 chất: đọc khoảng 7 ngày dưới 200 ms trên máy phát triển (in số đo; trong CI chỉ chặn ở mức 2 s để tránh dao động). Đo lần đầu trên Windows: 14 ms. Còn phải đo trên điện thoại thật.
+- [x] `AndroidManifest.xml` có `allowBackup="false"` và `dataExtractionRules` loại trừ đủ các miền (test đọc tệp, chạy sau khi có thư mục `android/`).
 
 ## Ngoài phạm vi
 

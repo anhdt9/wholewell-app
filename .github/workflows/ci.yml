@@ -37,6 +37,8 @@ jobs:
         working-directory: app
         run: |
           flutter pub get
+          dart run build_runner build
+          git diff --exit-code -- lib
           flutter analyze
           flutter test
       - uses: actions/setup-java@v4
