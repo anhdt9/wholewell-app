@@ -1232,6 +1232,7 @@ Không dùng ở bất kỳ đâu: "bạn bị thiếu", "nên uống", "nên ă
 - Trung bình 7 ngày: nhận danh sách ngày có ghi, trả kèm số ngày.
 - Đường bổ sung: trả trạng thái "ngày chưa hết" để giao diện không kết luận vượt hằng ngày cho hôm nay; danh sách món "chưa rõ đường bổ sung".
 - Ngưỡng cờ giữ là "lớn hơn giới hạn" (đang đúng).
+- **Nhóm tham chiếu là dữ liệu:** chuyển các mốc tuổi đang viết cứng (`driGroupFor` dùng 14 và 19; đạm và AMDR dùng 19) vào gói dữ liệu: mỗi nhóm có giới, giai đoạn (mang thai, cho con bú), khoảng tuổi, có mục tiêu calo hay không, bộ AMDR, cách tính đạm. Tuổi tối thiểu tạo hồ sơ (18) cũng đọc từ gói. Thêm đối tượng về sau không sửa engine. Người 18 tuổi: không có mục tiêu calo (đã chốt).
 - Vận động: thêm vào `build_pack.py` số của Physical Activity Guidelines (150–300 phút vừa, 75–150 phút mạnh, 1 phút mạnh = 2 phút vừa, tập tăng cơ từ 2 ngày/tuần) kèm nguồn; đánh dấu hoạt động nào trong gói là tập tăng cơ; engine trả phút tương đương vừa của 7 ngày và số ngày tập tăng cơ.
 - Mọi thay đổi engine: sửa cả `tools/reference_engine.py` và sinh lại fixtures.
 

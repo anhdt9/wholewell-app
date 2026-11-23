@@ -108,6 +108,7 @@ Agent **dừng lại chờ chủ dự án duyệt** ở cuối bước 1 và bư
 ## Giới hạn đã biết
 
 - **Chỉ làm dữ liệu cho người từ 18 tuổi.** NASEM xếp người 18 tuổi vào nhóm 14–18, nên app giữ RDA/UL của nhóm này cho người 18 tuổi, nhưng **không có mục tiêu calo** cho tuổi 18 (giới hạn đã chấp nhận; không làm phương trình EER cho dưới 19 tuổi).
+- **Đối tượng mở rộng được bằng dữ liệu:** nhóm tham chiếu (tuổi, giới, mang thai, cho con bú) và việc nhóm nào có mục tiêu calo, khoảng AMDR, cách tính đạm được định nghĩa trong gói dữ liệu, không viết cứng mốc tuổi trong engine. Thêm đối tượng = thêm số liệu có nguồn, ô đối chiếu, ca test, chủ dự án duyệt, phát hành bản cập nhật. Hồ sơ dưới 18 tuổi vẫn cấm cho tới khi chủ dự án đổi quyết định sản phẩm.
 - Mang thai dưới 19 tuổi: NASEM không có phương trình riêng → không tính calo.
 - Gợi ý mức vận động từ buổi tập là **quy tắc của app**, không phải chuẩn (phút tương đương vừa/ngày: ≥30 nhẹ, ≥60 vừa, ≥120 nhiều); người dùng tự xác nhận.
 - Prompt API của Gemini Nano chưa công bố hỗ trợ tiếng Việt → trên Android dùng giải thích theo mẫu làm mặc định.
