@@ -285,12 +285,26 @@ Ngày dự kiến hết = hôm nay + số đơn vị còn lại ÷ tổng số �
 
 Người dùng tự đặt lịch cho từng loại bổ sung và cho nước. App gợi ý giờ theo giờ thức, ngủ, bữa ăn và các quy tắc dưới đây, cảnh báo khi lịch trái quy tắc (ví dụ canxi và sắt cùng một giờ, hoặc canxi quá 500 mg một lần); người dùng quyết định. Mỗi gợi ý kèm lý do và nguồn.
 
-| Quy tắc | Nguồn |
-| --- | --- |
-| Vitamin D xếp cùng bữa có chút chất béo | [ODS, vitamin D](https://ods.od.nih.gov/factsheets/Vitamind-Consumer/) |
-| Canxi mỗi lần không quá 500 mg; 1.000 mg/ngày từ bổ sung thì chia hai lần. Canxi carbonate uống cùng bữa, canxi citrate lúc nào cũng được | [ODS, canxi](https://ods.od.nih.gov/factsheets/calcium-consumer/) |
-| Vitamin C tăng hấp thu sắt không heme; canxi có thể giảm hấp thu sắt, nên xếp canxi và sắt vào hai thời điểm khác nhau | [ODS, sắt](https://ods.od.nih.gov/factsheets/Iron-HealthProfessional) |
-| Kẽm liều rất cao (142 mg/ngày trong một nghiên cứu) có thể cản hấp thu magiê: cảnh báo, không chỉ xếp lại giờ | [ODS, magiê](https://ods.od.nih.gov/factsheets/Magnesium-healthprofessional/) |
+Quy tắc lịch (đã đối chiếu fact sheet Health Professional của NIH ODS, tra ngày 23/11/2026):
+
+| # | Quy tắc | Loại | App làm gì | Nguồn |
+| --- | --- | --- | --- | --- |
+| 1 | Canxi bổ sung hấp thu cao nhất khi mỗi lần ≤500 mg; liều càng lớn, tỷ lệ hấp thu càng giảm | Một chất vượt mức trong một lần | Lưu ý khi một lần uống >500 mg canxi; gợi ý chia nhiều lần | [ODS, canxi](https://ods.od.nih.gov/factsheets/Calcium-HealthProfessional/) |
+| 2 | Canxi bổ sung nói chung hấp thu tốt hơn khi uống cùng thức ăn; canxi carbonat với người ít axit dạ dày cần uống cùng bữa; canxi citrat uống lúc đói được | Nên xếp cùng bữa | Gợi ý xếp canxi carbonat vào giờ bữa ăn | [ODS, canxi](https://ods.od.nih.gov/factsheets/Calcium-HealthProfessional/) |
+| 3 | Chuyên gia khuyên uống canxi và sắt bổ sung khác giờ; ODS ghi tác động của canxi lên hấp thu sắt chưa được xác lập chắc chắn | Hai chất cùng giờ | Lưu ý khi xếp cùng giờ, lời ghi rõ "chưa chắc chắn" | [ODS, sắt](https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/) |
+| 4 | Bổ sung từ 25 mg sắt uống cùng lúc với kẽm bổ sung làm giảm hấp thu kẽm; sắt trong thực phẩm tăng cường không ảnh hưởng đáng kể | Hai chất cùng giờ, có ngưỡng liều | Lưu ý khi cùng giờ, chỉ với sắt từ bổ sung ≥25 mg mỗi lần | [ODS, kẽm](https://ods.od.nih.gov/factsheets/Zinc-HealthProfessional/) |
+| 5 | Có chất béo trong ruột cùng lúc thì vitamin D hấp thu tốt hơn, nhưng không có vẫn hấp thu một phần | Nên xếp cùng bữa | Gợi ý nhẹ xếp vitamin D vào bữa ăn | [ODS, vitamin D](https://ods.od.nih.gov/factsheets/VitaminD-HealthProfessional/) |
+
+Lời giải thích kèm cảnh báo giới hạn an toàn (không phải quy tắc giờ uống, vì các mức này đã vượt giới hạn):
+
+| Chất | Lời giải thích | Nguồn |
+| --- | --- | --- |
+| Kẽm | Từ 50 mg kẽm mỗi ngày trong nhiều tuần có thể cản hấp thu đồng; 142 mg/ngày có thể cản hấp thu magie | [ODS, kẽm](https://ods.od.nih.gov/factsheets/Zinc-HealthProfessional/), [ODS, đồng](https://ods.od.nih.gov/factsheets/Copper-HealthProfessional/) |
+| Axit folic | Folate liều cao có thể che dấu thiếu vitamin B12 | [ODS, folate](https://ods.od.nih.gov/factsheets/Folate-HealthProfessional/) |
+
+**Không làm quy tắc**, vì nguồn không nói rõ hoặc không hợp vai tham chiếu: canxi–magie (trang canxi và magie của ODS không nhắc; lời khuyên "cách 2 tiếng" chỉ có ở trang thương mại); canxi–kẽm; mọi khoảng cách giờ cụ thể giữa hai vi chất. Vitamin C làm tăng hấp thu sắt không heme ([ODS, vitamin C](https://ods.od.nih.gov/factsheets/VitaminC-HealthProfessional/)) chỉ là thông tin ở Chi tiết chất của sắt, không thành gợi ý xếp lịch, vì nghe như khuyên dùng sắt và không hợp với người có bệnh về máu.
+
+**Quy tắc là dữ liệu, mở rộng được:** mỗi quy tắc là một dòng trong `tools/build_pack.py` (loại, chất A, chất B, điều kiện liều, chỉ tính bổ sung hay mọi nguồn, cách báo, lời hiển thị, link, câu gốc ngắn, ngày tra) và có ô đối chiếu trong `verify_pack.py`. Engine chỉ có vài loại quy tắc chung (hai chất cùng giờ có ngưỡng, một chất vượt mức trong một lần, nên xếp cùng bữa, lời giải thích kèm cảnh báo), nên thêm quy tắc cùng loại không phải sửa code; loại mới mới cần sửa engine và `reference_engine.py`. Quy tắc mới đến người dùng qua bản cập nhật app (tăng phiên bản gói dữ liệu); lần mở đầu sau cập nhật, app kiểm lại mọi lịch và hiện lưu ý nếu có. Mỗi quy tắc mới phải đọc từ nguồn được phép và được chủ dự án duyệt trước khi vào gói.
 
 Thuốc kê đơn chỉ được nhắc theo đúng lịch bác sĩ; app không tự xếp lại và không kiểm tra tương tác. Ai khai đang dùng thuốc kê đơn thì app nhắc hỏi bác sĩ hoặc dược sĩ trước khi dùng bổ sung.
 

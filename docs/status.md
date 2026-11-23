@@ -32,7 +32,7 @@ Lưu ý: màn hình trong `app/lib/ui/` là khung tạm để thử engine, chư
    **Thư viện món:** script nhập USDA FoodData Central (Foundation, SR Legacy, FNDDS) vào gói dữ liệu; tra món, khẩu phần quen thuộc; danh sách món Việt không có trong USDA.
 3. **Khảo sát ban đầu** (chỉ hỏi có/không), nhập nước.
 4. **Chụp nhãn, mã vạch, kho, hạn dùng** (cần thử OCR trên máy thật trước). Đã chốt trong `docs/design/mvp-overview.md`: đổi hợp chất ra lượng nguyên tố theo tỷ lệ NIH ODS (thêm vào `build_pack.py`), nhãn không ghi dạng thì tính giới hạn theo cách thận trọng nhất.
-5. **Lịch uống, nhắc giờ Android, nút "Đã uống"** trên thông báo và trong app. Engine thêm hàm kiểm giới hạn an toàn cho lịch uống, trả đủ các loại cờ mỗi chất (sửa cả `reference_engine.py`).
+5. **Lịch uống, nhắc giờ Android, nút "Đã uống"** trên thông báo và trong app. Engine thêm hàm kiểm giới hạn an toàn cho lịch uống, trả đủ các loại cờ mỗi chất (sửa cả `reference_engine.py`). 5 quy tắc lịch đã đối chiếu ODS (plan, mục Lịch uống); quy tắc lưu dưới dạng dữ liệu trong gói, mở rộng không cần sửa code.
 6. **Sao lưu:** tệp mã hóa trước, Google Drive sau (khi đó mới tạo dự án Google Cloud).
 7. Cổng 2: kiểm thử an toàn, bảng tự kiểm tra pháp lý, chính sách quyền riêng tư, thử nghiệm kín 12 người × 14 ngày.
 

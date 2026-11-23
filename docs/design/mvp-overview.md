@@ -208,7 +208,7 @@ flowchart LR
 | Loại | Ví dụ | Hiện ở | Chi tiết ở |
 |---|---|---|---|
 | Lưu ý an toàn (theo câu hỏi an toàn) | Đang dùng thuốc kê đơn → hỏi bác sĩ hoặc dược sĩ trước khi dùng bổ sung; hút thuốc và dùng beta-caroten liều cao; bệnh về máu và sản phẩm có sắt | Ngay dưới các thẻ cảnh báo ở Hôm nay; trong Chi tiết sản phẩm liên quan | Thiết kế Khảo sát ban đầu |
-| Lưu ý lịch (quy tắc có nguồn) | Canxi quá 500 mg một lần; canxi và sắt cùng một giờ | Trong màn Đặt lịch uống, trước khi lưu | Thiết kế Lịch uống |
+| Lưu ý lịch (quy tắc có nguồn, plan mục Lịch uống) | Canxi quá 500 mg một lần; canxi carbonat ngoài bữa ăn; canxi và sắt cùng giờ; sắt bổ sung ≥25 mg và kẽm cùng giờ; vitamin D ngoài bữa ăn | Trong màn Đặt lịch uống trước khi lưu; ở sản phẩm liên quan; ở Hôm nay khi lịch đang có dính quy tắc | Thiết kế Lịch uống |
 
 ## Danh sách màn hình
 
@@ -1153,6 +1153,9 @@ Một sản phẩm bổ sung thường có nhiều chất. App lưu và tính **
 | Lời khuyên trong cảnh báo | Hãy hỏi bác sĩ hoặc dược sĩ về lượng bạn đang dùng. (lịch: "bạn định dùng") |
 | Phạm vi giới hạn | Tính mọi nguồn · Tính từ thực phẩm bổ sung và thuốc, không tính từ thức ăn · Tính từ thực phẩm bổ sung và thực phẩm tăng cường · Chỉ tính retinol (vitamin A dạng có sẵn) · Chỉ tính axit folic · Chưa xác định giới hạn an toàn |
 | Magie, giải thích thêm | App chỉ có phần bổ sung bạn ghi. |
+| Kẽm, giải thích thêm | Dùng lâu từ 50 mg kẽm mỗi ngày có thể cản hấp thu đồng; 142 mg mỗi ngày có thể cản hấp thu magie. |
+| Axit folic, giải thích thêm | Folate liều cao có thể che dấu tình trạng thiếu vitamin B12. |
+| Lưu ý lịch | Lưu ý · Canxi hấp thu tốt nhất khi mỗi lần không quá 500 mg. · Canxi carbonat hấp thu tốt hơn khi uống cùng bữa ăn. · Canxi có thể làm giảm hấp thu sắt (chưa chắc chắn); có thể xếp hai loại vào giờ khác nhau. · Sắt từ 25 mg trở lên uống cùng lúc với kẽm làm giảm hấp thu kẽm. · Vitamin D hấp thu tốt hơn khi uống cùng bữa có chút chất béo. |
 | Cờ lịch, chất tính mọi nguồn | Chưa tính thức ăn; thức ăn sẽ cộng thêm khi bạn ghi nhật ký. |
 | Chưa kiểm được | Chưa kiểm được giới hạn an toàn cho {chất} trong {sản phẩm}. |
 | Dạng chưa rõ | chưa rõ dạng · chưa chắc |
@@ -1233,7 +1236,12 @@ Không dùng ở bất kỳ đâu: "bạn bị thiếu", "nên uống", "nên ă
 
 **Lịch uống**
 - Liên kết lần ghi với lần uống theo lịch; xóa lần ghi thì bỏ đánh dấu và trả kho.
-- Quy tắc lịch chỉ lấy từ nguồn được phép, nói rõ điều kiện liều; mỗi quy tắc lưu trong `build_pack.py` kèm link, đoạn trích ngắn, ngày tra. **Không có quy tắc canxi–magie** (chưa nguồn được phép nào nói); tra lại mục tương tác trong báo cáo DRI của NASEM trước khi đóng câu này.
+- Quy tắc lịch: 5 quy tắc trong plan, mục Lịch uống (canxi ≤500 mg mỗi lần; canxi cùng bữa; canxi và sắt khác giờ; sắt bổ sung ≥25 mg và kẽm khác giờ; vitamin D cùng bữa). Hiện bằng `SafetyNote` ("Lưu ý lịch") trong màn Đặt lịch uống, ở sản phẩm liên quan, và ở Hôm nay khi lịch đang có dính quy tắc.
+- **Quy tắc là dữ liệu:** mỗi quy tắc một dòng trong `build_pack.py` (loại, chất, ngưỡng, nguồn, câu gốc ngắn, ngày tra); engine chỉ có vài loại quy tắc chung nên thêm quy tắc cùng loại không sửa code. Sau khi cập nhật gói dữ liệu, lần mở đầu kiểm lại mọi lịch. Màn Nguồn số liệu liệt kê các quy tắc kèm nguồn.
+- **Không có quy tắc** canxi–magie, canxi–kẽm, hay khoảng cách giờ cụ thể giữa hai vi chất (nguồn không nói). Vitamin C tăng hấp thu sắt chỉ là thông tin ở Chi tiết chất của sắt, không thành gợi ý lịch.
+
+**Cảnh báo giới hạn**
+- Thẻ cảnh báo kẽm thêm lời giải thích: dùng lâu từ 50 mg/ngày có thể cản hấp thu đồng; 142 mg/ngày có thể cản hấp thu magie. Thẻ cảnh báo axit folic thêm: liều cao có thể che dấu thiếu vitamin B12. Nguồn: fact sheet ODS kẽm, đồng, folate (tra 23/11/2026).
 
 **Quảng cáo (trước khi bật)**
 - Cập nhật chính sách quyền riêng tư, mục An toàn dữ liệu trên Google Play, bảng tự kiểm tra pháp lý; quyết định ô quảng cáo ở Hôm nay.
