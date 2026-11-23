@@ -476,7 +476,12 @@ Khung chiều rộng ~360 dp. `[ ]` là nút, `( )` là lựa chọn, `▓▒░
 │ └──────────────────────────┘ │
 │ ┌ Vận động 7 ngày qua ─────┐ │
 │ │ 120 phút vừa · 20 phút   │ │
-│ │ mạnh · 1 ngày tập tăng cơ│ │
+│ │ mạnh = tương đương 160   │ │
+│ │ phút vừa                 │ │
+│ │ ▓▓▓▓▓▓▓▓░░ mức tham chiếu│ │
+│ │ 150–300 phút vừa mỗi tuần│ │
+│ │ Tập tăng cơ: 1 ngày ·    │ │
+│ │ mức tham chiếu từ 2 ngày │ │
 │ └──────────────────────────┘ │
 │                      [+ Ghi] │
 ├──────────────────────────────┤
@@ -495,7 +500,7 @@ Khung chiều rộng ~360 dp. `[ ]` là nút, `( )` là lựa chọn, `▓▒░
   - "Thêm ▾" mở rộng: bột đường 138 g · mức khuyến nghị 130 g; chất xơ 9 g · mức ước tính 25 g; omega-6, omega-3 so với mức ước tính.
 - **Vi chất:** chỉ vitamin và khoáng chất có mức khuyến nghị hoặc mức ước tính, theo thứ tự trong gói dữ liệu; bộ lọc "Tất cả / Có bổ sung / Dưới mức khuyến nghị". Chất chỉ có giới hạn, không có mức (bo, niken, vanadi) chỉ xuất hiện khi có cảnh báo. Thanh chia hai đoạn thực phẩm và bổ sung, phân biệt bằng mật độ và chú thích chữ. Trên 100% thì thanh đầy, số % vẫn ghi đúng, không khen.
 - **Nước:** chỉ hiện lượng nước đã uống, **không so với mức nào** (mức tham chiếu của Mỹ là tổng nước gồm cả nước trong thức ăn). Nút nhanh dùng lượng ghi gần nhất (mặc định 250 ml).
-- **Vận động:** luôn là 7 ngày gần nhất tới ngày đang xem; chỉ hiện số phút và số ngày, không so với mức nào (xem Câu hỏi còn mở).
+- **Vận động:** luôn là 7 ngày gần nhất tới ngày đang xem. So với Physical Activity Guidelines của HHS: phút tương đương vừa (1 phút mạnh = 2 phút vừa) so với 150–300 phút mỗi tuần; số ngày tập tăng cơ so với từ 2 ngày. Thanh tiến độ trung tính, không đổi màu, không khen, không chê; trên 300 phút thì thanh đầy, số vẫn ghi đúng. Chỉ tính buổi tập người dùng đã ghi, ghi rõ "theo các buổi bạn đã ghi".
 - Chạm dòng vi chất → Chi tiết chất. Chạm thẻ Vận động → Nhật ký lọc buổi tập. **Không có ô quảng cáo** ở màn này.
 
 ### Bảng Ghi
@@ -1035,6 +1040,10 @@ Một sản phẩm bổ sung thường có nhiều chất. App lưu và tính **
 │ Guidelines 2025–2030 · ›     │
 │ Vận động (MET) · 2024 Adult  │
 │ Compendium · ›               │
+│ Phút vận động mỗi tuần ·     │
+│ Physical Activity Guidelines │
+│ (HHS) · ›                    │
+│ Đổi đơn vị trên nhãn · FDA › │
 │ Thực phẩm · USDA FoodData    │
 │ Central · ›                  │
 │                              │
@@ -1147,7 +1156,7 @@ Một sản phẩm bổ sung thường có nhiều chất. App lưu và tính **
 | Dòng vi chất | {x}% mức khuyến nghị · {x}% mức ước tính |
 | Trung bình 7 ngày | Trung bình {n} ngày có ghi trong 7 ngày qua · Chưa có ngày nào được ghi trong 7 ngày qua. |
 | Nước | Đã uống {ml} |
-| Vận động | Vận động 7 ngày qua · {n} phút vừa · {n} phút mạnh · {n} ngày tập tăng cơ |
+| Vận động | Vận động 7 ngày qua · {n} phút vừa · {n} phút mạnh = tương đương {n} phút vừa · mức tham chiếu 150–300 phút vừa mỗi tuần · Tập tăng cơ: {n} ngày · mức tham chiếu từ 2 ngày · theo các buổi bạn đã ghi |
 | Gợi ý mức vận động | Theo các buổi tập 7 ngày qua, mức vận động của bạn gần với "{mức}". [Dùng mức này] [Giữ mức hiện tại] |
 | Thẻ cảnh báo | {Chất} · Vượt giới hạn an toàn hôm nay · Trung bình 7 ngày vượt giới hạn an toàn · Lịch uống vượt giới hạn an toàn |
 | Lời khuyên trong cảnh báo | Hãy hỏi bác sĩ hoặc dược sĩ về lượng bạn đang dùng. (lịch: "bạn định dùng") |
@@ -1206,9 +1215,9 @@ Không dùng ở bất kỳ đâu: "bạn bị thiếu", "nên uống", "nên ă
 19. Nhãn ghi khối lượng hợp chất: đổi bằng tỷ lệ nguyên tố theo NIH ODS trong gói dữ liệu; không có tỷ lệ thì "chưa tính được" và báo "chưa kiểm được giới hạn".
 20. Nhãn không ghi dạng: giới hạn tính theo cách thận trọng nhất, số so với mức khuyến nghị ghi "chưa chắc".
 
-## Câu hỏi còn mở
-
-1. **Mức tham chiếu vận động.** Plan (mục Năng lượng và vận động) so số phút với Physical Activity Guidelines của HHS (150–300 phút vừa mỗi tuần), nhưng bảng chuẩn trong AGENTS.md **không có** chuẩn này. Bản này chỉ hiện số phút, không so. Muốn hiện "Mức tham chiếu: 150–300 phút vừa mỗi tuần" thì cần thêm chuẩn này vào AGENTS.md và gói dữ liệu.
+21. Vận động so với Physical Activity Guidelines của HHS (150–300 phút vừa mỗi tuần, 1 phút mạnh = 2 phút vừa, tập tăng cơ từ 2 ngày); đã thêm vào bảng chuẩn của AGENTS.md.
+22. Số liệu đối chiếu với báo cáo DRI gốc của NASEM (ODS để đối chiếu); hệ số đổi đơn vị trên nhãn theo FDA.
+23. Nguồn kiểm bằng Claude in Chrome khi thêm, đổi số hay quy tắc và mỗi quý; CI chỉ kiểm đủ trường nguồn.
 
 ## Ghi cho đặc tả sau
 
@@ -1223,6 +1232,7 @@ Không dùng ở bất kỳ đâu: "bạn bị thiếu", "nên uống", "nên ă
 - Trung bình 7 ngày: nhận danh sách ngày có ghi, trả kèm số ngày.
 - Đường bổ sung: trả trạng thái "ngày chưa hết" để giao diện không kết luận vượt hằng ngày cho hôm nay; danh sách món "chưa rõ đường bổ sung".
 - Ngưỡng cờ giữ là "lớn hơn giới hạn" (đang đúng).
+- Vận động: thêm vào `build_pack.py` số của Physical Activity Guidelines (150–300 phút vừa, 75–150 phút mạnh, 1 phút mạnh = 2 phút vừa, tập tăng cơ từ 2 ngày/tuần) kèm nguồn; đánh dấu hoạt động nào trong gói là tập tăng cơ; engine trả phút tương đương vừa của 7 ngày và số ngày tập tăng cơ.
 - Mọi thay đổi engine: sửa cả `tools/reference_engine.py` và sinh lại fixtures.
 
 **Sản phẩm và thành phần**

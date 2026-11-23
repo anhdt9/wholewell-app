@@ -4,7 +4,7 @@ Cập nhật 23/11/2026. Agent cập nhật tệp này khi xong một việc.
 
 ## Đã xong
 
-- **Plan** (`docs/plan.md`), danh sách công cụ (`docs/tools.md`).
+- **Plan** (`docs/plan.md`, viết lại gọn 23/11/2026 gồm mọi quyết định đã chốt), danh sách công cụ (`docs/tools.md`).
 - **Gói dữ liệu** (`tools/build_pack.py`): 40 chất × 16 nhóm (14–18 đến >70, mang thai, cho con bú), UL đúng phạm vi, phương trình EER 2023 (người lớn, mang thai quý 2–3, cho con bú), AMDR, giới hạn đường bổ sung, 57 hoạt động có MET, hệ số đổi IU. 102 ô đối chiếu bảng gốc qua.
 - **Engine Dart** (`packages/health_engine`): nhóm DRI, mục tiêu RDA/AI, cờ UL theo ngày và trung bình 7 ngày, EER, tỷ lệ đạm/béo/bột đường, đường bổ sung theo ngày và theo bữa, calo buổi tập, phút vừa/mạnh, gợi ý mức vận động, đổi đơn vị. Test qua CI.
 - **MVP Flutter** (`app/`): hồ sơ, nhật ký ăn (nhập tay), bổ sung (đổi IU), buổi tập, tổng kết ngày, ẩn số calo. Lưu trong bộ nhớ (`InMemoryJournalRepository`). Test qua CI.
@@ -40,6 +40,6 @@ Lưu ý: màn hình trong `app/lib/ui/` là khung tạm để thử engine, chư
 
 - Đối chiếu phương trình EER 14–18 (hệ số tuổi của nữ −22,25) để bật mục tiêu calo cho người 18 tuổi.
 - Danh sách thực phẩm Việt Nam không có trong USDA.
-- Mức tham chiếu vận động (Physical Activity Guidelines của HHS) có trong plan nhưng không có trong bảng chuẩn của AGENTS.md: thêm hay bỏ.
 - Kiểm giấy phép USDA FPED (nguồn đường bổ sung cho món FNDDS).
+- Kiểm qua Claude in Chrome link eCFR (21 CFR 101) và Physical Activity Guidelines (cần cho phép tên miền odphp.health.gov).
 - Trước khi bật quảng cáo: quyết định có đặt ở màn Hôm nay không.

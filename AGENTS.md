@@ -12,27 +12,32 @@ Plan đầy đủ: [docs/plan.md](docs/plan.md). Trạng thái và việc tiếp
 
 - App tham chiếu dinh dưỡng cá nhân hóa cho người Việt từ **18 tuổi**: so lượng nạp vi chất từ thực phẩm và thực phẩm bổ sung với chuẩn Mỹ, quản lý kho và lịch uống bổ sung, cảnh báo khi vượt mức tối đa an toàn.
 - **Không** chẩn đoán, kê đơn, gợi ý liều; không bán, gợi ý hay quảng cáo nhãn hàng bổ sung. Không kiểm tương tác thuốc, xét nghiệm, CGM, gen, vi sinh; không hồ sơ sức khỏe trẻ em.
-- **Miễn phí toàn bộ.** Doanh thu chỉ từ quảng cáo AdMob, bật sau khi có người dùng; chỉ quảng cáo không cá nhân hóa; không đặt quảng cáo ở màn cảnh báo UL, thông báo, widget; yêu cầu quảng cáo không chứa dữ liệu sức khỏe.
+- **Miễn phí toàn bộ.** MVP không có quảng cáo, không cài SDK quảng cáo (chỉ chừa chỗ trong bố cục). Về sau doanh thu chỉ từ AdMob: chỉ quảng cáo không cá nhân hóa; không đặt ở màn cảnh báo, thông báo, widget; yêu cầu quảng cáo không chứa dữ liệu sức khỏe.
 - Thị trường đầu tiên: Việt Nam. Không thuê chuyên gia, không thuê luật sư: tự đối chiếu văn bản gốc, chỗ không chắc thì bỏ hoặc thu hẹp tính năng.
 
 ## Chuẩn tham chiếu (chỉ những chuẩn này)
 
 | Nhóm | Chuẩn | Nguồn |
 |---|---|---|
-| Vi chất | RDA; chất chưa có RDA dùng AI và ghi "ước tính" | NASEM, số liệu qua NIH ODS |
-| Vi chất | UL (giới hạn an toàn), đúng phạm vi từng chất | NASEM |
+| Vi chất | RDA; chất chưa có RDA dùng AI và ghi "ước tính" | NASEM (báo cáo DRI gốc); NIH ODS để đối chiếu |
+| Vi chất | UL (giới hạn an toàn), đúng phạm vi từng chất; cảnh báo khi **vượt** (lớn hơn UL) | NASEM (báo cáo DRI gốc); NIH ODS để đối chiếu |
 | Vi chất | ODA, chỉ tham khảo, chỉ bật sau cổng 3 | Linus Pauling Institute |
 | Năng lượng | Mục tiêu calo = EER (mức giữ cân), không có mục tiêu giảm cân | NASEM 2023 |
 | Năng lượng | Tỷ lệ đạm, béo, bột đường = AMDR | NASEM |
 | Năng lượng | Đường bổ sung ≤10% năng lượng/ngày, ≤10 g/bữa | Dietary Guidelines 2025–2030 |
 | Vận động | MET | 2024 Adult Compendium |
+| Vận động | Người lớn: 150–300 phút vận động vừa hoặc 75–150 phút vận động mạnh mỗi tuần (1 phút mạnh ≈ 2 phút vừa); tập tăng cơ ≥2 ngày/tuần | Physical Activity Guidelines for Americans, bản 2 (HHS) |
+| Nhãn | Hệ số đổi đơn vị trên nhãn (IU, DFE, NE, RAE) | FDA (hướng dẫn đổi đơn vị 2019; 21 CFR 101.9, 101.36) |
 
 **Không thêm chuẩn khác** (EAR, CDRR, mức đạm 1,2–1,6 g/kg của Dietary Guidelines…), không dùng dữ liệu Việt Nam. Muốn thêm thì hỏi chủ dự án trước.
 
 ## Nguồn và pháp lý
 
-- Chỉ nguồn uy tín, **miễn phí, dùng hợp pháp trong app có quảng cáo**. Nhãn A: cơ quan chính phủ Mỹ (NIH ODS, FDA, USDA, CDC, HHS) và 2024 Compendium. Nhãn B: LPI (chỉ cho ODA). Không dùng nguồn trả phí, giấy phép NC, dữ liệu cộng đồng (vd. Open Food Facts), ý kiến, video, nội dung quảng cáo.
+- Chỉ nguồn uy tín, **miễn phí, dùng hợp pháp trong app có quảng cáo**. Nhãn A: cơ quan chính phủ Mỹ (NIH ODS, FDA, USDA, CDC, HHS), số liệu trong báo cáo DRI của NASEM, 2024 Compendium. Nhãn B: LPI (chỉ cho ODA). Không dùng nguồn trả phí, giấy phép NC, dữ liệu cộng đồng (vd. Open Food Facts), ý kiến, video, nội dung quảng cáo.
+- **Bài nghiên cứu (PubMed, PMC) không làm nguồn** cho quy tắc hay con số trong app; chỉ để hiểu, giải thích quyết định. **Nguồn không nói rõ thì không có quy tắc** (vd. không có quy tắc canxi–magie).
 - **Chỉ lưu con số** theo cấu trúc riêng, kèm nguồn và link. Không chép văn bản hay bố cục bảng của NASEM, LPI. Tự viết lời giải thích.
+- **Kiểm nguồn bằng Claude in Chrome** (trình duyệt thật), vì NIH ODS chặn truy cập tự động: mỗi khi thêm hay đổi số, quy tắc, và mỗi quý, agent mở trang nguồn, đối chiếu câu gốc, ghi ngày tra. CI không kiểm link; CI chỉ kiểm mỗi số và quy tắc có đủ link, câu gốc ngắn, ngày tra.
+- **Quy tắc lịch là dữ liệu** trong `build_pack.py` (loại, chất, ngưỡng, nguồn); thêm quy tắc cùng loại không sửa code.
 - Không dùng tên hay nội dung NIH ODS trong quảng cáo.
 - Dữ liệu thực phẩm: USDA FoodData Central (CC0), NIH DSLD (CC0).
 
@@ -76,7 +81,7 @@ cd app && flutter pub get && flutter analyze && flutter test && flutter run
 
 1. **Số liệu chỉ sửa trong `tools/build_pack.py`**, không sửa tay `reference_pack.json` hay `cases.json`. Mỗi số mới phải có nguồn kiểm được; thêm ô đối chiếu vào `verify_pack.py`. Không đoán số: nếu nguồn chưa rõ, để engine trả `NotComputed` kèm lý do.
 2. **Đổi logic engine thì đổi cả `tools/reference_engine.py`** và sinh lại fixtures; test Dart so với kết quả Python.
-3. Tiêu chí bắt buộc: **0 vi phạm UL, 0 lỗi đơn vị**. UL đúng phạm vi: magie chỉ tính bổ sung; niacin, vitamin E chỉ dạng tổng hợp (bổ sung + thực phẩm tăng cường); vitamin A chỉ retinol; folate chỉ axit folic.
+3. Tiêu chí bắt buộc: **0 vi phạm UL, 0 lỗi đơn vị**. UL đúng phạm vi: magie chỉ tính bổ sung; niacin, vitamin E chỉ tính từ bổ sung + thực phẩm tăng cường (theo nguồn, kể cả vitamin E tự nhiên trong viên); vitamin A chỉ retinol; folate chỉ axit folic. Thành phần bổ sung tính theo từng chất và dạng; dạng chưa rõ thì tính giới hạn theo cách thận trọng nhất.
 4. Engine và giao diện chỉ gọi interface cho phần phụ thuộc nền tảng: NotificationScheduler, BackgroundJobs, SecureKeyStore, OcrEngine, BarcodeScanner, SpeechInput, GoogleAuth, BackupProvider, OnDeviceAi, HomeWidgetBridge, AdService. Mỗi interface có bản giả để test.
 5. **Không code tính năng khi chưa có đặc tả và thiết kế UX đã duyệt** (xem mục "Quy trình bắt buộc" bên dưới). Chủ dự án duyệt và gộp; agent không tự gộp vào `main`, không tự phát hành.
 6. Commit nhỏ, thông điệp tiếng Việt, mô tả việc đã làm.
