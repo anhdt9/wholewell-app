@@ -29,7 +29,7 @@ Plan đầy đủ: [docs/plan.md](docs/plan.md). Trạng thái và việc tiếp
 | Vận động | Người lớn: 150–300 phút vận động vừa hoặc 75–150 phút vận động mạnh mỗi tuần (1 phút mạnh ≈ 2 phút vừa); tập tăng cơ ≥2 ngày/tuần | Physical Activity Guidelines for Americans, bản 2 (HHS) |
 | Nhãn | Hệ số đổi đơn vị trên nhãn (IU, DFE, NE, RAE) | FDA (hướng dẫn đổi đơn vị 2019; 21 CFR 101.9, 101.36) |
 
-**Không thêm chuẩn khác** (EAR, CDRR, mức đạm 1,2–1,6 g/kg của Dietary Guidelines…), không dùng dữ liệu Việt Nam. Muốn thêm thì hỏi chủ dự án trước.
+**Không thêm chuẩn khác** (EAR, CDRR, mức đạm 1,2–1,6 g/kg của Dietary Guidelines…), không dùng dữ liệu Việt Nam, **chỉ theo chuẩn Mỹ**: không dùng EFSA, WHO/FAO hay bộ chuẩn nước khác, kể cả khi giới hạn của họ thận trọng hơn (đã cân nhắc và chốt 23/11/2026). Muốn thêm thì hỏi chủ dự án trước.
 
 ## Nguồn và pháp lý
 

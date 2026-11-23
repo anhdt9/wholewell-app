@@ -12,7 +12,7 @@ WholeWell giúp người Việt từ 18 tuổi biết mình nạp bao nhiêu vi 
 | --- | --- |
 | Định vị | Công cụ tham chiếu: không chẩn đoán, không kê đơn, không gợi ý liều; không bán, gợi ý, quảng cáo nhãn hàng bổ sung |
 | Người dùng | Việt Nam trước; hồ sơ từ 18 tuổi (nhập số tuổi, app tự cộng mỗi năm); trẻ em chỉ được tính vào kho |
-| Chuẩn | Chỉ các chuẩn ở mục 3; không chuẩn khác, không dữ liệu Việt Nam |
+| Chuẩn | Chỉ chuẩn Mỹ ở mục 3 (cách làm giống Cronometer); không EFSA, WHO/FAO hay chuẩn nước khác, không dữ liệu Việt Nam |
 | Nguồn | Chính phủ Mỹ và số liệu NASEM (nhãn A), LPI chỉ cho ODA (nhãn B); nguồn không nói rõ thì không có quy tắc; không thuê chuyên gia |
 | Dữ liệu người dùng | Trên máy, SQLite mã hóa; sao lưu tệp mã hóa, Google Drive tùy chọn; không máy chủ, không iCloud, không thiết bị đeo |
 | Gói dữ liệu | Số liệu và quy tắc đi kèm bản cài đã ký, cập nhật qua cửa hàng ứng dụng; không tải từ máy chủ |
