@@ -189,7 +189,7 @@ Người dùng chỉ thấy hai nhóm. **Vi chất:** RDA để biết đủ hay
 #### Quy tắc nguồn thay cho chuyên gia
 
 - **Miễn phí và hợp pháp:** chỉ dùng tác phẩm của chính phủ Mỹ, nguồn CC0, CC BY hoặc nguồn ghi rõ cho phép dùng thương mại; nguồn tính phí hoặc giấy phép NC thì bỏ. Với NASEM và LPI, app chỉ lưu con số (số liệu không được bảo hộ quyền tác giả theo Điều 15 Luật Sở hữu trí tuệ), sắp theo cấu trúc riêng, ghi nguồn và link, tự viết lời giải thích; không chép bảng hay lời văn. Không dùng tên hay nội dung của NIH ODS trong quảng cáo, vì ODS cấm việc này.
-- **Không tự đặt ngưỡng, không tự hiệu chỉnh RDA:** chỉ cảnh báo khi đạt hoặc vượt UL; hiệu chỉnh chỉ dùng loại có trong DRI, như nhu cầu sắt của người ăn chay gấp 1,8 lần RDA.
+- **Không tự đặt ngưỡng, không tự hiệu chỉnh RDA:** chỉ cảnh báo khi vượt UL (UL là mức cao nhất chưa gây hại, nên đúng bằng UL chưa phải vượt); hiệu chỉnh chỉ dùng loại có trong DRI, như nhu cầu sắt của người ăn chay gấp 1,8 lần RDA.
 - **Mỗi quy tắc có trích dẫn kiểm được:** URL, đoạn trích ngắn và ngày tra, lưu cùng quy tắc trong repo. CI chặn quy tắc thiếu trích dẫn hoặc link hỏng; Gemini đối chiếu chéo với nguồn; bạn duyệt trước khi gộp.
 - **Nguồn không nói rõ thì không gợi ý:** app ghi “chưa có hướng dẫn”.
 - **Tầng an toàn chỉ được thận trọng hơn:** cờ đỏ chỉ ẩn thông tin hoặc khuyên hỏi bác sĩ, dược sĩ, không bao giờ mở thêm gợi ý.
