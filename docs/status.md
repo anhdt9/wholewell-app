@@ -11,6 +11,7 @@ Cập nhật 23/11/2026. Agent cập nhật tệp này khi xong một việc.
 - **CI** GitHub Actions; build APK debug.
 - **Thư mục Android** (mã ứng dụng `vn.wholewell.app`, tên hiển thị WholeWell) – PR #3.
 - **Quy trình đặc tả → UX → test → code** có cổng duyệt (AGENTS.md); mẫu `docs/specs/_template.md`, `docs/design/_template.md`, nguyên tắc `docs/design/README.md`.
+- **UX tổng thể MVP** (`docs/design/mvp-overview.md`, đã duyệt): sơ đồ màn hình, thanh dưới 4 mục, 5 luồng chính, cảnh báo giới hạn an toàn (gồm cảnh báo theo lịch uống), thành phần bổ sung tính theo từng chất và dạng, bộ thành phần dùng chung. Mọi thiết kế tính năng sau theo khung này.
 
 Lưu ý: màn hình trong `app/lib/ui/` là khung tạm để thử engine, chưa qua thiết kế UX.
 
@@ -26,17 +27,19 @@ Lưu ý: màn hình trong `app/lib/ui/` là khung tạm để thử engine, chư
 
 ## Việc tiếp theo (theo thứ tự)
 
-1. **UX tổng thể MVP** (chỉ tài liệu, chưa code): `docs/design/mvp-overview.md` gồm sơ đồ màn hình, điều hướng, luồng chính (lần đầu mở app, ghi món, ghi bổ sung, xem tổng kết, nhận cảnh báo), bộ thành phần dùng chung. Cần duyệt trước mọi tính năng có giao diện.
-2. **CSDL mã hóa** (thứ tự MVP mục 2; cần đặc tả, không cần UX): drift + SQLite3MultipleCiphers, khóa trong flutter_secure_storage; lược đồ hồ sơ, nhật ký, sản phẩm, kho, lịch uống; thay `InMemoryJournalRepository`; loại CSDL khỏi sao lưu tự động của hệ điều hành.
-3. Từ đây mỗi mục cần **đặc tả + thiết kế UX đã duyệt** trước khi code.
+1. **CSDL mã hóa** (thứ tự MVP mục 2; cần đặc tả, không cần UX): drift + SQLite3MultipleCiphers, khóa trong flutter_secure_storage; lược đồ hồ sơ (số tuổi + ngày nhập), nhật ký, sản phẩm → nhiều thành phần (chất, dạng, lượng, đơn vị gốc), kho, lịch uống; thay `InMemoryJournalRepository`; loại CSDL khỏi sao lưu tự động của hệ điều hành. Xem mục "Ghi cho đặc tả sau" trong `docs/design/mvp-overview.md`.
+2. Từ đây mỗi mục cần **đặc tả + thiết kế UX đã duyệt** trước khi code.
    **Thư viện món:** script nhập USDA FoodData Central (Foundation, SR Legacy, FNDDS) vào gói dữ liệu; tra món, khẩu phần quen thuộc; danh sách món Việt không có trong USDA.
-4. **Khảo sát ban đầu** (chỉ hỏi có/không), nhập nước.
-5. **Chụp nhãn, mã vạch, kho, hạn dùng** (cần thử OCR trên máy thật trước).
-6. **Lịch uống, nhắc giờ Android, nút "Đã uống"** trên thông báo và trong app.
-7. **Sao lưu:** tệp mã hóa trước, Google Drive sau (khi đó mới tạo dự án Google Cloud).
-8. Cổng 2: kiểm thử an toàn, bảng tự kiểm tra pháp lý, chính sách quyền riêng tư, thử nghiệm kín 12 người × 14 ngày.
+3. **Khảo sát ban đầu** (chỉ hỏi có/không), nhập nước.
+4. **Chụp nhãn, mã vạch, kho, hạn dùng** (cần thử OCR trên máy thật trước). Đặc tả phải chốt: đổi khối lượng hợp chất ra lượng nguyên tố, cách tính khi nhãn không ghi dạng.
+5. **Lịch uống, nhắc giờ Android, nút "Đã uống"** trên thông báo và trong app. Engine thêm hàm kiểm giới hạn an toàn cho lịch uống (sửa cả `reference_engine.py`).
+6. **Sao lưu:** tệp mã hóa trước, Google Drive sau (khi đó mới tạo dự án Google Cloud).
+7. Cổng 2: kiểm thử an toàn, bảng tự kiểm tra pháp lý, chính sách quyền riêng tư, thử nghiệm kín 12 người × 14 ngày.
 
 ## Còn mở
 
 - Đối chiếu phương trình EER 14–18 (hệ số tuổi của nữ −22,25) để bật mục tiêu calo cho người 18 tuổi.
 - Danh sách thực phẩm Việt Nam không có trong USDA.
+- Nhãn chỉ ghi khối lượng hợp chất (canxi carbonat, sắt fumarat…): thêm tỷ lệ nguyên tố theo NIH ODS vào gói dữ liệu hay bắt nhập tay (câu 11 trong `docs/design/mvp-overview.md`).
+- Nhãn không ghi dạng (vitamin A, folate, niacin, vitamin E): có tính giới hạn theo dạng bị giới hạn không (câu 12).
+- Trước khi bật quảng cáo: quyết định có đặt ở màn Hôm nay không.
