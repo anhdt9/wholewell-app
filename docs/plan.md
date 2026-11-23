@@ -100,7 +100,7 @@ Tất cả đóng vào gói dữ liệu có phiên bản đi kèm bản cài, đ
 
 - **Chưa có nhật ký thì chỉ hiện chuẩn,** không ước tính lượng nạp. Trung bình 7 ngày chia cho số ngày có ghi, ghi rõ số ngày.
 - **Món Việt:** chỉ dùng USDA; thư viện món tính từ công thức tự soạn với nguyên liệu USDA và khẩu phần quen thuộc, ghi "ước tính"; món không có thì nhập theo nhãn hoặc chọn món gần nhất. Script lập danh sách món "chỉ có ở Việt Nam".
-- **Mục tiêu calo** theo EER; mức vận động người dùng chọn, app gợi ý từ buổi tập 7 ngày theo quy tắc của app (phút tương đương vừa/ngày: ≥30 nhẹ, ≥60 vừa, ≥120 nhiều). Không cộng calo buổi tập vào mục tiêu. Chưa tính được (18 tuổi, mang thai dưới 19 tuổi, thiếu thông tin thai kỳ) thì báo lý do, không đoán.
+- **Mục tiêu calo** theo EER; mức vận động người dùng chọn, app gợi ý từ buổi tập 7 ngày theo quy tắc của app (phút tương đương vừa/ngày: ≥30 nhẹ, ≥60 vừa, ≥120 nhiều). Không cộng calo buổi tập vào mục tiêu. Chưa tính được (18 tuổi, mang thai dưới 19 tuổi, thiếu thông tin thai kỳ) thì báo lý do, không đoán. Chỉ làm dữ liệu cho người từ 18 tuổi: người 18 tuổi dùng mức khuyến nghị và giới hạn của nhóm 14–18 (cách NASEM chia nhóm), không có mục tiêu calo; không làm phương trình năng lượng cho dưới 19 tuổi.
 - **Đường bổ sung** tính trên năng lượng đã ăn; hôm nay chỉ ghi "đến giờ", kết luận vượt chỉ cho ngày đã qua và 7 ngày; giới hạn mỗi bữa báo ngay. Nguồn: FPED cho món FNDDS, nguyên liệu cho món tự soạn; nhãn chỉ ghi đường tổng thì "chưa rõ".
 - **Vận động** do người dùng tự nhập; kcal ≈ MET × kg × giờ, ghi "khoảng"; không đọc thiết bị đeo, Health Connect, HealthKit.
 - **Nước** chỉ hiện lượng đã uống, không so, vì mức tham chiếu là tổng nước gồm cả nước trong thức ăn ([NAP](https://www.nationalacademies.org/read/10925/chapter/6)).
@@ -232,7 +232,6 @@ Không có SDK phân tích; chỉ số lấy từ Play Console, thử nghiệm k
 ## 8. Việc còn mở
 
 - Thử trên máy thật: giọng nói, OCR, Gemini Nano, sao lưu chéo nền tảng, mã vạch.
-- Đối chiếu phương trình EER 14–18 để bật mục tiêu calo cho người 18 tuổi: trang NASEM và NCBI chặn truy cập qua Chrome; cần chủ dự án tự lưu báo cáo (PDF hoặc bảng) vào thư mục ngoài git để agent đọc.
 - Danh sách thực phẩm Việt Nam không có trong USDA.
 - Khi bật quảng cáo: có đặt ở màn Hôm nay không.
 
