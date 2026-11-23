@@ -1233,6 +1233,7 @@ Không dùng ở bất kỳ đâu: "bạn bị thiếu", "nên uống", "nên ă
 
 **Lịch uống**
 - Liên kết lần ghi với lần uống theo lịch; xóa lần ghi thì bỏ đánh dấu và trả kho.
+- Quy tắc lịch chỉ lấy từ nguồn được phép, nói rõ điều kiện liều; mỗi quy tắc lưu trong `build_pack.py` kèm link, đoạn trích ngắn, ngày tra. **Không có quy tắc canxi–magie** (chưa nguồn được phép nào nói); tra lại mục tương tác trong báo cáo DRI của NASEM trước khi đóng câu này.
 
 **Quảng cáo (trước khi bật)**
 - Cập nhật chính sách quyền riêng tư, mục An toàn dữ liệu trên Google Play, bảng tự kiểm tra pháp lý; quyết định ô quảng cáo ở Hôm nay.
