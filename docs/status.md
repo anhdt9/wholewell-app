@@ -40,6 +40,6 @@ Lưu ý: màn hình trong `app/lib/ui/` là khung tạm để thử engine, chư
 
 - Đối chiếu phương trình EER 14–18 (hệ số tuổi của nữ −22,25) để bật mục tiêu calo cho người 18 tuổi.
 - Danh sách thực phẩm Việt Nam không có trong USDA.
-- Kiểm qua Claude in Chrome link eCFR (21 CFR 101) và Physical Activity Guidelines (cần cho phép tên miền odphp.health.gov). Đối chiếu EER 14–18 cần cho phép www.nationalacademies.org.
-- Đã kiểm (23/11/2026): USDA FPED là U.S. Public Domain, dùng được.
+- Đối chiếu EER 14–18: trang NASEM không vào được, NCBI chặn truy cập tự động; cần chủ dự án lưu báo cáo NASEM 2023 (bảng phương trình trẻ em, vị thành niên) vào thư mục ngoài git.
+- Đã kiểm qua Claude in Chrome (23/11/2026): USDA FPED là U.S. Public Domain; link Physical Activity Guidelines (số người lớn ở trang 8 khớp) và eCFR 21 CFR 101 đúng.
 - Trước khi bật quảng cáo: quyết định có đặt ở màn Hôm nay không.

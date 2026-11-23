@@ -66,8 +66,8 @@ Không đặt mốc thời gian; chưa qua cổng thì chưa sang giai đoạn s
 | AMDR | NASEM | Đạm 10–35%, béo 20–35%, bột đường 45–65% năng lượng |
 | Đường bổ sung | [Dietary Guidelines 2025–2030](https://cdn.realfood.gov/DGA.pdf) | ≤10% năng lượng/ngày, ≤10 g/bữa |
 | MET | [2024 Adult Compendium](https://pacompendium.com/) | Calo buổi tập, phút vừa/mạnh |
-| Phút vận động | [Physical Activity Guidelines, bản 2](https://odphp.health.gov/sites/default/files/2019-09/Physical_Activity_Guidelines_2nd_edition.pdf) (HHS) | 150–300 phút vừa hoặc 75–150 phút mạnh/tuần (1 phút mạnh ≈ 2 phút vừa); tập tăng cơ ≥2 ngày |
-| Đổi đơn vị nhãn | [FDA](https://www.fda.gov/regulatory-information/search-fda-guidance-documents/guidance-industry-converting-units-measure-folate-niacin-and-vitamins-d-and-e-nutrition-and), 21 CFR 101 | IU, DFE, NE, RAE |
+| Phút vận động | [Physical Activity Guidelines, bản 2](https://odphp.health.gov/sites/default/files/2019-09/Physical_Activity_Guidelines_2nd_edition.pdf) (HHS, trang 8, tra 23/11/2026) | 150–300 phút vừa hoặc 75–150 phút mạnh/tuần (1 phút mạnh ≈ 2 phút vừa); tập tăng cơ ≥2 ngày |
+| Đổi đơn vị nhãn | [FDA](https://www.fda.gov/regulatory-information/search-fda-guidance-documents/guidance-industry-converting-units-measure-folate-niacin-and-vitamins-d-and-e-nutrition-and), [21 CFR 101](https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-101) | IU, DFE, NE, RAE |
 | ODA | [Linus Pauling Institute](https://lpi.oregonstate.edu/mic) | Tham khảo, sau cổng 3 |
 
 Đạm dùng RDA 0,8 g/kg làm mức tối thiểu và AMDR làm khoảng; không thêm mức 1,2–1,6 g/kg. Không dùng EAR, CDRR. ODA chỉ lấy từ LPI vì các bảng ODA khác không thống nhất, không công bố phương pháp, và liều cao có thể hại (thử nghiệm [SELECT](https://www.cancer.gov/types/prostate/research/select-trial-results-qa): vitamin E 400 IU/ngày tăng 17% tương đối ung thư tuyến tiền liệt).
@@ -232,9 +232,8 @@ Không có SDK phân tích; chỉ số lấy từ Play Console, thử nghiệm k
 ## 8. Việc còn mở
 
 - Thử trên máy thật: giọng nói, OCR, Gemini Nano, sao lưu chéo nền tảng, mã vạch.
-- Đối chiếu phương trình EER 14–18 để bật mục tiêu calo cho người 18 tuổi.
+- Đối chiếu phương trình EER 14–18 để bật mục tiêu calo cho người 18 tuổi: trang NASEM và NCBI chặn truy cập qua Chrome; cần chủ dự án tự lưu báo cáo (PDF hoặc bảng) vào thư mục ngoài git để agent đọc.
 - Danh sách thực phẩm Việt Nam không có trong USDA.
-- Kiểm link eCFR và Physical Activity Guidelines qua Claude in Chrome (cần cho phép tên miền odphp.health.gov, www.nationalacademies.org; eCFR có bước kiểm tra chống bot).
 - Khi bật quảng cáo: có đặt ở màn Hôm nay không.
 
 Tra cứu đến 23/11/2026; quy định và số liệu có thể đổi, đối chiếu lại trước mỗi lần phát hành.
