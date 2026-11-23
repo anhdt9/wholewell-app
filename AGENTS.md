@@ -45,6 +45,7 @@ Plan đầy đủ: [docs/plan.md](docs/plan.md). Trạng thái và việc tiếp
 
 - Mọi dữ liệu ở trên máy, SQLite mã hóa (SQLite3MultipleCiphers qua drift, khóa trong flutter_secure_storage). Không máy chủ, không iCloud, không thiết bị đeo, không Health Connect / HealthKit. Hoạt động do người dùng tự nhập.
 - Sao lưu: tệp mã hóa (mặc định); Google Drive appDataFolder là tùy chọn, mã hóa Argon2id, khóa chỉ người dùng giữ. Mọi client OAuth (Android, iOS, desktop) phải nằm trong **một dự án Google Cloud duy nhất**.
+- **Gói dữ liệu (số liệu, quy tắc) đi kèm bản cài đã ký**, cập nhật qua cửa hàng ứng dụng; không tải từ máy chủ.
 - **Không nhúng SDK phân tích hay báo lỗi** của bên thứ ba. Theo dõi crash qua Play Console / App Store Connect.
 - AI chỉ chạy trên máy (Gemini Nano qua ML Kit GenAI; Apple Foundation Models, không dùng Private Cloud Compute). **AI không tính con số**: engine quyết định mọi số và cảnh báo; AI chỉ giải thích và gợi ý món. Có bản dự phòng giải thích theo mẫu.
 - Chỉ dùng dữ liệu giả lập khi phát triển và kiểm thử.
