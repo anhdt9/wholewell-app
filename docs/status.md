@@ -40,4 +40,3 @@ Lưu ý: màn hình trong `app/lib/ui/` là khung tạm để thử engine, chư
 
 - Danh sách thực phẩm Việt Nam không có trong USDA.
 - Đã kiểm qua Claude in Chrome (23/11/2026): USDA FPED là U.S. Public Domain; link Physical Activity Guidelines (số người lớn ở trang 8 khớp) và eCFR 21 CFR 101 đúng.
-- Trước khi bật quảng cáo: quyết định có đặt ở màn Hôm nay không.

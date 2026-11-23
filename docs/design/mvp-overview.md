@@ -15,7 +15,7 @@ Tài liệu này chốt **khung chung** cho mọi màn của MVP: sơ đồ màn
 | Cảnh báo giới hạn an toàn | Chỉ khi **vượt** giới hạn (lớn hơn, không tính bằng). Ba loại: theo lịch uống, trong ngày, trung bình 7 ngày. Luôn đứng đầu Hôm nay, còn vượt thì còn hiện. Không chặn việc ghi hay lưu lịch, chỉ cảnh báo |
 | Thành phần bổ sung | Lưu và tính **theo từng chất, từng dạng**; mọi phép so chạy trên từng dòng sau khi đổi đơn vị theo dạng |
 | Ẩn số calo | Một công tắc chung (Tôi → Hiển thị, và biểu tượng mắt trên thẻ Năng lượng). Khi bật, **không màn nào hiện số kcal** |
-| Quảng cáo | **MVP không có quảng cáo** và không cài SDK quảng cáo. Bố cục chừa ô (`AdSlot`, cao 0) ở cuối danh sách Nhật ký và cuối danh sách Kho. Không bao giờ ở Chi tiết chất, Chi tiết cảnh báo, các bảng ghi, lần đầu mở app, thông báo. Có đặt ở Hôm nay hay không: quyết định khi bật quảng cáo |
+| Quảng cáo | **Không có trong MVP**, không chừa chỗ; mọi việc về quảng cáo làm ở giai đoạn sau. Không bao giờ đặt ở Hôm nay, Chi tiết chất, Chi tiết cảnh báo, các bảng ghi, lần đầu mở app, thông báo |
 | Mạng | Không màn nào cần mạng; không có trạng thái "mất mạng" trừ sao lưu Google Drive |
 
 ## Dữ liệu mẫu dùng cho mọi wireframe
@@ -688,8 +688,6 @@ Khung chiều rộng ~360 dp. `[ ]` là nút, `( )` là lựa chọn, `▓▒░
 │ Buổi tập                     │
 │  Đi bộ nhanh · 30 phút 06:30 │
 │                              │
-│ ┌ (ô quảng cáo, khi bật) ──┐ │
-│ └──────────────────────────┘ │
 │                      [+ Ghi] │
 ├──────────────────────────────┤
 │ Hôm nay Nhật ký Bổ sung  Tôi │
@@ -698,7 +696,6 @@ Khung chiều rộng ~360 dp. `[ ]` là nút, `( )` là lựa chọn, `▓▒░
 
 - Chạm một dòng → Sửa mục đã ghi. Chạm dòng Nước → danh sách từng lần để sửa, xóa.
 - kcal bên phải mỗi món và buổi tập chỉ hiện khi không ẩn số calo.
-- Ô quảng cáo ở cuối danh sách, cao 0 ở MVP.
 
 ### Sửa mục đã ghi
 
@@ -746,8 +743,6 @@ Khung chiều rộng ~360 dp. `[ ]` là nút, `( )` là lựa chọn, `▓▒░
 │ │ Còn 5 viên · sắp hết     │ │
 │ │ ⚠ Lịch vượt giới hạn an  │ │
 │ │ toàn (magie)             │ │
-│ └──────────────────────────┘ │
-│ ┌ (ô quảng cáo, khi bật) ──┐ │
 │ └──────────────────────────┘ │
 │             [+ Thêm sản phẩm]│
 ├──────────────────────────────┤
@@ -1106,7 +1101,6 @@ Một sản phẩm bổ sung thường có nhiều chất. App lưu và tính **
 | `UndoSnack` (thông báo nhỏ) | Sau khi ghi, xóa | Câu ngắn + Sửa + Hoàn tác | 7 giây; trình đọc màn hình đọc to |
 | `EmptyState` | Mọi danh sách | Câu ngắn + một nút hành động | Không hình minh họa kiểu "chưa cố gắng" |
 | `ErrorState` | Mọi màn | Chuyện gì xảy ra + việc người dùng làm được | Không hiện mã lỗi kỹ thuật ở dòng chính |
-| `AdSlot` (ô quảng cáo) | Cuối Nhật ký, cuối Kho | Chỗ trống | MVP luôn cao 0, không gọi mạng. Khi bật sau: ghi "Quảng cáo", không dùng ở màn có `WarningCard` |
 | `StepScaffold` | Lần đầu mở app | Nút quay lại, "n/5", nội dung, nút chính dưới cùng | Nút chính luôn nhìn thấy khi bàn phím mở |
 
 ### Quy ước hiển thị
@@ -1190,7 +1184,7 @@ Không dùng ở bất kỳ đâu: "bạn bị thiếu", "nên uống", "nên ă
 - [x] Ẩn số calo được tôn trọng: một công tắc chung, mọi kcal đi qua `CalorieText` (Hôm nay, Ghi món, Chọn khẩu phần, Ghi buổi tập, Nhật ký).
 - [x] Tối đa 3 lần chạm cho thao tác chính: món gần đây (Ghi → Món ăn → món), bổ sung (Ghi → Bổ sung → sản phẩm, hoặc 1 chạm "Đã uống"), nước (1 chạm nút nhanh ở Hôm nay). Món mới cần gõ tìm nên vượt 3 chạm.
 - [x] Cỡ chữ 200%, vùng chạm 48 dp, tương phản AA: quy ước ở mục Bộ thành phần; nghĩa luôn có chữ, không chỉ màu.
-- [x] Không quảng cáo ở màn cảnh báo: MVP không có quảng cáo; ô chừa sẵn chỉ ở cuối Nhật ký và cuối Kho.
+- [x] Không quảng cáo ở màn cảnh báo: MVP không có quảng cáo; mọi việc về quảng cáo để giai đoạn sau, không bao giờ ở Hôm nay.
 
 ## Đã chốt với chủ dự án (23/11/2026)
 
@@ -1202,7 +1196,7 @@ Không dùng ở bất kỳ đâu: "bạn bị thiếu", "nên uống", "nên ă
 6. Giữ "Ghi một lần, không lưu kho".
 7. Cảnh báo theo lịch uống, trước khi lưu; kiểm lại sau mọi thay đổi có thể làm vượt.
 8. Rút đồng ý thì xóa toàn bộ; xuất dữ liệu ra tệp đọc được, có cảnh báo.
-9. MVP không có quảng cáo, chỉ chừa chỗ.
+9. MVP không có quảng cáo, không chừa chỗ; mọi việc về quảng cáo làm ở giai đoạn sau; không bao giờ đặt ở màn Hôm nay.
 10. Không dẫn luật trong tài liệu thiết kế.
 11. Chỉ cảnh báo khi **vượt** giới hạn (lớn hơn), theo định nghĩa của NASEM; plan đã sửa lời.
 12. Đường bổ sung tính trên năng lượng đã ăn; hôm nay chỉ ghi "đến giờ", kết luận vượt hằng ngày chỉ cho ngày đã qua và 7 ngày; giới hạn mỗi bữa báo ngay.
@@ -1254,5 +1248,5 @@ Không dùng ở bất kỳ đâu: "bạn bị thiếu", "nên uống", "nên ă
 **Cảnh báo giới hạn**
 - Thẻ cảnh báo kẽm thêm lời giải thích: dùng lâu từ 50 mg/ngày có thể cản hấp thu đồng; 142 mg/ngày có thể cản hấp thu magie. Thẻ cảnh báo axit folic thêm: liều cao có thể che dấu thiếu vitamin B12. Nguồn: fact sheet ODS kẽm, đồng, folate (tra 23/11/2026).
 
-**Quảng cáo (trước khi bật)**
-- Cập nhật chính sách quyền riêng tư, mục An toàn dữ liệu trên Google Play, bảng tự kiểm tra pháp lý; quyết định ô quảng cáo ở Hôm nay.
+**Quảng cáo (giai đoạn sau)**
+- Thiết kế vị trí quảng cáo (không ở Hôm nay và các màn đã loại); cập nhật chính sách quyền riêng tư, mục An toàn dữ liệu trên Google Play, bảng tự kiểm tra pháp lý.

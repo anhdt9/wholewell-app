@@ -18,7 +18,7 @@ WholeWell giúp người Việt từ 18 tuổi biết mình nạp bao nhiêu vi 
 | Gói dữ liệu | Số liệu và quy tắc đi kèm bản cài đã ký, cập nhật qua cửa hàng ứng dụng; không tải từ máy chủ |
 | AI | Chạy trên máy; engine tính mọi con số, AI chỉ giải thích và gợi ý món |
 | Công nghệ | Flutter; Android trước, iOS khi có Mac, Windows và macOS ở giai đoạn 2, web sau cùng |
-| Doanh thu | Miễn phí toàn bộ; MVP không có quảng cáo; về sau chỉ AdMob không cá nhân hóa |
+| Doanh thu | Miễn phí toàn bộ. Mọi việc về quảng cáo làm ở giai đoạn sau (MVP không có, không chừa chỗ); khi làm chỉ AdMob không cá nhân hóa, không bao giờ ở màn Hôm nay, màn cảnh báo, thông báo, widget |
 | Pháp lý | Không thuê luật sư; tự đối chiếu văn bản gốc; chỗ không chắc thì bỏ hoặc thu hẹp |
 | Nguồn lực | Một người cùng Claude Code và Gemini; làm lúc rảnh, không đặt hạn |
 
@@ -40,7 +40,7 @@ WholeWell giúp người Việt từ 18 tuổi biết mình nạp bao nhiêu vi 
 | Gia đình | Một hộp nhiều người (1); nhiều hồ sơ trên một máy (2); kho chung nhiều tài khoản (3) | 1–3 |
 | Widget, trợ lý AI | Widget lần uống; AI giải thích số, gợi ý món (2); thao tác bằng câu nói (3) | 2–3 |
 | ODA tham khảo | Mức của LPI cạnh mức khuyến nghị, không vượt giới hạn | 3 |
-| Quảng cáo | Cuối danh sách Nhật ký, Kho | Khi có người dùng |
+| Quảng cáo | Thiết kế vị trí khi làm; không ở Hôm nay, màn cảnh báo, thông báo, widget | Sau khi có người dùng |
 
 ```mermaid
 flowchart LR
@@ -234,6 +234,5 @@ Không có SDK phân tích; chỉ số lấy từ Play Console, thử nghiệm k
 
 - Thử trên máy thật: giọng nói, OCR, Gemini Nano, sao lưu chéo nền tảng, mã vạch.
 - Danh sách thực phẩm Việt Nam không có trong USDA.
-- Khi bật quảng cáo: có đặt ở màn Hôm nay không.
 
 Tra cứu đến 23/11/2026; quy định và số liệu có thể đổi, đối chiếu lại trước mỗi lần phát hành.

@@ -12,7 +12,7 @@ Plan đầy đủ: [docs/plan.md](docs/plan.md). Trạng thái và việc tiếp
 
 - App tham chiếu dinh dưỡng cá nhân hóa cho người Việt từ **18 tuổi**: so lượng nạp vi chất từ thực phẩm và thực phẩm bổ sung với chuẩn Mỹ, quản lý kho và lịch uống bổ sung, cảnh báo khi vượt mức tối đa an toàn.
 - **Không** chẩn đoán, kê đơn, gợi ý liều; không bán, gợi ý hay quảng cáo nhãn hàng bổ sung. Không kiểm tương tác thuốc, xét nghiệm, CGM, gen, vi sinh; không hồ sơ sức khỏe trẻ em.
-- **Miễn phí toàn bộ.** MVP không có quảng cáo, không cài SDK quảng cáo (chỉ chừa chỗ trong bố cục). Về sau doanh thu chỉ từ AdMob: chỉ quảng cáo không cá nhân hóa; không đặt ở màn cảnh báo, thông báo, widget; yêu cầu quảng cáo không chứa dữ liệu sức khỏe.
+- **Miễn phí toàn bộ.** **Mọi việc liên quan quảng cáo làm ở giai đoạn sau:** MVP không có quảng cáo, không SDK, không chừa chỗ trong bố cục, không interface. Khi làm: chỉ AdMob không cá nhân hóa; **không bao giờ** đặt ở màn Hôm nay, màn cảnh báo, chi tiết chất, thông báo, widget; yêu cầu quảng cáo không chứa dữ liệu sức khỏe.
 - Thị trường đầu tiên: Việt Nam. Không thuê chuyên gia, không thuê luật sư: tự đối chiếu văn bản gốc, chỗ không chắc thì bỏ hoặc thu hẹp tính năng.
 
 ## Chuẩn tham chiếu (chỉ những chuẩn này)
@@ -83,7 +83,7 @@ cd app && flutter pub get && flutter analyze && flutter test && flutter run
 1. **Số liệu chỉ sửa trong `tools/build_pack.py`**, không sửa tay `reference_pack.json` hay `cases.json`. Mỗi số mới phải có nguồn kiểm được; thêm ô đối chiếu vào `verify_pack.py`. Không đoán số: nếu nguồn chưa rõ, để engine trả `NotComputed` kèm lý do.
 2. **Đổi logic engine thì đổi cả `tools/reference_engine.py`** và sinh lại fixtures; test Dart so với kết quả Python.
 3. Tiêu chí bắt buộc: **0 vi phạm UL, 0 lỗi đơn vị**. UL đúng phạm vi: magie chỉ tính bổ sung; niacin, vitamin E chỉ tính từ bổ sung + thực phẩm tăng cường (theo nguồn, kể cả vitamin E tự nhiên trong viên); vitamin A chỉ retinol; folate chỉ axit folic. Thành phần bổ sung tính theo từng chất và dạng; dạng chưa rõ thì tính giới hạn theo cách thận trọng nhất.
-4. Engine và giao diện chỉ gọi interface cho phần phụ thuộc nền tảng: NotificationScheduler, BackgroundJobs, SecureKeyStore, OcrEngine, BarcodeScanner, SpeechInput, GoogleAuth, BackupProvider, OnDeviceAi, HomeWidgetBridge, AdService. Mỗi interface có bản giả để test.
+4. Engine và giao diện chỉ gọi interface cho phần phụ thuộc nền tảng: NotificationScheduler, BackgroundJobs, SecureKeyStore, OcrEngine, BarcodeScanner, SpeechInput, GoogleAuth, BackupProvider, OnDeviceAi, HomeWidgetBridge (AdService chỉ thêm ở giai đoạn có quảng cáo). Mỗi interface có bản giả để test.
 5. **Không code tính năng khi chưa có đặc tả và thiết kế UX đã duyệt** (xem mục "Quy trình bắt buộc" bên dưới). Chủ dự án duyệt và gộp; agent không tự gộp vào `main`, không tự phát hành.
 6. Commit nhỏ, thông điệp tiếng Việt, mô tả việc đã làm.
 7. Xong việc nào thì cập nhật `docs/status.md` trong cùng PR.
