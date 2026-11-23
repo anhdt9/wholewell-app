@@ -88,7 +88,7 @@ Không đặt mốc thời gian; chưa qua cổng thì chưa sang giai đoạn s
 | Báo cáo DRI của NASEM ([tóm tắt](https://nap.nationalacademies.org/read/25353/chapter/28), [năng lượng 2023](https://nap.nationalacademies.org/read/26818/chapter/7)) | Chỉ lưu con số | Mức khuyến nghị, giới hạn, EER, AMDR |
 | [NIH ODS](https://ods.od.nih.gov/healthinformation/nutrientrecommendations/) | Chính phủ Mỹ | Đối chiếu; quy tắc lịch; tỷ lệ nguyên tố |
 | [USDA FoodData Central](https://fdc.nal.usda.gov/api-guide) | CC0 | Thành phần thực phẩm, mã vạch hàng Mỹ |
-| USDA FPED | Kiểm giấy phép trước khi dùng | Đường bổ sung của món |
+| [USDA FPED](https://www.ars.usda.gov/northeast-area/beltsville-md-bhnrc/beltsville-human-nutrition-research-center/food-surveys-research-group/docs/fped-overview/) | U.S. Public Domain ([data.gov](https://catalog.data.gov/dataset/food-patterns-equivalents-database-fped), tra 23/11/2026) | Đường bổ sung của món |
 | [NIH DSLD](https://dsldapi.od.nih.gov/) | CC0 | Mã vạch bổ sung bán ở Mỹ |
 | FDA, Compendium, Physical Activity Guidelines, Dietary Guidelines, LPI | Như bảng chuẩn | Như bảng chuẩn |
 
@@ -234,7 +234,7 @@ Không có SDK phân tích; chỉ số lấy từ Play Console, thử nghiệm k
 - Thử trên máy thật: giọng nói, OCR, Gemini Nano, sao lưu chéo nền tảng, mã vạch.
 - Đối chiếu phương trình EER 14–18 để bật mục tiêu calo cho người 18 tuổi.
 - Danh sách thực phẩm Việt Nam không có trong USDA.
-- Kiểm giấy phép USDA FPED; kiểm link eCFR và Physical Activity Guidelines qua Claude in Chrome.
+- Kiểm link eCFR và Physical Activity Guidelines qua Claude in Chrome (cần cho phép tên miền odphp.health.gov, www.nationalacademies.org; eCFR có bước kiểm tra chống bot).
 - Khi bật quảng cáo: có đặt ở màn Hôm nay không.
 
 Tra cứu đến 23/11/2026; quy định và số liệu có thể đổi, đối chiếu lại trước mỗi lần phát hành.
