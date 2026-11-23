@@ -40,7 +40,7 @@ WholeWell giúp người Việt từ 18 tuổi biết mình nạp bao nhiêu vi 
 | Gia đình | Một hộp nhiều người (1); nhiều hồ sơ trên một máy (2); kho chung nhiều tài khoản (3) | 1–3 |
 | Widget, trợ lý AI | Widget lần uống; AI giải thích số, gợi ý món (2); thao tác bằng câu nói (3) | 2–3 |
 | ODA tham khảo | Mức của LPI cạnh mức khuyến nghị, không vượt giới hạn | 3 |
-| Quảng cáo | Thiết kế vị trí khi làm; không ở Hôm nay, màn cảnh báo, thông báo, widget | Sau khi có người dùng |
+| Quảng cáo | Theo quyết định ở mục 1 | Sau khi có người dùng |
 
 ```mermaid
 flowchart LR
@@ -100,8 +100,9 @@ Tất cả đóng vào gói dữ liệu có phiên bản đi kèm bản cài, đ
 
 - **Chưa có nhật ký thì chỉ hiện chuẩn,** không ước tính lượng nạp. Trung bình 7 ngày chia cho số ngày có ghi, ghi rõ số ngày.
 - **Món Việt:** chỉ dùng USDA; thư viện món tính từ công thức tự soạn với nguyên liệu USDA và khẩu phần quen thuộc, ghi "ước tính"; món không có thì nhập theo nhãn hoặc chọn món gần nhất. Script lập danh sách món "chỉ có ở Việt Nam".
-- **Mục tiêu calo** theo EER; mức vận động người dùng chọn, app gợi ý từ buổi tập 7 ngày theo quy tắc của app (phút tương đương vừa/ngày: ≥30 nhẹ, ≥60 vừa, ≥120 nhiều). Không cộng calo buổi tập vào mục tiêu. Chưa tính được (18 tuổi, mang thai dưới 19 tuổi, thiếu thông tin thai kỳ) thì báo lý do, không đoán. Chỉ làm dữ liệu cho người từ 18 tuổi: người 18 tuổi dùng mức khuyến nghị và giới hạn của nhóm 14–18 (cách NASEM chia nhóm), không có mục tiêu calo; không làm phương trình năng lượng cho dưới 19 tuổi.
-- **Mở rộng đối tượng về sau** (vd. mục tiêu calo cho tuổi 18, nhóm khác khi làm tính năng gia đình) bằng dữ liệu: nhóm tham chiếu và các mức của từng nhóm định nghĩa trong gói dữ liệu, engine không viết cứng mốc tuổi; thêm nhóm là thêm số liệu có nguồn, ca test, duyệt, rồi phát hành bản cập nhật. Hồ sơ dưới 18 tuổi cần đổi quyết định sản phẩm và rà lại pháp lý về dữ liệu trẻ em trước.
+- **Đối tượng:** chỉ làm dữ liệu cho người từ 18 tuổi. Người 18 tuổi dùng mức khuyến nghị và giới hạn của nhóm 14–18 (cách NASEM chia nhóm), không có mục tiêu calo. Nhóm tham chiếu (tuổi, giới, thai kỳ) và các mức của từng nhóm định nghĩa trong gói dữ liệu, engine không viết cứng mốc tuổi, để thêm đối tượng về sau chỉ là thêm số liệu có nguồn, ca test, duyệt và phát hành. Hồ sơ dưới 18 tuổi cần đổi quyết định sản phẩm và rà pháp lý về dữ liệu trẻ em trước.
+- **Hồ sơ theo thời gian:** tuổi, tuần thai, tháng sau sinh lưu kèm ngày nhập và tự tăng; qua tuần 42 hoặc cho con bú đủ 12 tháng thì hỏi lại. Thông tin thai kỳ bắt buộc khi chọn mang thai, cho con bú; thiếu thì báo lý do, không đoán.
+- **Mục tiêu calo** theo EER; mức vận động người dùng chọn, app gợi ý từ buổi tập 7 ngày theo quy tắc của app (phút tương đương vừa/ngày: ≥30 nhẹ, ≥60 vừa, ≥120 nhiều). Không cộng calo buổi tập vào mục tiêu. Không tính cho người 18 tuổi và mang thai dưới 19 tuổi.
 - **Đường bổ sung** tính trên năng lượng đã ăn; hôm nay chỉ ghi "đến giờ", kết luận vượt chỉ cho ngày đã qua và 7 ngày; giới hạn mỗi bữa báo ngay. Nguồn: FPED cho món FNDDS, nguyên liệu cho món tự soạn; nhãn chỉ ghi đường tổng thì "chưa rõ".
 - **Vận động** do người dùng tự nhập; kcal ≈ MET × kg × giờ, ghi "khoảng"; không đọc thiết bị đeo, Health Connect, HealthKit.
 - **Nước** chỉ hiện lượng đã uống, không so, vì mức tham chiếu là tổng nước gồm cả nước trong thức ăn ([NAP](https://www.nationalacademies.org/read/10925/chapter/6)).
@@ -143,7 +144,7 @@ Không làm quy tắc: canxi–magie, canxi–kẽm, khoảng cách giờ cụ t
 | Dị ứng thực phẩm | Loại khỏi gợi ý món; cảnh báo khi mã vạch khai báo chất gây dị ứng |
 | Dễ bị ảnh hưởng bởi đếm calo | "Ẩn số calo"; không mục tiêu giảm cân, chuỗi ngày, huy hiệu, lời phán xét ([liên quan giữa app đếm calo và rối loạn ăn uống](https://pubmed.ncbi.nlm.nih.gov/39671845/)) |
 
-Lời lẽ: "so với mức khuyến nghị", "vượt giới hạn an toàn"; không "bạn bị thiếu", "nên uống"; giao diện không hiện tên viết tắt của chuẩn (nguyên tắc ở [design/README.md](design/README.md)).
+Lời lẽ và cách hiện ở [design/README.md](design/README.md) và [design/mvp-overview.md](design/mvp-overview.md).
 
 ### Pháp lý: tự kiểm trước mỗi lần phát hành
 
@@ -152,7 +153,7 @@ Lời lẽ: "so với mức khuyến nghị", "vượt giới hạn an toàn"; k
 | Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 ([toàn văn](https://luattri.com/library/luat/91-2025-qh15-bao-ve-du-lieu-ca-nhan)), Nghị định 356/2025/NĐ-CP | Sức khỏe là dữ liệu nhạy cảm: đồng ý riêng từng mục đích, ô không đánh sẵn, lưu bằng chứng trên máy; rút đồng ý thì xóa toàn bộ; có xuất, sửa, xóa; Drive chỉ bật sau màn giải thích, khóa chỉ người dùng giữ; tự lập hồ sơ đánh giá tác động |
 | [Nghị định 98/2021/NĐ-CP](https://thuvienphapluat.vn/van-ban/The-thao-Y-te/Nghi-dinh-98-2021-ND-CP-quan-ly-trang-thiet-bi-y-te-493940.aspx) (trang thiết bị y tế) | Chỉ tham chiếu dinh dưỡng chung; không theo dõi bệnh, không ngưỡng chẩn đoán |
 | [Luật Trí tuệ nhân tạo 134/2025/QH15](https://www.bakermckenzie.com/en/insight/publications/2026/02/vietnam-artificial-intelligence-law-foundation-and-outlook) | AI trên máy, chỉ giải thích số, ghi rõ là AI; đối chiếu danh mục rủi ro cao trước giai đoạn 2 |
-| [Luật Quảng cáo 75/2025/QH15](https://thuvienphapluat.vn/van-ban/Thuong-mai/Luat-Quang-cao-sua-doi-2025-so-75-2025-QH15-555035.aspx), [Nghị định 342/2025/NĐ-CP](https://thuvienphapluat.vn/documents/law.aspx?id=Q%3DpnM05qVTTm) | Khi bật: không cá nhân hóa, có biểu tượng tắt, chặn danh mục dược phẩm, vitamin, bổ sung ([AdMob](https://support.google.com/admob/answer/3150953)) |
+| [Luật Quảng cáo 75/2025/QH15](https://thuvienphapluat.vn/van-ban/Thuong-mai/Luat-Quang-cao-sua-doi-2025-so-75-2025-QH15-555035.aspx), [Nghị định 342/2025/NĐ-CP](https://thuvienphapluat.vn/documents/law.aspx?id=Q%3DpnM05qVTTm) | Giai đoạn có quảng cáo: không cá nhân hóa, có biểu tượng tắt, chặn danh mục dược phẩm, vitamin, bổ sung ([AdMob](https://support.google.com/admob/answer/3150953)) |
 | Luật Sở hữu trí tuệ, Điều 15 | Chỉ lưu con số của NASEM, LPI |
 | [FDA General Wellness](https://www.fda.gov/media/90652/download), nếu sang Mỹ | Giữ câu chữ trong phạm vi sức khỏe chung |
 
@@ -187,7 +188,7 @@ flowchart TB
 | Đọc nhãn sai (đơn vị, dạng, hợp chất) | Lưu từng chất và dạng; kiểm hợp lý; xác nhận từng dòng; dạng chưa rõ tính thận trọng |
 | Nhắc giờ trễ | Xin quyền báo đúng giờ, dự phòng gần đúng, lịch cuộn; thử máy thật |
 | Mất dữ liệu | Nhắc sao lưu; 2–3 bản; mã khôi phục; xuất tệp |
-| Dữ liệu rời máy qua đường ngầm | Loại khỏi sao lưu hệ điều hành; không SDK phân tích; quảng cáo không nhận dữ liệu sức khỏe |
+| Dữ liệu rời máy qua đường ngầm | Loại khỏi sao lưu hệ điều hành; không SDK phân tích, báo lỗi; giọng nói chỉ trên máy |
 | Bị coi là thiết bị y tế, vi phạm luật | Giữ vai tham chiếu; bảng pháp lý trước mỗi bản |
 | Agent viết lỗi, tự đổi quy tắc | Test trước, review chéo; số và quy tắc chỉ sửa trong `build_pack.py`, chủ dự án duyệt |
 | Nguồn chặn truy cập tự động | Đọc, kiểm qua Claude in Chrome |
@@ -232,7 +233,6 @@ Không có SDK phân tích; chỉ số lấy từ Play Console, thử nghiệm k
 
 ## 8. Việc còn mở
 
-- Thử trên máy thật: giọng nói, OCR, Gemini Nano, sao lưu chéo nền tảng, mã vạch.
-- Danh sách thực phẩm Việt Nam không có trong USDA.
+Các bài kiểm sớm "chưa làm" hoặc "thử máy" ở mục 6. Việc kỹ thuật cho từng đặc tả sắp tới ở [status.md](status.md).
 
 Tra cứu đến 23/11/2026; quy định và số liệu có thể đổi, đối chiếu lại trước mỗi lần phát hành.
