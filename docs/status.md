@@ -19,7 +19,7 @@ Kết quả kiểm sớm bằng tài liệu và các bài còn phải thử trê
 Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã duyệt trước khi code.
 
 1. **CSDL mã hóa** (đặc tả, không cần UX): drift + SQLite3MultipleCiphers, khóa trong flutter_secure_storage; loại khỏi sao lưu tự động của hệ điều hành; thay `InMemoryJournalRepository`. Lược đồ:
-   - Hồ sơ: số tuổi, tuần thai, tháng sau sinh, mỗi số kèm ngày nhập; cân nặng trước khi mang thai (kg); bằng chứng đồng ý (ngày giờ, phiên bản nội dung).
+   - Hồ sơ: số tuổi kèm ngày nhập; bằng chứng đồng ý (ngày giờ, phiên bản nội dung); câu trả lời Có/Không về thuốc theo chỉ định, bệnh mạn tính (chế độ thận trọng) kèm ngày.
    - Sản phẩm → nhiều thành phần {chất (id trong gói hoặc tên tự do), dạng hoặc "nhãn không ghi", lượng mỗi khẩu phần, đơn vị gốc, lượng gốc trên nhãn, nguyên tố hay hợp chất, nguồn dòng, đã xác nhận}; hộp (còn lại, hạn dùng).
    - Nhật ký (món, lần uống gắn với lần uống theo lịch nếu có, nước, buổi tập), lịch uống.
 2. **Sửa engine** (đặc tả; làm trước hoặc cùng Lịch uống). Mỗi thay đổi sửa cả `tools/reference_engine.py` và sinh lại fixtures:
@@ -27,12 +27,16 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
    - Trả đủ các loại cờ mỗi chất (hiện `dailyReport` chỉ giữ một), mỗi cờ kèm lượng vượt và % so với giới hạn; trung bình 7 ngày nhận danh sách ngày có ghi và trả số ngày.
    - Mỗi chất trả cả hai tổng: tổng mọi nguồn (so mức khuyến nghị) và phần tính vào giới hạn theo phạm vi, kể cả khi chưa vượt.
    - Đường bổ sung: trả danh sách món "chưa rõ đường bổ sung".
-   - Nhận cân nặng trước khi mang thai (kg), tự tính phân loại; cho con bú thiếu tháng sau sinh thì trả `NotComputed` (hiện đang mặc định 0).
    - Nhận thành phần theo từng dòng (chất, dạng); dạng chưa rõ trả hai số (tính giới hạn thận trọng, so mức khuyến nghị "chưa chắc").
    - Vận động: thêm số của Physical Activity Guidelines vào `build_pack.py`, đánh dấu hoạt động tập tăng cơ; trả phút tương đương vừa và số ngày tập tăng cơ.
 3. **Thư viện món** (đặc tả + UX): nhập USDA FoodData Central (Foundation, SR Legacy, FNDDS) vào gói; đường bổ sung từ USDA FPED; trường axit folic, vitamin E bổ sung của USDA; danh sách món Việt không có trong USDA.
-4. **Khảo sát ban đầu** (câu hỏi có/không, lưu ý an toàn) và nhập nước.
+4. **Điều kiện dùng app, chế độ thận trọng** (màn trước màn đồng ý, câu trong Hồ sơ) và nhập nước.
 5. **Chụp nhãn, mã vạch, kho, hạn dùng** (thử OCR trên máy thật trước): tỷ lệ nguyên tố của hợp chất theo NIH ODS vào `build_pack.py` kèm ô đối chiếu; xác nhận từng dòng.
 6. **Lịch uống, nhắc giờ Android, nút "Đã uống"**: kiểm giới hạn theo lịch; 5 quy tắc lịch (plan, mục 4) lưu dưới dạng dữ liệu trong gói, kèm câu hiện cho người dùng (dùng cho lưu ý lịch và thẻ "Bạn có biết"); gắn lần ghi với lần uống theo lịch.
 7. **Sao lưu:** tệp mã hóa trước, Google Drive sau (khi đó mới tạo dự án Google Cloud).
 8. **Cổng 2:** kiểm thử an toàn, bảng tự kiểm pháp lý, chính sách quyền riêng tư, lời văn màn đồng ý, thử nghiệm kín 12 người × 14 ngày.
+
+## Để sau MVP (giai đoạn 2)
+
+- **Trẻ em từ 1 tuổi** (plan, mục 2): thêm nhóm 1–3, 4–8, nam và nữ 9–13 vào gói kèm ô đối chiếu; phương trình EER trẻ em (NASEM 2023); hồ sơ do phụ huynh quản lý (cùng nhiều hồ sơ trên một máy), đồng ý thay con; rà pháp lý dữ liệu trẻ em.
+- **Mang thai, cho con bú** (chế độ thận trọng): engine nhận cân nặng trước khi mang thai (kg) và tự tính phân loại; cho con bú thiếu tháng sau sinh thì trả `NotComputed` (hiện đang mặc định 0); lược đồ thêm tuần thai, tháng sau sinh kèm ngày nhập.

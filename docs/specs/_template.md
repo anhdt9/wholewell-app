@@ -11,7 +11,7 @@ Một hai câu: người dùng làm được gì, vì sao cần.
 - Ai dùng, lúc nào, trên thiết bị nào (vd. mở app sau bữa trưa để ghi món).
 
 ## Ràng buộc
-- Quy tắc trong AGENTS.md áp dụng (dữ liệu ở máy, AI không tính số, chỉ chuẩn được dùng, không quảng cáo ở màn cảnh báo…).
+- Quy tắc trong AGENTS.md áp dụng (dữ liệu ở máy, không AI tạo sinh, chỉ chuẩn được dùng, không quảng cáo ở màn cảnh báo…).
 
 ## Nguồn
 - Mỗi con số hay quy tắc: tên nguồn + link. Không có nguồn thì không có quy tắc.

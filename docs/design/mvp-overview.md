@@ -9,6 +9,8 @@ Tài liệu này chốt **khung giao diện** cho mọi màn của MVP: điều 
 
 | Chủ đề | Quyết định |
 |---|---|
+| Đối tượng | Màn Điều kiện trước màn Đồng ý: dưới 18 tuổi, mang thai, cho con bú thì Chưa dùng được; dùng thuốc theo chỉ định hoặc có bệnh mạn tính thì dùng ở chế độ thận trọng (plan, mục 1) |
+| Chế độ thận trọng | Dòng nhắc cố định ở Hôm nay ngay sau thẻ cảnh báo; "mục tiêu", "mức khuyến nghị" đổi thành "mức tham chiếu cho người khỏe mạnh"; ẩn ODA; cảnh báo giữ nguyên |
 | Điều hướng | Thanh dưới 4 mục: **Hôm nay · Nhật ký · Bổ sung · Tôi**. Nút nổi **Ghi** ở Hôm nay và Nhật ký mở bảng chọn: Món ăn, Bổ sung, Nước, Buổi tập |
 | Ngày đang xem | Hôm nay và Nhật ký dùng chung một ngày đang xem; ghi mới vào ngày đó; tiêu đề bảng ghi luôn hiện ngày |
 | Cảnh báo | Thẻ cảnh báo luôn đứng đầu Hôm nay, còn vượt thì còn hiện; vừa ghi mà vượt thì mở bảng cảnh báo; lịch vượt thì báo trước khi lưu. Không chặn việc ghi hay lưu |
@@ -32,7 +34,7 @@ Mọi số trong wireframe lấy từ một tình huống để các màn khớp
 
 - **Lịch vượt:** magie từ bổ sung theo lịch 150 + 250 = **400 mg/ngày**, giới hạn 350 mg; người dùng đã chọn "Vẫn lưu".
 - **Đã ghi tới 14:05:** đi bộ nhanh 30 phút (06:30); phở bò 1 bát (07:30); cà phê sữa 1 ly (08:00, 18 g đường bổ sung); Canxi D3 và Vitamin tổng hợp mỗi loại 1 viên (08:05); cơm trắng 1 bát, cá kho 1 khúc (12:10); nước 5 × 250 ml.
-- **Tổng tới 14:05:** 1.150 kcal; đạm 62 g (22%); béo 30%; bột đường 138 g (48%); chất xơ 9 g; đường bổ sung 18 g (6%). Canxi 770 mg (thực phẩm 170, bổ sung 600). Vitamin D 37 µg. Magie từ bổ sung 150 mg. Kali 1.400 mg. Vận động 7 ngày: 120 phút vừa, 20 phút mạnh, 1 ngày tập tăng cơ.
+- **Tổng tới 14:05:** 1.150 kcal; đạm 62 g (22%); béo 30%; bột đường 138 g (48%); chất xơ 9 g; đường bổ sung 18 g (6%). Canxi 770 mg (thực phẩm 170, bổ sung 600). Vitamin D 37 µg. Magie 240 mg (thực phẩm 90, bổ sung 150). Kali 1.400 mg. Vận động 7 ngày: 120 phút vừa, 20 phút mạnh, 1 ngày tập tăng cơ.
 - **Lúc 20:05**, sau khi bấm "Đã uống" lần 20:00: magie từ bổ sung **400 mg** → cờ vượt trong ngày.
 
 ## Sơ đồ màn hình
@@ -40,10 +42,10 @@ Mọi số trong wireframe lấy từ một tình huống để các màn khớp
 ```mermaid
 flowchart TD
   subgraph Lần đầu
-    W[Chào mừng] --> A[Tuổi]
-    A -->|dưới 18| X[Chưa dùng được]
-    A -->|từ 18| C[Đồng ý]
-    C --> P[Hồ sơ cơ thể] --> Q[Câu hỏi an toàn] --> K[Hiển thị calo]
+    W[Chào mừng] --> A[Điều kiện]
+    A -->|không đủ| X[Chưa dùng được]
+    A -->|đủ điều kiện| C[Đồng ý]
+    C --> P[Hồ sơ cơ thể] --> K[Hiển thị calo]
   end
   K --> H
   subgraph Thanh dưới
@@ -67,7 +69,6 @@ flowchart TD
   B --> SP[Chi tiết sản phẩm] --> DL[Đặt lịch uống]
   B --> TS[Thêm sản phẩm]
   T --> HS[Hồ sơ]
-  T --> AT[Câu hỏi an toàn]
   T --> HT[Hiển thị]
   T --> NG[Nhắc giờ]
   T --> SL[Sao lưu]
@@ -86,16 +87,16 @@ Thêm sản phẩm, Sửa thành phần, Đặt lịch uống, Nhắc giờ, Sao
 
 ```mermaid
 flowchart LR
-  W[Chào mừng] --> A[Số tuổi]
-  A -->|dưới 18| X[Chưa dùng được]
-  A -->|từ 18| C[Đồng ý]
+  W[Chào mừng] --> A[Điều kiện]
+  A -->|dưới 18, mang thai, cho con bú| X[Chưa dùng được]
+  A -->|đủ điều kiện| C[Đồng ý]
   C -->|Không đồng ý| W
-  C -->|Đồng ý| P[Hồ sơ cơ thể] --> Q[Câu hỏi an toàn] --> K[Hiển thị calo] --> H[Hôm nay trống]
+  C -->|Đồng ý| P[Hồ sơ cơ thể] --> K[Hiển thị calo] --> H[Hôm nay trống]
   W -->|Khôi phục| R[Khôi phục bản sao lưu] --> H
 ```
 
-- Hỏi tuổi trước màn đồng ý; tuổi chỉ giữ trong bộ nhớ tới khi đồng ý. Thoát trước khi đồng ý thì lần sau bắt đầu lại; thoát sau thì mở lại đúng bước đang dở.
-- Mỗi bước có Quay lại và thanh "n/5" (bỏ qua Câu hỏi an toàn khi tính năng khảo sát chưa xong thì "n/4").
+- Hỏi điều kiện (tuổi, hai câu có/không) trước màn đồng ý; câu trả lời chỉ giữ trong bộ nhớ tới khi đồng ý, sau đó lưu tuổi và câu trả lời Có/Không về thuốc, bệnh (không lưu tên bệnh, tên thuốc). Thoát trước khi đồng ý thì lần sau bắt đầu lại; thoát sau thì mở lại đúng bước đang dở.
+- Mỗi bước có Quay lại và thanh "n/4".
 - Khôi phục: vào thẳng Hôm nay; bản sao lưu có đồng ý theo phiên bản nội dung cũ thì hỏi đồng ý lại trước.
 
 ### 2. Ghi món
@@ -145,21 +146,20 @@ flowchart LR
 Ba loại cờ và cách tính ở plan (mục Cảnh báo giới hạn an toàn). Cách hiện:
 
 - **Mỗi chất một thẻ,** liệt kê đủ các loại cờ của chất đó (trong ngày, 7 ngày, lịch); thẻ xếp theo % vượt giảm dần.
-- **Thay đổi làm vượt** (đổi hồ sơ, tuổi hay thai kỳ tự tăng): lưu xong hiện bảng cảnh báo liệt kê mọi chất mới vượt, hoặc thẻ ở Hôm nay nếu là thay đổi tự động.
+- **Thay đổi làm vượt** (đổi hồ sơ, tuổi tự tăng): lưu xong hiện bảng cảnh báo liệt kê mọi chất mới vượt, hoặc thẻ ở Hôm nay nếu là thay đổi tự động.
 - **Không có nút tắt vĩnh viễn;** "Đã hiểu" chỉ thu gọn thẻ thành một dòng.
-- **Lưu ý không phải cờ vượt** dùng `SafetyNote`, màu trung tính: *lưu ý an toàn* theo câu hỏi an toàn (dưới thẻ cảnh báo ở Hôm nay, ở sản phẩm liên quan; nội dung ở thiết kế Khảo sát) và *lưu ý lịch* theo quy tắc lịch (trong Đặt lịch uống, ở sản phẩm liên quan, ở Hôm nay khi lịch dính quy tắc; nội dung ở thiết kế Lịch uống).
+- **Lưu ý không phải cờ vượt** dùng `SafetyNote`, màu trung tính: *lưu ý lịch* theo quy tắc lịch (trong Đặt lịch uống, ở sản phẩm liên quan, ở Hôm nay khi lịch dính quy tắc; nội dung ở thiết kế Lịch uống).
 
 ## Danh sách màn hình
 
 | Màn | Mục đích | Vào từ | Ra tới |
 |---|---|---|---|
-| Chào mừng | Vai tham chiếu, dữ liệu ở máy | Mở app lần đầu | Tuổi; Khôi phục |
-| Tuổi | Số tuổi; chặn dưới 18 | Chào mừng | Đồng ý; Chưa dùng được |
-| Chưa dùng được | Báo app từ 18 tuổi | Tuổi | Đóng app |
-| Đồng ý | Đồng ý xử lý dữ liệu sức khỏe trên máy | Tuổi; khôi phục bản cũ | Hồ sơ cơ thể; Chào mừng |
-| Hồ sơ cơ thể / Hồ sơ | Giới, chiều cao, cân nặng, thai kỳ, mức vận động (Hồ sơ từ Tôi có thêm tuổi) | Đồng ý; Tôi | Câu hỏi an toàn; Tôi |
-| Câu hỏi an toàn | Có/không cho tầng an toàn | Hồ sơ cơ thể; Tôi | Hiển thị calo; Tôi |
-| Hiển thị calo | Hiện hay ẩn số calo | Câu hỏi an toàn | Hôm nay |
+| Chào mừng | Vai tham chiếu, dữ liệu ở máy | Mở app lần đầu | Điều kiện; Khôi phục |
+| Điều kiện | Tuổi; mang thai hoặc cho con bú; thuốc theo chỉ định của bác sĩ hoặc bệnh mạn tính | Chào mừng | Đồng ý; Chưa dùng được |
+| Chưa dùng được | Báo bản này chưa hỗ trợ dưới 18 tuổi, mang thai, cho con bú | Điều kiện | Đóng app |
+| Đồng ý | Đồng ý xử lý dữ liệu sức khỏe trên máy | Điều kiện; khôi phục bản cũ | Hồ sơ cơ thể; Chào mừng |
+| Hồ sơ cơ thể / Hồ sơ | Giới, chiều cao, cân nặng, mức vận động (Hồ sơ từ Tôi có thêm tuổi, câu thuốc và bệnh, dòng nhắc thai kỳ) | Đồng ý; Tôi | Hiển thị calo; Tôi |
+| Hiển thị calo | Hiện hay ẩn số calo | Hồ sơ cơ thể | Hôm nay |
 | **Hôm nay** | Cảnh báo, lưu ý, lần uống tới, năng lượng, vi chất, nước, vận động, Bạn có biết | Thanh dưới | Bảng Ghi, Chi tiết chất, Chi tiết cảnh báo, Lần uống hôm nay |
 | **Nhật ký** | Mục đã ghi của ngày đang xem | Thanh dưới | Bảng Ghi, Sửa mục |
 | **Bổ sung** | Lần uống hôm nay, kho | Thanh dưới | Lần uống hôm nay, Chi tiết sản phẩm, Thêm sản phẩm |
@@ -179,32 +179,42 @@ Ba loại cờ và cách tính ở plan (mục Cảnh báo giới hạn an toàn
 
 Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 
-### Chào mừng, Tuổi, Chưa dùng được
+### Chào mừng, Điều kiện, Chưa dùng được
 
 ```
 ┌──────────────────────────────┐  ┌──────────────────────────────┐
-│          WholeWell           │  │ ←                       1/5  │
+│          WholeWell           │  │ ←                       1/4  │
 │                              │  ├──────────────────────────────┤
-│ So lượng vi chất bạn nạp từ  │  │ Bạn bao nhiêu tuổi?          │
-│ bữa ăn và thực phẩm bổ sung  │  │ Tuổi [ 35   ]                │
-│ với mức khuyến nghị.         │  │ Dùng để chọn mức tham chiếu  │
-│ • Chỉ để tham khảo, không    │  │ theo nhóm tuổi.              │
-│   thay lời khuyên của bác sĩ │  │ [      Tiếp tục           ]  │
-│ • Dữ liệu chỉ nằm trên máy   │  └──────────────────────────────┘
-│ • Không cần mạng             │  ┌──────────────────────────────┐
-│ [      Bắt đầu            ]  │  │ WholeWell dành cho người từ  │
-│  Khôi phục từ bản sao lưu    │  │ 18 tuổi.        [   Đóng   ] │
-└──────────────────────────────┘  └──────────────────────────────┘
+│ So lượng vi chất bạn nạp từ  │  │ Vài câu để chọn mức tham     │
+│ bữa ăn và thực phẩm bổ sung  │  │ chiếu phù hợp.               │
+│ với mức khuyến nghị.         │  │ Tuổi [ 35   ]                │
+│ • Chỉ để tham khảo, không    │  │ Đang mang thai hoặc cho con  │
+│   thay lời khuyên của bác sĩ │  │ bú?          [ Có ] [Không✓] │
+│ • Dữ liệu chỉ nằm trên máy   │  │ Đang dùng thuốc theo chỉ định│
+│ • Không cần mạng             │  │ của bác sĩ, hoặc có bệnh mạn │
+│ [      Bắt đầu            ]  │  │ tính (vd. thận, gan, tim,    │
+│  Khôi phục từ bản sao lưu    │  │ tiểu đường)?                 │
+└──────────────────────────────┘  │              [ Có ] [Không✓] │
+                                  │ [      Tiếp tục           ]  │
+                                  └──────────────────────────────┘
+┌──────────────────────────────┐
+│ WholeWell hiện dành cho người│
+│ từ 18 tuổi, không mang thai, │
+│ không cho con bú. Hãy hỏi bác│
+│ sĩ hoặc dược sĩ về dinh dưỡng│
+│ và thực phẩm bổ sung.        │
+│                 [   Đóng   ] │
+└──────────────────────────────┘
 ```
 
-- Tuổi: bàn phím số, 1–120. App lưu tuổi và ngày nhập, tự cộng 1 mỗi 12 tháng và báo ở Hôm nay ("Tuổi trong hồ sơ đã được cập nhật thành 36. Sửa").
+- Điều kiện: tuổi bàn phím số, 1–120; hai câu bắt buộc chọn, không chọn sẵn. Dưới 18 hoặc đang mang thai, cho con bú thì sang Chưa dùng được. Câu thứ hai trả lời "Có" thì vào app ở chế độ thận trọng. App lưu tuổi và ngày nhập, tự cộng 1 mỗi 12 tháng và báo ở Hôm nay ("Tuổi trong hồ sơ đã được cập nhật thành 36. Sửa").
 - Chưa dùng được: không có Quay lại, không lưu gì.
 
 ### Đồng ý
 
 ```
 ┌──────────────────────────────┐
-│ ←                       2/5  │
+│ ←                       2/4  │
 ├──────────────────────────────┤
 │ Dữ liệu sức khỏe của bạn     │
 │ App lưu tuổi, chiều cao, cân │
@@ -230,48 +240,38 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 
 ```
 ┌──────────────────────────────┐
-│ ←                       3/5  │
+│ ←                       3/4  │
 ├──────────────────────────────┤
 │ Giới tính sinh học           │
 │ ( ) Nam   (•) Nữ             │
 │ Chiều cao  [ 160 ] cm        │
 │ Cân nặng   [ 55  ] kg        │
-│ Hiện tại (chỉ khi Nữ)        │
-│ (•) Không                    │
-│ ( ) Đang mang thai           │
-│     Tuần thai [   ]          │
-│     Cân nặng trước khi mang  │
-│     thai [   ] kg            │
-│ ( ) Đang cho con bú          │
-│     Số tháng sau sinh [   ]  │
 │ Mức vận động                 │
 │ [ Vận động nhẹ          ▾ ]  │
 │ [      Tiếp tục           ]  │
 └──────────────────────────────┘
 ```
 
-- Hồ sơ từ Tôi: thêm ô Tuổi (tối thiểu 18), nút "Lưu"; lưu xong kiểm lại mọi cờ.
-- Mang thai: bắt buộc tuần thai (1–42) và cân nặng trước khi mang thai; không hiện tên phân loại cân nặng. Cho con bú: bắt buộc tháng sau sinh (0–36).
-- Tuần thai và tháng sau sinh tự tăng. Qua tuần 42: "Bạn đã sinh chưa?" [Đã sinh, đang cho con bú] [Đã sinh, không cho con bú] [Sửa tuần thai]. Cho con bú đủ 12 tháng rồi mỗi 6 tháng: "Bạn còn cho con bú không?".
+- Hồ sơ từ Tôi: thêm ô Tuổi (tối thiểu 18), nút "Lưu"; lưu xong kiểm lại mọi cờ. Cuối màn có câu Có/Không về thuốc theo chỉ định, bệnh mạn tính (đổi thì bật, tắt chế độ thận trọng) và dòng nhắc thai kỳ kèm [Xuất dữ liệu] [Xóa toàn bộ dữ liệu] (mở Quyền riêng tư).
 - Ngoài khoảng hợp lý (chiều cao 120–220 cm, cân nặng 30–250 kg): nhắc kiểm lại, không chặn.
 
-### Câu hỏi an toàn, Hiển thị calo
+### Hiển thị calo
 
 ```
-┌──────────────────────────────┐  ┌──────────────────────────────┐
-│ ←                       4/5  │  │ ←                       5/5  │
-├──────────────────────────────┤  ├──────────────────────────────┤
-│ Vài câu hỏi có / không, để   │  │ Bạn muốn thấy số calo không? │
-│ app nhắc bạn hỏi bác sĩ khi  │  │ ( ) Hiện số calo             │
-│ cần. Không hỏi tên bệnh hay  │  │ ( ) Ẩn số calo               │
-│ tên thuốc.                   │  │     App vẫn tính, chỉ không  │
-│ Đang dùng thuốc kê đơn?      │  │     hiện con số.             │
-│ [ Có ] [ Không ] [ Không rõ ]│  │ Đổi ở Tôi → Hiển thị.        │
-│ ...                          │  │ [      Xong               ]  │
-└──────────────────────────────┘  └──────────────────────────────┘
+┌──────────────────────────────┐
+│ ←                       4/4  │
+├──────────────────────────────┤
+│ Bạn muốn thấy số calo không? │
+│ ( ) Hiện số calo             │
+│ ( ) Ẩn số calo               │
+│     App vẫn tính, chỉ không  │
+│     hiện con số.             │
+│ Đổi ở Tôi → Hiển thị.        │
+│ [      Xong               ]  │
+└──────────────────────────────┘
 ```
 
-- Câu hỏi và cách xử lý "Không rõ" ở thiết kế Khảo sát. Hiển thị calo không chọn sẵn.
+- Không chọn sẵn.
 
 ### Hôm nay
 
@@ -333,7 +333,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 └──────────────────────────────┘
 ```
 
-- **Thứ tự cố định:** cảnh báo → lưu ý an toàn → dòng nhắc hồ sơ (tuổi, thai kỳ, gợi ý mức vận động) → lần uống tới → năng lượng → vi chất → nước → vận động → Bạn có biết. Thẻ không có dữ liệu thì ẩn, trừ Năng lượng và Vi chất.
+- **Thứ tự cố định:** cảnh báo → dòng thận trọng (nếu có) → dòng nhắc hồ sơ (tuổi, gợi ý mức vận động) → lần uống tới → năng lượng → vi chất → nước → vận động → Bạn có biết. Thẻ không có dữ liệu thì ẩn, trừ Năng lượng và Vi chất.
 - **‹ ngày ›:** không tiến quá hôm nay; tiêu đề "Hôm qua", "Thứ Bảy, 21/11". Chế độ 7 ngày ẩn thẻ Lần uống tới.
 - **Năng lượng:** thanh calo một màu trung tính, không đổi màu khi vượt, không "còn được ăn". Tỷ lệ ghi chữ trong / dưới / trên khoảng, không xanh đỏ. Đường bổ sung: số gam và % năng lượng, không có ngưỡng trong ngày; giới hạn 10 g mỗi bữa báo ngay. "Thêm ▾": bột đường so với mức khuyến nghị, chất xơ, omega-6, omega-3 so với mức ước tính.
 - **Vi chất:** vitamin và khoáng chất có mức khuyến nghị hoặc ước tính; lọc Tất cả / Có bổ sung / Dưới mức khuyến nghị. Thanh hai đoạn thực phẩm và bổ sung phân biệt bằng mật độ và chú thích; trên 100% thì thanh đầy, không khen. Chất chỉ có giới hạn (bo, niken, vanadi) chỉ xuất hiện khi có cảnh báo.
@@ -584,7 +584,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 ```
 
 - **Bảng cảnh báo** (sau khi ghi, sửa): cùng nội dung, trượt lên che 3/4 màn; [Đã hiểu] [Xem chi tiết] và nút chữ "Hoàn tác lần ghi"; không tự đóng.
-- Cờ 7 ngày: thêm "Trung bình {n} ngày có ghi trong 7 ngày qua: {x}/ngày". Ngày đang xem khác hôm nay thì đổi chữ "Hôm nay". Mang thai, cho con bú: "Giới hạn này dành cho người đang mang thai / cho con bú".
+- Cờ 7 ngày: thêm "Trung bình {n} ngày có ghi trong 7 ngày qua: {x}/ngày". Ngày đang xem khác hôm nay thì đổi chữ "Hôm nay".
 - **Nội dung chỉ là số** (plan, mục Cảnh báo giới hạn an toàn); mỗi loại cờ có dòng "Vượt" riêng, % làm tròn số nguyên.
 - Chất tính mọi nguồn, cờ lịch: thêm "Chưa tính thức ăn; thức ăn sẽ cộng thêm khi bạn ghi nhật ký." Chất chưa kiểm được: "Chưa kiểm được giới hạn an toàn cho {chất} trong {sản phẩm}."
 - Bảng cảnh báo lịch: "Vẫn lưu" là nút chữ; không có "Không nhắc lại". Không câu "hãy ngừng", "nên giảm"; không nhắc tên thuốc.
@@ -626,7 +626,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 ```
 
 - Mỗi dòng một chất, một dạng; số đã chuẩn hóa, số gốc nhỏ bên dưới. Cách đổi đơn vị, hợp chất, dạng chưa rõ, chất ngoài gói theo plan (mục Thực phẩm bổ sung).
-- Dòng "chưa rõ dạng" có ⓘ; dòng "chưa tính được" ghi lý do. Lưu ý an toàn liên quan (vd. beta-caroten với người hút thuốc) hiện ngay dưới dòng.
+- Dòng "chưa rõ dạng" có ⓘ; dòng "chưa tính được" ghi lý do.
 - Sửa thành phần lưu xong thì kiểm lại cờ lịch. Không link cửa hàng.
 
 ### Tôi và cài đặt
@@ -637,14 +637,13 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 ├──────────────────────────────┤  ├──────────────────────────────┤
 │ Hồ sơ                      › │  │ Đồng ý đã cho                │
 │  Nữ · 35 tuổi · 160 cm · 55kg│  │  Xử lý dữ liệu sức khỏe      │
-│ Câu hỏi an toàn            › │  │  23/11/2026 09:12            │
-│ Hiển thị                   › │  │  [ Rút đồng ý ]              │
-│ Nhắc giờ                   › │  │  Nhắc giờ: chưa bật          │
-│ Sao lưu và khôi phục       › │  │  Google Drive: chưa bật      │
-│  Chưa sao lưu                │  │ [ Xuất dữ liệu ]             │
-│ Quyền riêng tư             › │  │ [ Xóa toàn bộ dữ liệu ]      │
-│ Nguồn số liệu              › │  └──────────────────────────────┘
-│ Giới thiệu                 › │
+│ Hiển thị                   › │  │  23/11/2026 09:12            │
+│ Nhắc giờ                   › │  │  [ Rút đồng ý ]              │
+│ Sao lưu và khôi phục       › │  │  Nhắc giờ: chưa bật          │
+│  Chưa sao lưu                │  │  Google Drive: chưa bật      │
+│ Quyền riêng tư             › │  │ [ Xuất dữ liệu ]             │
+│ Nguồn số liệu              › │  │ [ Xóa toàn bộ dữ liệu ]      │
+│ Giới thiệu                 › │  └──────────────────────────────┘
 ├──────────────────────────────┤
 │ Hôm nay Nhật ký Bổ sung  Tôi │
 └──────────────────────────────┘
@@ -676,7 +675,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 | `MetricCard` | Tiêu đề, số chính, dòng phụ, nút tùy chọn | Cả thẻ một vùng chạm ≥48 dp; đọc gộp tiêu đề + số |
 | `LabeledProgress` | Giá trị, mức, %, tối đa hai đoạn | Luôn có số bằng chữ; đoạn phân biệt bằng mật độ + chú thích; không đổi màu đỏ; đọc: "Canxi, 770 trên 1.000 miligam, 77 phần trăm mức khuyến nghị" |
 | `WarningCard` | ⚠, chất, các loại cờ, lượng, giới hạn, vượt bao nhiêu (đơn vị và %), phạm vi, dòng hỏi bác sĩ | Màu cảnh báo + biểu tượng + chữ; mở / thu gọn; được đọc trước các thẻ khác |
-| `SafetyNote` | ⓘ, "Lưu ý", một hai câu | Màu trung tính |
+| `SafetyNote` | ⓘ, "Lưu ý", một hai câu (lưu ý lịch, dòng thận trọng) | Màu trung tính |
 | `TipCard` | "Bạn có biết", một câu quy tắc, link nguồn, nút Ẩn | Màu trung tính; chữ đứng yên, không tự chuyển, không hoạt ảnh; đọc cả câu |
 | `NutrientRow` | Tên, số, %, "mức ước tính", `LabeledProgress` | Chạm mở Chi tiết chất; chữ lớn thì số xuống dòng |
 | `IngredientRow` | Chất, lượng chuẩn hóa, số gốc, dạng hoặc nguồn, các trạng thái (tính / không tính vào giới hạn, chưa rõ dạng, chưa tính được, không có mức tham chiếu) | Mọi trạng thái bằng chữ |
@@ -687,7 +686,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 | `EntryTile` | Tên, khẩu phần, giờ, kcal | Chạm mở sửa |
 | `UndoSnack` | Câu ngắn + Sửa + Hoàn tác | 7 giây; được đọc to |
 | `EmptyState`, `ErrorState` | Câu ngắn + một hành động | Không mã lỗi kỹ thuật, không hình kiểu "chưa cố gắng" |
-| `StepScaffold` | Quay lại, "n/5", nút chính dưới cùng | Nút chính luôn thấy khi bàn phím mở |
+| `StepScaffold` | Quay lại, "n/4", nút chính dưới cùng | Nút chính luôn thấy khi bàn phím mở |
 
 **Quy ước:**
 - **Màu:** Material 3, gốc teal, có chế độ tối. Màu cảnh báo vàng hổ phách qua `ThemeExtension` (không đè `tertiary`), đạt AA ở cả hai chế độ, chỉ cho cờ giới hạn và đường bổ sung vượt mỗi bữa. Đỏ (`error`) chỉ cho lỗi và nút xóa.
@@ -701,7 +700,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 | Màn | Trống | Đang xử lý | Lỗi | Cảnh báo |
 |---|---|---|---|---|
 | Hôm nay | Chưa ghi: Năng lượng hiện mục tiêu calo, Vi chất "Chưa có món nào hôm nay" + [Ghi món]; 7 ngày: "Chưa có ngày nào được ghi trong 7 ngày qua." | Khung xám nếu >300 ms | `ErrorState` + [Thử lại] | `WarningCard` đầu màn; dòng đường bổ sung |
-| Hôm nay – không có mục tiêu calo | 18 tuổi: "Chưa có mục tiêu calo cho người 18 tuổi." Mang thai dưới 19: "Chưa có cách tính mục tiêu calo cho người mang thai dưới 19 tuổi." Thiếu thông tin thai kỳ: "Nhập {thông tin} để tính mục tiêu calo" + [Mở hồ sơ] | – | – | Vi chất, giới hạn vẫn đủ |
+| Hôm nay – không có mục tiêu calo | 18 tuổi: "Chưa có mục tiêu calo cho người 18 tuổi." | – | – | Vi chất, giới hạn vẫn đủ |
 | Nhật ký | "Chưa có gì trong ngày này." + [Ghi] | Khung xám | "Chưa lưu được. Thử lại" | – |
 | Bổ sung | "Kho đang trống. Thêm sản phẩm để theo dõi lần uống và ngày hết." | – | – | Sắp hết, hết hạn, lịch vượt |
 | Ghi món | Chỉ ô tìm và [Nhập theo nhãn] | Vòng xoay trong ô tìm | "Không thấy “bánh đúc”. Thử tên khác hoặc nhập theo nhãn." | Bảng cảnh báo |
@@ -711,7 +710,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 | Chi tiết chất | "Hôm nay chưa có nguồn canxi nào được ghi." | – | – | `WarningCard` |
 | Chi tiết sản phẩm | – | – | Dòng "chưa tính được" có lý do | Lịch vượt; `SafetyNote` khi chưa kiểm được |
 | Chi tiết cảnh báo | – | – | Cờ đã hết: "Hiện không còn vượt giới hạn." + [Về Hôm nay] | – |
-| Lần đầu | – | Nút chính có vòng xoay | Dưới 18: Chưa dùng được; số ngoài khoảng: nhắc dưới ô | – |
+| Lần đầu | – | Nút chính có vòng xoay | Không đủ điều kiện: Chưa dùng được; số ngoài khoảng: nhắc dưới ô | – |
 | Toàn app | – | – | Gói dữ liệu hỏng: màn chặn "Không đọc được dữ liệu tham chiếu. Hãy cài lại WholeWell từ cửa hàng ứng dụng.", không hiện số nào. Không mở được CSDL: "Không mở được dữ liệu đã lưu trên máy." + [Khôi phục từ bản sao lưu] [Bắt đầu lại] | – |
 
 ## Nội dung chữ
@@ -720,7 +719,10 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 |---|---|
 | Thanh dưới, nút nổi | Hôm nay · Nhật ký · Bổ sung · Tôi · Ghi |
 | Chào mừng | So lượng vi chất bạn nạp từ bữa ăn và thực phẩm bổ sung với mức khuyến nghị. · Chỉ để tham khảo, không thay lời khuyên của bác sĩ · Dữ liệu chỉ nằm trên máy này, không gửi đi đâu · Không cần mạng |
-| Chưa dùng được | WholeWell dành cho người từ 18 tuổi. |
+| Điều kiện | Vài câu để chọn mức tham chiếu phù hợp. · Đang mang thai hoặc cho con bú? · Đang dùng thuốc theo chỉ định của bác sĩ, hoặc có bệnh mạn tính (vd. thận, gan, tim, tiểu đường)? · Có · Không |
+| Chưa dùng được | WholeWell hiện dành cho người từ 18 tuổi, không mang thai, không cho con bú. Hãy hỏi bác sĩ hoặc dược sĩ về dinh dưỡng và thực phẩm bổ sung. |
+| Thai kỳ (Hồ sơ) | Nếu bạn mang thai hoặc cho con bú, bản này của WholeWell chưa hỗ trợ. · Xuất dữ liệu · Xóa toàn bộ dữ liệu |
+| Chế độ thận trọng | Các mức trong app dành cho người khỏe mạnh. Với tình trạng của bạn, mức phù hợp có thể khác; hãy hỏi bác sĩ. · mức tham chiếu cho người khỏe mạnh |
 | Đồng ý | Tôi đồng ý cho app xử lý dữ liệu sức khỏe của tôi cho mục đích trên. · Không đồng ý: App cần đồng ý này để tính toán. Bạn có thể quay lại bất cứ lúc nào. |
 | Hiển thị calo | Bạn muốn thấy số calo không? · Hiện số calo · Ẩn số calo · App vẫn tính, chỉ không hiện con số. |
 | Năng lượng | Mục tiêu calo · Đạm {g} · mức khuyến nghị {g} · {x}% · trong khoảng / dưới khoảng / trên khoảng |
@@ -736,7 +738,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 | Bạn có biết | Bạn có biết · {câu ở dòng Lưu ý lịch} · Nguồn: NIH ODS · Ẩn · Thẻ "Bạn có biết" |
 | Ghi | Ghi cho hôm nay, {ngày} · Đã ghi {tên}, {khẩu phần} · Đã ghi lần uống {giờ} theo lịch · Sửa · Hoàn tác |
 | Thông báo | Đến giờ uống, {n} loại · Đã uống · Mở app · Có thông tin mới cần xem trong WholeWell |
-| Hồ sơ tự cập nhật | Tuổi trong hồ sơ đã được cập nhật thành {n}. Sửa · Bạn đã sinh chưa? · Bạn còn cho con bú không? |
+| Hồ sơ tự cập nhật | Tuổi trong hồ sơ đã được cập nhật thành {n}. Sửa |
 | Xóa, quyền riêng tư | Xóa “{tên}” khỏi nhật ký? · Rút đồng ý sẽ xóa mọi dữ liệu trên máy này. Bạn có bản sao lưu nếu muốn dùng lại sau. · Tệp này không được mã hóa. Ai có tệp đều đọc được. · Mọi dữ liệu trên máy này sẽ bị xóa và không lấy lại được, trừ khi bạn có bản sao lưu. Gõ XÓA để xác nhận. |
 | Lỗi | Chưa lưu được. Thử lại · Không đọc được dữ liệu tham chiếu. Hãy cài lại WholeWell từ cửa hàng ứng dụng. |
 

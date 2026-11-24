@@ -15,8 +15,7 @@ Tra cứu ngày 22/11/2026, giá và điều kiện có thể đổi.
 | | Python 3 | Miễn phí | `tools/`: sinh và kiểm tra gói dữ liệu |
 | | Máy Mac + Xcode | Mua máy nếu chưa có | Bắt buộc để chạy thử và ký bản iOS, macOS. Codemagic build được iOS trên máy Mac của họ, nhưng vẫn cần iPhone thật để thử |
 | **Thiết bị thử** | Android tầm trung, Android 12 trở lên | Có sẵn | Nhận dạng giọng nói tiếng Việt (chế độ Basic), OCR, thông báo, pin |
-| | Android có Gemini Nano (Pixel 10 hoặc máy chip Snapdragon, Exynos đầu bảng) | Có sẵn hoặc mượn | AI trên máy, giọng nói chế độ Advanced |
-| | iPhone có Apple Intelligence, iOS 26.1 trở lên | Khi làm bản iOS | Foundation Models tiếng Việt, OCR, sao lưu chéo nền tảng |
+| | iPhone, iOS 26.1 trở lên | Khi làm bản iOS | OCR, sao lưu chéo nền tảng |
 | **Dữ liệu** | USDA FoodData Central (tải về), NIH DSLD | Miễn phí, CC0 | Thành phần thực phẩm, nhãn bổ sung |
 | | NIH ODS, NASEM, Linus Pauling Institute, 2024 Compendium | Miễn phí | Số liệu RDA, UL, EER, AMDR, ODA, MET (chỉ lưu số, có nguồn) |
 | **Chất lượng** | `dart test`, `flutter test`, `integration_test`, `dart analyze` | Miễn phí | Kiểm engine (0 vi phạm UL, 0 lỗi đơn vị), giao diện, luồng chính |
@@ -45,7 +44,6 @@ Tra cứu ngày 22/11/2026, giá và điều kiện có thể đổi.
 1. **Tìm 15–20 người thử Android** trước khi xong MVP, vì quy định 12 người trong 14 ngày liên tục.
 2. **Tạo một dự án Google Cloud duy nhất** cho mọi client ID (Android, iOS, desktop), để bản sao lưu Drive dùng chung được.
 3. **Mua tên miền**, dựng trang chính sách và đặt `app-ads.txt` trước khi bật quảng cáo.
-4. **Mượn hoặc mua máy có Gemini Nano** để thử AI trên máy tiếng Việt sớm, vì đây là điểm rủi ro lớn nhất trên Android.
 
 ## Nguồn
 
