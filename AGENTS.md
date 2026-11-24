@@ -43,7 +43,7 @@ Plan đầy đủ: [docs/plan.md](docs/plan.md). Trạng thái và việc tiếp
 
 ## Dữ liệu người dùng và quyền riêng tư
 
-- Mọi dữ liệu ở trên máy, SQLite mã hóa (SQLite3MultipleCiphers qua drift, khóa trong flutter_secure_storage). Không máy chủ, không iCloud, không thiết bị đeo, không Health Connect / HealthKit. Hoạt động do người dùng tự nhập.
+- Mọi dữ liệu ở trên máy, SQLite mã hóa (SQLite3MultipleCiphers qua drift, khóa trong kho khóa của hệ điều hành: Android Keystore, iOS Keychain; xem đặc tả CSDL mã hóa). Không máy chủ, không iCloud, không thiết bị đeo, không Health Connect / HealthKit. Hoạt động do người dùng tự nhập.
 - Sao lưu: tệp mã hóa (mặc định); Google Drive appDataFolder là tùy chọn, mã hóa Argon2id, khóa chỉ người dùng giữ. Mọi client OAuth (Android, iOS, desktop) phải nằm trong **một dự án Google Cloud duy nhất**.
 - **Gói dữ liệu (số liệu, quy tắc) đi kèm bản cài đã ký**, cập nhật qua cửa hàng ứng dụng; không tải từ máy chủ.
 - **Không nhúng SDK phân tích hay báo lỗi** của bên thứ ba. Theo dõi crash qua Play Console / App Store Connect.
