@@ -35,6 +35,9 @@ class DbKeyStore(private val context: Context) : MethodChannel.MethodCallHandler
         private const val KEYSTORE = "AndroidKeyStore"
         private const val TRANSFORMATION = "AES/GCM/NoPadding"
         private const val TAG_BITS = 128
+
+        // Một luồng nền chung cho mọi engine (mở lại app sau nút Back không tạo thêm luồng).
+        private val worker = Executors.newSingleThreadExecutor()
     }
 
     private sealed class Reply {
@@ -43,7 +46,6 @@ class DbKeyStore(private val context: Context) : MethodChannel.MethodCallHandler
         object NotImplemented : Reply()
     }
 
-    private val worker = Executors.newSingleThreadExecutor()
     private val main = Handler(Looper.getMainLooper())
 
     private val wrappedFile: File get() = File(context.noBackupFilesDir, FILE_NAME)

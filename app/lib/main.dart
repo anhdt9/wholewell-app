@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:health_engine/health_engine.dart';
@@ -19,7 +19,7 @@ Future<void> main() async {
   final pack = ReferencePack.fromJsonString(
       await rootBundle.loadString('assets/reference_pack.json'));
   final AppState state;
-  if (Platform.isAndroid) {
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
     // Android: filesDir (không vào sao lưu tự động, xem AndroidManifest).
     final dir = await getApplicationSupportDirectory();
     state = AppState(pack: pack, opener: DbOpener(files: DbFiles(dir), keys: const AndroidDbKeyStore()));

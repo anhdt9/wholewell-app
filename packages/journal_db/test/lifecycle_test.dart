@@ -143,4 +143,16 @@ void main() {
     expect(DbFiles(dir).wipeMarker.existsSync(), isFalse);
     await (r as Opened).repository.close();
   });
+
+  test('Đồng ý khi lần xóa trước còn dở (còn tệp CSDL và dấu): xóa nốt rồi tạo mới', () async {
+    final dir = tempDir();
+    final keys = FakeSecureKeyStore();
+    final o = testOpener(dir, keys);
+    await (await createdRepo(o)).close();
+    DbFiles(dir).wipeMarker.writeAsStringSync('1');
+    final r = await o.createNew(testConsent);
+    expect(r, isA<Opened>());
+    expect(DbFiles(dir).wipeMarker.existsSync(), isFalse);
+    await (r as Opened).repository.close();
+  });
 }

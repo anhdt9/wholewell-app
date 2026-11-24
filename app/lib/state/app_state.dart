@@ -220,8 +220,14 @@ class AppState extends ChangeNotifier {
   Future<void> saveProfile(Profile p) async {
     final o = _opener;
     if (_repo == null && o != null && _status == DataStatus.welcome) {
-      _apply(await o.createNew(
-          ConsentInput(contentVersion: khungTamConsentVersion, ageYears: p.ageYears, caution: false)));
+      try {
+        _apply(await o.createNew(
+            ConsentInput(contentVersion: khungTamConsentVersion, ageYears: p.ageYears, caution: false)));
+      } on StateError {
+        // Đã có CSDL (không đúng màn Chào mừng): mở lại theo luồng thường.
+        await start();
+        return;
+      }
       if (_repo == null) {
         notifyListeners();
         return;

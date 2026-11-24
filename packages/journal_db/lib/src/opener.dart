@@ -282,9 +282,10 @@ class DbOpener {
   /// Tạo ở tệp tạm, chỉ đổi tên thành `wholewell.db` khi đã ghi xong đồng ý; app
   /// chết giữa chừng thì lần mở sau thấy khóa còn sót, xóa khóa và về Chào mừng.
   Future<OpenOutcome> createNew(ConsentInput consent) async {
-    if (files.db.existsSync()) throw StateError('Đã có CSDL');
     files.dir.createSync(recursive: true);
+    // Xóa nốt lần xóa trước (nếu còn dở) trước khi xét tệp CSDL.
     if (files.wipeMarker.existsSync() && !await _finishWipe()) return const KeyStuck();
+    if (files.db.existsSync()) throw StateError('Đã có CSDL');
     _deleteCreatingFiles();
     Uint8List key;
     try {
