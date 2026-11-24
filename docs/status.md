@@ -19,12 +19,15 @@ Kết quả kiểm sớm bằng tài liệu và các bài còn phải thử trê
 Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã duyệt trước khi code.
 
 1. **CSDL mã hóa** (đặc tả, không cần UX): drift + SQLite3MultipleCiphers, khóa trong flutter_secure_storage; loại khỏi sao lưu tự động của hệ điều hành; thay `InMemoryJournalRepository`. Lược đồ:
-   - Hồ sơ: số tuổi kèm ngày nhập; bằng chứng đồng ý (ngày giờ, phiên bản nội dung); câu trả lời Có/Không về thuốc theo chỉ định, bệnh mạn tính (chế độ thận trọng) kèm ngày.
-   - Sản phẩm → nhiều thành phần {chất (id trong gói hoặc tên tự do), dạng hoặc "nhãn không ghi", lượng mỗi khẩu phần, đơn vị gốc, lượng gốc trên nhãn, nguyên tố hay hợp chất, nguồn dòng, đã xác nhận}; hộp (còn lại, hạn dùng).
+   - Khóa chỉ dùng được khi máy đã mở khóa (nút "Đã uống" trên thông báo yêu cầu mở khóa).
+   - Hồ sơ: số tuổi kèm ngày nhập; giờ thức, ba bữa, giờ ngủ; bằng chứng đồng ý (ngày giờ, phiên bản nội dung); câu trả lời Có/Không về thuốc theo chỉ định, bệnh mạn tính (chế độ thận trọng) kèm ngày.
+   - Sản phẩm → nhiều thành phần {chất (id trong gói hoặc tên tự do), dạng hoặc "nhãn không ghi", lượng mỗi khẩu phần, đơn vị gốc, lượng gốc trên nhãn, nguyên tố hay hợp chất, nguồn dòng, đã xác nhận}; nhiều hộp (còn lại, hạn dùng).
    - Nhật ký (món, lần uống gắn với lần uống theo lịch nếu có, nước, buổi tập), lịch uống.
 2. **Sửa engine** (đặc tả; làm trước hoặc cùng Lịch uống). Mỗi thay đổi sửa cả `tools/reference_engine.py` và sinh lại fixtures:
    - Nhóm tham chiếu là dữ liệu: bỏ mốc tuổi viết cứng (`driGroupFor` dùng 14, 19; đạm và AMDR dùng 19); tuổi tối thiểu tạo hồ sơ đọc từ gói.
-   - Trả đủ các loại cờ mỗi chất (hiện `dailyReport` chỉ giữ một), mỗi cờ kèm lượng vượt và % so với giới hạn; trung bình 7 ngày nhận danh sách ngày có ghi và trả số ngày.
+   - Gần mốc đổi nhóm tuổi (12 tháng trước 19, 31, 51, 71): giới hạn lấy mức thấp hơn của hai nhóm.
+   - Đường bổ sung: giới hạn 10 g theo từng bữa chính, mỗi lần ghi bữa phụ là một bữa.
+   - Trả đủ các loại cờ mỗi chất (hiện `dailyReport` chỉ giữ một), mỗi cờ kèm lượng vượt và % so với giới hạn; cờ tính cho ngày được chọn; trung bình 7 ngày nhận danh sách ngày có ghi và trả số ngày.
    - Mỗi chất trả cả hai tổng: tổng mọi nguồn (so mức khuyến nghị) và phần tính vào giới hạn theo phạm vi, kể cả khi chưa vượt.
    - Đường bổ sung: trả danh sách món "chưa rõ đường bổ sung".
    - Nhận thành phần theo từng dòng (chất, dạng); dạng chưa rõ trả hai số (tính giới hạn thận trọng, so mức khuyến nghị "chưa chắc").
