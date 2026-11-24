@@ -127,11 +127,11 @@ flowchart LR
 ```
 
 - **Khung ±2 giờ** quanh giờ của mỗi lần theo lịch (quy tắc của app, plan mục Thực phẩm bổ sung), áp cho **mọi** cách ghi:
-  - Ghi từ nút Ghi: trong khung của một lần chưa đánh dấu thì tự gắn vào lần đó ("Đã ghi lần uống 20:00 theo lịch"), ngoài khung là lần uống thêm ("Đã ghi lần uống thêm"); thông báo nhỏ có "Sửa" để đổi.
+  - Ghi từ nút Ghi: trong khung của một lần chưa đánh dấu thì tự gắn vào lần đó ("Đã ghi lần uống 20:00 theo lịch"), ngoài khung là lần uống thêm ("Đã ghi lần uống thêm"); thông báo nhỏ có "Sửa" để đổi. Xét cả các lần của ngày trước có khung kéo qua nửa đêm: 00:30 ghi bằng nút Ghi vẫn gắn vào lần 23:00 hôm trước, giống nút trên thông báo.
   - Nút của một lần theo lịch (thẻ Lần uống tới, Bổ sung, Lần uống hôm nay): trong khung là [Đã uống]; trước khung là [Uống sớm?], chạm thì hỏi "Lần 20:00 theo lịch" hay "Lần uống thêm".
   - Hai khung chồng nhau (vd. 08:00 và 09:00) thì gắn vào lần gần giờ uống nhất.
 - **Ranh giới ngày:** lượng nạp tính vào ngày của giờ uống thực tế. Lần 23:00 bấm "Đã uống" lúc 00:30 (còn trong khung) vẫn đánh dấu lần 23:00, nhưng lượng nạp tính cho ngày mới. Hết khung (2 giờ sau giờ lịch) mà chưa đánh dấu thì lần đó hiện "Chưa đánh dấu" ở Lần uống hôm nay; người dùng vẫn đánh dấu muộn được, chọn giờ thực tế. Thông báo của lần đó: Android tự gỡ khi hết khung; iOS không gỡ được, nên chạm sau khi hết khung thì mở app và hỏi cách ghi.
-- **Đổi giờ hoặc ngày khi ghi** ("Chạm giờ để đổi", ghi cho ngày cũ): tính lại cách gắn theo lịch của ngày được chọn, xét cả các lần của ngày trước có khung kéo qua nửa đêm (vd. 00:30 ghi bằng nút Ghi vẫn gắn vào lần 23:00 hôm trước, giống nút trên thông báo). Vd. sáng hôm sau ghi bù lần 20:00 hôm qua: chọn hôm qua, 20:10 → thành lần 20:00 theo lịch.
+- **Đổi giờ hoặc ngày khi ghi** ("Chạm giờ để đổi", ghi cho ngày cũ): tính lại cách gắn theo lịch của ngày được chọn. Vd. sáng hôm sau ghi bù lần 20:00 hôm qua: chọn hôm qua, 20:10 → thành lần 20:00 theo lịch.
 - "Đã uống" trên thông báo mở app (máy yêu cầu mở khóa) rồi ghi ngay, có Hoàn tác; không ghi trong nền. Vượt giới hạn: gửi thêm thông báo chung "Có thông tin mới cần xem trong WholeWell"; chạm mở Chi tiết cảnh báo.
 
 ### 4. Xem tổng kết
