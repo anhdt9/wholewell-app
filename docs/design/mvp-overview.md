@@ -160,7 +160,7 @@ Ba loại cờ và cách tính ở plan (mục Cảnh báo giới hạn an toàn
 | Hồ sơ cơ thể / Hồ sơ | Giới, chiều cao, cân nặng, thai kỳ, mức vận động (Hồ sơ từ Tôi có thêm tuổi) | Đồng ý; Tôi | Câu hỏi an toàn; Tôi |
 | Câu hỏi an toàn | Có/không cho tầng an toàn | Hồ sơ cơ thể; Tôi | Hiển thị calo; Tôi |
 | Hiển thị calo | Hiện hay ẩn số calo | Câu hỏi an toàn | Hôm nay |
-| **Hôm nay** | Cảnh báo, lưu ý, lần uống tới, năng lượng, vi chất, nước, vận động | Thanh dưới | Bảng Ghi, Chi tiết chất, Chi tiết cảnh báo, Lần uống hôm nay |
+| **Hôm nay** | Cảnh báo, lưu ý, lần uống tới, năng lượng, vi chất, nước, vận động, Bạn có biết | Thanh dưới | Bảng Ghi, Chi tiết chất, Chi tiết cảnh báo, Lần uống hôm nay |
 | **Nhật ký** | Mục đã ghi của ngày đang xem | Thanh dưới | Bảng Ghi, Sửa mục |
 | **Bổ sung** | Lần uống hôm nay, kho | Thanh dưới | Lần uống hôm nay, Chi tiết sản phẩm, Thêm sản phẩm |
 | **Tôi** | Hồ sơ, cài đặt | Thanh dưới | Các màn cài đặt |
@@ -285,7 +285,9 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 │ │ an toàn                  │ │
 │ │ Theo lịch: 400 mg/ngày   │ │
 │ │ Giới hạn: 350 mg/ngày    │ │
+│ │ Vượt: 50 mg/ngày (14%)   │ │
 │ │ Hỏi bác sĩ hoặc dược sĩ  │ │
+│ │ nếu cần.                 │ │
 │ │              [Xem thêm ›]│ │
 │ └──────────────────────────┘ │
 │ ┌ Lần uống tới · 20:00 ────┐ │
@@ -331,12 +333,25 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 └──────────────────────────────┘
 ```
 
-- **Thứ tự cố định:** cảnh báo → lưu ý an toàn → dòng nhắc hồ sơ (tuổi, thai kỳ, gợi ý mức vận động) → lần uống tới → năng lượng → vi chất → nước → vận động. Thẻ không có dữ liệu thì ẩn, trừ Năng lượng và Vi chất.
+- **Thứ tự cố định:** cảnh báo → lưu ý an toàn → dòng nhắc hồ sơ (tuổi, thai kỳ, gợi ý mức vận động) → lần uống tới → năng lượng → vi chất → nước → vận động → Bạn có biết. Thẻ không có dữ liệu thì ẩn, trừ Năng lượng và Vi chất.
 - **‹ ngày ›:** không tiến quá hôm nay; tiêu đề "Hôm qua", "Thứ Bảy, 21/11". Chế độ 7 ngày ẩn thẻ Lần uống tới.
 - **Năng lượng:** thanh calo một màu trung tính, không đổi màu khi vượt, không "còn được ăn". Tỷ lệ ghi chữ trong / dưới / trên khoảng, không xanh đỏ. Đường bổ sung hôm nay chỉ ghi "đến giờ"; ngày đã qua và 7 ngày mới ghi "vượt giới hạn hằng ngày"; giới hạn mỗi bữa báo ngay. "Thêm ▾": bột đường so với mức khuyến nghị, chất xơ, omega-6, omega-3 so với mức ước tính.
 - **Vi chất:** vitamin và khoáng chất có mức khuyến nghị hoặc ước tính; lọc Tất cả / Có bổ sung / Dưới mức khuyến nghị. Thanh hai đoạn thực phẩm và bổ sung phân biệt bằng mật độ và chú thích; trên 100% thì thanh đầy, không khen. Chất chỉ có giới hạn (bo, niken, vanadi) chỉ xuất hiện khi có cảnh báo.
 - **Nước:** chỉ lượng đã uống, không so. Nút nhanh dùng lượng ghi gần nhất.
 - **Vận động:** 7 ngày gần nhất; phút tương đương vừa và ngày tập tăng cơ so với mức tham chiếu; thanh trung tính, không khen chê; ghi "theo các buổi bạn đã ghi".
+- **Bạn có biết** (`TipCard`): một câu của quy tắc lịch trong gói dữ liệu, chữ đứng yên.
+  - Chỉ lấy quy tắc mà mọi chất của nó có trong ít nhất một sản phẩm ở kho (vd. quy tắc sắt–kẽm cần cả sắt và kẽm). Mỗi ngày một câu, lần lượt theo thứ tự trong gói; không có quy tắc phù hợp thì ẩn thẻ.
+  - Chỉ hiện ở chế độ Hôm nay của ngày hôm nay. Ẩn khi đang có cờ vượt giới hạn (wireframe trên có cờ magie nên không có thẻ).
+  - "Nguồn: NIH ODS ›" mở Nguồn số liệu tại quy tắc đó; "Ẩn" chỉ ẩn trong hôm nay; tắt hẳn ở Tôi → Hiển thị.
+
+```
+┌ Bạn có biết ─────────────┐
+│ Canxi hấp thu tốt nhất   │
+│ khi mỗi lần không quá    │
+│ 500 mg.                  │
+│ Nguồn: NIH ODS ›    Ẩn   │
+└──────────────────────────┘
+```
 
 ### Bảng Ghi
 
@@ -526,18 +541,17 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 │ ⚠ Magie vượt giới hạn an toàn│  │ Magie từ bổ sung theo lịch:  │
 │ Hôm nay từ bổ sung: 400 mg   │  │ 400 mg/ngày                  │
 │ Giới hạn an toàn: 350 mg/ngày│  │ Giới hạn: 350 mg/ngày        │
-│ Giới hạn này tính magie từ   │  │ Góp vào                      │
-│ thực phẩm bổ sung và thuốc,  │  │  Vitamin tổng hợp · 1 viên   │
-│ không tính từ thức ăn. App   │  │  × 1 lần/ngày         150 mg │
-│ chỉ có phần bổ sung bạn ghi. │  │  Magie · 1 viên              │
-│ Lịch uống: 400 mg/ngày, cũng │  │  × 1 lần/ngày         250 mg │
-│ vượt giới hạn.               │  │ Hãy hỏi bác sĩ hoặc dược sĩ  │
-│ Các mục góp vào              │  │ về lượng bạn định dùng.      │
-│  Vitamin tổng hợp ·   150 mg │  │ [ Sửa lịch ]                 │
-│  08:05                       │  │   Vẫn lưu                    │
-│  Magie · 20:05        250 mg │  └──────────────────────────────┘
-│ Hãy hỏi bác sĩ hoặc dược sĩ  │
-│ về lượng bạn đang dùng.      │
+│ Vượt: 50 mg (14%)            │  │ Vượt: 50 mg/ngày (14%)       │
+│ Tính từ thực phẩm bổ sung và │  │ Góp vào                      │
+│ thuốc, không tính từ thức ăn.│  │  Vitamin tổng hợp · 1 viên   │
+│ Lịch uống: 400 mg/ngày, cũng │  │  × 1 lần/ngày         150 mg │
+│ vượt giới hạn.               │  │  Magie · 1 viên              │
+│ Các mục góp vào              │  │  × 1 lần/ngày         250 mg │
+│  Vitamin tổng hợp ·   150 mg │  │ Hỏi bác sĩ hoặc dược sĩ nếu  │
+│  08:05                       │  │ cần.                         │
+│  Magie · 20:05        250 mg │  │ [ Sửa lịch ]                 │
+│ Hỏi bác sĩ hoặc dược sĩ nếu  │  │   Vẫn lưu                    │
+│ cần.                         │  └──────────────────────────────┘
 │ [ Xem trong nhật ký ]        │
 │ [ Đã hiểu ]                  │
 │ Nguồn số liệu ›              │
@@ -546,7 +560,8 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 
 - **Bảng cảnh báo** (sau khi ghi, sửa): cùng nội dung, trượt lên che 3/4 màn; [Đã hiểu] [Xem chi tiết] và nút chữ "Hoàn tác lần ghi"; không tự đóng.
 - Cờ 7 ngày: thêm "Trung bình {n} ngày có ghi trong 7 ngày qua: {x}/ngày". Ngày đang xem khác hôm nay thì đổi chữ "Hôm nay". Mang thai, cho con bú: "Giới hạn này dành cho người đang mang thai / cho con bú".
-- Kẽm và axit folic có thêm lời giải thích theo plan. Chất tính mọi nguồn, cờ lịch: thêm "Chưa tính thức ăn; thức ăn sẽ cộng thêm khi bạn ghi nhật ký." Chất chưa kiểm được: "Chưa kiểm được giới hạn an toàn cho {chất} trong {sản phẩm}."
+- **Nội dung chỉ là số** (plan, mục Cảnh báo giới hạn an toàn); mỗi loại cờ có dòng "Vượt" riêng, % làm tròn số nguyên.
+- Chất tính mọi nguồn, cờ lịch: thêm "Chưa tính thức ăn; thức ăn sẽ cộng thêm khi bạn ghi nhật ký." Chất chưa kiểm được: "Chưa kiểm được giới hạn an toàn cho {chất} trong {sản phẩm}."
 - Bảng cảnh báo lịch: "Vẫn lưu" là nút chữ; không có "Không nhắc lại". Không câu "hãy ngừng", "nên giảm"; không nhắc tên thuốc.
 
 ### Chi tiết sản phẩm
@@ -610,7 +625,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 └──────────────────────────────┘
 ```
 
-- **Hiển thị:** công tắc Ẩn số calo; giao diện Theo máy / Sáng / Tối; cỡ chữ theo máy.
+- **Hiển thị:** công tắc Ẩn số calo; công tắc thẻ "Bạn có biết" (mặc định bật); giao diện Theo máy / Sáng / Tối; cỡ chữ theo máy.
 - **Quyền riêng tư:** rút đồng ý = xóa toàn bộ và về Chào mừng (hỏi lại trước); xuất ra tệp đọc được, cảnh báo không mã hóa; xóa toàn bộ phải gõ "XÓA", nút màu `error`.
 - **Nguồn số liệu:** màn duy nhất ghi tên chuẩn (RDA, AI, UL, EER, AMDR, MET, Physical Activity Guidelines, FDA) và tổ chức, mỗi chuẩn một câu giải thích, ngày tra, link mở trình duyệt; danh sách quy tắc lịch kèm nguồn; phiên bản gói dữ liệu. Lấy từ gói dữ liệu, không viết tay.
 - **Giới thiệu:** phiên bản, vai tham chiếu (không chẩn đoán, không kê đơn, không gợi ý liều), giấy phép dữ liệu (USDA CC0…), giấy phép mã nguồn mở.
@@ -635,8 +650,9 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 |---|---|---|
 | `MetricCard` | Tiêu đề, số chính, dòng phụ, nút tùy chọn | Cả thẻ một vùng chạm ≥48 dp; đọc gộp tiêu đề + số |
 | `LabeledProgress` | Giá trị, mức, %, tối đa hai đoạn | Luôn có số bằng chữ; đoạn phân biệt bằng mật độ + chú thích; không đổi màu đỏ; đọc: "Canxi, 770 trên 1.000 miligam, 77 phần trăm mức khuyến nghị" |
-| `WarningCard` | ⚠, chất, các loại cờ, lượng, giới hạn, phạm vi, lời hỏi bác sĩ | Màu cảnh báo + biểu tượng + chữ; mở / thu gọn; được đọc trước các thẻ khác |
+| `WarningCard` | ⚠, chất, các loại cờ, lượng, giới hạn, vượt bao nhiêu (đơn vị và %), phạm vi, dòng hỏi bác sĩ | Màu cảnh báo + biểu tượng + chữ; mở / thu gọn; được đọc trước các thẻ khác |
 | `SafetyNote` | ⓘ, "Lưu ý", một hai câu | Màu trung tính |
+| `TipCard` | "Bạn có biết", một câu quy tắc, link nguồn, nút Ẩn | Màu trung tính; chữ đứng yên, không tự chuyển, không hoạt ảnh; đọc cả câu |
 | `NutrientRow` | Tên, số, %, "mức ước tính", `LabeledProgress` | Chạm mở Chi tiết chất; chữ lớn thì số xuống dòng |
 | `IngredientRow` | Chất, lượng chuẩn hóa, số gốc, dạng hoặc nguồn, các trạng thái (tính / không tính vào giới hạn, chưa rõ dạng, chưa tính được, không có mức tham chiếu) | Mọi trạng thái bằng chữ |
 | `EstimateChip` | Chữ "ước tính" | Có chữ, không chỉ biểu tượng |
@@ -688,10 +704,11 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 | Trung bình 7 ngày | Trung bình {n} ngày có ghi trong 7 ngày qua · Chưa có ngày nào được ghi trong 7 ngày qua. |
 | Nước, vận động | Đã uống {ml} · Vận động 7 ngày qua · tương đương {n} phút vừa · mức tham chiếu 150–300 phút vừa mỗi tuần · Tập tăng cơ: {n} ngày · mức tham chiếu từ 2 ngày · theo các buổi bạn đã ghi |
 | Gợi ý mức vận động | Theo các buổi tập 7 ngày qua, mức vận động của bạn gần với "{mức}". [Dùng mức này] [Giữ mức hiện tại] |
-| Cảnh báo | Vượt giới hạn an toàn hôm nay · Trung bình 7 ngày vượt giới hạn an toàn · Lịch uống vượt giới hạn an toàn · Hãy hỏi bác sĩ hoặc dược sĩ về lượng bạn đang dùng (lịch: "bạn định dùng"). · Đã hiểu · Xem chi tiết · Hoàn tác lần ghi · Sửa lịch · Vẫn lưu |
+| Cảnh báo | Vượt giới hạn an toàn hôm nay · Trung bình 7 ngày vượt giới hạn an toàn · Lịch uống vượt giới hạn an toàn · Vượt: {lượng} ({x}%) · Hỏi bác sĩ hoặc dược sĩ nếu cần. · Đã hiểu · Xem chi tiết · Hoàn tác lần ghi · Sửa lịch · Vẫn lưu |
 | Phạm vi giới hạn | Tính mọi nguồn · Tính từ thực phẩm bổ sung và thuốc, không tính từ thức ăn · Tính từ thực phẩm bổ sung và thực phẩm tăng cường · Chỉ tính retinol (vitamin A dạng có sẵn) · Chỉ tính axit folic · Chưa xác định giới hạn an toàn |
-| Giải thích thêm | App chỉ có phần bổ sung bạn ghi. · Dùng lâu từ 50 mg kẽm mỗi ngày có thể cản hấp thu đồng; 142 mg mỗi ngày có thể cản hấp thu magie. · Folate liều cao có thể che dấu tình trạng thiếu vitamin B12. · Chưa tính thức ăn; thức ăn sẽ cộng thêm khi bạn ghi nhật ký. · Chưa kiểm được giới hạn an toàn cho {chất} trong {sản phẩm}. · chưa rõ dạng · chưa chắc |
+| Giải thích thêm | Chưa tính thức ăn; thức ăn sẽ cộng thêm khi bạn ghi nhật ký. · Chưa kiểm được giới hạn an toàn cho {chất} trong {sản phẩm}. · chưa rõ dạng · chưa chắc |
 | Lưu ý lịch | Canxi hấp thu tốt nhất khi mỗi lần không quá 500 mg. · Canxi carbonat hấp thu tốt hơn khi uống cùng bữa ăn. · Canxi có thể làm giảm hấp thu sắt (chưa chắc chắn); có thể xếp hai loại vào giờ khác nhau. · Sắt từ 25 mg trở lên uống cùng lúc với kẽm làm giảm hấp thu kẽm. · Vitamin D hấp thu tốt hơn khi uống cùng bữa có chút chất béo. |
+| Bạn có biết | Bạn có biết · {câu ở dòng Lưu ý lịch} · Nguồn: NIH ODS · Ẩn · Thẻ "Bạn có biết" |
 | Ghi | Ghi cho hôm nay, {ngày} · Đã ghi {tên}, {khẩu phần} · Đã ghi lần uống {giờ} theo lịch · Sửa · Hoàn tác |
 | Thông báo | Đến giờ uống, {n} loại · Đã uống · Mở app · Có thông tin mới cần xem trong WholeWell |
 | Hồ sơ tự cập nhật | Tuổi trong hồ sơ đã được cập nhật thành {n}. Sửa · Bạn đã sinh chưa? · Bạn còn cho con bú không? |

@@ -1,6 +1,6 @@
 # WholeWell: plan phát triển
 
-Cập nhật 23/11/2026 · Đặng Thế Anh
+Cập nhật 24/11/2026 · Đặng Thế Anh
 
 Tài liệu gốc về sản phẩm. Quy trình làm việc và quy tắc sửa code ở [AGENTS.md](../AGENTS.md); trạng thái ở [status.md](status.md); khung giao diện ở [design/mvp-overview.md](design/mvp-overview.md).
 
@@ -124,13 +124,15 @@ Tất cả đóng vào gói dữ liệu có phiên bản đi kèm bản cài, đ
 | 4 | Sắt bổ sung ≥25 mg uống cùng lúc với kẽm bổ sung làm giảm hấp thu kẽm | Lưu ý khi cùng giờ | [ODS, kẽm](https://ods.od.nih.gov/factsheets/Zinc-HealthProfessional/) |
 | 5 | Chất béo trong bữa giúp hấp thu vitamin D; không có vẫn hấp thu một phần | Gợi ý nhẹ xếp vào bữa | [ODS, vitamin D](https://ods.od.nih.gov/factsheets/VitaminD-HealthProfessional/) |
 
+Câu của quy tắc lịch còn hiện ở thẻ "Bạn có biết" cuối màn Hôm nay: mỗi ngày một câu, chỉ quy tắc có chất trong kho, chữ đứng yên (không chữ chạy), ẩn khi đang có cảnh báo vượt giới hạn.
+
 Không làm quy tắc: canxi–magie, canxi–kẽm, khoảng cách giờ cụ thể giữa hai vi chất (nguồn không nói). Vitamin C tăng hấp thu sắt chỉ là thông tin ở chi tiết chất, không thành gợi ý, vì không hợp với người bệnh về máu. Thuốc kê đơn: app không xếp lại, không kiểm tương tác.
 
 ### Cảnh báo giới hạn an toàn
 
 - **Phạm vi:** magie chỉ tính bổ sung ([ODS](https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/)); niacin, vitamin E tính từ bổ sung và thực phẩm tăng cường; vitamin A chỉ retinol ([NCBI](https://www.ncbi.nlm.nih.gov/books/NBK222318/)); folate chỉ axit folic; chất khác tính mọi nguồn.
 - **Ba loại cờ:** trong ngày; trung bình 7 ngày (UL là ngưỡng cho lượng nạp trung bình hằng ngày, [NAP](https://nap.nationalacademies.org/resource/25353/interactive/index.html)); theo lịch (báo trước khi lưu lịch). Kiểm lại sau mọi thay đổi có thể làm vượt. Không chặn việc ghi hay lưu, chỉ cảnh báo.
-- **Lời trung tính:** chất, lượng, giới hạn, phạm vi, mục góp vào, gợi ý hỏi bác sĩ hoặc dược sĩ. Lời giải thích kèm theo ODS: kẽm liều cao lâu dài cản hấp thu đồng, rất cao cản magie; folate liều cao có thể che dấu thiếu B12.
+- **Chỉ thông tin số:** chất, lượng, giới hạn, vượt bao nhiêu (đơn vị và % so với giới hạn), phạm vi, mục góp vào, một dòng "Hỏi bác sĩ hoặc dược sĩ nếu cần." Không lời giải thích tác hại, không lời khuyên khác.
 
 ### An toàn người dùng
 
@@ -235,4 +237,4 @@ Không có SDK phân tích; chỉ số lấy từ Play Console, thử nghiệm k
 
 Các bài kiểm sớm "chưa làm" hoặc "thử máy" ở mục 6. Việc kỹ thuật cho từng đặc tả sắp tới ở [status.md](status.md).
 
-Tra cứu đến 23/11/2026; quy định và số liệu có thể đổi, đối chiếu lại trước mỗi lần phát hành.
+Tra cứu đến 24/11/2026; quy định và số liệu có thể đổi, đối chiếu lại trước mỗi lần phát hành.
