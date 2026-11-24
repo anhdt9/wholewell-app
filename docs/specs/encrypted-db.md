@@ -124,13 +124,14 @@ Lưu mọi dữ liệu người dùng trên máy trong một CSDL mã hóa, thay
 | Vitamin E ghi "mg alpha-tocopherol" (nhãn FDA mới, đã quy về dạng 2R), biết dạng | `vitE` = mg | `vitE` = mg ÷ `e_rda(dạng)` × `e_ul(dạng)` khi khác `amounts` |
 | Vitamin E ghi mg khối lượng dạng tổng hợp (vd. "mg dl-alpha-tocopherol") | `vitE` = mg ÷ `e_ul(tổng hợp)` × `e_rda(tổng hợp)` | `vitE` = mg |
 | Vitamin E ghi mg khối lượng este (vd. "dl-alpha tocopheryl acetate 30 mg", succinat) | đổi khối lượng este ra khối lượng tocopherol theo tỷ lệ của este trong gói (như hợp chất), rồi theo hàng trên đúng dạng d- hoặc dl- | `vitE` = khối lượng tocopherol đã đổi theo hàng trên |
-| Vitamin E ghi mg, không rõ dạng hay cách ghi | số nhỏ nhất trong các cách hiểu trên; `uncertain` | số lớn nhất trong các cách hiểu trên |
+| Vitamin E ghi mg, không rõ dạng hay cách ghi (vd. chỉ "Vitamin E 15 mg") | số nhỏ nhất trong ba cách hiểu: mg 2R dạng tự nhiên, mg 2R dạng tổng hợp, mg khối lượng dạng tổng hợp (không xét este); `uncertain` | số lớn nhất trong ba cách hiểu đó |
 | Hợp chất, biết tên (vd. canxi carbonat) | khóa chất = khối lượng × tỷ lệ nguyên tố (ODS) | – |
 | Không rõ là hợp chất hay nguyên tố | khóa chất = số trên nhãn × tỷ lệ nguyên tố nhỏ nhất trong các hợp chất của chất đó có trong gói; `uncertain` | khóa chất = số trên nhãn (coi là nguyên tố) |
 | Chất khác | khóa chất = lượng đã đổi đơn vị | – |
 | Chất không có trong gói | không có khóa (lưu để xem, không tính) | – |
 
 - **Vitamin E: hai phía dùng hệ số khác nhau** (đối chiếu NIH ODS, fact sheet vitamin E cho chuyên gia, tra 24/11/2026): mức khuyến nghị chỉ tính dạng 2R, 1 IU tự nhiên = 0,67 mg, 1 IU tổng hợp = 0,45 mg (gói đã có). Giới hạn áp cho mọi dạng alpha-tocopherol bổ sung, gồm cả 8 đồng phân của dạng tổng hợp; 1.000 mg tương đương 1.500 IU tự nhiên hoặc 1.100 IU tổng hợp, tức `e_ul` ≈ 0,67 (tự nhiên) và ≈ 0,91 (tổng hợp). Gói và engine hiện dùng 0,45 cho cả hai phía nên **lượng tính giới hạn của vitamin E tổng hợp đang thiếu khoảng một nửa**: lỗi có sẵn, sửa ở việc 2 (thêm `e_ul` vào `build_pack.py` sau khi đối chiếu báo cáo DRI gốc, kèm ô đối chiếu).
+- **Cách hiểu este chỉ dùng khi nhãn ghi tên este.** Nhãn chỉ ghi "Vitamin E {x} mg" thì đó là lượng vitamin E (nhãn FDA khai vitamin E theo mg alpha-tocopherol), nên không xét khối lượng este.
 - Tỷ lệ tocopherol của este vitamin E (acetat, succinat) chưa có trong gói: thêm cùng tỷ lệ nguyên tố của hợp chất ở việc 5 (chụp nhãn), kèm nguồn và ô đối chiếu. Trước đó, dòng este hiện "chưa tính được" phía mức khuyến nghị (không có `vitE` trong `amounts`), còn phía giới hạn coi khối lượng este là khối lượng tocopherol (`ul_amounts.vitE` = mg, lớn hơn thật nên vẫn thận trọng).
 - Hệ số beta-caroten trong thức ăn (IU → µg RAE) chưa có trong gói: thêm ở việc 3 (Thư viện món) kèm nguồn và ô đối chiếu. Trước đó, dòng này chỉ có `ul_amounts.retinol`; `amounts` không có `vitA` và dòng hiện "chưa tính được" phía mức khuyến nghị (không đoán số).
 
@@ -215,7 +216,7 @@ Màn "Cần cập nhật": "Cần cập nhật WholeWell. Dữ liệu của bạ
 - [ ] [Bỏ qua] lưu `skipped`; bỏ đánh dấu về "Chưa đánh dấu".
 - [ ] Đổi lịch 20:00 thành 21:00: ngày trước đó vẫn dùng lịch 20:00 khi ghi bù và khi tính tỷ lệ bỏ liều.
 - [ ] Lượng đã ghi: đổi thành phần sản phẩm sau khi ghi không làm đổi tổng của ngày đã ghi.
-- [ ] Mỗi hàng trong bảng "Quy tắc đổi một dòng thành khóa engine" có một ca test. Vd. axit folic 400 µg → `folate` 680, `folicAcid` 400; vitamin A µg RAE không rõ dạng → `retinol` bằng toàn bộ; vitamin E 100 IU tổng hợp → `amounts` 45 mg, `ul_amounts` theo `e_ul(tổng hợp)` (≈ 91 mg); vitamin E IU không rõ dạng → như dạng tổng hợp và `uncertain`; không rõ hợp chất hay nguyên tố → `amounts` theo tỷ lệ nhỏ nhất, `ul_amounts` bằng số trên nhãn.
+- [ ] Mỗi hàng trong bảng "Quy tắc đổi một dòng thành khóa engine" có một ca test. Vd. axit folic 400 µg → `folate` 680, `folicAcid` 400; vitamin A µg RAE không rõ dạng → `retinol` bằng toàn bộ; vitamin E 100 IU tổng hợp → `amounts` 45 mg, `ul_amounts` theo `e_ul(tổng hợp)` (≈ 91 mg); vitamin E IU không rõ dạng → như dạng tổng hợp và `uncertain`; "Vitamin E 15 mg" không ghi dạng → `amounts` ≈ 7,4 mg, `ul_amounts` ≈ 30 mg, không xét este; không rõ hợp chất hay nguyên tố → `amounts` theo tỷ lệ nhỏ nhất, `ul_amounts` bằng số trên nhãn.
 - [ ] Magie từ thức ăn (`source = food`) không tính vào giới hạn (phạm vi theo `source`).
 - [ ] Khi engine chưa hỗ trợ lượng tính giới hạn riêng: đổi một dòng có `ul_amounts` sang `IntakeItem` thì ném lỗi; ghi một dòng như vậy bị từ chối, không bỏ qua lặng lẽ.
 - [ ] Xóa một lần ghi thì không còn dòng `intake_lines` nào của nó; dòng có cả hai cột lần ghi hoặc không có cột nào bị CSDL từ chối.
