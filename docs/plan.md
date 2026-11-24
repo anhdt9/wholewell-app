@@ -104,7 +104,7 @@ Tất cả đóng vào gói dữ liệu có phiên bản đi kèm bản cài, đ
 - **Đối tượng** (mục 1): nhóm tham chiếu theo cách NASEM chia, định nghĩa trong gói dữ liệu, engine không viết cứng mốc tuổi. MVP dùng 10 nhóm nam, nữ từ 14–18 đến trên 70; người 18 tuổi dùng mức của nhóm 14–18. Giai đoạn 2 thêm mang thai, cho con bú (đã có trong gói) và 1–3, 4–8, 9–13 (thêm vào gói kèm ô đối chiếu); cần phương trình EER trẻ em (NASEM 2023), hồ sơ trẻ em do phụ huynh tạo và đồng ý thay, rà pháp lý dữ liệu trẻ em.
 - **Hồ sơ theo thời gian:** tuổi lưu kèm ngày nhập và tự tăng mỗi 12 tháng. Vì không biết ngày sinh, trong 12 tháng trước một mốc đổi nhóm (19, 31, 51, 71 tuổi), giới hạn an toàn lấy mức thấp hơn của hai nhóm; mức khuyến nghị theo nhóm hiện tại (quy tắc của app).
 - **Mục tiêu calo** theo EER; mức vận động người dùng chọn, app gợi ý từ buổi tập 7 ngày theo quy tắc của app (phút tương đương vừa/ngày: ≥30 nhẹ, ≥60 vừa, ≥120 nhiều). Không cộng calo buổi tập vào mục tiêu. Chưa tính cho người dưới 19 tuổi.
-- **Đường bổ sung:** hiện số gam và % năng lượng đã ăn, không có ngưỡng trong ngày; giới hạn 10 g áp cho từng bữa chính, mỗi lần ghi bữa phụ tính như một bữa; quá thì báo ngay. Nguồn: FPED cho món FNDDS, nguyên liệu cho món tự soạn; nhãn chỉ ghi đường tổng thì "chưa rõ".
+- **Đường bổ sung:** hiện số gam và % năng lượng đã ăn, không có ngưỡng trong ngày; giới hạn 10 g áp cho từng bữa chính; các món bữa phụ ăn cách nhau dưới 30 phút gộp thành một bữa (quy tắc của app); quá thì báo ngay. Nguồn: FPED cho món FNDDS, nguyên liệu cho món tự soạn; nhãn chỉ ghi đường tổng thì "chưa rõ".
 - **Vận động** do người dùng tự nhập; kcal ≈ MET × kg × giờ, ghi "khoảng"; không đọc thiết bị đeo, Health Connect, HealthKit.
 - **Nước** chỉ hiện lượng đã uống, không so, vì mức tham chiếu là tổng nước gồm cả nước trong thức ăn ([NAP](https://www.nationalacademies.org/read/10925/chapter/6)).
 
@@ -112,8 +112,8 @@ Tất cả đóng vào gói dữ liệu có phiên bản đi kèm bản cài, đ
 
 - **Từ nhãn tới thành phần:** quét mã vạch trước (DSLD), không có thì chụp nhãn (OCR trên máy). Mỗi dòng một chất, một dạng; đổi đơn vị theo FDA; khối lượng hợp chất đổi ra lượng nguyên tố theo tỷ lệ của ODS (vd. canxi carbonat 40%, citrat 21%); dạng chưa rõ thì tính giới hạn theo cách thận trọng nhất. Kiểm hợp lý (nghi nhầm mg với µg, một khẩu phần đã vượt giới hạn); người dùng xác nhận từng dòng. Chất không có trong gói thì lưu để xem, không tính.
 - **Thực phẩm tăng cường:** dùng trường axit folic và vitamin E bổ sung của USDA; niacin tăng cường không tách được thì ghi rõ chưa tính; món nhập theo nhãn có niacin, vitamin E, axit folic thì coi là tăng cường.
-- **Kho:** mỗi sản phẩm nhiều hộp, mỗi hộp số còn lại và hạn dùng; ngày dự kiến hết theo lượng dùng mỗi ngày và tỷ lệ bỏ liều 14 ngày; trừ vào hộp hết hạn sớm trước; "sắp hết" khi còn dùng được ≤7 ngày; không link cửa hàng.
-- **Nhắc giờ:** thông báo hẹn trước; màn hình khóa chỉ hiện "Đến giờ uống, 2 loại". "Đã uống" trên thông báo yêu cầu mở khóa máy; trừ kho, cộng tổng nạp vào ngày của giờ uống thực tế, kiểm lại giới hạn. Ghi từ nút Ghi chỉ tự gắn vào lần uống theo lịch chưa đánh dấu khi trong khung ±2 giờ quanh giờ lịch (quy tắc của app), ngoài khung là lần uống thêm, để không ghi thiếu hay đếm hai lần.
+- **Kho:** mỗi sản phẩm nhiều hộp, mỗi hộp số còn lại và hạn dùng; ngày dự kiến hết theo lượng dùng mỗi ngày và tỷ lệ bỏ liều 14 ngày; trừ vào hộp còn hạn hết hạn sớm nhất, "còn" và ngày dự kiến hết chỉ tính hộp còn hạn; "sắp hết" khi còn dùng được ≤7 ngày; không link cửa hàng.
+- **Nhắc giờ:** thông báo hẹn trước; màn hình khóa chỉ hiện "Đến giờ uống, 2 loại". "Đã uống" trên thông báo mở app (yêu cầu mở khóa máy), không ghi trong nền; trừ kho, cộng tổng nạp vào ngày của giờ uống thực tế, kiểm lại giới hạn. Mọi cách ghi dùng chung khung ±2 giờ quanh giờ lịch (quy tắc của app): trong khung thì gắn vào lần theo lịch (khung chồng nhau thì lần gần nhất), ngoài khung là lần uống thêm hoặc hỏi lại, để không ghi thiếu hay đếm hai lần.
 
 **Quy tắc lịch** (fact sheet Health Professional của NIH ODS, tra 23/11/2026). Mỗi quy tắc là một dòng dữ liệu trong gói; thêm quy tắc cùng loại không sửa code; người dùng quyết định.
 
@@ -125,13 +125,13 @@ Tất cả đóng vào gói dữ liệu có phiên bản đi kèm bản cài, đ
 | 4 | Sắt bổ sung ≥25 mg uống cùng lúc với kẽm bổ sung làm giảm hấp thu kẽm | Lưu ý khi cùng giờ | [ODS, kẽm](https://ods.od.nih.gov/factsheets/Zinc-HealthProfessional/) |
 | 5 | Chất béo trong bữa giúp hấp thu vitamin D; không có vẫn hấp thu một phần | Gợi ý nhẹ xếp vào bữa | [ODS, vitamin D](https://ods.od.nih.gov/factsheets/VitaminD-HealthProfessional/) |
 
-Câu của quy tắc lịch còn hiện ở thẻ "Bạn có biết" cuối màn Hôm nay: mỗi ngày một câu, chỉ quy tắc có chất trong kho, chữ đứng yên (không chữ chạy), ẩn khi đang có cảnh báo vượt giới hạn.
+Quy tắc 1, 3, 4 là lưu ý (Đặt lịch, sản phẩm, Hôm nay, thu gọn được); quy tắc 2, 5 chỉ là gợi ý khi đặt lịch, "cùng bữa" là ±1 giờ quanh giờ bữa chính (quy tắc của app). Câu của quy tắc lịch còn hiện ở thẻ "Bạn có biết" cuối màn Hôm nay: mỗi ngày một câu, chỉ quy tắc có chất trong kho, chữ đứng yên (không chữ chạy), ẩn khi đang có cảnh báo vượt giới hạn.
 
 Không làm quy tắc: canxi–magie, canxi–kẽm, khoảng cách giờ cụ thể giữa hai vi chất (nguồn không nói). Vitamin C tăng hấp thu sắt chỉ là thông tin ở chi tiết chất, không thành gợi ý.
 
 ### Cảnh báo giới hạn an toàn
 
-- **Phạm vi:** magie chỉ tính bổ sung, gồm thuốc có magie nếu người dùng ghi ([ODS](https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/)); niacin, vitamin E tính từ bổ sung và thực phẩm tăng cường; vitamin A chỉ retinol ([NCBI](https://www.ncbi.nlm.nih.gov/books/NBK222318/)); folate chỉ axit folic; chất khác tính mọi nguồn. Mức khuyến nghị luôn so với tổng mọi nguồn; chi tiết chất hiện cả hai tổng (mọi nguồn, phần tính vào giới hạn).
+- **Phạm vi:** magie chỉ tính bổ sung ([ODS](https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/)); niacin, vitamin E tính từ bổ sung và thực phẩm tăng cường; vitamin A chỉ retinol ([NCBI](https://www.ncbi.nlm.nih.gov/books/NBK222318/)); folate chỉ axit folic; chất khác tính mọi nguồn. Mức khuyến nghị luôn so với tổng mọi nguồn; chi tiết chất hiện cả hai tổng (mọi nguồn, phần tính vào giới hạn). App không tính thuốc, trừ khi người dùng ghi; không mời ghi thuốc.
 - **Ba loại cờ:** trong ngày; trung bình 7 ngày (UL là ngưỡng cho lượng nạp trung bình hằng ngày, [NAP](https://nap.nationalacademies.org/resource/25353/interactive/index.html)); theo lịch (báo trước khi lưu lịch). Kiểm lại sau mọi thay đổi có thể làm vượt. Không chặn việc ghi hay lưu, chỉ cảnh báo.
 - **Chỉ thông tin số:** chất, lượng, giới hạn, vượt bao nhiêu (đơn vị và % so với giới hạn), phạm vi, mục góp vào, một dòng "Hỏi bác sĩ hoặc dược sĩ nếu cần." Không lời giải thích tác hại, không lời khuyên khác.
 
@@ -149,7 +149,7 @@ Lời lẽ và cách hiện ở [design/README.md](design/README.md) và [design
 
 | Văn bản | Cách làm |
 | --- | --- |
-| Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 ([toàn văn](https://luattri.com/library/luat/91-2025-qh15-bao-ve-du-lieu-ca-nhan)), Nghị định 356/2025/NĐ-CP | Sức khỏe là dữ liệu nhạy cảm: đồng ý riêng từng mục đích, ô không đánh sẵn, lưu bằng chứng trên máy; rút đồng ý thì xóa toàn bộ, hỏi xóa cả bản trên Google Drive; có xuất, sửa, xóa; Drive chỉ bật sau màn giải thích, khóa chỉ người dùng giữ; tự lập hồ sơ đánh giá tác động |
+| Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 ([toàn văn](https://luattri.com/library/luat/91-2025-qh15-bao-ve-du-lieu-ca-nhan)), Nghị định 356/2025/NĐ-CP | Sức khỏe là dữ liệu nhạy cảm: đồng ý riêng từng mục đích, ô không đánh sẵn, lưu bằng chứng trên máy; rút đồng ý thì xóa toàn bộ trên máy ngay, hỏi xóa cả bản trên Google Drive (lỗi mạng thì thử lại sau); có xuất, sửa, xóa; Drive chỉ bật sau màn giải thích, khóa chỉ người dùng giữ; tự lập hồ sơ đánh giá tác động |
 | [Nghị định 98/2021/NĐ-CP](https://thuvienphapluat.vn/van-ban/The-thao-Y-te/Nghi-dinh-98-2021-ND-CP-quan-ly-trang-thiet-bi-y-te-493940.aspx) (trang thiết bị y tế) | Chỉ tham chiếu dinh dưỡng chung; không theo dõi bệnh, không ngưỡng chẩn đoán |
 | [Luật Quảng cáo 75/2025/QH15](https://thuvienphapluat.vn/van-ban/Thuong-mai/Luat-Quang-cao-sua-doi-2025-so-75-2025-QH15-555035.aspx), [Nghị định 342/2025/NĐ-CP](https://thuvienphapluat.vn/documents/law.aspx?id=Q%3DpnM05qVTTm) | Giai đoạn có quảng cáo: không cá nhân hóa, có biểu tượng tắt, chặn danh mục dược phẩm, vitamin, bổ sung ([AdMob](https://support.google.com/admob/answer/3150953)) |
 | Luật Sở hữu trí tuệ, Điều 15 | Chỉ lưu con số của NASEM, LPI |
