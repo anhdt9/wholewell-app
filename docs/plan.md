@@ -130,7 +130,7 @@ Không làm quy tắc: canxi–magie, canxi–kẽm, khoảng cách giờ cụ t
 
 ### Cảnh báo giới hạn an toàn
 
-- **Phạm vi:** magie chỉ tính bổ sung ([ODS](https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/)); niacin, vitamin E tính từ bổ sung và thực phẩm tăng cường; vitamin A chỉ retinol ([NCBI](https://www.ncbi.nlm.nih.gov/books/NBK222318/)); folate chỉ axit folic; chất khác tính mọi nguồn.
+- **Phạm vi:** magie chỉ tính bổ sung ([ODS](https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/)); niacin, vitamin E tính từ bổ sung và thực phẩm tăng cường; vitamin A chỉ retinol ([NCBI](https://www.ncbi.nlm.nih.gov/books/NBK222318/)); folate chỉ axit folic; chất khác tính mọi nguồn. Mức khuyến nghị luôn so với tổng mọi nguồn; chi tiết chất hiện cả hai tổng (mọi nguồn, phần tính vào giới hạn).
 - **Ba loại cờ:** trong ngày; trung bình 7 ngày (UL là ngưỡng cho lượng nạp trung bình hằng ngày, [NAP](https://nap.nationalacademies.org/resource/25353/interactive/index.html)); theo lịch (báo trước khi lưu lịch). Kiểm lại sau mọi thay đổi có thể làm vượt. Không chặn việc ghi hay lưu, chỉ cảnh báo.
 - **Chỉ thông tin số:** chất, lượng, giới hạn, vượt bao nhiêu (đơn vị và % so với giới hạn), phạm vi, mục góp vào, một dòng "Hỏi bác sĩ hoặc dược sĩ nếu cần." Không lời giải thích tác hại, không lời khuyên khác.
 

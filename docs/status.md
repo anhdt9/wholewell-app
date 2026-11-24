@@ -25,6 +25,7 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
 2. **Sửa engine** (đặc tả; làm trước hoặc cùng Lịch uống). Mỗi thay đổi sửa cả `tools/reference_engine.py` và sinh lại fixtures:
    - Nhóm tham chiếu là dữ liệu: bỏ mốc tuổi viết cứng (`driGroupFor` dùng 14, 19; đạm và AMDR dùng 19); tuổi tối thiểu tạo hồ sơ đọc từ gói.
    - Trả đủ các loại cờ mỗi chất (hiện `dailyReport` chỉ giữ một), mỗi cờ kèm lượng vượt và % so với giới hạn; trung bình 7 ngày nhận danh sách ngày có ghi và trả số ngày.
+   - Mỗi chất trả cả hai tổng: tổng mọi nguồn (so mức khuyến nghị) và phần tính vào giới hạn theo phạm vi, kể cả khi chưa vượt.
    - Đường bổ sung: trả danh sách món "chưa rõ đường bổ sung".
    - Nhận cân nặng trước khi mang thai (kg), tự tính phân loại; cho con bú thiếu tháng sau sinh thì trả `NotComputed` (hiện đang mặc định 0).
    - Nhận thành phần theo từng dòng (chất, dạng); dạng chưa rõ trả hai số (tính giới hạn thận trọng, so mức khuyến nghị "chưa chắc").

@@ -506,13 +506,12 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 │ ←  Canxi                     │
 │ [ Hôm nay | 7 ngày ]         │
 ├──────────────────────────────┤
-│ 770 mg                       │
+│ Tổng mọi nguồn: 770 mg       │
 │ 77% mức khuyến nghị 1.000 mg │
 │ ▓▓▒▒▒▒▒▒░░                   │
-│ Từ thực phẩm 170 · bổ sung   │
-│ 600 mg                       │
-│ Giới hạn an toàn 2.500 mg/   │
-│ ngày · tính mọi nguồn        │
+│ Thực phẩm 170 · bổ sung 600  │
+│ Tính vào giới hạn an toàn:   │
+│ 770 / 2.500 mg · mọi nguồn   │
 │ Đóng góp hôm nay             │
 │  Canxi D3 · 1 viên    500 mg │
 │   dạng canxi carbonat        │
@@ -529,7 +528,33 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 ```
 
 - Mức ước tính: "{x}% mức ước tính", kèm "Chưa đủ dữ liệu để đặt mức khuyến nghị chính thức; đây là mức ước tính."
-- Đóng góp tách theo sản phẩm và dạng. Vitamin A, folate: mỗi dòng ghi "tính / không tính vào giới hạn" và hiện hai tổng (vd. "1.050 µg so với mức khuyến nghị · 750 µg retinol tính vào giới hạn 3.000 µg"). Niacin, vitamin E, magie: mỗi dòng ghi nguồn (bổ sung, tăng cường, thực phẩm). Số đổi từ nhãn ghi số gốc nhỏ bên dưới; dạng chưa rõ ghi "chưa chắc".
+- **Luôn hiện hai tổng** ở mọi chất: "Tổng mọi nguồn" (thực phẩm, tăng cường, bổ sung) so với mức khuyến nghị, và "Tính vào giới hạn an toàn" theo phạm vi của chất (plan, mục Cảnh báo giới hạn an toàn). Chất tính mọi nguồn thì hai tổng bằng nhau, vẫn hiện cả hai.
+- Đóng góp tách theo sản phẩm và dạng. Chất có phạm vi riêng (magie, niacin, vitamin E, vitamin A, folate): mỗi dòng ghi nguồn và "tính / không tính vào giới hạn". Số đổi từ nhãn ghi số gốc nhỏ bên dưới; dạng chưa rõ ghi "chưa chắc".
+- Ví dụ chất có phạm vi riêng (số thực phẩm là minh họa):
+
+```
+┌──────────────────────────────┐
+│ ←  Magie                     │
+│ [ Hôm nay | 7 ngày ]         │
+├──────────────────────────────┤
+│ Tổng mọi nguồn: 240 mg       │
+│ 75% mức khuyến nghị 320 mg   │
+│ ▓▓▓▒▒▒▒░░░                   │
+│ Thực phẩm 90 · bổ sung 150   │
+│ Tính vào giới hạn an toàn:   │
+│ 150 / 350 mg · chỉ bổ sung   │
+│ và thuốc, không tính thức ăn │
+│ Đóng góp hôm nay             │
+│  Vitamin tổng hợp     150 mg │
+│   bổ sung · tính vào giới hạn│
+│  Phở bò · 1 bát        30 mg │
+│  Cá kho · 1 khúc       30 mg │
+│  Cơm trắng · 1 bát     30 mg │
+│   3 món trên không tính vào  │
+│   giới hạn                   │
+│ Nguồn số liệu ›              │
+└──────────────────────────────┘
+```
 - Biểu đồ có bảng số cho trình đọc màn hình. Sắt: thêm dòng thông tin vitamin C tăng hấp thu sắt không heme (không phải gợi ý).
 
 ### Chi tiết cảnh báo, Bảng cảnh báo lịch
@@ -700,7 +725,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 | Hiển thị calo | Bạn muốn thấy số calo không? · Hiện số calo · Ẩn số calo · App vẫn tính, chỉ không hiện con số. |
 | Năng lượng | Mục tiêu calo · Đạm {g} · mức khuyến nghị {g} · {x}% · trong khoảng / dưới khoảng / trên khoảng |
 | Đường bổ sung | Đường bổ sung: đến giờ {g} · {x}% năng lượng · Bữa {sáng} có {g} đường bổ sung, quá giới hạn 10 g mỗi bữa. · Chưa tính đường bổ sung của {n} món (nhãn không ghi riêng). |
-| Vi chất | {x}% mức khuyến nghị · {x}% mức ước tính · Chưa đủ dữ liệu để đặt mức khuyến nghị chính thức; đây là mức ước tính. |
+| Vi chất | {x}% mức khuyến nghị · {x}% mức ước tính · Chưa đủ dữ liệu để đặt mức khuyến nghị chính thức; đây là mức ước tính. · Tổng mọi nguồn: {lượng} · Thực phẩm {lượng} · bổ sung {lượng} · Tính vào giới hạn an toàn: {lượng} / {giới hạn} · tính vào giới hạn · không tính vào giới hạn |
 | Trung bình 7 ngày | Trung bình {n} ngày có ghi trong 7 ngày qua · Chưa có ngày nào được ghi trong 7 ngày qua. |
 | Nước, vận động | Đã uống {ml} · Vận động 7 ngày qua · tương đương {n} phút vừa · mức tham chiếu 150–300 phút vừa mỗi tuần · Tập tăng cơ: {n} ngày · mức tham chiếu từ 2 ngày · theo các buổi bạn đã ghi |
 | Gợi ý mức vận động | Theo các buổi tập 7 ngày qua, mức vận động của bạn gần với "{mức}". [Dùng mức này] [Giữ mức hiện tại] |
