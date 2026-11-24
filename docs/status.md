@@ -18,12 +18,13 @@ Kết quả kiểm sớm bằng tài liệu và các bài còn phải thử trê
 
 Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã duyệt trước khi code.
 
-1. **CSDL mã hóa** (đặc tả [specs/encrypted-db.md](specs/encrypted-db.md): **nháp, chờ duyệt**; không cần UX): drift + SQLite3MultipleCiphers, khóa trong flutter_secure_storage; loại khỏi sao lưu tự động của hệ điều hành; thay `InMemoryJournalRepository`. Lược đồ:
+1. **CSDL mã hóa** (đặc tả [specs/encrypted-db.md](specs/encrypted-db.md): **nháp, chờ duyệt**; không cần UX): drift + SQLite3MultipleCiphers (cipher `chacha20`, khóa thô, kiểm bản mã hóa mỗi lần mở); khóa đọc ra bốn trạng thái, không bao giờ tự ghi đè; loại khỏi sao lưu tự động của hệ điều hành; thay `InMemoryJournalRepository`. Lược đồ:
    - Khóa chỉ dùng được khi máy đã mở khóa: iOS dùng mức Keychain tương ứng; Android tự dùng Keystore với `setUnlockedDeviceRequired` (API 28+), flutter_secure_storage không có sẵn. Nút "Đã uống" trên thông báo mở app thay vì ghi trong nền. Thử trên máy thật.
    - Dấu "cần xóa bản trên Drive" lưu ngoài CSDL, không có dữ liệu sức khỏe; xóa xong bản trên Drive thì thu hồi quyền đăng nhập Google và xóa dấu.
    - Hồ sơ: số tuổi kèm ngày nhập; giờ thức, ba bữa, giờ ngủ; bằng chứng đồng ý (ngày giờ, phiên bản nội dung); câu trả lời Có/Không về thuốc theo chỉ định, bệnh mạn tính (chế độ thận trọng) kèm ngày.
    - Sản phẩm → nhiều thành phần {chất (id trong gói hoặc tên tự do), dạng hoặc "nhãn không ghi", lượng mỗi khẩu phần, đơn vị gốc, lượng gốc trên nhãn, nguyên tố hay hợp chất, nguồn dòng, đã xác nhận}; nhiều hộp (còn lại, hạn dùng).
-   - Nhật ký (món, lần uống gắn với lần uống theo lịch nếu có, nước, buổi tập), lịch uống.
+   - Nhật ký (món, lần uống, nước, buổi tập); mỗi lần ghi lưu danh sách dòng chất (nguồn, dạng, lượng so mức khuyến nghị, lượng tính giới hạn, số trên nhãn) kèm dữ liệu gốc.
+   - Lịch uống có ngày hiệu lực; trạng thái từng lần (đã uống, bỏ qua); trừ kho ghi theo từng hộp; sản phẩm có đơn vị đếm và số đơn vị mỗi khẩu phần.
 2. **Sửa engine** (đặc tả; làm trước hoặc cùng Lịch uống). Mỗi thay đổi sửa cả `tools/reference_engine.py` và sinh lại fixtures:
    - Nhóm tham chiếu là dữ liệu: bỏ mốc tuổi viết cứng (`driGroupFor` dùng 14, 19; đạm và AMDR dùng 19); tuổi tối thiểu tạo hồ sơ đọc từ gói.
    - Gần mốc đổi nhóm tuổi (12 tháng trước 19, 31, 51, 71): giới hạn lấy mức thấp hơn của hai nhóm.
