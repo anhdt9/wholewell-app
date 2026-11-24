@@ -20,14 +20,14 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
 
 1. **CSDL mã hóa** (đặc tả, không cần UX): drift + SQLite3MultipleCiphers, khóa trong flutter_secure_storage; loại khỏi sao lưu tự động của hệ điều hành; thay `InMemoryJournalRepository`. Lược đồ:
    - Khóa chỉ dùng được khi máy đã mở khóa: iOS dùng mức Keychain tương ứng; Android tự dùng Keystore với `setUnlockedDeviceRequired` (API 28+), flutter_secure_storage không có sẵn. Nút "Đã uống" trên thông báo mở app thay vì ghi trong nền. Thử trên máy thật.
-   - Dấu "cần xóa bản trên Drive" lưu ngoài CSDL, không có dữ liệu sức khỏe.
+   - Dấu "cần xóa bản trên Drive" lưu ngoài CSDL, không có dữ liệu sức khỏe; xóa xong bản trên Drive thì thu hồi quyền đăng nhập Google và xóa dấu.
    - Hồ sơ: số tuổi kèm ngày nhập; giờ thức, ba bữa, giờ ngủ; bằng chứng đồng ý (ngày giờ, phiên bản nội dung); câu trả lời Có/Không về thuốc theo chỉ định, bệnh mạn tính (chế độ thận trọng) kèm ngày.
    - Sản phẩm → nhiều thành phần {chất (id trong gói hoặc tên tự do), dạng hoặc "nhãn không ghi", lượng mỗi khẩu phần, đơn vị gốc, lượng gốc trên nhãn, nguyên tố hay hợp chất, nguồn dòng, đã xác nhận}; nhiều hộp (còn lại, hạn dùng).
    - Nhật ký (món, lần uống gắn với lần uống theo lịch nếu có, nước, buổi tập), lịch uống.
 2. **Sửa engine** (đặc tả; làm trước hoặc cùng Lịch uống). Mỗi thay đổi sửa cả `tools/reference_engine.py` và sinh lại fixtures:
    - Nhóm tham chiếu là dữ liệu: bỏ mốc tuổi viết cứng (`driGroupFor` dùng 14, 19; đạm và AMDR dùng 19); tuổi tối thiểu tạo hồ sơ đọc từ gói.
    - Gần mốc đổi nhóm tuổi (12 tháng trước 19, 31, 51, 71): giới hạn lấy mức thấp hơn của hai nhóm.
-   - Đường bổ sung: giới hạn 10 g theo từng bữa chính; món bữa phụ cách nhau dưới 30 phút gộp một bữa.
+   - Đường bổ sung: giới hạn 10 g theo từng bữa chính; món bữa phụ cách món phụ ngay trước dưới 30 phút thì vào cùng bữa (nối chuỗi).
    - Trả đủ các loại cờ mỗi chất (hiện `dailyReport` chỉ giữ một), mỗi cờ kèm lượng vượt và % so với giới hạn; cờ tính cho ngày được chọn; trung bình 7 ngày nhận danh sách ngày có ghi và trả số ngày.
    - Mỗi chất trả cả hai tổng: tổng mọi nguồn (so mức khuyến nghị) và phần tính vào giới hạn theo phạm vi, kể cả khi chưa vượt.
    - Đường bổ sung: trả danh sách món "chưa rõ đường bổ sung".
@@ -36,7 +36,7 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
 3. **Thư viện món** (đặc tả + UX): nhập USDA FoodData Central (Foundation, SR Legacy, FNDDS) vào gói; đường bổ sung từ USDA FPED; trường axit folic, vitamin E bổ sung của USDA; danh sách món Việt không có trong USDA.
 4. **Điều kiện dùng app, chế độ thận trọng** (màn trước màn đồng ý, câu trong Hồ sơ) và nhập nước.
 5. **Chụp nhãn, mã vạch, kho, hạn dùng** (thử OCR trên máy thật trước): tỷ lệ nguyên tố của hợp chất theo NIH ODS vào `build_pack.py` kèm ô đối chiếu; xác nhận từng dòng.
-6. **Lịch uống, nhắc giờ Android, nút "Đã uống"**: kiểm giới hạn theo lịch; 5 quy tắc lịch (plan, mục 4) lưu dưới dạng dữ liệu trong gói, kèm câu hiện cho người dùng (dùng cho lưu ý lịch và thẻ "Bạn có biết"); gắn lần ghi với lần uống theo lịch.
+6. **Lịch uống, nhắc giờ Android, nút "Đã uống"**: kiểm giới hạn theo lịch; 5 quy tắc lịch (plan, mục 4) lưu dưới dạng dữ liệu trong gói, kèm câu hiện cho người dùng (dùng cho lưu ý lịch và thẻ "Bạn có biết"); gắn lần ghi với lần uống theo lịch (khung ±2 giờ theo lịch của ngày được chọn, tính lại khi đổi giờ hoặc ngày); lần uống luôn tính vào giới hạn dù kho hết; nội dung lưu kèm lịch nhắc chỉ có mã lần uống (thư viện nhắc giờ lưu ngoài CSDL mã hóa); Android tự gỡ thông báo khi hết khung.
 7. **Sao lưu:** tệp mã hóa trước, Google Drive sau (khi đó mới tạo dự án Google Cloud).
 8. **Cổng 2:** kiểm thử an toàn, bảng tự kiểm pháp lý, chính sách quyền riêng tư, lời văn màn đồng ý, thử nghiệm kín 12 người × 14 ngày.
 
