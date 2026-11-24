@@ -62,6 +62,12 @@ jobs:
       - name: Build Android (debug)
         working-directory: app
         run: flutter build apk --debug
+      - name: Lưu APK debug để cài thử (chỉ thử nội bộ)
+        uses: actions/upload-artifact@v4
+        with:
+          name: wholewell-debug-apk
+          path: app/build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 14
       - name: Test JVM phần Kotlin (kho khóa)
         working-directory: app/android
         run: ./gradlew :app:testDebugUnitTest --no-daemon
