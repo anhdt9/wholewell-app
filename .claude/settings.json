@@ -18,7 +18,11 @@
       "Bash(python3 tools/reference_engine.py)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "ClaudeInChromeDomain(pmc.ncbi.nlm.nih.gov)",
+      "ClaudeInChromeDomain(pubmed.ncbi.nlm.nih.gov)",
+      "ClaudeInChromeDomain(triagemethod.com)",
+      "ClaudeInChromeDomain(www.publish.csiro.au)"
     ],
     "deny": [
       "Bash(git push origin main:*)",
