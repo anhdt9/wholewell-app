@@ -132,7 +132,7 @@ def sugar(day):
         if it.get("meal"):
             meals[it["meal"]] = meals.get(it["meal"], 0) + it["n"].get("addedSugar", 0)
     over = {m: g for m, g in meals.items() if g > PACK["addedSugar"]["maxGramsPerMeal"]}
-    return {"pct": pct, "overDaily": pct > PACK["addedSugar"]["maxPercentEnergyPerDay"], "mealsOver": sorted(over)}
+    return {"pct": pct, "mealsOver": sorted(over)}
 
 
 def workout_kcal(p, code, minutes):

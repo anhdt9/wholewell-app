@@ -87,7 +87,6 @@ class ReferencePack {
 
   final Map<String, Range> amdrAdult;
   final Map<String, Range> amdrTeen;
-  final double addedSugarMaxPercent;
   final double addedSugarMaxGramsPerMeal;
   final Map<String, double> energyPerGram;
 
@@ -111,7 +110,6 @@ class ReferencePack {
     required this.lactation7to12,
     required this.amdrAdult,
     required this.amdrTeen,
-    required this.addedSugarMaxPercent,
     required this.addedSugarMaxGramsPerMeal,
     required this.energyPerGram,
     required this.activities,
@@ -201,7 +199,6 @@ class ReferencePack {
       lactation7to12: lac('7_12'),
       amdrAdult: ranges(amdr['adult19'] as Map<String, dynamic>),
       amdrTeen: ranges(amdr['age4_18'] as Map<String, dynamic>),
-      addedSugarMaxPercent: _d(sugar['maxPercentEnergyPerDay']),
       addedSugarMaxGramsPerMeal: _d(sugar['maxGramsPerMeal']),
       energyPerGram: {
         for (final e in epg.entries)

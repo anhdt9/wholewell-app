@@ -165,7 +165,6 @@ void main() {
         final w = want as Map<String, dynamic>;
         final got = sugarCheck(pack, dayOf(days[dname]!));
         expect(got.percentEnergy, closeTo((w['pct'] as num).toDouble(), 1e-9));
-        expect(got.overDailyLimit, w['overDaily']);
         expect(got.mealsOverLimit.keys.toList()..sort(), (w['mealsOver'] as List).cast<String>());
       });
     });

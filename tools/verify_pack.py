@@ -119,7 +119,7 @@ if e["lactation"]["0_6"] != {"milk": 540, "mobilization": 140}:
     err("EER cho con bú sai")
 if p["amdr"]["adult19"] != {"protein": [10, 35], "fat": [20, 35], "carbohydrate": [45, 65]}:
     err("AMDR sai")
-if p["addedSugar"]["maxPercentEnergyPerDay"] != 10 or p["addedSugar"]["maxGramsPerMeal"] != 10:
+if p["addedSugar"] != {"source": "dga_2025_2030", "maxGramsPerMeal": 10}:
     err("giới hạn đường bổ sung sai")
 acts = {a["code"]: a["met"] for a in p["activities"]}
 for code, met in {"12050": 9.3, "17200": 4.8, "01030": 8.0, "15030": 5.5, "18240": 5.8, "02214": 11.0}.items():

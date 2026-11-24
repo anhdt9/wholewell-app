@@ -335,7 +335,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 
 - **Thứ tự cố định:** cảnh báo → lưu ý an toàn → dòng nhắc hồ sơ (tuổi, thai kỳ, gợi ý mức vận động) → lần uống tới → năng lượng → vi chất → nước → vận động → Bạn có biết. Thẻ không có dữ liệu thì ẩn, trừ Năng lượng và Vi chất.
 - **‹ ngày ›:** không tiến quá hôm nay; tiêu đề "Hôm qua", "Thứ Bảy, 21/11". Chế độ 7 ngày ẩn thẻ Lần uống tới.
-- **Năng lượng:** thanh calo một màu trung tính, không đổi màu khi vượt, không "còn được ăn". Tỷ lệ ghi chữ trong / dưới / trên khoảng, không xanh đỏ. Đường bổ sung hôm nay chỉ ghi "đến giờ"; ngày đã qua và 7 ngày mới ghi "vượt giới hạn hằng ngày"; giới hạn mỗi bữa báo ngay. "Thêm ▾": bột đường so với mức khuyến nghị, chất xơ, omega-6, omega-3 so với mức ước tính.
+- **Năng lượng:** thanh calo một màu trung tính, không đổi màu khi vượt, không "còn được ăn". Tỷ lệ ghi chữ trong / dưới / trên khoảng, không xanh đỏ. Đường bổ sung: số gam và % năng lượng, không có ngưỡng trong ngày; giới hạn 10 g mỗi bữa báo ngay. "Thêm ▾": bột đường so với mức khuyến nghị, chất xơ, omega-6, omega-3 so với mức ước tính.
 - **Vi chất:** vitamin và khoáng chất có mức khuyến nghị hoặc ước tính; lọc Tất cả / Có bổ sung / Dưới mức khuyến nghị. Thanh hai đoạn thực phẩm và bổ sung phân biệt bằng mật độ và chú thích; trên 100% thì thanh đầy, không khen. Chất chỉ có giới hạn (bo, niken, vanadi) chỉ xuất hiện khi có cảnh báo.
 - **Nước:** chỉ lượng đã uống, không so. Nút nhanh dùng lượng ghi gần nhất.
 - **Vận động:** 7 ngày gần nhất; phút tương đương vừa và ngày tập tăng cơ so với mức tham chiếu; thanh trung tính, không khen chê; ghi "theo các buổi bạn đã ghi".
@@ -665,7 +665,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 | `StepScaffold` | Quay lại, "n/5", nút chính dưới cùng | Nút chính luôn thấy khi bàn phím mở |
 
 **Quy ước:**
-- **Màu:** Material 3, gốc teal, có chế độ tối. Màu cảnh báo vàng hổ phách qua `ThemeExtension` (không đè `tertiary`), đạt AA ở cả hai chế độ, chỉ cho cờ giới hạn và đường bổ sung vượt. Đỏ (`error`) chỉ cho lỗi và nút xóa.
+- **Màu:** Material 3, gốc teal, có chế độ tối. Màu cảnh báo vàng hổ phách qua `ThemeExtension` (không đè `tertiary`), đạt AA ở cả hai chế độ, chỉ cho cờ giới hạn và đường bổ sung vượt mỗi bữa. Đỏ (`error`) chỉ cho lỗi và nút xóa.
 - **Số:** chấm ngăn nghìn, phẩy thập phân (1.150; 2,5 mg); ≥100 số nguyên, 10–99 một số lẻ, <10 tối đa hai. Vận động ghi "khoảng".
 - **Đơn vị:** mg, µg, g, ml, kcal; µg RAE, µg DFE, mg NE chỉ ở Chi tiết chất kèm một dòng giải thích.
 - **Ngày giờ:** "Hôm nay", "Hôm qua", "Thứ Bảy, 21/11"; 24 giờ; hạn dùng tháng/năm.
@@ -699,7 +699,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 | Đồng ý | Tôi đồng ý cho app xử lý dữ liệu sức khỏe của tôi cho mục đích trên. · Không đồng ý: App cần đồng ý này để tính toán. Bạn có thể quay lại bất cứ lúc nào. |
 | Hiển thị calo | Bạn muốn thấy số calo không? · Hiện số calo · Ẩn số calo · App vẫn tính, chỉ không hiện con số. |
 | Năng lượng | Mục tiêu calo · Đạm {g} · mức khuyến nghị {g} · {x}% · trong khoảng / dưới khoảng / trên khoảng |
-| Đường bổ sung | Đường bổ sung: đến giờ {g} · {x}% năng lượng · vượt giới hạn hằng ngày (10% năng lượng) · Bữa {sáng} có {g} đường bổ sung, quá giới hạn 10 g mỗi bữa. · Chưa tính đường bổ sung của {n} món (nhãn không ghi riêng). |
+| Đường bổ sung | Đường bổ sung: đến giờ {g} · {x}% năng lượng · Bữa {sáng} có {g} đường bổ sung, quá giới hạn 10 g mỗi bữa. · Chưa tính đường bổ sung của {n} món (nhãn không ghi riêng). |
 | Vi chất | {x}% mức khuyến nghị · {x}% mức ước tính · Chưa đủ dữ liệu để đặt mức khuyến nghị chính thức; đây là mức ước tính. |
 | Trung bình 7 ngày | Trung bình {n} ngày có ghi trong 7 ngày qua · Chưa có ngày nào được ghi trong 7 ngày qua. |
 | Nước, vận động | Đã uống {ml} · Vận động 7 ngày qua · tương đương {n} phút vừa · mức tham chiếu 150–300 phút vừa mỗi tuần · Tập tăng cơ: {n} ngày · mức tham chiếu từ 2 ngày · theo các buổi bạn đã ghi |

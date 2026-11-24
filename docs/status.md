@@ -5,7 +5,7 @@ Cập nhật 24/11/2026. Agent cập nhật tệp này khi xong một việc.
 ## Đã xong
 
 - **Plan** ([plan.md](plan.md)), danh sách công cụ ([tools.md](tools.md)), quy trình đặc tả → UX → test → code có cổng duyệt ([AGENTS.md](../AGENTS.md)), mẫu đặc tả và thiết kế, nguyên tắc thiết kế.
-- **Gói dữ liệu** (`tools/build_pack.py`): 40 chất × 16 nhóm (14–18 đến >70, mang thai, cho con bú), UL đúng phạm vi, EER 2023 (người lớn, mang thai quý 2–3, cho con bú), AMDR, giới hạn đường bổ sung, 57 hoạt động có MET, hệ số đổi IU; 102 ô đối chiếu qua.
+- **Gói dữ liệu** (`tools/build_pack.py`): 40 chất × 16 nhóm (14–18 đến >70, mang thai, cho con bú), UL đúng phạm vi, EER 2023 (người lớn, mang thai quý 2–3, cho con bú), AMDR, giới hạn đường bổ sung mỗi bữa, 57 hoạt động có MET, hệ số đổi IU; 102 ô đối chiếu qua.
 - **Engine Dart** (`packages/health_engine`): nhóm DRI, mục tiêu RDA/AI, cờ UL trong ngày và trung bình 7 ngày, EER, tỷ lệ đạm/béo/bột đường, đường bổ sung, calo buổi tập, phút vừa/mạnh, gợi ý mức vận động, đổi đơn vị. Test qua CI.
 - **App Flutter khung tạm** (`app/`, chưa qua thiết kế UX): hồ sơ, nhật ký ăn, bổ sung, buổi tập, tổng kết ngày, ẩn số calo; lưu trong bộ nhớ.
 - **CI** GitHub Actions; build APK debug. **Thư mục Android** (`vn.wholewell.app`).
@@ -25,7 +25,7 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
 2. **Sửa engine** (đặc tả; làm trước hoặc cùng Lịch uống). Mỗi thay đổi sửa cả `tools/reference_engine.py` và sinh lại fixtures:
    - Nhóm tham chiếu là dữ liệu: bỏ mốc tuổi viết cứng (`driGroupFor` dùng 14, 19; đạm và AMDR dùng 19); tuổi tối thiểu tạo hồ sơ đọc từ gói.
    - Trả đủ các loại cờ mỗi chất (hiện `dailyReport` chỉ giữ một), mỗi cờ kèm lượng vượt và % so với giới hạn; trung bình 7 ngày nhận danh sách ngày có ghi và trả số ngày.
-   - Đường bổ sung: trả trạng thái "ngày chưa hết" và danh sách món "chưa rõ đường bổ sung".
+   - Đường bổ sung: trả danh sách món "chưa rõ đường bổ sung".
    - Nhận cân nặng trước khi mang thai (kg), tự tính phân loại; cho con bú thiếu tháng sau sinh thì trả `NotComputed` (hiện đang mặc định 0).
    - Nhận thành phần theo từng dòng (chất, dạng); dạng chưa rõ trả hai số (tính giới hạn thận trọng, so mức khuyến nghị "chưa chắc").
    - Vận động: thêm số của Physical Activity Guidelines vào `build_pack.py`, đánh dấu hoạt động tập tăng cơ; trả phút tương đương vừa và số ngày tập tăng cơ.

@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "version": "2026.11.22-1",
+ "version": "2026.11.24-1",
  "retrieved": "2026-11-22",
  "groups": [
   "m14_18",
@@ -1715,7 +1715,6 @@
  },
  "addedSugar": {
   "source": "dga_2025_2030",
-  "maxPercentEnergyPerDay": 10,
   "maxGramsPerMeal": 10
  },
  "energyPerGram": {

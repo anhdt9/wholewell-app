@@ -52,7 +52,7 @@ cd app && flutter create --platforms=android,ios,windows,macos --org vn.wholewel
 | UL đúng phạm vi | NASEM | Magie: chỉ từ bổ sung. Niacin, vitamin E: dạng tổng hợp. Vitamin A: chỉ retinol. Folate: chỉ axit folic. Cờ theo ngày và trung bình 7 ngày |
 | Mục tiêu calo (EER) | NASEM 2023 | Người 19+; mang thai quý 1 dùng phương trình nữ, quý 2–3 cộng năng lượng tích lũy theo BMI; cho con bú 0–6 tháng +540−140, 7–12 tháng +380 |
 | Tỷ lệ đạm, béo, bột đường | AMDR (NASEM) | 19+: 10–35 / 20–35 / 45–65 %; 14–18: 10–30 / 25–35 / 45–65 % |
-| Đường bổ sung | Dietary Guidelines 2025–2030 | ≤10% năng lượng/ngày, ≤10 g mỗi bữa |
+| Đường bổ sung | Dietary Guidelines 2025–2030 | ≤10 g mỗi bữa |
 | Calo buổi tập, phút vừa/mạnh | 2024 Adult Compendium, PAG bản 2 | 57 hoạt động phổ biến |
 | Gợi ý mức vận động | **Quy tắc của app** | Phút tương đương vừa/ngày (7 ngày): ≥30 nhẹ, ≥60 vừa, ≥120 nhiều. Người dùng tự xác nhận |
 | Đổi đơn vị IU | NIH ODS | D: 0,025; A retinol và beta-caroten bổ sung: 0,3; E: 0,67 tự nhiên, 0,45 tổng hợp |

@@ -24,7 +24,7 @@ Plan đầy đủ: [docs/plan.md](docs/plan.md). Trạng thái và việc tiếp
 | Vi chất | ODA, chỉ tham khảo, chỉ bật sau cổng 3 | Linus Pauling Institute |
 | Năng lượng | Mục tiêu calo = EER (mức giữ cân), không có mục tiêu giảm cân | NASEM 2023 |
 | Năng lượng | Tỷ lệ đạm, béo, bột đường = AMDR | NASEM |
-| Năng lượng | Đường bổ sung ≤10% năng lượng/ngày, ≤10 g/bữa | Dietary Guidelines 2025–2030 |
+| Năng lượng | Đường bổ sung ≤10 g/bữa (không có giới hạn theo % năng lượng/ngày) | Dietary Guidelines 2025–2030 |
 | Vận động | MET | 2024 Adult Compendium |
 | Vận động | Người lớn: 150–300 phút vận động vừa hoặc 75–150 phút vận động mạnh mỗi tuần (1 phút mạnh ≈ 2 phút vừa); tập tăng cơ ≥2 ngày/tuần | Physical Activity Guidelines for Americans, bản 2 (HHS) |
 | Nhãn | Hệ số đổi đơn vị trên nhãn (IU, DFE, NE, RAE) | FDA (hướng dẫn đổi đơn vị 2019; 21 CFR 101.9, 101.36) |
