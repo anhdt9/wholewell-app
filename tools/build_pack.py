@@ -10,7 +10,7 @@ Kết quả: packages/health_engine/assets/reference_pack.json
 import json
 import pathlib
 
-PACK_VERSION = "2026.11.22-1"
+PACK_VERSION = "2026.11.24-1"
 RETRIEVED = "2026-11-22"
 
 # ---------------------------------------------------------------- nguồn
@@ -233,7 +233,10 @@ AMDR = {"source": "nasem_amdr",
         "adult19": {"protein": [10, 35], "fat": [20, 35], "carbohydrate": [45, 65]},
         "age4_18": {"protein": [10, 30], "fat": [25, 35], "carbohydrate": [45, 65]}}
 
-ADDED_SUGAR = {"source": "dga_2025_2030", "maxPercentEnergyPerDay": 10, "maxGramsPerMeal": 10}
+# DGA 2025–2030, tr. 3 (tra 24/11/2026): "no amount of added sugars ... is recommended",
+# "one meal should contain no more than 10 grams of added sugars". Không có giới hạn theo %
+# năng lượng/ngày (mức 10% của bản 2020–2025; 10% ở bản mới là của chất béo bão hòa).
+ADDED_SUGAR = {"source": "dga_2025_2030", "maxGramsPerMeal": 10}
 
 ENERGY_PER_GRAM = {"protein": 4, "carbohydrate": 4, "fat": 9, "alcohol": 7,
                    "note": "hệ số Atwater chung"}

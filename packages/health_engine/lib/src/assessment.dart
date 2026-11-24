@@ -31,12 +31,13 @@ class NutrientStatus {
 
 class SugarCheck {
   final double addedSugarG;
+
+  /// Chỉ để hiển thị; Dietary Guidelines 2025–2030 không đặt giới hạn theo % năng lượng/ngày.
   final double percentEnergy;
-  final bool overDailyLimit;
 
   /// Các bữa có đường bổ sung vượt giới hạn mỗi bữa: mealId → gram.
   final Map<String, double> mealsOverLimit;
-  const SugarCheck(this.addedSugarG, this.percentEnergy, this.overDailyLimit, this.mealsOverLimit);
+  const SugarCheck(this.addedSugarG, this.percentEnergy, this.mealsOverLimit);
 }
 
 class DailyReport {
@@ -96,7 +97,7 @@ SugarCheck sugarCheck(ReferencePack pack, List<IntakeItem> day) {
     perMeal[id] = (perMeal[id] ?? 0) + it.amount('addedSugar');
   }
   perMeal.removeWhere((_, g) => g <= pack.addedSugarMaxGramsPerMeal);
-  return SugarCheck(sugar, pct, pct > pack.addedSugarMaxPercent, perMeal);
+  return SugarCheck(sugar, pct, perMeal);
 }
 
 /// Báo cáo một ngày. [last7Days] (gồm cả hôm nay) dùng cho cờ UL trung bình.

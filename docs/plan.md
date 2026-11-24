@@ -64,7 +64,7 @@ Không đặt mốc thời gian; chưa qua cổng thì chưa sang giai đoạn s
 | UL ("giới hạn an toàn") | NASEM | Cảnh báo khi **vượt** (lớn hơn), vì UL là mức cao nhất chưa gây hại; đúng phạm vi từng chất |
 | EER 2023 | NASEM | Mục tiêu calo = mức giữ cân; không có mục tiêu giảm cân |
 | AMDR | NASEM | Đạm 10–35%, béo 20–35%, bột đường 45–65% năng lượng |
-| Đường bổ sung | [Dietary Guidelines 2025–2030](https://cdn.realfood.gov/DGA.pdf) | ≤10% năng lượng/ngày, ≤10 g/bữa |
+| Đường bổ sung | [Dietary Guidelines 2025–2030](https://cdn.realfood.gov/DGA.pdf) (trang 3, tra 24/11/2026) | ≤10 g/bữa; không khuyến nghị lượng nào và không có giới hạn theo % năng lượng/ngày (mức 10% là của bản 2020–2025) |
 | MET | [2024 Adult Compendium](https://pacompendium.com/) | Calo buổi tập, phút vừa/mạnh |
 | Phút vận động | [Physical Activity Guidelines, bản 2](https://odphp.health.gov/sites/default/files/2019-09/Physical_Activity_Guidelines_2nd_edition.pdf) (HHS, trang 8, tra 23/11/2026) | 150–300 phút vừa hoặc 75–150 phút mạnh/tuần (1 phút mạnh ≈ 2 phút vừa); tập tăng cơ ≥2 ngày |
 | Đổi đơn vị nhãn | [FDA](https://www.fda.gov/regulatory-information/search-fda-guidance-documents/guidance-industry-converting-units-measure-folate-niacin-and-vitamins-d-and-e-nutrition-and), [21 CFR 101](https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-101) | IU, DFE, NE, RAE |
@@ -103,7 +103,7 @@ Tất cả đóng vào gói dữ liệu có phiên bản đi kèm bản cài, đ
 - **Đối tượng:** chỉ làm dữ liệu cho người từ 18 tuổi. Người 18 tuổi dùng mức khuyến nghị và giới hạn của nhóm 14–18 (cách NASEM chia nhóm), không có mục tiêu calo. Nhóm tham chiếu (tuổi, giới, thai kỳ) và các mức của từng nhóm định nghĩa trong gói dữ liệu, engine không viết cứng mốc tuổi, để thêm đối tượng về sau chỉ là thêm số liệu có nguồn, ca test, duyệt và phát hành. Hồ sơ dưới 18 tuổi cần đổi quyết định sản phẩm và rà pháp lý về dữ liệu trẻ em trước.
 - **Hồ sơ theo thời gian:** tuổi, tuần thai, tháng sau sinh lưu kèm ngày nhập và tự tăng; qua tuần 42 hoặc cho con bú đủ 12 tháng thì hỏi lại. Thông tin thai kỳ bắt buộc khi chọn mang thai, cho con bú; thiếu thì báo lý do, không đoán.
 - **Mục tiêu calo** theo EER; mức vận động người dùng chọn, app gợi ý từ buổi tập 7 ngày theo quy tắc của app (phút tương đương vừa/ngày: ≥30 nhẹ, ≥60 vừa, ≥120 nhiều). Không cộng calo buổi tập vào mục tiêu. Không tính cho người 18 tuổi và mang thai dưới 19 tuổi.
-- **Đường bổ sung** tính trên năng lượng đã ăn; hôm nay chỉ ghi "đến giờ", kết luận vượt chỉ cho ngày đã qua và 7 ngày; giới hạn mỗi bữa báo ngay. Nguồn: FPED cho món FNDDS, nguyên liệu cho món tự soạn; nhãn chỉ ghi đường tổng thì "chưa rõ".
+- **Đường bổ sung:** hiện số gam và % năng lượng đã ăn, không có ngưỡng trong ngày; giới hạn mỗi bữa báo ngay. Nguồn: FPED cho món FNDDS, nguyên liệu cho món tự soạn; nhãn chỉ ghi đường tổng thì "chưa rõ".
 - **Vận động** do người dùng tự nhập; kcal ≈ MET × kg × giờ, ghi "khoảng"; không đọc thiết bị đeo, Health Connect, HealthKit.
 - **Nước** chỉ hiện lượng đã uống, không so, vì mức tham chiếu là tổng nước gồm cả nước trong thức ăn ([NAP](https://www.nationalacademies.org/read/10925/chapter/6)).
 
@@ -130,7 +130,7 @@ Không làm quy tắc: canxi–magie, canxi–kẽm, khoảng cách giờ cụ t
 
 ### Cảnh báo giới hạn an toàn
 
-- **Phạm vi:** magie chỉ tính bổ sung ([ODS](https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/)); niacin, vitamin E tính từ bổ sung và thực phẩm tăng cường; vitamin A chỉ retinol ([NCBI](https://www.ncbi.nlm.nih.gov/books/NBK222318/)); folate chỉ axit folic; chất khác tính mọi nguồn.
+- **Phạm vi:** magie chỉ tính bổ sung ([ODS](https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/)); niacin, vitamin E tính từ bổ sung và thực phẩm tăng cường; vitamin A chỉ retinol ([NCBI](https://www.ncbi.nlm.nih.gov/books/NBK222318/)); folate chỉ axit folic; chất khác tính mọi nguồn. Mức khuyến nghị luôn so với tổng mọi nguồn; chi tiết chất hiện cả hai tổng (mọi nguồn, phần tính vào giới hạn).
 - **Ba loại cờ:** trong ngày; trung bình 7 ngày (UL là ngưỡng cho lượng nạp trung bình hằng ngày, [NAP](https://nap.nationalacademies.org/resource/25353/interactive/index.html)); theo lịch (báo trước khi lưu lịch). Kiểm lại sau mọi thay đổi có thể làm vượt. Không chặn việc ghi hay lưu, chỉ cảnh báo.
 - **Chỉ thông tin số:** chất, lượng, giới hạn, vượt bao nhiêu (đơn vị và % so với giới hạn), phạm vi, mục góp vào, một dòng "Hỏi bác sĩ hoặc dược sĩ nếu cần." Không lời giải thích tác hại, không lời khuyên khác.
 

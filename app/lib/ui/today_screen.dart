@@ -38,7 +38,7 @@ class TodayScreen extends StatelessWidget {
         const SizedBox(height: 16),
         Text('Đường bổ sung', style: t.titleMedium),
         const SizedBox(height: 8),
-        _SugarCard(sugar: r.sugar, maxPct: pack.addedSugarMaxPercent, maxMeal: pack.addedSugarMaxGramsPerMeal),
+        _SugarCard(sugar: r.sugar, maxMeal: pack.addedSugarMaxGramsPerMeal),
         const SizedBox(height: 16),
         Text('Vitamin và khoáng chất', style: t.titleMedium),
         const SizedBox(height: 4),
@@ -144,13 +144,12 @@ class _MacroRow extends StatelessWidget {
 
 class _SugarCard extends StatelessWidget {
   final SugarCheck sugar;
-  final double maxPct, maxMeal;
-  const _SugarCard({required this.sugar, required this.maxPct, required this.maxMeal});
+  final double maxMeal;
+  const _SugarCard({required this.sugar, required this.maxMeal});
   @override
   Widget build(BuildContext context) {
     final lines = <String>[
-      '${fmt(sugar.addedSugarG)} g, khoảng ${sugar.percentEnergy.round()}% năng lượng (giới hạn ${maxPct.round()}%).',
-      if (sugar.overDailyLimit) 'Đã vượt giới hạn trong ngày.',
+      '${fmt(sugar.addedSugarG)} g, khoảng ${sugar.percentEnergy.round()}% năng lượng.',
       for (final e in sugar.mealsOverLimit.entries)
         'Bữa "${e.key}": ${fmt(e.value)} g, vượt ${fmt(maxMeal)} g mỗi bữa.',
     ];
