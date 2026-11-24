@@ -13,6 +13,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.security.KeyStore
 import java.util.concurrent.Executors
+import javax.crypto.AEADBadTagException
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
@@ -86,14 +87,19 @@ class DbKeyStore(private val context: Context) : MethodChannel.MethodCallHandler
             delete()
             Reply.Ok(null)
         }
-        "isDeviceUnlocked" -> {
-            val km = context.getSystemService(KeyguardManager::class.java)
-            Reply.Ok(km != null && !km.isDeviceLocked)
-        }
+        "isDeviceUnlocked" -> Reply.Ok(deviceUnlocked())
         else -> Reply.NotImplemented
     }
 
     private fun status(s: String): Map<String, Any> = mapOf("status" to s)
+
+    private fun deviceUnlocked(): Boolean {
+        val km = context.getSystemService(KeyguardManager::class.java)
+        return km != null && !km.isDeviceLocked
+    }
+
+    private fun corrupted(): Map<String, Any> =
+        status(DbKeyRules.classify(true, true, DbKeyRules.Failure.CORRUPTED, deviceUnlocked()))
 
     private fun read(): Map<String, Any> {
         val f = wrappedFile
@@ -102,14 +108,17 @@ class DbKeyStore(private val context: Context) : MethodChannel.MethodCallHandler
             val ks = keyStore()
             if (!ks.containsAlias(ALIAS)) return status(DbKeyRules.classify(true, false, null))
             val secret = ks.getKey(ALIAS, null) as SecretKey
-            val parts = DbKeyRules.unpack(f.readBytes())
-                ?: return status(DbKeyRules.classify(true, true, DbKeyRules.Failure.OTHER))
+            val parts = DbKeyRules.unpack(f.readBytes()) ?: return corrupted()
             val cipher = Cipher.getInstance(TRANSFORMATION)
             cipher.init(Cipher.DECRYPT_MODE, secret, GCMParameterSpec(TAG_BITS, parts.first))
             val plain = cipher.doFinal(parts.second)
+            if (plain.size != DbKeyRules.KEY_LENGTH) return corrupted()
             mapOf("status" to DbKeyRules.classify(true, true, null), "key" to plain)
         } catch (e: KeyPermanentlyInvalidatedException) {
             status(DbKeyRules.classify(true, true, DbKeyRules.Failure.PERMANENTLY_INVALIDATED))
+        } catch (e: AEADBadTagException) {
+            // Nội dung tệp bị đổi: lặp lại y hệt mỗi lần đọc.
+            corrupted()
         } catch (e: Exception) {
             status(DbKeyRules.classify(true, true, DbKeyRules.Failure.OTHER))
         }

@@ -6,17 +6,33 @@ package vn.wholewell.app
  */
 object DbKeyRules {
     /** Lỗi khi giải mã bản khóa. */
-    enum class Failure { PERMANENTLY_INVALIDATED, OTHER }
+    enum class Failure {
+        PERMANENTLY_INVALIDATED,
+
+        /** Tệp bản khóa hỏng: sai cấu trúc, sai tag GCM, hoặc khóa giải ra sai độ dài. */
+        CORRUPTED,
+        OTHER,
+    }
+
+    /** Độ dài khóa CSDL (byte). */
+    const val KEY_LENGTH = 32
 
     /**
      * Phân loại kết quả đọc (docs/specs/encrypted-db.md, mục Khóa):
-     * không có bản khóa → absent; có bản khóa mà alias không còn, hoặc
-     * KeyPermanentlyInvalidatedException → lost; mọi lỗi khác → unavailable.
+     * không có bản khóa → absent; có bản khóa mà alias không còn,
+     * KeyPermanentlyInvalidatedException, hoặc tệp hỏng khi máy đang mở khóa → lost;
+     * tệp hỏng khi máy đang khóa và mọi lỗi khác → unavailable.
      */
-    fun classify(wrappedExists: Boolean, aliasExists: Boolean, failure: Failure?): String = when {
+    fun classify(
+        wrappedExists: Boolean,
+        aliasExists: Boolean,
+        failure: Failure?,
+        deviceUnlocked: Boolean = true,
+    ): String = when {
         !wrappedExists -> "absent"
         !aliasExists -> "lost"
         failure == Failure.PERMANENTLY_INVALIDATED -> "lost"
+        failure == Failure.CORRUPTED -> if (deviceUnlocked) "lost" else "unavailable"
         failure != null -> "unavailable"
         else -> "present"
     }

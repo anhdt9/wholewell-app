@@ -17,6 +17,14 @@ class DbKeyRulesTest {
     }
 
     @Test
+    fun tepHongChiLaMatKhoaKhiMayDangMoKhoa() {
+        assertEquals("lost", DbKeyRules.classify(true, true, DbKeyRules.Failure.CORRUPTED, deviceUnlocked = true))
+        assertEquals("unavailable", DbKeyRules.classify(true, true, DbKeyRules.Failure.CORRUPTED, deviceUnlocked = false))
+        // Lỗi khác vẫn là chưa đọc được dù máy đang mở khóa.
+        assertEquals("unavailable", DbKeyRules.classify(true, true, DbKeyRules.Failure.OTHER, deviceUnlocked = true))
+    }
+
+    @Test
     fun dongGoiVaMoGoiBanKhoa() {
         val iv = ByteArray(12) { it.toByte() }
         val ct = ByteArray(48) { (100 + it).toByte() }
