@@ -59,6 +59,7 @@ tools/                    Python: nguồn số liệu và kiểm tra
   verify_pack.py          kiểm cấu trúc + ô đối chiếu bảng NASEM gốc
   reference_engine.py     engine viết lại bằng Python → packages/health_engine/test/fixtures/cases.json
 packages/health_engine/   engine thuần Dart (không I/O, không Flutter, không mạng) + test
+packages/journal_db/      CSDL mã hóa thuần Dart (drift + SQLite3MultipleCiphers): khóa, lược đồ, mở, xóa, nhật ký + test
 app/                      app Flutter (dùng package:material_ui, không dùng package:flutter/material.dart)
 .github/workflows/ci.yml  CI: build/verify pack, dart analyze + test, flutter analyze + test
 ```
@@ -68,6 +69,9 @@ app/                      app Flutter (dùng package:material_ui, không dùng p
 ```bash
 # Gói dữ liệu (chạy mỗi khi sửa tools/ hoặc logic engine)
 python tools/build_pack.py && python tools/verify_pack.py && python tools/reference_engine.py
+
+# CSDL mã hóa (test cần SQLite3MultipleCiphers qua build hook; CI chạy)
+cd packages/journal_db && dart pub get && dart analyze && dart test
 
 # Engine
 cd packages/health_engine && dart pub get && dart analyze && dart test

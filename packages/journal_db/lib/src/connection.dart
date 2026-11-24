@@ -78,8 +78,34 @@ void applyKey(Database db, Uint8List key) {
   }
 }
 
+/// Bản SQLite có SQLite3MultipleCiphers không. Kiểm trên một kết nối trong bộ nhớ:
+/// từ SQLite 3.48 mọi câu SELECT trên kết nối thật đều đọc tệp, nên khóa sai sẽ
+/// bị nhầm thành thiếu thư viện.
+void _verifyBuild() {
+  final mem = sqlite3.openInMemory();
+  try {
+    final rows = mem.select(debugCipherProbeSql ?? cipherProbeSql);
+    if (rows.isEmpty || rows.first.values.first == null) {
+      throw const DbOpenException(DbOpenStage.cipher);
+    }
+  } on DbOpenException {
+    rethrow;
+  } on Object {
+    throw const DbOpenException(DbOpenStage.cipher);
+  } finally {
+    mem.close();
+  }
+}
+
 /// Kiểm bản mã hóa và khóa; gọi sau [applyKey], trước mọi lần ghi.
 void verifyEncryption(Database db) {
+  _verifyBuild();
+  try {
+    // PRAGMA key luôn trả "ok" kể cả khi sai khóa; đọc sqlite_master mới biết.
+    db.select('SELECT count(*) FROM sqlite_master');
+  } on Object {
+    throw const DbOpenException(DbOpenStage.wrongKeyOrCorrupt);
+  }
   try {
     final rows = db.select(debugCipherProbeSql ?? cipherProbeSql);
     if (rows.isEmpty || rows.first.values.first != dbCipher) {
@@ -89,12 +115,6 @@ void verifyEncryption(Database db) {
     rethrow;
   } on Object {
     throw const DbOpenException(DbOpenStage.cipher);
-  }
-  try {
-    // PRAGMA key luôn trả "ok" kể cả khi sai khóa; đọc sqlite_master mới biết.
-    db.select('SELECT count(*) FROM sqlite_master');
-  } on Object {
-    throw const DbOpenException(DbOpenStage.wrongKeyOrCorrupt);
   }
 }
 
