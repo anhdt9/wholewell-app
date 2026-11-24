@@ -47,7 +47,7 @@ Lưu mọi dữ liệu người dùng trên máy trong một CSDL mã hóa, thay
 - **Kiểm bản mã hóa mỗi lần mở, trước mọi lần ghi:**
   - `SELECT sqlite3mc_config('cipher')` phải trả về `chacha20`. Hàm không tồn tại (bản SQLite thường) hoặc trả giá trị khác: đóng, không ghi gì, màn "Không mở được" (lỗi cài đặt, không có [Bắt đầu lại]).
   - `SELECT count(*) FROM sqlite_master` để biết khóa đúng (PRAGMA key luôn trả "ok" kể cả khi sai khóa).
-  - Lần tạo CSDL: sau khi tạo bảng (chưa có dữ liệu người dùng), chạy `PRAGMA wal_checkpoint(TRUNCATE)` để dữ liệu ra tệp chính, rồi kiểm tệp `wholewell.db` dài ít nhất một trang (4096 byte) và 16 byte đầu không phải `SQLite format 3\0`. Không đạt thì xóa tệp và dừng như trên. Chỉ sau đó mới ghi đồng ý và hồ sơ.
+  - Lần tạo CSDL: sau khi tạo bảng (chưa có dữ liệu người dùng), chạy `PRAGMA wal_checkpoint(TRUNCATE)` để dữ liệu ra tệp chính, rồi kiểm tệp `wholewell.db` dài ít nhất một trang (đọc `PRAGMA page_size`, không viết cứng) và 16 byte đầu không phải `SQLite format 3\0`. Không đạt thì xóa tệp và dừng như trên. Chỉ sau đó mới ghi đồng ý và hồ sơ.
 
 ### Khóa
 
@@ -102,10 +102,12 @@ Lưu mọi dữ liệu người dùng trên máy trong một CSDL mã hóa, thay
 - Mỗi lần ghi lưu một danh sách dòng, mỗi dòng một chất trên nhãn hoặc trong USDA, một nguồn, một dạng. Một món tăng cường có cả dòng `food` và dòng `fortified` cho cùng chất. Đạm, béo, bột đường, năng lượng, đường bổ sung cũng là dòng (nguồn `food`).
 - `label_amount`, `label_unit`: số gốc trên nhãn cho một khẩu phần (bổ sung) hoặc cho `label_basis` (món theo nhãn); trống với số từ USDA.
 - `amounts`: lượng theo **khóa của engine** (`IntakeItem.nutrients`), đã đổi đơn vị theo gói đang cài và đã nhân số khẩu phần. Một dòng có thể sinh nhiều khóa.
-- `ul_amounts`: chỉ có khi dạng chưa rõ làm lượng tính giới hạn khác lượng so mức khuyến nghị; chỉ chứa các khóa khác `amounts`. `ul_amounts` chỉ xét **dạng**; **phạm vi** (vd. magie từ thức ăn không tính) vẫn do `source` quyết định như engine hiện nay (`amountForUl`).
+- `ul_amounts`: chỉ có khi lượng tính giới hạn khác lượng so mức khuyến nghị (vitamin E tổng hợp, dạng chưa rõ); chỉ chứa các khóa khác `amounts`. `ul_amounts` chỉ xét **dạng**; **phạm vi** (vd. magie từ thức ăn không tính) vẫn do `source` quyết định như engine hiện nay (`amountForUl`).
 - `uncertain`: dòng "chưa chắc" (dạng chưa rõ, hoặc đổi đơn vị theo cách thận trọng).
 
-**Quy tắc đổi một dòng thành khóa engine** (hệ số đổi lấy từ gói dữ liệu, không viết cứng; dạng chưa rõ theo plan: tính giới hạn theo cách thận trọng nhất):
+**Nguyên tắc cho dạng chưa rõ** (câu hỏi 4): khi nhãn không đủ để biết dạng hay cách ghi, `amounts` lấy **số nhỏ nhất** có thể (không làm "đủ" giả), `ul_amounts` lấy **số lớn nhất** có thể (plan: tính giới hạn theo cách thận trọng nhất), dòng ghi `uncertain`. Phía giới hạn theo plan; phía mức khuyến nghị là **quy tắc của app**, không phải chuẩn.
+
+**Quy tắc đổi một dòng thành khóa engine.** Hệ số lấy từ gói dữ liệu, không viết cứng trong app. Ký hiệu cho vitamin E (mg alpha-tocopherol mỗi IU): `e_rda(dạng)` để so mức khuyến nghị, `e_ul(dạng)` để tính giới hạn.
 
 | Dòng trên nhãn | `amounts` | `ul_amounts` |
 |---|---|---|
@@ -114,19 +116,25 @@ Lưu mọi dữ liệu người dùng trên máy trong một CSDL mã hóa, thay
 | Folate chỉ ghi µg DFE, không rõ dạng | `folate` = số DFE, `folicAcid` = DFE ÷ 1,7 (coi toàn bộ là axit folic); `uncertain` | – |
 | Vitamin A dạng retinol | `vitA` = µg RAE, `retinol` = µg RAE | – |
 | Vitamin A dạng beta-caroten | `vitA` = µg RAE; không có `retinol` | – |
-| Vitamin A không rõ dạng | `vitA` = µg RAE, `retinol` = toàn bộ; `uncertain` | – |
-| Vitamin E ghi mg alpha-tocopherol | `vitE` = mg | – |
-| Vitamin E ghi IU, dạng tự nhiên (d-) hoặc tổng hợp (dl-) | `vitE` = IU × hệ số của dạng đó | – |
-| Vitamin E ghi IU, không rõ dạng | `vitE` = IU × hệ số tổng hợp (số nhỏ hơn); `uncertain` | `vitE` = IU × hệ số tự nhiên (số lớn hơn) |
-| Hợp chất (vd. canxi carbonat) | khóa chất = khối lượng × tỷ lệ nguyên tố (ODS) | – |
-| Không rõ là hợp chất hay nguyên tố | khóa chất = số trên nhãn (coi là nguyên tố); `uncertain` | – |
+| Vitamin A ghi µg RAE, không rõ dạng | `vitA` = µg RAE, `retinol` = toàn bộ; `uncertain` | – |
+| Vitamin A ghi IU, không rõ dạng, thực phẩm bổ sung | `vitA` = IU × 0,3, `retinol` = IU × 0,3 (retinol và beta-caroten bổ sung cùng hệ số); `uncertain` | – |
+| Vitamin A ghi IU, không rõ dạng, món theo nhãn | `vitA` = IU × hệ số beta-caroten trong thức ăn (nhỏ nhất); `uncertain` | `retinol` = IU × hệ số retinol |
+| Vitamin E ghi IU, biết dạng | `vitE` = IU × `e_rda(dạng)` | `vitE` = IU × `e_ul(dạng)` khi khác `amounts` (dạng tổng hợp) |
+| Vitamin E ghi IU, không rõ dạng | `vitE` = IU × `e_rda(tổng hợp)` (nhỏ nhất); `uncertain` | `vitE` = IU × `e_ul(tổng hợp)` (lớn nhất) |
+| Vitamin E ghi "mg alpha-tocopherol" (nhãn FDA mới, đã quy về dạng 2R), biết dạng | `vitE` = mg | `vitE` = mg ÷ `e_rda(dạng)` × `e_ul(dạng)` khi khác `amounts` |
+| Vitamin E ghi mg khối lượng dạng tổng hợp (vd. "mg dl-alpha-tocopherol") | `vitE` = mg ÷ `e_ul(tổng hợp)` × `e_rda(tổng hợp)` | `vitE` = mg |
+| Vitamin E ghi mg, không rõ dạng hay cách ghi | số nhỏ nhất trong các cách hiểu trên; `uncertain` | số lớn nhất trong các cách hiểu trên |
+| Hợp chất, biết tên (vd. canxi carbonat) | khóa chất = khối lượng × tỷ lệ nguyên tố (ODS) | – |
+| Không rõ là hợp chất hay nguyên tố | khóa chất = số trên nhãn × tỷ lệ nguyên tố nhỏ nhất trong các hợp chất của chất đó có trong gói; `uncertain` | khóa chất = số trên nhãn (coi là nguyên tố) |
 | Chất khác | khóa chất = lượng đã đổi đơn vị | – |
 | Chất không có trong gói | không có khóa (lưu để xem, không tính) | – |
 
-- Vitamin E không rõ dạng: so mức khuyến nghị dùng số nhỏ hơn để không làm "đủ" giả. Đây là **quy tắc của app**, không phải chuẩn (câu hỏi 4).
+- **Vitamin E: hai phía dùng hệ số khác nhau** (đối chiếu NIH ODS, fact sheet vitamin E cho chuyên gia, tra 24/11/2026): mức khuyến nghị chỉ tính dạng 2R, 1 IU tự nhiên = 0,67 mg, 1 IU tổng hợp = 0,45 mg (gói đã có). Giới hạn áp cho mọi dạng alpha-tocopherol bổ sung, gồm cả 8 đồng phân của dạng tổng hợp; 1.000 mg tương đương 1.500 IU tự nhiên hoặc 1.100 IU tổng hợp, tức `e_ul` ≈ 0,67 (tự nhiên) và ≈ 0,91 (tổng hợp). Gói và engine hiện dùng 0,45 cho cả hai phía nên **lượng tính giới hạn của vitamin E tổng hợp đang thiếu khoảng một nửa**: lỗi có sẵn, sửa ở việc 2 (thêm `e_ul` vào `build_pack.py` sau khi đối chiếu báo cáo DRI gốc, kèm ô đối chiếu).
+- Hệ số beta-caroten trong thức ăn (IU → µg RAE) chưa có trong gói: thêm ở việc 3 (Thư viện món) kèm nguồn và ô đối chiếu. Trước đó, dòng này chỉ có `ul_amounts.retinol`; `amounts` không có `vitA` và dòng hiện "chưa tính được" phía mức khuyến nghị (không đoán số).
+
 - **Đổi sang `IntakeItem`:** gộp các dòng của một lần ghi theo `source` thành một `IntakeItem` cho mỗi nguồn (`nutrients` = cộng `amounts`; lượng tính giới hạn = cộng `ul_amounts`, khóa nào không có thì lấy từ `amounts`). Engine chỉ đọc các bản này; đổi thành phần sản phẩm hay gói dữ liệu sau khi ghi không đổi lịch sử.
-- **Phụ thuộc việc 2 (sửa engine):** engine hiện chưa có lượng tính giới hạn riêng (vitamin E không rõ dạng cần hai số cho cùng một khóa). Việc 2 thêm vào `IntakeItem` một bảng lượng tính giới hạn tùy chọn, `amountForUl` dùng bảng này khi có; sửa cả `tools/reference_engine.py` và fixtures. CSDL lưu đủ dữ liệu ngay từ v1, không cần di chuyển khi việc 2 xong.
-- **Sửa khẩu phần:** món theo nhãn tính lại từ `label_amount` × `portion_qty` ÷ `label_basis_qty` (cùng đơn vị; vd. nhãn cho 100 ml, đổi 180 ml thành 250 ml). Món USDA, công thức: tính lại theo gói đang cài và cập nhật `pack_version`. Lần uống: tính lại từ số trên nhãn × số khẩu phần.
+- **Phụ thuộc việc 2 (sửa engine):** engine hiện chưa có lượng tính giới hạn riêng (vitamin E tổng hợp và dạng chưa rõ cần hai số cho cùng một khóa) và chưa có hệ số `e_ul`. Việc 2 thêm vào `IntakeItem` một bảng lượng tính giới hạn tùy chọn, `amountForUl` dùng bảng này khi có; sửa cả `tools/reference_engine.py` và fixtures. CSDL lưu đủ dữ liệu ngay từ v1, không cần di chuyển khi việc 2 xong.
+- **Sửa khẩu phần:** món theo nhãn tính lại từ `label_amount` × `portion_qty` ÷ `label_basis_qty` (cùng đơn vị; vd. nhãn cho 100 ml, đổi 180 ml thành 250 ml). Món USDA, công thức: tính lại theo gói đang cài và cập nhật `pack_version`. Lần uống: tính lại từ số trên nhãn × số khẩu phần theo gói đang cài và cập nhật `pack_version`.
 - **Giữ cả dữ liệu gốc** (`food_ref`, khẩu phần, số lượng, gốc nhãn ở `food_entries`; số trên nhãn và dạng ở `intake_lines`) và `pack_version` để sau này tính lại có chủ đích khi gói sửa lỗi, vd. một hệ số đổi đơn vị sai (câu hỏi 2). Tính lại là việc của một đặc tả sau, có test, không tự chạy.
 
 **Di chuyển lược đồ:** drift (`schemaVersion`, lưu bản lược đồ mỗi phiên bản, test di chuyển từ mọi bản cũ). Trước khi di chuyển: `PRAGMA wal_checkpoint(TRUNCATE)`, đóng kết nối, **sao chép tệp nguyên byte** thành `wholewell.db.pre-v{n}` (giữ nguyên mã hóa; không dùng `VACUUM INTO` hay API sao lưu của SQLite khi chưa kiểm bản tạo ra vẫn được mã hóa), rồi mở lại; di chuyển trong một giao dịch; xong và `PRAGMA integrity_check` đạt thì xóa bản sao (`integrity_check` chậm với CSDL lớn nhưng chỉ chạy lúc di chuyển).
@@ -135,7 +143,7 @@ Lưu mọi dữ liệu người dùng trên máy trong một CSDL mã hóa, thay
 
 - `SecureKeyStore`: `Future<KeyReadResult> readDbKey()` (bốn trạng thái ở trên), `Future<Uint8List> createDbKey()` (lỗi nếu đã có), `Future<void> deleteDbKey()`, `Future<bool> isDeviceUnlocked()`.
 - `JournalRepository` đổi sang bất đồng bộ (`Future`, `Stream` theo ngày) và mở rộng theo lược đồ trên; `DriftJournalRepository` thay `InMemoryJournalRepository`. Bản bộ nhớ giữ lại để test giao diện.
-- Engine (`packages/health_engine`) không sửa trong việc này: app đọc các lần ghi, đổi thành `IntakeItem`, `WorkoutEntry` theo quy tắc ở trên rồi gọi engine. Lượng tính giới hạn riêng (`ul_amounts`) chỉ dùng được khi việc 2 xong; trước đó app chưa ghi dòng vitamin E không rõ dạng (chụp nhãn là việc 5, sau việc 2).
+- Engine (`packages/health_engine`) không sửa trong việc này: app đọc các lần ghi, đổi thành `IntakeItem`, `WorkoutEntry` theo quy tắc ở trên rồi gọi engine. Lượng tính giới hạn riêng (`ul_amounts`) chỉ dùng được khi việc 2 xong; trước đó app chưa ghi dòng vitamin E từ nhãn (chụp nhãn là việc 5, sau việc 2).
 
 ### Luồng xử lý
 
@@ -190,7 +198,7 @@ Màn "Cần cập nhật": "Cần cập nhật WholeWell. Dữ liệu của bạ
 - [ ] Phân loại khóa (bản giả của nền tảng): không có bản khóa → `KeyAbsent`; alias mất hoặc `KeyPermanentlyInvalidatedException` → `KeyLost`; mọi lỗi khác → `KeyUnavailable`.
 - [ ] `KeyUnavailable` 3 lần khi máy đã mở khóa: hiện [Thử lại] [Khôi phục từ bản sao lưu], không có [Bắt đầu lại].
 - [ ] Cố tình làm `PRAGMA key` lỗi: thông báo và `toString()` của lỗi ném ra không chứa chuỗi hex của khóa hay câu lệnh.
-- [ ] Lần tạo CSDL: kiểm đầu tệp chạy sau `wal_checkpoint(TRUNCATE)`; tệp chính dài ít nhất 4096 byte.
+- [ ] Lần tạo CSDL: kiểm đầu tệp chạy sau `wal_checkpoint(TRUNCATE)`; tệp chính dài ít nhất `page_size` byte.
 - [ ] Sau khi mở: `journal_mode = wal`, `foreign_keys = 1`, `temp_store = 2` (MEMORY).
 
 **Dữ liệu:**
@@ -203,7 +211,7 @@ Màn "Cần cập nhật": "Cần cập nhật WholeWell. Dữ liệu của bạ
 - [ ] [Bỏ qua] lưu `skipped`; bỏ đánh dấu về "Chưa đánh dấu".
 - [ ] Đổi lịch 20:00 thành 21:00: ngày trước đó vẫn dùng lịch 20:00 khi ghi bù và khi tính tỷ lệ bỏ liều.
 - [ ] Lượng đã ghi: đổi thành phần sản phẩm sau khi ghi không làm đổi tổng của ngày đã ghi.
-- [ ] Mỗi hàng trong bảng "Quy tắc đổi một dòng thành khóa engine" có một ca test. Vd. axit folic 400 µg → `folate` 680, `folicAcid` 400; vitamin A không rõ dạng → `retinol` bằng toàn bộ; vitamin E IU không rõ dạng → `amounts` theo hệ số tổng hợp, `ul_amounts` theo hệ số tự nhiên.
+- [ ] Mỗi hàng trong bảng "Quy tắc đổi một dòng thành khóa engine" có một ca test. Vd. axit folic 400 µg → `folate` 680, `folicAcid` 400; vitamin A µg RAE không rõ dạng → `retinol` bằng toàn bộ; vitamin E 100 IU tổng hợp → `amounts` 45 mg, `ul_amounts` theo `e_ul(tổng hợp)` (≈ 91 mg); vitamin E IU không rõ dạng → như dạng tổng hợp và `uncertain`; không rõ hợp chất hay nguyên tố → `amounts` theo tỷ lệ nhỏ nhất, `ul_amounts` bằng số trên nhãn.
 - [ ] Magie từ thức ăn (`source = food`) không tính vào giới hạn (phạm vi theo `source`).
 - [ ] Xóa một lần ghi thì không còn dòng `intake_lines` nào của nó; dòng có cả hai cột lần ghi hoặc không có cột nào bị CSDL từ chối.
 - [ ] Sửa giờ, ngày của một món sang ngày khác: các dòng `intake_lines` có `day` mới, tổng của hai ngày đúng.
@@ -245,5 +253,5 @@ Màn "Cần cập nhật": "Cần cập nhật WholeWell. Dữ liệu của bạ
 1. **Android tối thiểu API 28 (Android 9)?** `setUnlockedDeviceRequired` cần API 28. Hiện app dùng mặc định của Flutter (thấp hơn). Đề xuất đặt `minSdk = 28`; máy thấp hơn rất ít và không giữ được yêu cầu "khóa chỉ dùng khi máy mở khóa". Chờ chủ dự án chốt.
 2. **Lưu sẵn lượng đã ghi, kèm dữ liệu gốc** (đề xuất ở trên) thay vì tính lại từ gói dữ liệu mỗi lần đọc. Lợi: lịch sử không đổi khi gói cập nhật; khi gói sửa lỗi thì vẫn tính lại được có chủ đích từ dữ liệu gốc. Chờ chủ dự án chốt.
 3. **Sửa lịch có hiệu lực từ khi nào?** Đề xuất: từ hôm nay nếu hôm nay chưa đánh dấu lần nào của lịch cũ; nếu đã đánh dấu thì từ ngày mai, và màn Lịch báo "Lịch mới áp dụng từ ngày mai." (chữ mới, cần thêm vào thiết kế khi làm tính năng Lịch uống). Lược đồ không đổi theo câu trả lời. Chờ chủ dự án chốt.
-4. **Vitamin E ghi IU không rõ dạng: so mức khuyến nghị theo hệ số tổng hợp (số nhỏ hơn)?** Plan chỉ nói phía giới hạn (thận trọng nhất); phía mức khuyến nghị là quy tắc của app. Đề xuất số nhỏ hơn, ghi "chưa chắc". Chờ chủ dự án chốt.
+4. **Nguyên tắc chung cho mọi dạng chưa rõ:** so mức khuyến nghị lấy số nhỏ nhất có thể, tính giới hạn lấy số lớn nhất có thể, ghi "chưa chắc"? Plan chỉ nói phía giới hạn; phía mức khuyến nghị là quy tắc của app. Áp đều cho vitamin E, vitamin A ghi IU, hợp chất hay nguyên tố (bảng quy tắc). Chờ chủ dự án chốt.
 5. **Thêm ba chữ vào thiết kế tổng thể đã duyệt** (dòng "Toàn app"): "Mở khóa máy để xem dữ liệu."; "Chưa đọc được khóa dữ liệu trên máy này." + [Thử lại] [Khôi phục từ bản sao lưu]; "Cần cập nhật WholeWell…". Chờ chủ dự án đồng ý.
