@@ -1,6 +1,6 @@
 # Đặc tả: CSDL mã hóa trên máy
 
-Trạng thái: Nháp  <!-- Nháp | Đã duyệt -->
+Trạng thái: Đã duyệt  <!-- Nháp | Đã duyệt -->
 Thiết kế UX: không có màn riêng (hạ tầng). Các màn dùng dữ liệu theo [design/mvp-overview.md](../design/mvp-overview.md); trạng thái lỗi CSDL ở mục Trạng thái, dòng "Toàn app".
 Thứ tự MVP: việc 1 trong [status.md](../status.md)
 
@@ -254,10 +254,10 @@ Màn "Cần cập nhật": "Cần cập nhật WholeWell. Dữ liệu của bạ
 - Sửa engine (việc 2 trong status).
 - iOS: chỉ ghi cách giữ khóa và vị trí tệp; làm khi có bản iOS.
 
-## Câu hỏi còn mở
+## Quyết định đã chốt (24/11/2026)
 
-1. **Android tối thiểu API 28 (Android 9)?** `setUnlockedDeviceRequired` cần API 28. Hiện app dùng mặc định của Flutter (thấp hơn). Đề xuất đặt `minSdk = 28`; máy thấp hơn rất ít và không giữ được yêu cầu "khóa chỉ dùng khi máy mở khóa". Chờ chủ dự án chốt.
-2. **Lưu sẵn lượng đã ghi, kèm dữ liệu gốc** (đề xuất ở trên) thay vì tính lại từ gói dữ liệu mỗi lần đọc. Lợi: lịch sử không đổi khi gói cập nhật; khi gói sửa lỗi thì vẫn tính lại được có chủ đích từ dữ liệu gốc. Chờ chủ dự án chốt.
-3. **Sửa lịch có hiệu lực từ khi nào?** Đề xuất: từ hôm nay nếu hôm nay chưa đánh dấu lần nào của lịch cũ; nếu đã đánh dấu thì từ ngày mai, và màn Lịch báo "Lịch mới áp dụng từ ngày mai." (chữ mới, cần thêm vào thiết kế khi làm tính năng Lịch uống). Lược đồ không đổi theo câu trả lời. Chờ chủ dự án chốt.
-4. **Nguyên tắc chung cho mọi dạng chưa rõ:** so mức khuyến nghị lấy số nhỏ nhất có thể, tính giới hạn lấy số lớn nhất có thể, ghi "chưa chắc"? Plan chỉ nói phía giới hạn; phía mức khuyến nghị là quy tắc của app. Áp đều cho vitamin E, vitamin A ghi IU, hợp chất hay nguyên tố, este (bảng quy tắc). **Hệ quả cần biết:** nhãn ở Việt Nam thường chỉ ghi "Vitamin E 15 mg", không ghi dạng. Theo nguyên tắc này, dòng đó tính khoảng 30 mg vào giới hạn (coi là dạng tổng hợp ghi theo 2R: 15 ÷ 0,45 × 0,91) và khoảng 7,4 mg vào mức khuyến nghị (coi là khối lượng dạng tổng hợp: 15 ÷ 0,91 × 0,45), kèm "chưa chắc". Như vậy phần lớn viên đa vitamin sẽ hiện vitamin E thấp hơn mức khuyến nghị và "chưa chắc". Chờ chủ dự án chốt.
-5. **Thêm ba chữ vào thiết kế tổng thể đã duyệt** (dòng "Toàn app"): "Mở khóa máy để xem dữ liệu."; "Chưa đọc được khóa dữ liệu trên máy này." + [Thử lại] [Khôi phục từ bản sao lưu]; "Cần cập nhật WholeWell…". Chờ chủ dự án đồng ý.
+1. **Android tối thiểu API 28 (Android 9):** `minSdk = 28`, vì `setUnlockedDeviceRequired` cần API 28.
+2. **Lưu sẵn lượng đã ghi, kèm dữ liệu gốc và `pack_version`:** lịch sử không đổi khi gói cập nhật; tính lại có chủ đích ở một đặc tả sau.
+3. **Sửa lịch:** có hiệu lực từ hôm nay nếu hôm nay chưa đánh dấu lần nào của lịch cũ; nếu đã đánh dấu thì từ ngày mai, màn Lịch báo "Lịch mới áp dụng từ ngày mai." (thêm vào thiết kế khi làm tính năng Lịch uống).
+4. **Mọi dạng chưa rõ:** so mức khuyến nghị lấy số nhỏ nhất có thể, tính giới hạn lấy số lớn nhất có thể, ghi "chưa chắc" (bảng quy tắc). Hệ quả đã biết: nhãn chỉ ghi "Vitamin E 15 mg" tính khoảng 7,4 mg vào mức khuyến nghị và khoảng 30 mg vào giới hạn.
+5. **Thiết kế tổng thể** thêm ba trạng thái ở dòng "Toàn app": "Mở khóa máy để xem dữ liệu."; "Chưa đọc được khóa dữ liệu trên máy này." + [Thử lại] [Khôi phục từ bản sao lưu]; "Cần cập nhật WholeWell…".

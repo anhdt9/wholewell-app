@@ -18,7 +18,7 @@ Kết quả kiểm sớm bằng tài liệu và các bài còn phải thử trê
 
 Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã duyệt trước khi code.
 
-1. **CSDL mã hóa** (đặc tả [specs/encrypted-db.md](specs/encrypted-db.md): **nháp, chờ duyệt**; không cần UX): drift + SQLite3MultipleCiphers (cipher `chacha20`, khóa thô, kiểm bản mã hóa mỗi lần mở); khóa đọc ra bốn trạng thái, không bao giờ tự ghi đè; loại khỏi sao lưu tự động của hệ điều hành; thay `InMemoryJournalRepository`. Lược đồ:
+1. **CSDL mã hóa** (đặc tả [specs/encrypted-db.md](specs/encrypted-db.md): **đã duyệt** 24/11/2026; không cần UX): drift + SQLite3MultipleCiphers (cipher `chacha20`, khóa thô, kiểm bản mã hóa mỗi lần mở); khóa đọc ra bốn trạng thái, không bao giờ tự ghi đè; loại khỏi sao lưu tự động của hệ điều hành; thay `InMemoryJournalRepository`. Lược đồ:
    - Khóa chỉ dùng được khi máy đã mở khóa: iOS dùng mức Keychain tương ứng; Android tự dùng Keystore với `setUnlockedDeviceRequired` (API 28+), flutter_secure_storage không có sẵn. Nút "Đã uống" trên thông báo mở app thay vì ghi trong nền. Thử trên máy thật.
    - Dấu "cần xóa bản trên Drive" lưu ngoài CSDL, không có dữ liệu sức khỏe; xóa xong bản trên Drive thì thu hồi quyền đăng nhập Google và xóa dấu.
    - Hồ sơ: số tuổi kèm ngày nhập; giờ thức, ba bữa, giờ ngủ; bằng chứng đồng ý (ngày giờ, phiên bản nội dung); câu trả lời Có/Không về thuốc theo chỉ định, bệnh mạn tính (chế độ thận trọng) kèm ngày.
