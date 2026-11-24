@@ -223,7 +223,7 @@ class AppState extends ChangeNotifier {
       try {
         _apply(await o.createNew(
             ConsentInput(contentVersion: khungTamConsentVersion, ageYears: p.ageYears, caution: false)));
-      } on StateError {
+      } on DbAlreadyExistsException {
         // Đã có CSDL (không đúng màn Chào mừng): mở lại theo luồng thường.
         await start();
         return;

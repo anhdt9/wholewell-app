@@ -155,4 +155,13 @@ void main() {
     expect(DbFiles(dir).wipeMarker.existsSync(), isFalse);
     await (r as Opened).repository.close();
   });
+
+  test('createNew khi đã có CSDL: báo lỗi riêng, không đụng tệp', () async {
+    final dir = tempDir();
+    final o = testOpener(dir, FakeSecureKeyStore());
+    await (await createdRepo(o)).close();
+    final before = DbFiles(dir).db.readAsBytesSync();
+    await expectLater(o.createNew(testConsent), throwsA(isA<DbAlreadyExistsException>()));
+    expect(DbFiles(dir).db.readAsBytesSync(), before);
+  });
 }

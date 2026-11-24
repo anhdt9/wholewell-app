@@ -65,6 +65,13 @@ final class LowStorage extends OpenOutcome {
   const LowStorage();
 }
 
+/// `createNew` khi đã có tệp CSDL (không ở màn Chào mừng): mở theo luồng thường.
+class DbAlreadyExistsException implements Exception {
+  const DbAlreadyExistsException();
+  @override
+  String toString() => 'DbAlreadyExistsException';
+}
+
 /// Di chuyển lược đồ từ phiên bản n lên n + 1, chạy trong giao dịch.
 typedef Migration = void Function(Database db);
 
@@ -285,7 +292,7 @@ class DbOpener {
     files.dir.createSync(recursive: true);
     // Xóa nốt lần xóa trước (nếu còn dở) trước khi xét tệp CSDL.
     if (files.wipeMarker.existsSync() && !await _finishWipe()) return const KeyStuck();
-    if (files.db.existsSync()) throw StateError('Đã có CSDL');
+    if (files.db.existsSync()) throw const DbAlreadyExistsException();
     _deleteCreatingFiles();
     Uint8List key;
     try {
