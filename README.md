@@ -60,7 +60,7 @@ cd app && flutter create --platforms=android,ios,windows,macos --org vn.wholewel
 ## Giới hạn hiện tại
 
 - Người 18 tuổi: có RDA/UL (nhóm 14–18) nhưng **chưa có mục tiêu calo**. Phương trình 14–18 của NASEM 2023 có hệ số tuổi của nữ cần đối chiếu thêm, nên engine trả `NotComputed` thay vì đoán.
-- Mang thai dưới 19 tuổi: NASEM không đưa phương trình riêng; engine không tính calo.
+- App hướng tới người khỏe mạnh; người dùng thuốc theo chỉ định của bác sĩ hoặc có bệnh mạn tính dùng ở chế độ thận trọng. MVP: từ 18 tuổi, không mang thai, không cho con bú; giai đoạn 2: trẻ em từ 1 tuổi, mang thai, cho con bú. Nhóm mang thai, cho con bú đã có trong gói và engine.
 - Lưu trữ đang ở bộ nhớ (`InMemoryJournalRepository`). Bước sau: drift + SQLite3MultipleCiphers.
-- Chưa có cơ sở dữ liệu món ăn (USDA FoodData Central), OCR nhãn, mã vạch, sao lưu Drive, AI trên máy, ODA.
+- Chưa có cơ sở dữ liệu món ăn (USDA FoodData Central), OCR nhãn, mã vạch, sao lưu Drive, ODA.
 - Code Dart chưa được biên dịch trong môi trường soạn (không cài được Dart SDK ở đó). Logic đã kiểm chéo qua bản Python; chạy `dart test` và `flutter test` là bước kiểm đầu tiên.

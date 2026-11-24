@@ -10,8 +10,8 @@ Plan đầy đủ: [docs/plan.md](docs/plan.md). Trạng thái và việc tiếp
 
 ## Sản phẩm (đã chốt, không tự đổi)
 
-- App tham chiếu dinh dưỡng cá nhân hóa cho người Việt từ **18 tuổi**: so lượng nạp vi chất từ thực phẩm và thực phẩm bổ sung với chuẩn Mỹ, quản lý kho và lịch uống bổ sung, cảnh báo khi vượt mức tối đa an toàn.
-- **Không** chẩn đoán, kê đơn, gợi ý liều; không bán, gợi ý hay quảng cáo nhãn hàng bổ sung. Không kiểm tương tác thuốc, xét nghiệm, CGM, gen, vi sinh; không hồ sơ sức khỏe trẻ em.
+- App tham chiếu dinh dưỡng cá nhân hóa cho người Việt, hướng tới **người khỏe mạnh** vì mức khuyến nghị và giới hạn của NASEM dành cho người khỏe mạnh. **MVP:** từ 18 tuổi, không mang thai, không cho con bú; người dùng thuốc theo chỉ định của bác sĩ hoặc có bệnh mạn tính vẫn dùng được ở **chế độ thận trọng** (dòng nhắc chung, ẩn ODA, không điều chỉnh số). **Giai đoạn 2:** trẻ em từ 1 tuổi, mang thai, cho con bú. Dưới 1 tuổi không hỗ trợ. App: so lượng nạp vi chất từ thực phẩm và thực phẩm bổ sung với chuẩn Mỹ, quản lý kho và lịch uống bổ sung, cảnh báo khi vượt mức tối đa an toàn.
+- **Không** chẩn đoán, kê đơn, gợi ý liều; không bán, gợi ý hay quảng cáo nhãn hàng bổ sung. Không kiểm tương tác thuốc, xét nghiệm, CGM, gen, vi sinh.
 - **Miễn phí toàn bộ.** **Mọi việc liên quan quảng cáo làm ở giai đoạn sau:** MVP không có quảng cáo, không SDK, không chừa chỗ trong bố cục, không interface. Khi làm: chỉ AdMob không cá nhân hóa; **không bao giờ** đặt ở màn Hôm nay, màn cảnh báo, chi tiết chất, thông báo, widget; yêu cầu quảng cáo không chứa dữ liệu sức khỏe.
 - Thị trường đầu tiên: Việt Nam. Không thuê chuyên gia, không thuê luật sư: tự đối chiếu văn bản gốc, chỗ không chắc thì bỏ hoặc thu hẹp tính năng.
 
@@ -47,7 +47,7 @@ Plan đầy đủ: [docs/plan.md](docs/plan.md). Trạng thái và việc tiếp
 - Sao lưu: tệp mã hóa (mặc định); Google Drive appDataFolder là tùy chọn, mã hóa Argon2id, khóa chỉ người dùng giữ. Mọi client OAuth (Android, iOS, desktop) phải nằm trong **một dự án Google Cloud duy nhất**.
 - **Gói dữ liệu (số liệu, quy tắc) đi kèm bản cài đã ký**, cập nhật qua cửa hàng ứng dụng; không tải từ máy chủ.
 - **Không nhúng SDK phân tích hay báo lỗi** của bên thứ ba. Theo dõi crash qua Play Console / App Store Connect.
-- AI chỉ chạy trên máy (Gemini Nano qua ML Kit GenAI; Apple Foundation Models, không dùng Private Cloud Compute). **AI không tính con số**: engine quyết định mọi số và cảnh báo; AI chỉ giải thích và gợi ý món. Có bản dự phòng giải thích theo mẫu.
+- **Không dùng AI tạo sinh** (chốt 24/11/2026): engine quyết định mọi số và cảnh báo; lời giải thích viết sẵn theo mẫu. App chỉ dựa vào chuẩn (mức khuyến nghị, giới hạn, ODA), không thêm lưu ý chuyên môn y tế riêng (bệnh, gen, hút thuốc, dị ứng); người nhạy cảm chỉ có dòng nhắc chung của chế độ thận trọng.
 - Chỉ dùng dữ liệu giả lập khi phát triển và kiểm thử.
 
 ## Cấu trúc repo
@@ -83,7 +83,7 @@ cd app && flutter pub get && flutter analyze && flutter test && flutter run
 1. **Số liệu chỉ sửa trong `tools/build_pack.py`**, không sửa tay `reference_pack.json` hay `cases.json`. Mỗi số mới phải có nguồn kiểm được; thêm ô đối chiếu vào `verify_pack.py`. Không đoán số: nếu nguồn chưa rõ, để engine trả `NotComputed` kèm lý do.
 2. **Đổi logic engine thì đổi cả `tools/reference_engine.py`** và sinh lại fixtures; test Dart so với kết quả Python.
 3. Tiêu chí bắt buộc: **0 vi phạm UL, 0 lỗi đơn vị**. UL đúng phạm vi: magie chỉ tính bổ sung; niacin, vitamin E chỉ tính từ bổ sung + thực phẩm tăng cường (theo nguồn, kể cả vitamin E tự nhiên trong viên); vitamin A chỉ retinol; folate chỉ axit folic. Thành phần bổ sung tính theo từng chất và dạng; dạng chưa rõ thì tính giới hạn theo cách thận trọng nhất.
-4. Engine và giao diện chỉ gọi interface cho phần phụ thuộc nền tảng: NotificationScheduler, BackgroundJobs, SecureKeyStore, OcrEngine, BarcodeScanner, SpeechInput, GoogleAuth, BackupProvider, OnDeviceAi, HomeWidgetBridge (AdService chỉ thêm ở giai đoạn có quảng cáo). Mỗi interface có bản giả để test.
+4. Engine và giao diện chỉ gọi interface cho phần phụ thuộc nền tảng: NotificationScheduler, BackgroundJobs, SecureKeyStore, OcrEngine, BarcodeScanner, SpeechInput, GoogleAuth, BackupProvider, HomeWidgetBridge (AdService chỉ thêm ở giai đoạn có quảng cáo). Mỗi interface có bản giả để test.
 5. **Không code tính năng khi chưa có đặc tả và thiết kế UX đã duyệt** (xem mục "Quy trình bắt buộc" bên dưới). Chủ dự án duyệt và gộp; agent không tự gộp vào `main`, không tự phát hành.
 6. Commit nhỏ, thông điệp tiếng Việt, mô tả việc đã làm.
 7. Xong việc nào thì cập nhật `docs/status.md` trong cùng PR.
@@ -107,8 +107,7 @@ Agent **dừng lại chờ chủ dự án duyệt** ở cuối bước 1 và bư
 
 ## Giới hạn đã biết
 
-- **Chỉ làm dữ liệu cho người từ 18 tuổi.** NASEM xếp người 18 tuổi vào nhóm 14–18, nên app giữ RDA/UL của nhóm này cho người 18 tuổi, nhưng **không có mục tiêu calo** cho tuổi 18 (giới hạn đã chấp nhận; không làm phương trình EER cho dưới 19 tuổi).
-- **Đối tượng mở rộng được bằng dữ liệu:** nhóm tham chiếu (tuổi, giới, mang thai, cho con bú) và việc nhóm nào có mục tiêu calo, khoảng AMDR, cách tính đạm được định nghĩa trong gói dữ liệu, không viết cứng mốc tuổi trong engine. Thêm đối tượng = thêm số liệu có nguồn, ô đối chiếu, ca test, chủ dự án duyệt, phát hành bản cập nhật. Hồ sơ dưới 18 tuổi vẫn cấm cho tới khi chủ dự án đổi quyết định sản phẩm.
-- Mang thai dưới 19 tuổi: NASEM không có phương trình riêng → không tính calo.
+- **MVP chỉ dùng nhóm người lớn.** NASEM xếp người 18 tuổi vào nhóm 14–18, nên app giữ RDA/UL của nhóm này cho người 18 tuổi, nhưng **không có mục tiêu calo** cho tuổi 18 (phương trình EER trẻ em làm ở giai đoạn 2).
+- **Đối tượng mở rộng được bằng dữ liệu:** nhóm tham chiếu (tuổi, giới, mang thai, cho con bú) và việc nhóm nào có mục tiêu calo, khoảng AMDR, cách tính đạm được định nghĩa trong gói dữ liệu, không viết cứng mốc tuổi trong engine. Thêm đối tượng = thêm số liệu có nguồn, ô đối chiếu, ca test, chủ dự án duyệt, phát hành bản cập nhật. Hồ sơ dưới 18 tuổi, mang thai, cho con bú: từ giai đoạn 2 (trẻ em do phụ huynh quản lý, sau khi rà pháp lý dữ liệu trẻ em).
+- Mang thai, cho con bú: số liệu có sẵn trong gói và engine; MVP không dùng, mở ở giai đoạn 2 với chế độ thận trọng (chốt 24/11/2026).
 - Gợi ý mức vận động từ buổi tập là **quy tắc của app**, không phải chuẩn (phút tương đương vừa/ngày: ≥30 nhẹ, ≥60 vừa, ≥120 nhiều); người dùng tự xác nhận.
-- Prompt API của Gemini Nano chưa công bố hỗ trợ tiếng Việt → trên Android dùng giải thích theo mẫu làm mặc định.

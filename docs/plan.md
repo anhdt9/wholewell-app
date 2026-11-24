@@ -6,23 +6,23 @@ Tài liệu gốc về sản phẩm. Quy trình làm việc và quy tắc sửa 
 
 ## 1. Mục tiêu và quyết định
 
-WholeWell giúp người Việt từ 18 tuổi biết mình nạp bao nhiêu vi chất từ thực phẩm và thực phẩm bổ sung so với chuẩn của Mỹ, quản lý kho và lịch uống, và được cảnh báo khi vượt giới hạn an toàn. App miễn phí, chỉ để tham chiếu, dữ liệu nằm trên máy, mỗi con số có nguồn.
+WholeWell giúp người Việt (hướng tới người khỏe mạnh, MVP từ 18 tuổi) biết mình nạp bao nhiêu vi chất từ thực phẩm và thực phẩm bổ sung so với chuẩn của Mỹ, quản lý kho và lịch uống, và được cảnh báo khi vượt giới hạn an toàn. App miễn phí, chỉ để tham chiếu, dữ liệu nằm trên máy, mỗi con số có nguồn.
 
 | Chủ đề | Quyết định |
 | --- | --- |
 | Định vị | Công cụ tham chiếu: không chẩn đoán, không kê đơn, không gợi ý liều; không bán, gợi ý, quảng cáo nhãn hàng bổ sung |
-| Người dùng | Việt Nam trước; hồ sơ từ 18 tuổi (nhập số tuổi, app tự cộng mỗi năm); trẻ em chỉ được tính vào kho |
+| Người dùng | Việt Nam trước; hướng tới người khỏe mạnh, vì chuẩn NASEM dành cho người khỏe mạnh. MVP: từ 18 tuổi (nhập số tuổi, app tự cộng mỗi năm), không mang thai, không cho con bú; người dùng thuốc theo chỉ định của bác sĩ hoặc có bệnh mạn tính dùng ở chế độ thận trọng. Giai đoạn 2: trẻ em từ 1 tuổi, mang thai, cho con bú. Dưới 1 tuổi không hỗ trợ |
 | Chuẩn | Chỉ chuẩn Mỹ ở mục 3 (cách làm giống Cronometer); không EFSA, WHO/FAO hay chuẩn nước khác, không dữ liệu Việt Nam |
 | Nguồn | Chính phủ Mỹ và số liệu NASEM (nhãn A), LPI chỉ cho ODA (nhãn B); nguồn không nói rõ thì không có quy tắc; không thuê chuyên gia |
 | Dữ liệu người dùng | Trên máy, SQLite mã hóa; sao lưu tệp mã hóa, Google Drive tùy chọn; không máy chủ, không iCloud, không thiết bị đeo |
 | Gói dữ liệu | Số liệu và quy tắc đi kèm bản cài đã ký, cập nhật qua cửa hàng ứng dụng; không tải từ máy chủ |
-| AI | Chạy trên máy; engine tính mọi con số, AI chỉ giải thích và gợi ý món |
+| Chuyên môn | Chỉ dựa vào chuẩn (mức khuyến nghị, giới hạn, ODA); không lưu ý chuyên môn y tế riêng (bệnh, gen, hút thuốc, dị ứng), người nhạy cảm chỉ có dòng nhắc chung; không AI tạo sinh, lời giải thích viết sẵn theo mẫu |
 | Công nghệ | Flutter; Android trước, iOS khi có Mac, Windows và macOS ở giai đoạn 2, web sau cùng |
 | Doanh thu | Miễn phí toàn bộ. Mọi việc về quảng cáo làm ở giai đoạn sau (MVP không có, không chừa chỗ); khi làm chỉ AdMob không cá nhân hóa, không bao giờ ở màn Hôm nay, màn cảnh báo, thông báo, widget |
 | Pháp lý | Không thuê luật sư; tự đối chiếu văn bản gốc; chỗ không chắc thì bỏ hoặc thu hẹp |
 | Nguồn lực | Một người cùng Claude Code và Gemini; làm lúc rảnh, không đặt hạn |
 
-**Không làm:** tương tác thuốc (thay bằng câu hỏi có/không về thuốc kê đơn và lời nhắc hỏi bác sĩ, dược sĩ), xét nghiệm, CGM, gen, hệ vi sinh, hồ sơ sức khỏe trẻ em. **Thu hẹp:** khảo sát không hỏi tên bệnh, tên thuốc; không sàng lọc rối loạn ăn uống mà có nút "ẩn số calo"; AI không trả lời về bệnh, thuốc, liều.
+**Không làm:** trẻ dưới 1 tuổi, điều chỉnh mức theo bệnh, tương tác thuốc, xét nghiệm, CGM, gen, hệ vi sinh. **Thu hẹp:** màn Điều kiện không hỏi tên bệnh, tên thuốc; không sàng lọc rối loạn ăn uống mà có nút "ẩn số calo".
 
 **Khác biệt so với [VNeNUTRITION](https://baoquocte.vn/ra-mat-ung-dung-dinh-duong-viet-378041.html)** của Viện Dinh dưỡng (5/4/2026): thực phẩm và bổ sung trên cùng một thước đo, cảnh báo đúng phạm vi từng chất; kho và lịch uống, đọc nhãn tiếng Việt và hàng nhập; dữ liệu ở máy, không cần tài khoản; mỗi số có nguồn. WholeWell không dùng dữ liệu của họ.
 
@@ -30,15 +30,16 @@ WholeWell giúp người Việt từ 18 tuổi biết mình nạp bao nhiêu vi 
 
 | Tính năng | App làm gì | Giai đoạn |
 | --- | --- | --- |
-| Hồ sơ, khảo sát | Tuổi, giới, chiều cao, cân nặng; mang thai (tuần thai, cân nặng trước khi mang thai) hoặc cho con bú (tháng sau sinh); giờ thức, ngủ, bữa ăn; câu hỏi có/không cho tầng an toàn | 1 |
-| Nhật ký ăn | Chữ, giọng nói (trên máy), mã vạch, nhãn bao bì; thư viện món Việt; ảnh món từ giai đoạn 2 | 1 |
+| Hồ sơ | Điều kiện dùng app (tuổi, câu có/không); giới, chiều cao, cân nặng; giờ thức, ngủ, bữa ăn | 1 |
+| Nhật ký ăn | Chữ, giọng nói (trên máy), mã vạch, nhãn bao bì; thư viện món Việt | 1 |
 | Bổ sung và kho | Chụp nhãn, quét mã, lưu từng chất và dạng; số còn lại, ngày dự kiến hết, hạn dùng | 1 |
 | Nước, vận động | Tự nhập; calo buổi tập theo MET; phút vận động so với chuẩn; gợi ý mức vận động | 1 |
 | Đối chiếu, cảnh báo | % so với mức khuyến nghị, tách thực phẩm và bổ sung; cảnh báo vượt giới hạn; calo, tỷ lệ đạm, béo, bột đường, đường bổ sung | 1 |
 | Lịch uống, nhắc giờ | Tự đặt lịch; lưu ý khi lịch trái quy tắc có nguồn; đánh dấu đã uống | 1 |
 | Sao lưu | Tệp mã hóa, Google Drive; khôi phục chéo nền tảng ở giai đoạn 2 | 1–2 |
 | Gia đình | Một hộp nhiều người (1); nhiều hồ sơ trên một máy (2); kho chung nhiều tài khoản (3) | 1–3 |
-| Widget, trợ lý AI | Widget lần uống; AI giải thích số, gợi ý món (2); thao tác bằng câu nói (3) | 2–3 |
+| Mọi nhóm NASEM | Trẻ em từ 1 tuổi (hồ sơ do phụ huynh quản lý, cùng nhiều hồ sơ trên một máy), mang thai, cho con bú (chế độ thận trọng) | 2 |
+| Widget | Widget lần uống | 2 |
 | ODA tham khảo | Mức của LPI cạnh mức khuyến nghị, không vượt giới hạn | 3 |
 | Quảng cáo | Theo quyết định ở mục 1 | Sau khi có người dùng |
 
@@ -47,12 +48,12 @@ flowchart LR
   G0["Giai đoạn 0<br/>kế hoạch, yêu cầu,<br/>thiết kế"] --> C1{{"Cổng 1<br/>quy tắc đủ nguồn,<br/>tự kiểm pháp lý"}}
   C1 --> MVP["MVP (Android)"]
   MVP --> C2{{"Cổng 2<br/>0 vi phạm giới hạn,<br/>0 lỗi đơn vị, pháp lý"}}
-  C2 --> G2["Giai đoạn 2<br/>desktop, widget,<br/>trợ lý AI, gia đình"]
+  C2 --> G2["Giai đoạn 2<br/>mọi nhóm NASEM, desktop,<br/>widget, gia đình"]
   G2 --> C3{{"Cổng 3<br/>mỗi mức ODA<br/>có nguồn LPI"}}
-  C3 --> G3["Giai đoạn 3<br/>ODA, câu nói,<br/>kho chung"]
+  C3 --> G3["Giai đoạn 3<br/>ODA, kho chung"]
 ```
 
-Không đặt mốc thời gian; chưa qua cổng thì chưa sang giai đoạn sau. **Thứ tự code MVP:** (1) engine và gói dữ liệu; (2) CSDL mã hóa; (3) hồ sơ, khảo sát, nhật ký ăn, nước, buổi tập; (4) chụp nhãn, mã vạch, kho; (5) lịch uống, nhắc giờ, đánh dấu đã uống; (6) đối chiếu và cảnh báo trên giao diện; (7) sao lưu tệp, rồi Google Drive. Cần rút ngắn thì MVP chỉ sao lưu ra tệp.
+Không đặt mốc thời gian; chưa qua cổng thì chưa sang giai đoạn sau. **Thứ tự code MVP:** (1) engine và gói dữ liệu; (2) CSDL mã hóa; (3) điều kiện dùng app, hồ sơ, nhật ký ăn, nước, buổi tập; (4) chụp nhãn, mã vạch, kho; (5) lịch uống, nhắc giờ, đánh dấu đã uống; (6) đối chiếu và cảnh báo trên giao diện; (7) sao lưu tệp, rồi Google Drive. Cần rút ngắn thì MVP chỉ sao lưu ra tệp.
 
 **Chi phí:** Google Play 25 USD một lần; iOS thêm 99 USD/năm và máy Mac; không chi phí máy chủ, dữ liệu, tư vấn. Google Play yêu cầu ít nhất 12 người thử liên tục 14 ngày ([Google Play](https://support.google.com/googleplay/android-developer/answer/14151465)); tìm người thử từ sớm.
 
@@ -72,7 +73,7 @@ Không đặt mốc thời gian; chưa qua cổng thì chưa sang giai đoạn s
 
 Đạm dùng RDA 0,8 g/kg làm mức tối thiểu và AMDR làm khoảng; không thêm mức 1,2–1,6 g/kg. Không dùng EAR, CDRR. ODA chỉ lấy từ LPI vì các bảng ODA khác không thống nhất, không công bố phương pháp, và liều cao có thể hại (thử nghiệm [SELECT](https://www.cancer.gov/types/prostate/research/select-trial-results-qa): vitamin E 400 IU/ngày tăng 17% tương đối ung thư tuyến tiền liệt).
 
-**Mô hình 3 tầng:** (1) an toàn: giới hạn, thai kỳ, câu trả lời có/không, dị ứng; chạy trước mọi gợi ý, chỉ được thận trọng hơn; (2) nền tảng: mức khuyến nghị, luôn hiện; (3) tham khảo: ODA, kèm nguồn, không vượt giới hạn, ẩn khi có cờ an toàn.
+**Mô hình 3 tầng:** (1) an toàn: điều kiện dùng app, chế độ thận trọng, giới hạn; chạy trước mọi thứ khác, chỉ được thận trọng hơn; (2) nền tảng: mức khuyến nghị, luôn hiện; (3) tham khảo: ODA, kèm nguồn, không vượt giới hạn, ẩn ở chế độ thận trọng và với trẻ em.
 
 **Quy tắc nguồn:**
 
@@ -100,9 +101,9 @@ Tất cả đóng vào gói dữ liệu có phiên bản đi kèm bản cài, đ
 
 - **Chưa có nhật ký thì chỉ hiện chuẩn,** không ước tính lượng nạp. Trung bình 7 ngày chia cho số ngày có ghi, ghi rõ số ngày.
 - **Món Việt:** chỉ dùng USDA; thư viện món tính từ công thức tự soạn với nguyên liệu USDA và khẩu phần quen thuộc, ghi "ước tính"; món không có thì nhập theo nhãn hoặc chọn món gần nhất. Script lập danh sách món "chỉ có ở Việt Nam".
-- **Đối tượng:** chỉ làm dữ liệu cho người từ 18 tuổi. Người 18 tuổi dùng mức khuyến nghị và giới hạn của nhóm 14–18 (cách NASEM chia nhóm), không có mục tiêu calo. Nhóm tham chiếu (tuổi, giới, thai kỳ) và các mức của từng nhóm định nghĩa trong gói dữ liệu, engine không viết cứng mốc tuổi, để thêm đối tượng về sau chỉ là thêm số liệu có nguồn, ca test, duyệt và phát hành. Hồ sơ dưới 18 tuổi cần đổi quyết định sản phẩm và rà pháp lý về dữ liệu trẻ em trước.
-- **Hồ sơ theo thời gian:** tuổi, tuần thai, tháng sau sinh lưu kèm ngày nhập và tự tăng; qua tuần 42 hoặc cho con bú đủ 12 tháng thì hỏi lại. Thông tin thai kỳ bắt buộc khi chọn mang thai, cho con bú; thiếu thì báo lý do, không đoán.
-- **Mục tiêu calo** theo EER; mức vận động người dùng chọn, app gợi ý từ buổi tập 7 ngày theo quy tắc của app (phút tương đương vừa/ngày: ≥30 nhẹ, ≥60 vừa, ≥120 nhiều). Không cộng calo buổi tập vào mục tiêu. Không tính cho người 18 tuổi và mang thai dưới 19 tuổi.
+- **Đối tượng** (mục 1): nhóm tham chiếu theo cách NASEM chia, định nghĩa trong gói dữ liệu, engine không viết cứng mốc tuổi. MVP dùng 10 nhóm nam, nữ từ 14–18 đến trên 70; người 18 tuổi dùng mức của nhóm 14–18. Giai đoạn 2 thêm mang thai, cho con bú (đã có trong gói) và 1–3, 4–8, 9–13 (thêm vào gói kèm ô đối chiếu); cần phương trình EER trẻ em (NASEM 2023), hồ sơ trẻ em do phụ huynh tạo và đồng ý thay, rà pháp lý dữ liệu trẻ em.
+- **Hồ sơ theo thời gian:** tuổi lưu kèm ngày nhập và tự tăng.
+- **Mục tiêu calo** theo EER; mức vận động người dùng chọn, app gợi ý từ buổi tập 7 ngày theo quy tắc của app (phút tương đương vừa/ngày: ≥30 nhẹ, ≥60 vừa, ≥120 nhiều). Không cộng calo buổi tập vào mục tiêu. Chưa tính cho người dưới 19 tuổi.
 - **Đường bổ sung:** hiện số gam và % năng lượng đã ăn, không có ngưỡng trong ngày; giới hạn mỗi bữa báo ngay. Nguồn: FPED cho món FNDDS, nguyên liệu cho món tự soạn; nhãn chỉ ghi đường tổng thì "chưa rõ".
 - **Vận động** do người dùng tự nhập; kcal ≈ MET × kg × giờ, ghi "khoảng"; không đọc thiết bị đeo, Health Connect, HealthKit.
 - **Nước** chỉ hiện lượng đã uống, không so, vì mức tham chiếu là tổng nước gồm cả nước trong thức ăn ([NAP](https://www.nationalacademies.org/read/10925/chapter/6)).
@@ -126,7 +127,7 @@ Tất cả đóng vào gói dữ liệu có phiên bản đi kèm bản cài, đ
 
 Câu của quy tắc lịch còn hiện ở thẻ "Bạn có biết" cuối màn Hôm nay: mỗi ngày một câu, chỉ quy tắc có chất trong kho, chữ đứng yên (không chữ chạy), ẩn khi đang có cảnh báo vượt giới hạn.
 
-Không làm quy tắc: canxi–magie, canxi–kẽm, khoảng cách giờ cụ thể giữa hai vi chất (nguồn không nói). Vitamin C tăng hấp thu sắt chỉ là thông tin ở chi tiết chất, không thành gợi ý, vì không hợp với người bệnh về máu. Thuốc kê đơn: app không xếp lại, không kiểm tương tác.
+Không làm quy tắc: canxi–magie, canxi–kẽm, khoảng cách giờ cụ thể giữa hai vi chất (nguồn không nói). Vitamin C tăng hấp thu sắt chỉ là thông tin ở chi tiết chất, không thành gợi ý.
 
 ### Cảnh báo giới hạn an toàn
 
@@ -138,12 +139,8 @@ Không làm quy tắc: canxi–magie, canxi–kẽm, khoảng cách giờ cụ t
 
 | Nhóm | Biện pháp |
 | --- | --- |
-| Dưới 18 tuổi | Không có hồ sơ; hỏi tuổi trước màn đồng ý |
-| Mang thai, cho con bú | Mức của nhóm này; ẩn ODA; khuyên hỏi bác sĩ |
-| Dùng thuốc kê đơn, bệnh mạn tính | Lưu ý hỏi bác sĩ trước khi dùng bổ sung; ẩn ODA |
-| Bệnh về máu (thalassemia) | Không gợi ý gì về sắt ([CDC](https://www.cdc.gov/thalassemia/communication-resources/initiating-regular-transfusions.html)); khoảng 13,8% người Việt mang gen ([Hemoglobin 2022](https://pubmed.ncbi.nlm.nih.gov/35950578/)) |
-| Hút thuốc | Lưu ý khi dùng beta-caroten liều cao ([ODS](https://ods.od.nih.gov/factsheets/VitaminA-HealthProfessional/)) |
-| Dị ứng thực phẩm | Loại khỏi gợi ý món; cảnh báo khi mã vạch khai báo chất gây dị ứng |
+| Dưới 18 tuổi, mang thai, cho con bú (MVP); dưới 1 tuổi (luôn) | Hỏi trước màn đồng ý; có thì "chưa dùng được", không lưu gì. Đã dùng mà mang thai, cho con bú: Hồ sơ báo bản này chưa hỗ trợ, cho xuất hoặc xóa dữ liệu |
+| Dùng thuốc theo chỉ định của bác sĩ, có bệnh mạn tính | Chế độ thận trọng: dòng nhắc cố định "Các mức trong app dành cho người khỏe mạnh. Với tình trạng của bạn, mức phù hợp có thể khác; hãy hỏi bác sĩ."; ghi "mức tham chiếu cho người khỏe mạnh" thay cho "mục tiêu"; ẩn ODA; cảnh báo giữ nguyên. Chỉ lưu câu trả lời Có/Không, không lưu tên bệnh, tên thuốc |
 | Dễ bị ảnh hưởng bởi đếm calo | "Ẩn số calo"; không mục tiêu giảm cân, chuỗi ngày, huy hiệu, lời phán xét ([liên quan giữa app đếm calo và rối loạn ăn uống](https://pubmed.ncbi.nlm.nih.gov/39671845/)) |
 
 Lời lẽ và cách hiện ở [design/README.md](design/README.md) và [design/mvp-overview.md](design/mvp-overview.md).
@@ -154,7 +151,6 @@ Lời lẽ và cách hiện ở [design/README.md](design/README.md) và [design
 | --- | --- |
 | Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 ([toàn văn](https://luattri.com/library/luat/91-2025-qh15-bao-ve-du-lieu-ca-nhan)), Nghị định 356/2025/NĐ-CP | Sức khỏe là dữ liệu nhạy cảm: đồng ý riêng từng mục đích, ô không đánh sẵn, lưu bằng chứng trên máy; rút đồng ý thì xóa toàn bộ; có xuất, sửa, xóa; Drive chỉ bật sau màn giải thích, khóa chỉ người dùng giữ; tự lập hồ sơ đánh giá tác động |
 | [Nghị định 98/2021/NĐ-CP](https://thuvienphapluat.vn/van-ban/The-thao-Y-te/Nghi-dinh-98-2021-ND-CP-quan-ly-trang-thiet-bi-y-te-493940.aspx) (trang thiết bị y tế) | Chỉ tham chiếu dinh dưỡng chung; không theo dõi bệnh, không ngưỡng chẩn đoán |
-| [Luật Trí tuệ nhân tạo 134/2025/QH15](https://www.bakermckenzie.com/en/insight/publications/2026/02/vietnam-artificial-intelligence-law-foundation-and-outlook) | AI trên máy, chỉ giải thích số, ghi rõ là AI; đối chiếu danh mục rủi ro cao trước giai đoạn 2 |
 | [Luật Quảng cáo 75/2025/QH15](https://thuvienphapluat.vn/van-ban/Thuong-mai/Luat-Quang-cao-sua-doi-2025-so-75-2025-QH15-555035.aspx), [Nghị định 342/2025/NĐ-CP](https://thuvienphapluat.vn/documents/law.aspx?id=Q%3DpnM05qVTTm) | Giai đoạn có quảng cáo: không cá nhân hóa, có biểu tượng tắt, chặn danh mục dược phẩm, vitamin, bổ sung ([AdMob](https://support.google.com/admob/answer/3150953)) |
 | Luật Sở hữu trí tuệ, Điều 15 | Chỉ lưu con số của NASEM, LPI |
 | [FDA General Wellness](https://www.fda.gov/media/90652/download), nếu sang Mỹ | Giữ câu chữ trong phạm vi sức khỏe chung |
@@ -168,25 +164,24 @@ flowchart TB
     PACK["Gói dữ liệu đã ký<br/>số liệu, quy tắc, nguồn"] --> ENG
     ENG --> DB[("CSDL mã hóa")]
     ENG --> UI["Giao diện Flutter"]
-    AI["AI trên máy (giai đoạn 2)"] -.-> UI
   end
   STORE["Cửa hàng ứng dụng"] --> PACK
   DB -- "mã hóa, khóa chỉ người dùng giữ" --> DRIVE["Google Drive appDataFolder<br/>tùy chọn"]
 ```
 
-- **Engine:** gói Dart thuần, không I/O; bản Python (`tools/reference_engine.py`) sinh ca kiểm thử. Engine quyết định mọi số và cảnh báo. AI không tính số vì yếu khi cá nhân hóa (không chatbot nào vượt 50% ở ca phức tạp, [JCM 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC11677083/)); câu trả lời có số không khớp engine thì bỏ.
+- **Engine:** gói Dart thuần, không I/O; bản Python (`tools/reference_engine.py`) sinh ca kiểm thử. Engine quyết định mọi số và cảnh báo; lời giải thích lấy từ mẫu viết sẵn.
 - **Gói dữ liệu:** `tools/build_pack.py` là nguồn số liệu duy nhất; đi kèm bản cài đã ký, app kiểm toàn vẹn trước khi dùng.
 - **Lưu trữ:** drift với SQLite3MultipleCiphers, khóa qua flutter\_secure\_storage; loại khỏi sao lưu của hệ điều hành ([Android](https://developer.android.com/identity/data/autobackup), iOS isExcludedFromBackup). Không SDK phân tích, báo lỗi; giọng nói chỉ trên máy.
 - **Sao lưu:** mặc định xuất tệp mã hóa. Drive dùng [appDataFolder](https://developers.google.com/workspace/drive/api/guides/appdata); app tự mã hóa (Argon2id, mã khôi phục) vì Drive [giữ khóa của nó](https://support.google.com/drive/answer/10519333); giữ 2–3 bản; mọi client ID trong [một dự án Google Cloud](https://developers.google.com/identity/protocols/CrossClientAuth); chạy khi mở, rời app. Không iCloud (App Store 5.1.3(ii)).
 - **Lớp nền tảng sau interface Dart,** mỗi interface có bản giả để test (danh sách ở AGENTS.md). Không việc quan trọng nào phụ thuộc chạy nền.
-- **Plugin chính:** flutter\_local\_notifications (Android 14 từ chối báo thức chính xác mặc định, [Android](https://developer.android.com/about/versions/14/changes/schedule-exact-alarms); iOS tối đa 64 thông báo chờ), google\_mlkit (OCR, mã vạch), speech\_to\_text (chỉ trên máy), google\_sign\_in, googleapis. Viết native: Gemini Nano, Foundation Models, widget (giai đoạn 2).
+- **Plugin chính:** flutter\_local\_notifications (Android 14 từ chối báo thức chính xác mặc định, [Android](https://developer.android.com/about/versions/14/changes/schedule-exact-alarms); iOS tối đa 64 thông báo chờ), google\_mlkit (OCR, mã vạch), speech\_to\_text (chỉ trên máy), google\_sign\_in, googleapis. Viết native: widget (giai đoạn 2).
 - **Đa nền tảng:** engine, mã hóa, sao lưu dùng chung; OCR, mã vạch chỉ di động; web chỉ là bản xem vì Safari xóa dữ liệu sau 7 ngày không vào ([web.dev](https://web.dev/articles/storage-for-the-web)).
 
 ## 6. Rủi ro và kiểm sớm
 
 | Rủi ro | Biện pháp |
 | --- | --- |
-| Con số hoặc gợi ý sai | Tầng an toàn; quy tắc có nguồn; test so với bản Python; 0 vi phạm giới hạn, 0 lỗi đơn vị |
+| Con số hoặc lưu ý sai | Tầng an toàn; quy tắc có nguồn; test so với bản Python; 0 vi phạm giới hạn, 0 lỗi đơn vị |
 | Đọc nhãn sai (đơn vị, dạng, hợp chất) | Lưu từng chất và dạng; kiểm hợp lý; xác nhận từng dòng; dạng chưa rõ tính thận trọng |
 | Nhắc giờ trễ | Xin quyền báo đúng giờ, dự phòng gần đúng, lịch cuộn; thử máy thật |
 | Mất dữ liệu | Nhắc sao lưu; 2–3 bản; mã khôi phục; xuất tệp |
@@ -204,7 +199,6 @@ flowchart TB
 | Giọng nói tiếng Việt trên máy | ML Kit có vi-VN (beta) cho Android 12+; thử máy với tên món | Ẩn tính năng |
 | Nhắc giờ 7 ngày trên vài hãng; nút "Đã uống" khi app nền | Chưa thử | Báo gần đúng; bấm nút thì mở app |
 | Sao lưu Android, khôi phục nền tảng khác | Chưa thử | Chỉ xuất, nhập tệp |
-| AI tiếng Việt trên máy (30 câu) | Gemini Nano chưa công bố tiếng Việt; Apple có từ iOS 26.1 | Giải thích theo mẫu |
 
 ## 7. Kiểm thử, phát hành, bảo trì
 
