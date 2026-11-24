@@ -25,7 +25,7 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
    - Sản phẩm → nhiều thành phần {chất (id trong gói hoặc tên tự do), dạng hoặc "nhãn không ghi", lượng mỗi khẩu phần, đơn vị gốc, lượng gốc trên nhãn, nguyên tố hay hợp chất, nguồn dòng, đã xác nhận}; nhiều hộp (còn lại, hạn dùng).
    - Nhật ký (món, lần uống, nước, buổi tập); mỗi lần ghi lưu danh sách dòng chất (nguồn, dạng, lượng so mức khuyến nghị, lượng tính giới hạn, số trên nhãn) kèm dữ liệu gốc.
    - Lịch uống có ngày hiệu lực; trạng thái từng lần (đã uống, bỏ qua); trừ kho ghi theo từng hộp; sản phẩm có đơn vị đếm và số đơn vị mỗi khẩu phần.
-2. **Sửa engine** (đặc tả; làm trước hoặc cùng Lịch uống). Mỗi thay đổi sửa cả `tools/reference_engine.py` và sinh lại fixtures:
+2. **Sửa engine** (đặc tả; **phải xong trước mọi đường ghi có thể sinh lượng tính giới hạn riêng**: Nhập theo nhãn, Ghi một lần, chụp nhãn, mã vạch, tức trước việc 3; xem đặc tả CSDL, mục Lượng đã ghi). Mỗi thay đổi sửa cả `tools/reference_engine.py` và sinh lại fixtures:
    - Nhóm tham chiếu là dữ liệu: bỏ mốc tuổi viết cứng (`driGroupFor` dùng 14, 19; đạm và AMDR dùng 19); tuổi tối thiểu tạo hồ sơ đọc từ gói.
    - Gần mốc đổi nhóm tuổi (12 tháng trước 19, 31, 51, 71): giới hạn lấy mức thấp hơn của hai nhóm.
    - Đường bổ sung: giới hạn 10 g theo từng bữa chính; món bữa phụ cách món phụ ngay trước dưới 30 phút thì vào cùng bữa (nối chuỗi).

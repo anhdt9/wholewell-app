@@ -123,6 +123,7 @@ Lưu mọi dữ liệu người dùng trên máy trong một CSDL mã hóa, thay
 | Vitamin E ghi IU, không rõ dạng | `vitE` = IU × `e_rda(tổng hợp)` (nhỏ nhất); `uncertain` | `vitE` = IU × `e_ul(tổng hợp)` (lớn nhất) |
 | Vitamin E ghi "mg alpha-tocopherol" (nhãn FDA mới, đã quy về dạng 2R), biết dạng | `vitE` = mg | `vitE` = mg ÷ `e_rda(dạng)` × `e_ul(dạng)` khi khác `amounts` |
 | Vitamin E ghi mg khối lượng dạng tổng hợp (vd. "mg dl-alpha-tocopherol") | `vitE` = mg ÷ `e_ul(tổng hợp)` × `e_rda(tổng hợp)` | `vitE` = mg |
+| Vitamin E ghi mg khối lượng este (vd. "dl-alpha tocopheryl acetate 30 mg", succinat) | đổi khối lượng este ra khối lượng tocopherol theo tỷ lệ của este trong gói (như hợp chất), rồi theo hàng trên đúng dạng d- hoặc dl- | `vitE` = khối lượng tocopherol đã đổi theo hàng trên |
 | Vitamin E ghi mg, không rõ dạng hay cách ghi | số nhỏ nhất trong các cách hiểu trên; `uncertain` | số lớn nhất trong các cách hiểu trên |
 | Hợp chất, biết tên (vd. canxi carbonat) | khóa chất = khối lượng × tỷ lệ nguyên tố (ODS) | – |
 | Không rõ là hợp chất hay nguyên tố | khóa chất = số trên nhãn × tỷ lệ nguyên tố nhỏ nhất trong các hợp chất của chất đó có trong gói; `uncertain` | khóa chất = số trên nhãn (coi là nguyên tố) |
@@ -130,10 +131,13 @@ Lưu mọi dữ liệu người dùng trên máy trong một CSDL mã hóa, thay
 | Chất không có trong gói | không có khóa (lưu để xem, không tính) | – |
 
 - **Vitamin E: hai phía dùng hệ số khác nhau** (đối chiếu NIH ODS, fact sheet vitamin E cho chuyên gia, tra 24/11/2026): mức khuyến nghị chỉ tính dạng 2R, 1 IU tự nhiên = 0,67 mg, 1 IU tổng hợp = 0,45 mg (gói đã có). Giới hạn áp cho mọi dạng alpha-tocopherol bổ sung, gồm cả 8 đồng phân của dạng tổng hợp; 1.000 mg tương đương 1.500 IU tự nhiên hoặc 1.100 IU tổng hợp, tức `e_ul` ≈ 0,67 (tự nhiên) và ≈ 0,91 (tổng hợp). Gói và engine hiện dùng 0,45 cho cả hai phía nên **lượng tính giới hạn của vitamin E tổng hợp đang thiếu khoảng một nửa**: lỗi có sẵn, sửa ở việc 2 (thêm `e_ul` vào `build_pack.py` sau khi đối chiếu báo cáo DRI gốc, kèm ô đối chiếu).
+- Tỷ lệ tocopherol của este vitamin E (acetat, succinat) chưa có trong gói: thêm cùng tỷ lệ nguyên tố của hợp chất ở việc 5 (chụp nhãn), kèm nguồn và ô đối chiếu. Trước đó, dòng este hiện "chưa tính được" phía mức khuyến nghị (không có `vitE` trong `amounts`), còn phía giới hạn coi khối lượng este là khối lượng tocopherol (`ul_amounts.vitE` = mg, lớn hơn thật nên vẫn thận trọng).
 - Hệ số beta-caroten trong thức ăn (IU → µg RAE) chưa có trong gói: thêm ở việc 3 (Thư viện món) kèm nguồn và ô đối chiếu. Trước đó, dòng này chỉ có `ul_amounts.retinol`; `amounts` không có `vitA` và dòng hiện "chưa tính được" phía mức khuyến nghị (không đoán số).
 
 - **Đổi sang `IntakeItem`:** gộp các dòng của một lần ghi theo `source` thành một `IntakeItem` cho mỗi nguồn (`nutrients` = cộng `amounts`; lượng tính giới hạn = cộng `ul_amounts`, khóa nào không có thì lấy từ `amounts`). Engine chỉ đọc các bản này; đổi thành phần sản phẩm hay gói dữ liệu sau khi ghi không đổi lịch sử.
 - **Phụ thuộc việc 2 (sửa engine):** engine hiện chưa có lượng tính giới hạn riêng (vitamin E tổng hợp và dạng chưa rõ cần hai số cho cùng một khóa) và chưa có hệ số `e_ul`. Việc 2 thêm vào `IntakeItem` một bảng lượng tính giới hạn tùy chọn, `amountForUl` dùng bảng này khi có; sửa cả `tools/reference_engine.py` và fixtures. CSDL lưu đủ dữ liệu ngay từ v1, không cần di chuyển khi việc 2 xong.
+- **Điều kiện cứng: việc 2 xong trước mọi đường ghi có thể sinh `ul_amounts`**: Nhập theo nhãn, Ghi một lần, chụp nhãn, mã vạch, thành phần sản phẩm (hợp chất không rõ, vitamin A ghi IU, vitamin E, este). Nếu engine chưa đọc `ul_amounts` mà dòng đã có, phần đó bị bỏ qua và tính thiếu vào giới hạn (trái tiêu chí "0 vi phạm UL").
+- **Chặn bỏ qua lặng lẽ:** cho tới khi việc 2 xong, hàm đổi dòng sang `IntakeItem` gặp `ul_amounts` không rỗng thì ném lỗi, và lệnh ghi một dòng như vậy bị từ chối. Việc 2 thay bằng đọc thật và đổi test tương ứng.
 - **Sửa khẩu phần:** món theo nhãn tính lại từ `label_amount` × `portion_qty` ÷ `label_basis_qty` (cùng đơn vị; vd. nhãn cho 100 ml, đổi 180 ml thành 250 ml). Món USDA, công thức: tính lại theo gói đang cài và cập nhật `pack_version`. Lần uống: tính lại từ số trên nhãn × số khẩu phần theo gói đang cài và cập nhật `pack_version`.
 - **Giữ cả dữ liệu gốc** (`food_ref`, khẩu phần, số lượng, gốc nhãn ở `food_entries`; số trên nhãn và dạng ở `intake_lines`) và `pack_version` để sau này tính lại có chủ đích khi gói sửa lỗi, vd. một hệ số đổi đơn vị sai (câu hỏi 2). Tính lại là việc của một đặc tả sau, có test, không tự chạy.
 
@@ -143,7 +147,7 @@ Lưu mọi dữ liệu người dùng trên máy trong một CSDL mã hóa, thay
 
 - `SecureKeyStore`: `Future<KeyReadResult> readDbKey()` (bốn trạng thái ở trên), `Future<Uint8List> createDbKey()` (lỗi nếu đã có), `Future<void> deleteDbKey()`, `Future<bool> isDeviceUnlocked()`.
 - `JournalRepository` đổi sang bất đồng bộ (`Future`, `Stream` theo ngày) và mở rộng theo lược đồ trên; `DriftJournalRepository` thay `InMemoryJournalRepository`. Bản bộ nhớ giữ lại để test giao diện.
-- Engine (`packages/health_engine`) không sửa trong việc này: app đọc các lần ghi, đổi thành `IntakeItem`, `WorkoutEntry` theo quy tắc ở trên rồi gọi engine. Lượng tính giới hạn riêng (`ul_amounts`) chỉ dùng được khi việc 2 xong; trước đó app chưa ghi dòng vitamin E từ nhãn (chụp nhãn là việc 5, sau việc 2).
+- Engine (`packages/health_engine`) không sửa trong việc này: app đọc các lần ghi, đổi thành `IntakeItem`, `WorkoutEntry` theo quy tắc ở trên rồi gọi engine. Lượng tính giới hạn riêng (`ul_amounts`) chỉ dùng được khi việc 2 xong; xem điều kiện cứng ở mục Lượng đã ghi.
 
 ### Luồng xử lý
 
@@ -213,6 +217,7 @@ Màn "Cần cập nhật": "Cần cập nhật WholeWell. Dữ liệu của bạ
 - [ ] Lượng đã ghi: đổi thành phần sản phẩm sau khi ghi không làm đổi tổng của ngày đã ghi.
 - [ ] Mỗi hàng trong bảng "Quy tắc đổi một dòng thành khóa engine" có một ca test. Vd. axit folic 400 µg → `folate` 680, `folicAcid` 400; vitamin A µg RAE không rõ dạng → `retinol` bằng toàn bộ; vitamin E 100 IU tổng hợp → `amounts` 45 mg, `ul_amounts` theo `e_ul(tổng hợp)` (≈ 91 mg); vitamin E IU không rõ dạng → như dạng tổng hợp và `uncertain`; không rõ hợp chất hay nguyên tố → `amounts` theo tỷ lệ nhỏ nhất, `ul_amounts` bằng số trên nhãn.
 - [ ] Magie từ thức ăn (`source = food`) không tính vào giới hạn (phạm vi theo `source`).
+- [ ] Khi engine chưa hỗ trợ lượng tính giới hạn riêng: đổi một dòng có `ul_amounts` sang `IntakeItem` thì ném lỗi; ghi một dòng như vậy bị từ chối, không bỏ qua lặng lẽ.
 - [ ] Xóa một lần ghi thì không còn dòng `intake_lines` nào của nó; dòng có cả hai cột lần ghi hoặc không có cột nào bị CSDL từ chối.
 - [ ] Sửa giờ, ngày của một món sang ngày khác: các dòng `intake_lines` có `day` mới, tổng của hai ngày đúng.
 - [ ] Món không rõ đường bổ sung được đếm vào "Chưa tính đường bổ sung của {n} món", không tính là 0 g.
@@ -253,5 +258,5 @@ Màn "Cần cập nhật": "Cần cập nhật WholeWell. Dữ liệu của bạ
 1. **Android tối thiểu API 28 (Android 9)?** `setUnlockedDeviceRequired` cần API 28. Hiện app dùng mặc định của Flutter (thấp hơn). Đề xuất đặt `minSdk = 28`; máy thấp hơn rất ít và không giữ được yêu cầu "khóa chỉ dùng khi máy mở khóa". Chờ chủ dự án chốt.
 2. **Lưu sẵn lượng đã ghi, kèm dữ liệu gốc** (đề xuất ở trên) thay vì tính lại từ gói dữ liệu mỗi lần đọc. Lợi: lịch sử không đổi khi gói cập nhật; khi gói sửa lỗi thì vẫn tính lại được có chủ đích từ dữ liệu gốc. Chờ chủ dự án chốt.
 3. **Sửa lịch có hiệu lực từ khi nào?** Đề xuất: từ hôm nay nếu hôm nay chưa đánh dấu lần nào của lịch cũ; nếu đã đánh dấu thì từ ngày mai, và màn Lịch báo "Lịch mới áp dụng từ ngày mai." (chữ mới, cần thêm vào thiết kế khi làm tính năng Lịch uống). Lược đồ không đổi theo câu trả lời. Chờ chủ dự án chốt.
-4. **Nguyên tắc chung cho mọi dạng chưa rõ:** so mức khuyến nghị lấy số nhỏ nhất có thể, tính giới hạn lấy số lớn nhất có thể, ghi "chưa chắc"? Plan chỉ nói phía giới hạn; phía mức khuyến nghị là quy tắc của app. Áp đều cho vitamin E, vitamin A ghi IU, hợp chất hay nguyên tố (bảng quy tắc). Chờ chủ dự án chốt.
+4. **Nguyên tắc chung cho mọi dạng chưa rõ:** so mức khuyến nghị lấy số nhỏ nhất có thể, tính giới hạn lấy số lớn nhất có thể, ghi "chưa chắc"? Plan chỉ nói phía giới hạn; phía mức khuyến nghị là quy tắc của app. Áp đều cho vitamin E, vitamin A ghi IU, hợp chất hay nguyên tố, este (bảng quy tắc). **Hệ quả cần biết:** nhãn ở Việt Nam thường chỉ ghi "Vitamin E 15 mg", không ghi dạng. Theo nguyên tắc này, dòng đó tính khoảng 30 mg vào giới hạn (coi là dạng tổng hợp ghi theo 2R: 15 ÷ 0,45 × 0,91) và khoảng 7,4 mg vào mức khuyến nghị (coi là khối lượng dạng tổng hợp: 15 ÷ 0,91 × 0,45), kèm "chưa chắc". Như vậy phần lớn viên đa vitamin sẽ hiện vitamin E thấp hơn mức khuyến nghị và "chưa chắc". Chờ chủ dự án chốt.
 5. **Thêm ba chữ vào thiết kế tổng thể đã duyệt** (dòng "Toàn app"): "Mở khóa máy để xem dữ liệu."; "Chưa đọc được khóa dữ liệu trên máy này." + [Thử lại] [Khôi phục từ bản sao lưu]; "Cần cập nhật WholeWell…". Chờ chủ dự án đồng ý.
