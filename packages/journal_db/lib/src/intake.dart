@@ -27,8 +27,9 @@ void checkLinesWritable(Iterable<IntakeLine> lines) {
 /// Gộp các dòng của một lần ghi theo nguồn thành một `IntakeItem` mỗi nguồn.
 List<IntakeItem> _group(String label, String? mealId, List<IntakeLine> lines) {
   final bySource = <IntakeSource, Map<String, double>>{};
+  // Việc 2: khi bật [engineSupportsUlAmounts], đưa `ulAmounts` vào IntakeItem tại đây.
+  checkLinesWritable(lines);
   for (final l in lines) {
-    if (_hasUl(l)) throw UlAmountsNotSupported();
     final m = bySource.putIfAbsent(l.source, () => {});
     for (final e in l.amounts.entries) {
       m[e.key] = (m[e.key] ?? 0) + e.value;

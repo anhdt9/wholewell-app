@@ -62,3 +62,6 @@ jobs:
       - name: Build Android (debug)
         working-directory: app
         run: flutter build apk --debug
+      - name: Test JVM phần Kotlin (kho khóa)
+        working-directory: app/android
+        run: ./gradlew :app:testDebugUnitTest --no-daemon

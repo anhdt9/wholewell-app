@@ -112,4 +112,35 @@ void main() {
     expect(v.data['schema_version'], currentSchemaVersion);
     expect(DbFiles(dir).preMigrationCopies(), isEmpty);
   });
+
+  test('xóa khóa lỗi: vẫn xóa tệp, giữ dấu, về Chào mừng; lần sau xóa lại khóa', () async {
+    final dir = tempDir();
+    final keys = FakeSecureKeyStore();
+    final o = testOpener(dir, keys);
+    final repo = await createdRepo(o);
+    keys.failingDeletes = 1;
+    await o.wipeAll(openRepository: repo);
+    expect(fileNames(dir), ['wholewell.wiping']);
+    expect(keys.key, isNotNull);
+    expect(await o.open(), isA<Welcome>());
+    expect(keys.key, isNull);
+    expect(fileNames(dir), isEmpty);
+  });
+
+  test('xóa khóa vẫn lỗi khi bấm Đồng ý: không ghi gì, báo lỗi khóa', () async {
+    final dir = tempDir();
+    final keys = FakeSecureKeyStore();
+    final o = testOpener(dir, keys);
+    await o.wipeAll(openRepository: await createdRepo(o));
+    keys
+      ..key = generateDbKey()
+      ..failingDeletes = 1;
+    DbFiles(dir).wipeMarker.writeAsStringSync('1');
+    expect(await o.createNew(testConsent), isA<KeyStuck>());
+    expect(DbFiles(dir).db.existsSync(), isFalse);
+    final r = await o.createNew(testConsent);
+    expect(r, isA<Opened>());
+    expect(DbFiles(dir).wipeMarker.existsSync(), isFalse);
+    await (r as Opened).repository.close();
+  });
 }

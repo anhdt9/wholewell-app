@@ -72,6 +72,9 @@ class FakeSecureKeyStore implements SecureKeyStore {
   int unavailableReads = 0;
 
   bool unlocked = true;
+
+  /// Số lần xóa tiếp theo bị lỗi (giả lập Android trả `delete_failed`).
+  int failingDeletes = 0;
   int reads = 0;
   int creates = 0;
   int deletes = 0;
@@ -101,6 +104,10 @@ class FakeSecureKeyStore implements SecureKeyStore {
 
   @override
   Future<void> deleteDbKey() async {
+    if (failingDeletes > 0) {
+      failingDeletes--;
+      throw StateError('xóa khóa lỗi (giả)');
+    }
     deletes++;
     key = null;
     lost = false;

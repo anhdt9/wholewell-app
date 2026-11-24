@@ -121,7 +121,16 @@ void main() {
         lines: [line('calcium', 500, source: IntakeSource.supplement)],
         occurrence: const OccurrenceRef(9999, '2026-11-24'), // lịch không tồn tại: lỗi khóa ngoại
       );
-      await expectLater(repo.recordDose(bad), throwsA(isA<JournalStorageException>()));
+      Object? err;
+      try {
+        await repo.recordDose(bad);
+      } on Object catch (e) {
+        err = e;
+      }
+      expect(err, isA<JournalStorageException>());
+      // Giữ loại lỗi và mã lỗi để tra crash, không có câu SQL hay giá trị.
+      expect(err.toString(), contains('SqliteException('));
+      expect(err.toString().toUpperCase(), isNot(contains('INSERT')));
       expect(await _count(repo, 'SELECT count(*) FROM dose_entries'), 0);
       expect(await _count(repo, 'SELECT count(*) FROM intake_lines'), 0);
       expect((await repo.boxesOf(pid)).single.remaining, 10);

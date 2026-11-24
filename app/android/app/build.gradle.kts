@@ -47,3 +47,8 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // Test JVM cho quy tắc kho khóa (DbKeyRules).
+    testImplementation("junit:junit:4.13.2")
+}

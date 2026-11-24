@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -17,12 +18,15 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final pack = ReferencePack.fromJsonString(
       await rootBundle.loadString('assets/reference_pack.json'));
-  // Android: filesDir; iOS: Application Support (không dùng Documents).
-  final dir = await getApplicationSupportDirectory();
-  final state = AppState(
-    pack: pack,
-    opener: DbOpener(files: DbFiles(dir), keys: const AndroidDbKeyStore()),
-  );
+  final AppState state;
+  if (Platform.isAndroid) {
+    // Android: filesDir (không vào sao lưu tự động, xem AndroidManifest).
+    final dir = await getApplicationSupportDirectory();
+    state = AppState(pack: pack, opener: DbOpener(files: DbFiles(dir), keys: const AndroidDbKeyStore()));
+  } else {
+    // iOS (Keychain, Application Support) làm khi có bản iOS.
+    state = AppState.unsupportedPlatform(pack: pack);
+  }
   runApp(WholeWellApp(state: state));
   unawaited(state.start());
 }
@@ -51,9 +55,18 @@ class _WholeWellAppState extends State<WholeWellApp> {
   }
 
   void _onState() {
-    if (!widget.state.saveFailed) return;
-    widget.state.clearSaveFailed();
-    _messenger.currentState?.showSnackBar(const SnackBar(content: Text('Chưa lưu được. Thử lại')));
+    final s = widget.state;
+    if (s.saveFailed) {
+      s.clearSaveFailed();
+      _messenger.currentState?.showSnackBar(const SnackBar(content: Text('Chưa lưu được. Thử lại')));
+    }
+    if (s.readFailed) {
+      s.clearReadFailed();
+      _messenger.currentState?.showSnackBar(SnackBar(
+        content: const Text('Chưa đọc được dữ liệu.'),
+        action: SnackBarAction(label: 'Thử lại', onPressed: s.reload),
+      ));
+    }
   }
 
   @override

@@ -21,6 +21,13 @@ bool _isFull(Object e) => e is SqliteException
     ? e.resultCode == _sqliteFull
     : RegExp('SqliteException\\($_sqliteFull\\)').hasMatch(e.toString());
 
+/// Loại lỗi và mã lỗi, không có câu SQL hay giá trị.
+String _kind(Object e) {
+  if (e is SqliteException) return 'SqliteException(${e.extendedResultCode})';
+  final m = RegExp(r'SqliteException\((\d+)\)').firstMatch(e.toString());
+  return m == null ? e.runtimeType.toString() : 'SqliteException(${m.group(1)})';
+}
+
 String _doseKindDb(DoseKind k) => switch (k) {
       DoseKind.scheduled => 'scheduled',
       DoseKind.extra => 'extra',
@@ -86,7 +93,7 @@ class DriftJournalRepository implements JournalRepository {
       rethrow;
     } on Object catch (e) {
       if (_isFull(e)) throw const StorageFullException();
-      throw const JournalStorageException();
+      throw JournalStorageException(_kind(e));
     }
   }
 

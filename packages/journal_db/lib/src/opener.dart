@@ -17,6 +17,7 @@ import 'drift_repository.dart';
 import 'journal_database.dart';
 import 'key_store.dart';
 import 'models.dart';
+import 'repository.dart';
 import 'schema.dart';
 
 /// Kết quả mở CSDL; mỗi loại ứng với một màn trong thiết kế (dòng "Toàn app").
@@ -127,6 +128,8 @@ class DbOpener {
 
   Future<OpenOutcome> _open() async {
     if (files.wipeMarker.existsSync()) {
+      // Xóa khóa lỗi thì dấu còn lại, lần sau thử xóa khóa lần nữa; tệp đã xóa
+      // nên dữ liệu đã mất, vẫn về Chào mừng.
       await _finishWipe();
       return const Welcome();
     }
@@ -281,14 +284,20 @@ class DbOpener {
   Future<OpenOutcome> createNew(ConsentInput consent) async {
     if (files.db.existsSync()) throw StateError('Đã có CSDL');
     files.dir.createSync(recursive: true);
+    if (files.wipeMarker.existsSync() && !await _finishWipe()) return const KeyStuck();
     _deleteCreatingFiles();
     Uint8List key;
     try {
-      key = await keys.createDbKey();
-    } on KeyAlreadyExistsException {
-      // Khóa còn sót khi chưa có tệp nào: không còn dữ liệu nào dùng khóa này.
-      await keys.deleteDbKey();
-      key = await keys.createDbKey();
+      try {
+        key = await keys.createDbKey();
+      } on KeyAlreadyExistsException {
+        // Khóa còn sót khi chưa có tệp nào: không còn dữ liệu nào dùng khóa này.
+        await keys.deleteDbKey();
+        key = await keys.createDbKey();
+      }
+    } on Object {
+      // Kho khóa lỗi: chưa ghi gì xuống đĩa; "Chưa đọc được khóa…" + [Thử lại].
+      return const KeyStuck();
     }
     final t = now();
     final today = dayKey(t);
@@ -329,7 +338,11 @@ class DbOpener {
     }
     if (failed != null) {
       _deleteCreatingFiles();
-      await keys.deleteDbKey();
+      try {
+        await keys.deleteDbKey();
+      } on Object {
+        // Khóa còn sót không có tệp: lần mở sau xóa lại.
+      }
       return failed;
     }
     files.creating.renameSync(files.db.path);
@@ -338,7 +351,7 @@ class DbOpener {
 
   /// Rút đồng ý, xóa toàn bộ (luồng 4). Xóa khóa trước để dữ liệu không đọc được
   /// ngay, rồi mới xóa tệp; có dấu "đang xóa" để làm tiếp nếu app chết giữa chừng.
-  Future<void> wipeAll({DriftJournalRepository? openRepository}) async {
+  Future<void> wipeAll({JournalRepository? openRepository}) async {
     files.dir.createSync(recursive: true);
     files.wipeMarker.writeAsStringSync('1', flush: true);
     if (openRepository != null) {
@@ -351,14 +364,28 @@ class DbOpener {
     await _finishWipe();
   }
 
-  /// [Bắt đầu lại] sau khi gõ XÓA (màn "Không mở được").
-  Future<void> startOver() => wipeAll();
+  /// [Bắt đầu lại] sau khi gõ XÓA (màn "Không mở được"). Đóng nhật ký đang mở
+  /// (nếu có) trước khi xóa tệp.
+  Future<void> startOver({JournalRepository? openRepository}) => wipeAll(openRepository: openRepository);
 
-  Future<void> _finishWipe() async {
-    await keys.deleteDbKey();
-    for (final f in [...files.allDataFiles(), ...extraFilesToWipe]) {
-      DbFiles.deleteIfExists(f);
+  /// Xóa khóa rồi xóa tệp. Xóa khóa lỗi vẫn xóa tiếp các tệp (không còn tệp thì
+  /// dữ liệu cũng không còn) và giữ dấu "đang xóa" để lần sau thử xóa khóa lại.
+  /// Trả về true khi đã xóa xong cả khóa lẫn tệp và đã bỏ dấu.
+  Future<bool> _finishWipe() async {
+    var done = true;
+    try {
+      await keys.deleteDbKey();
+    } on Object {
+      done = false;
     }
-    DbFiles.deleteIfExists(files.wipeMarker);
+    for (final f in [...files.allDataFiles(), ...extraFilesToWipe]) {
+      try {
+        DbFiles.deleteIfExists(f);
+      } on FileSystemException {
+        done = false;
+      }
+    }
+    if (done) DbFiles.deleteIfExists(files.wipeMarker);
+    return done;
   }
 }

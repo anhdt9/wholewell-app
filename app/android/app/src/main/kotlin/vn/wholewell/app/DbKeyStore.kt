@@ -2,6 +2,8 @@ package vn.wholewell.app
 
 import android.app.KeyguardManager
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.security.keystore.KeyProperties
@@ -10,6 +12,7 @@ import io.flutter.plugin.common.MethodChannel
 import java.io.File
 import java.io.FileOutputStream
 import java.security.KeyStore
+import java.util.concurrent.Executors
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
@@ -22,8 +25,7 @@ import javax.crypto.spec.GCMParameterSpec
  * Keystore tạo với setUnlockedDeviceRequired(true): chỉ giải mã được khi máy đã mở khóa.
  * Bản đã mã hóa nằm trong noBackupFilesDir. Không ghi khóa ra log.
  *
- * Phân loại khi đọc: không có bản khóa → absent; có bản khóa mà alias không còn hoặc
- * KeyPermanentlyInvalidatedException → lost; mọi lỗi khác → unavailable.
+ * Thao tác Keystore chạy trên một luồng nền (tuần tự); kết quả trả về trên luồng chính.
  */
 class DbKeyStore(private val context: Context) : MethodChannel.MethodCallHandler {
     companion object {
@@ -35,61 +37,79 @@ class DbKeyStore(private val context: Context) : MethodChannel.MethodCallHandler
         private const val TAG_BITS = 128
     }
 
+    private sealed class Reply {
+        class Ok(val value: Any?) : Reply()
+        class Err(val code: String) : Reply()
+        object NotImplemented : Reply()
+    }
+
+    private val worker = Executors.newSingleThreadExecutor()
+    private val main = Handler(Looper.getMainLooper())
+
     private val wrappedFile: File get() = File(context.noBackupFilesDir, FILE_NAME)
 
     private fun keyStore(): KeyStore = KeyStore.getInstance(KEYSTORE).apply { load(null) }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        when (call.method) {
-            "read" -> result.success(read())
-            "create" -> {
-                val key = call.argument<ByteArray>("key")
-                if (key == null || key.size != 32) {
-                    result.error("bad_key", null, null)
-                } else if (wrappedFile.exists()) {
-                    // Không bao giờ ghi đè khóa đang có.
-                    result.error("exists", null, null)
-                } else {
-                    try {
-                        create(key)
-                        result.success(null)
-                    } catch (e: Exception) {
-                        result.error("create_failed", null, null)
-                    }
+        val method = call.method
+        val keyArg = if (method == "create") call.argument<ByteArray>("key") else null
+        worker.execute {
+            val reply = try {
+                handle(method, keyArg)
+            } catch (e: Exception) {
+                Reply.Err("${method}_failed")
+            }
+            main.post {
+                when (reply) {
+                    is Reply.Ok -> result.success(reply.value)
+                    is Reply.Err -> result.error(reply.code, null, null)
+                    Reply.NotImplemented -> result.notImplemented()
                 }
             }
-            "delete" -> {
-                try {
-                    delete()
-                    result.success(null)
-                } catch (e: Exception) {
-                    result.error("delete_failed", null, null)
-                }
-            }
-            "isDeviceUnlocked" -> {
-                val km = context.getSystemService(KeyguardManager::class.java)
-                result.success(km != null && !km.isDeviceLocked)
-            }
-            else -> result.notImplemented()
         }
     }
 
+    private fun handle(method: String, key: ByteArray?): Reply = when (method) {
+        "read" -> Reply.Ok(read())
+        "create" -> when {
+            key == null || key.size != 32 -> Reply.Err("bad_key")
+            // Không bao giờ ghi đè khóa đang có.
+            wrappedFile.exists() -> Reply.Err("exists")
+            else -> {
+                create(key)
+                Reply.Ok(null)
+            }
+        }
+        "delete" -> {
+            delete()
+            Reply.Ok(null)
+        }
+        "isDeviceUnlocked" -> {
+            val km = context.getSystemService(KeyguardManager::class.java)
+            Reply.Ok(km != null && !km.isDeviceLocked)
+        }
+        else -> Reply.NotImplemented
+    }
+
+    private fun status(s: String): Map<String, Any> = mapOf("status" to s)
+
     private fun read(): Map<String, Any> {
         val f = wrappedFile
-        if (!f.exists()) return mapOf("status" to "absent")
+        if (!f.exists()) return status(DbKeyRules.classify(false, false, null))
         return try {
-            val secret = keyStore().getKey(ALIAS, null) as SecretKey?
-                ?: return mapOf("status" to "lost")
-            val bytes = f.readBytes()
-            val ivLen = bytes[0].toInt()
+            val ks = keyStore()
+            if (!ks.containsAlias(ALIAS)) return status(DbKeyRules.classify(true, false, null))
+            val secret = ks.getKey(ALIAS, null) as SecretKey
+            val parts = DbKeyRules.unpack(f.readBytes())
+                ?: return status(DbKeyRules.classify(true, true, DbKeyRules.Failure.OTHER))
             val cipher = Cipher.getInstance(TRANSFORMATION)
-            cipher.init(Cipher.DECRYPT_MODE, secret, GCMParameterSpec(TAG_BITS, bytes, 1, ivLen))
-            val plain = cipher.doFinal(bytes, 1 + ivLen, bytes.size - 1 - ivLen)
-            mapOf("status" to "present", "key" to plain)
+            cipher.init(Cipher.DECRYPT_MODE, secret, GCMParameterSpec(TAG_BITS, parts.first))
+            val plain = cipher.doFinal(parts.second)
+            mapOf("status" to DbKeyRules.classify(true, true, null), "key" to plain)
         } catch (e: KeyPermanentlyInvalidatedException) {
-            mapOf("status" to "lost")
+            status(DbKeyRules.classify(true, true, DbKeyRules.Failure.PERMANENTLY_INVALIDATED))
         } catch (e: Exception) {
-            mapOf("status" to "unavailable")
+            status(DbKeyRules.classify(true, true, DbKeyRules.Failure.OTHER))
         }
     }
 
@@ -112,9 +132,7 @@ class DbKeyStore(private val context: Context) : MethodChannel.MethodCallHandler
         val secret = gen.generateKey()
         val cipher = Cipher.getInstance(TRANSFORMATION)
         cipher.init(Cipher.ENCRYPT_MODE, secret)
-        val iv = cipher.iv
-        val ct = cipher.doFinal(key)
-        val out = byteArrayOf(iv.size.toByte()) + iv + ct
+        val out = DbKeyRules.pack(cipher.iv, cipher.doFinal(key))
         val tmp = File(context.noBackupFilesDir, "$FILE_NAME.tmp")
         FileOutputStream(tmp).use {
             it.write(out)

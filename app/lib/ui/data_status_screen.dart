@@ -35,6 +35,7 @@ class DataStatusScreen extends StatelessWidget {
           const <Widget>[]
         ),
       DataStatus.lowStorage => ('Máy không còn đủ dung lượng. Hãy giải phóng bộ nhớ rồi mở lại.', [retry]),
+      DataStatus.unsupportedPlatform => ('Bản này chưa chạy được trên thiết bị của bạn.', const <Widget>[]),
       _ => ('', const <Widget>[]),
     };
     return Scaffold(

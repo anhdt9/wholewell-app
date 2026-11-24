@@ -13,10 +13,15 @@ enum DataStatus {
   installBroken,
   needsUpdate,
   lowStorage,
+
+  /// Nền tảng chưa có kho khóa (iOS, máy tính): chưa làm trong MVP.
+  unsupportedPlatform,
 }
 
 /// Khung tạm chưa có màn Điều kiện, Đồng ý (việc 4): lần lưu hồ sơ đầu tiên là bước
-/// đồng ý, câu thuốc, bệnh ghi "Không". Việc 4 thay bằng màn thật.
+/// đồng ý, câu thuốc, bệnh ghi "Không". **Chỉ để thử nội bộ, không phát cho người
+/// thử bên ngoài.** Việc 4 phải phát hiện phiên bản này và hỏi lại cả màn Điều kiện
+/// lẫn Đồng ý.
 const khungTamConsentVersion = 'khung-tam-0';
 
 class _Entry {
@@ -24,6 +29,14 @@ class _Entry {
   final int id;
   final List<IntakeItem> items;
   const _Entry(this.isDose, this.id, this.items);
+}
+
+class _DayData {
+  final List<_Entry> entries;
+  final List<WorkoutRecord> workouts;
+  final List<List<IntakeItem>> last7;
+  final List<WorkoutEntry> workouts7;
+  const _DayData(this.entries, this.workouts, this.last7, this.workouts7);
 }
 
 /// Tên bữa của khung tạm. Bữa phụ hiện chung "phụ".
@@ -49,11 +62,13 @@ class AppState extends ChangeNotifier {
   Profile? _profile;
   bool _hideCalories = false;
   DateTime _day = _dateOnly(DateTime.now());
-  List<_Entry> _entries = const [];
-  List<WorkoutRecord> _workouts = const [];
-  List<List<IntakeItem>> _last7 = const [];
-  List<WorkoutEntry> _workouts7 = const [];
+  _DayData _data = const _DayData([], [], [], []);
   bool _saveFailed = false;
+  bool _readFailed = false;
+
+  /// Mỗi lần đọc lấy một số thế hệ; kết quả của lần đọc cũ hơn bị bỏ.
+  int _loadGen = 0;
+  Future<void>? _starting;
 
   AppState({required this.pack, required DbOpener opener})
       : _opener = opener,
@@ -64,6 +79,11 @@ class AppState extends ChangeNotifier {
       : _opener = null,
         _repo = repo,
         _status = DataStatus.ready;
+
+  /// Nền tảng chưa có kho khóa: không mở, không ghi gì.
+  AppState.unsupportedPlatform({required this.pack})
+      : _opener = null,
+        _status = DataStatus.unsupportedPlatform;
 
   DataStatus get status => _status;
   Profile? get profile => _profile;
@@ -77,13 +97,26 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<IntakeItem> get todayItems => [for (final e in _entries) ...e.items];
-  List<WorkoutEntry> get todayWorkouts => [for (final w in _workouts) w.workout];
+  /// Lần đọc gần nhất lỗi (CSDL vẫn mở): báo kèm [Thử lại], không dẫn tới [Bắt đầu lại].
+  bool get readFailed => _readFailed;
+  void clearReadFailed() {
+    _readFailed = false;
+    notifyListeners();
+  }
 
-  /// Mở CSDL (khi app hiện lên, khi app trở lại, khi bấm [Thử lại]).
-  Future<void> start() async {
+  List<IntakeItem> get todayItems => [for (final e in _data.entries) ...e.items];
+  List<WorkoutEntry> get todayWorkouts => [for (final w in _data.workouts) w.workout];
+
+  /// Mở CSDL (khi app hiện lên, khi app trở lại, khi bấm [Thử lại]). Gọi chồng thì
+  /// dùng chung lần đang chạy.
+  Future<void> start() => _starting ??= _start().whenComplete(() => _starting = null);
+
+  Future<void> _start() async {
     final o = _opener;
     if (o != null) {
+      final old = _repo;
+      _repo = null;
+      if (old != null) await old.close();
       _status = DataStatus.loading;
       notifyListeners();
       _apply(await o.open());
@@ -106,52 +139,66 @@ class AppState extends ChangeNotifier {
     if (r is Opened) _repo = r.repository;
   }
 
-  /// [Bắt đầu lại] sau khi gõ XÓA: xóa dữ liệu trên máy, về lần đầu.
+  /// [Bắt đầu lại] sau khi gõ XÓA: đóng nhật ký nếu đang mở, xóa dữ liệu trên máy.
   Future<void> startOver() async {
     final o = _opener;
     if (o == null) return;
-    await o.startOver();
+    final repo = _repo;
     _repo = null;
+    await o.startOver(openRepository: repo);
+    _loadGen++;
     _profile = null;
     _hideCalories = false;
-    _entries = const [];
-    _workouts = const [];
-    _last7 = const [];
-    _workouts7 = const [];
+    _data = const _DayData([], [], [], []);
     _status = DataStatus.welcome;
+    notifyListeners();
+  }
+
+  /// [Thử lại] sau khi đọc lỗi.
+  Future<void> reload() async {
+    await _reload();
     notifyListeners();
   }
 
   Future<void> _reload() async {
     final repo = _repo;
     if (repo == null) return;
+    final gen = ++_loadGen;
+    final day = _day;
     try {
-      _profile = await repo.loadProfile();
-      _hideCalories = await repo.loadHideCalories() ?? false;
-      await _loadDay(repo);
+      final profile = await repo.loadProfile();
+      final hide = await repo.loadHideCalories() ?? false;
+      final data = await _loadDay(repo, day);
+      if (gen != _loadGen) return;
+      _profile = profile;
+      _hideCalories = hide;
+      _data = data;
+      _readFailed = false;
     } on JournalStorageException {
-      _status = DataStatus.cannotOpen;
+      if (gen == _loadGen) _readFailed = true;
+    } on StorageFullException {
+      if (gen == _loadGen) _readFailed = true;
     }
   }
 
-  Future<void> _loadDay(JournalRepository repo) async {
-    final day = dayKey(_day);
-    _entries = [
-      for (final f in await repo.foodsOn(day)) _Entry(false, f.id, [for (final i in intakeItemsOfFood(f)) _withMealLabel(i)]),
-      for (final d in await repo.dosesOn(day)) _Entry(true, d.id, intakeItemsOfDose(d)),
+  static Future<_DayData> _loadDay(JournalRepository repo, DateTime day) async {
+    final key = dayKey(day);
+    final entries = [
+      for (final f in await repo.foodsOn(key))
+        _Entry(false, f.id, [for (final i in intakeItemsOfFood(f)) _withMealLabel(i)]),
+      for (final d in await repo.dosesOn(key)) _Entry(true, d.id, intakeItemsOfDose(d)),
     ];
-    _workouts = await repo.workoutsOn(day);
+    final workouts = await repo.workoutsOn(key);
     final last7 = <List<IntakeItem>>[];
     final ws = <WorkoutEntry>[];
     for (var i = 6; i >= 0; i--) {
-      final d = dayKey(_day.subtract(Duration(days: i)));
+      final d = dayKey(day.subtract(Duration(days: i)));
       last7.add([
         for (final x in intakeItemsFor(await repo.foodsOn(d), await repo.dosesOn(d))) _withMealLabel(x),
       ]);
       ws.addAll([for (final w in await repo.workoutsOn(d)) w.workout]);
     }
-    _last7 = last7;
-    _workouts7 = ws;
+    return _DayData(entries, workouts, last7, ws);
   }
 
   Future<void> _write(Future<void> Function(JournalRepository repo) f) async {
@@ -231,7 +278,7 @@ class AppState extends ChangeNotifier {
 
   Future<void> removeItem(int index) {
     var i = index;
-    for (final e in _entries) {
+    for (final e in _data.entries) {
       if (i < e.items.length) {
         return _write((repo) => e.isDose ? repo.deleteDose(e.id) : repo.deleteFood(e.id));
       }
@@ -243,8 +290,9 @@ class AppState extends ChangeNotifier {
   Future<void> addWorkout(WorkoutEntry w) => _write((repo) => repo.addWorkout(_atNow(), w));
 
   Future<void> removeWorkout(int index) {
-    if (index < 0 || index >= _workouts.length) return Future.value();
-    final id = _workouts[index].id;
+    final ws = _data.workouts;
+    if (index < 0 || index >= ws.length) return Future.value();
+    final id = ws[index].id;
     return _write((repo) => repo.deleteWorkout(id));
   }
 
@@ -252,11 +300,11 @@ class AppState extends ChangeNotifier {
   DailyReport? report() {
     final p = _profile;
     if (p == null) return null;
-    return dailyReport(pack, p, todayItems, workouts: todayWorkouts, last7Days: _last7);
+    return dailyReport(pack, p, todayItems, workouts: todayWorkouts, last7Days: _data.last7);
   }
 
   /// Gợi ý mức vận động từ buổi tập 7 ngày gần nhất.
-  ActivityLevel suggestedLevel() => suggestActivityLevel(pack, _workouts7);
+  ActivityLevel suggestedLevel() => suggestActivityLevel(pack, _data.workouts7);
 
   static DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 }

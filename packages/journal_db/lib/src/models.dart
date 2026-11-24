@@ -286,9 +286,11 @@ class StorageFullException implements Exception {
   String toString() => 'StorageFullException';
 }
 
-/// Lỗi lưu trữ khác. Không chứa câu SQL hay giá trị.
+/// Lỗi lưu trữ khác. Chỉ giữ loại lỗi và mã lỗi SQLite (vd. `SqliteException(787)`)
+/// để tra crash; không chứa câu SQL hay giá trị.
 class JournalStorageException implements Exception {
-  const JournalStorageException();
+  final String kind;
+  const JournalStorageException([this.kind = '']);
   @override
-  String toString() => 'JournalStorageException';
+  String toString() => 'JournalStorageException($kind)';
 }
