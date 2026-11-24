@@ -2,6 +2,8 @@
 
 Cập nhật 24/11/2026. Agent cập nhật tệp này khi xong một việc.
 
+Người mới nhận dự án: đọc [handoff.md](handoff.md) trước.
+
 ## Đã xong
 
 - **Plan** ([plan.md](plan.md)), danh sách công cụ ([tools.md](tools.md)), quy trình đặc tả → UX → test → code có cổng duyệt ([AGENTS.md](../AGENTS.md)), mẫu đặc tả và thiết kế, nguyên tắc thiết kế.
