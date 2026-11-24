@@ -774,7 +774,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 | Chi tiết sản phẩm | – | – | Dòng "chưa tính được" có lý do | Lịch vượt; `SafetyNote` khi chưa kiểm được |
 | Chi tiết cảnh báo | – | – | Cờ đã hết: "Hiện không còn vượt giới hạn." + [Về Hôm nay] | – |
 | Lần đầu | – | Nút chính có vòng xoay | Không đủ điều kiện: Chưa dùng được; số ngoài khoảng: nhắc dưới ô | – |
-| Toàn app | – | – | Gói dữ liệu hỏng: màn chặn "Không đọc được dữ liệu tham chiếu. Hãy cài lại WholeWell từ cửa hàng ứng dụng.", không hiện số nào. Không mở được CSDL: "Không mở được dữ liệu đã lưu trên máy." + [Khôi phục từ bản sao lưu] [Bắt đầu lại]; "Bắt đầu lại" hỏi lại và phải gõ XÓA vì dữ liệu cũ bị xóa. Máy đang khóa hoặc lỗi tạm khi đọc khóa: "Mở khóa máy để xem dữ liệu.", tự thử lại, không có [Bắt đầu lại]. Dữ liệu cần bản app mới hơn hoặc nâng cấp lỗi: "Cần cập nhật WholeWell. Dữ liệu của bạn vẫn còn nguyên trên máy. Hãy cập nhật app từ cửa hàng ứng dụng.", không có [Bắt đầu lại] (đặc tả CSDL mã hóa) | – |
+| Toàn app | – | – | Gói dữ liệu hỏng: màn chặn "Không đọc được dữ liệu tham chiếu. Hãy cài lại WholeWell từ cửa hàng ứng dụng.", không hiện số nào. Không mở được CSDL: "Không mở được dữ liệu đã lưu trên máy." + [Khôi phục từ bản sao lưu] [Bắt đầu lại]; "Bắt đầu lại" hỏi lại và phải gõ XÓA vì dữ liệu cũ bị xóa. Máy đang khóa hoặc lỗi tạm khi đọc khóa: "Mở khóa máy để xem dữ liệu.", tự thử lại, không có [Bắt đầu lại]; máy đã mở khóa mà vẫn lỗi sau 3 lần: "Chưa đọc được khóa dữ liệu trên máy này." + [Thử lại] [Khôi phục từ bản sao lưu]. Dữ liệu cần bản app mới hơn hoặc nâng cấp lỗi: "Cần cập nhật WholeWell. Dữ liệu của bạn vẫn còn nguyên trên máy. Hãy cập nhật app từ cửa hàng ứng dụng.", không có [Bắt đầu lại] (đặc tả CSDL mã hóa) | – |
 
 ## Nội dung chữ
 

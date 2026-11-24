@@ -32,7 +32,7 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
    - Trả đủ các loại cờ mỗi chất (hiện `dailyReport` chỉ giữ một), mỗi cờ kèm lượng vượt và % so với giới hạn; cờ tính cho ngày được chọn; trung bình 7 ngày nhận danh sách ngày có ghi và trả số ngày.
    - Mỗi chất trả cả hai tổng: tổng mọi nguồn (so mức khuyến nghị) và phần tính vào giới hạn theo phạm vi, kể cả khi chưa vượt.
    - Đường bổ sung: trả danh sách món "chưa rõ đường bổ sung".
-   - Nhận thành phần theo từng dòng (chất, dạng); dạng chưa rõ trả hai số (tính giới hạn thận trọng, so mức khuyến nghị "chưa chắc").
+   - Nhận thành phần theo từng dòng (chất, dạng); dạng chưa rõ trả hai số (tính giới hạn thận trọng, so mức khuyến nghị "chưa chắc"). `IntakeItem` thêm bảng lượng tính giới hạn tùy chọn, `amountForUl` dùng khi có (cần cho vitamin E ghi IU không rõ dạng; xem đặc tả CSDL, mục Lượng đã ghi).
    - Vận động: thêm số của Physical Activity Guidelines vào `build_pack.py`, đánh dấu hoạt động tập tăng cơ; trả phút tương đương vừa và số ngày tập tăng cơ.
 3. **Thư viện món** (đặc tả + UX): nhập USDA FoodData Central (Foundation, SR Legacy, FNDDS) vào gói; đường bổ sung từ USDA FPED; trường axit folic, vitamin E bổ sung của USDA; danh sách món Việt không có trong USDA.
 4. **Điều kiện dùng app, chế độ thận trọng** (màn trước màn đồng ý, câu trong Hồ sơ) và nhập nước.
