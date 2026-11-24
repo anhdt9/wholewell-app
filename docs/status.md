@@ -9,7 +9,7 @@ Cập nhật 24/11/2026. Agent cập nhật tệp này khi xong một việc.
 - **Engine Dart** (`packages/health_engine`): nhóm DRI, mục tiêu RDA/AI, cờ UL trong ngày và trung bình 7 ngày, EER, tỷ lệ đạm/béo/bột đường, đường bổ sung, calo buổi tập, phút vừa/mạnh, gợi ý mức vận động, đổi đơn vị. Test qua CI.
 - **App Flutter khung tạm** (`app/`, chưa qua thiết kế UX): hồ sơ, nhật ký ăn, bổ sung, buổi tập, tổng kết ngày, ẩn số calo; lưu trong bộ nhớ.
 - **CI** GitHub Actions; build APK debug. **Thư mục Android** (`vn.wholewell.app`).
-- **Thiết kế UX tổng thể** ([design/mvp-overview.md](design/mvp-overview.md)): **chờ duyệt**.
+- **Thiết kế UX tổng thể** ([design/mvp-overview.md](design/mvp-overview.md)): **đã duyệt** 24/11/2026.
 - **Kiểm nguồn qua Claude in Chrome** (23/11/2026): 9 fact sheet NIH ODS cho quy tắc lịch; USDA FPED là U.S. Public Domain; link Physical Activity Guidelines (trang 8) và eCFR 21 CFR 101 đúng. Ngày 24/11/2026: fact sheet magie của NIH ODS (cập nhật 6/1/2026) và bài magie của LPI (duyệt 10/2025) vẫn ghi mức khuyến nghị 310–420 mg, giới hạn 350 mg từ bổ sung.
 
 Kết quả kiểm sớm bằng tài liệu và các bài còn phải thử trên máy thật: [plan.md](plan.md), mục 6.

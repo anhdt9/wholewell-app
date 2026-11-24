@@ -1,6 +1,6 @@
 # Thiết kế UX: Tổng thể MVP
 
-Trạng thái: Nháp  <!-- Nháp | Đã duyệt -->
+Trạng thái: Đã duyệt  <!-- Nháp | Đã duyệt -->
 Đặc tả: không có đặc tả riêng (tài liệu khung). Quy tắc tính toán và quyết định sản phẩm ở [plan.md](../plan.md); nguyên tắc thiết kế ở [README.md](README.md).
 
 Tài liệu này chốt **khung giao diện** cho mọi màn của MVP: điều hướng, luồng chính, màn hình, trạng thái, chữ, thành phần dùng chung. Thiết kế của từng tính năng chỉ thêm chi tiết, không đổi khung này khi chưa sửa tệp này.
