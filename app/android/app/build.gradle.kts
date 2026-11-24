@@ -18,7 +18,8 @@ android {
         applicationId = "vn.wholewell.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // API 28: khóa CSDL dùng setUnlockedDeviceRequired (docs/specs/encrypted-db.md).
+        minSdk = 28
         targetSdk = flutter.targetSdkVersion
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
         // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)
@@ -45,4 +46,9 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Test JVM cho quy tắc kho khóa (DbKeyRules).
+    testImplementation("junit:junit:4.13.2")
 }

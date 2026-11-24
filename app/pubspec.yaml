@@ -13,6 +13,9 @@ dependencies:
   material_ui: ^1.10.0
   health_engine:
     path: ../packages/health_engine
+  journal_db:
+    path: ../packages/journal_db
+  path_provider: 2.1.6
 
 dev_dependencies:
   flutter_test:
@@ -23,3 +26,9 @@ flutter:
   uses-material-design: true
   assets:
     - assets/reference_pack.json
+
+# CSDL mã hóa: dùng SQLite3MultipleCiphers thay SQLite gốc (docs/specs/encrypted-db.md).
+hooks:
+  user_defines:
+    sqlite3:
+      source: sqlite3mc

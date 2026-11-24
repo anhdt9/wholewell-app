@@ -26,6 +26,18 @@ jobs:
           dart analyze
           dart test
 
+  journal-db:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+      - name: Test CSDL mã hóa (SQLite3MultipleCiphers)
+        working-directory: packages/journal_db
+        run: |
+          dart pub get
+          dart analyze
+          dart test
+
   app:
     runs-on: ubuntu-latest
     steps:
@@ -37,6 +49,10 @@ jobs:
         working-directory: app
         run: |
           flutter pub get
+          # CSDL phải dùng SQLite3MultipleCiphers, không kéo theo bản SQLite thường.
+          if flutter pub deps --style=compact | grep -q sqlite3_flutter_libs; then
+            echo "Không được dùng sqlite3_flutter_libs"; exit 1
+          fi
           flutter analyze
           flutter test
       - uses: actions/setup-java@v4
@@ -46,3 +62,12 @@ jobs:
       - name: Build Android (debug)
         working-directory: app
         run: flutter build apk --debug
+      - name: Lưu APK debug để cài thử (chỉ thử nội bộ)
+        uses: actions/upload-artifact@v4
+        with:
+          name: wholewell-debug-apk
+          path: app/build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 14
+      - name: Test JVM phần Kotlin (kho khóa)
+        working-directory: app/android
+        run: ./gradlew :app:testDebugUnitTest --no-daemon

@@ -45,7 +45,7 @@ Lưu mọi dữ liệu người dùng trên máy trong một CSDL mã hóa, thay
 - **Không để khóa lọt vào thông báo lỗi:** `SqliteException` của gói sqlite3 chứa câu SQL gây lỗi, nên câu `PRAGMA key` lọt vào báo cáo crash (Play Console) nếu lỗi không được bắt. Bắt mọi lỗi quanh `PRAGMA key` và ném lại `DbOpenException(stage: key)` không chứa câu lệnh hay thông báo gốc. Chuỗi hex của khóa chỉ sống trong hàm mở CSDL.
 - **Thứ tự khi mở** (thư viện yêu cầu cipher và tham số trước khóa): `PRAGMA cipher = 'chacha20'` → `PRAGMA legacy = 0` → `PRAGMA key = …` → kiểm bản mã hóa → `PRAGMA journal_mode = WAL` → `PRAGMA foreign_keys = ON` → `PRAGMA temp_store = MEMORY` (để sắp xếp, chỉ mục tạm không ghi tệp tạm ra đĩa).
 - **Kiểm bản mã hóa mỗi lần mở, trước mọi lần ghi:**
-  - `SELECT sqlite3mc_config('cipher')` phải trả về `chacha20`. Hàm không tồn tại (bản SQLite thường) hoặc trả giá trị khác: đóng, không ghi gì, màn "Không mở được" (lỗi cài đặt, không có [Bắt đầu lại]).
+  - Hàm `sqlite3mc_config` phải có, kiểm trên một kết nối trong bộ nhớ (từ SQLite 3.48 mọi câu SELECT trên kết nối thật đều đọc tệp, nên khóa sai sẽ bị nhầm thành thiếu thư viện). Sau khi kiểm khóa (dòng dưới), `SELECT sqlite3mc_config('cipher')` trên kết nối thật phải trả về `chacha20`. Hàm không tồn tại (bản SQLite thường) hoặc trả giá trị khác: đóng, không ghi gì, màn "Không mở được" (lỗi cài đặt, không có [Bắt đầu lại]). *Chỉnh 24/11/2026 khi code, chủ dự án đồng ý: trước đó kiểm cipher trước khóa, sai với SQLite từ 3.48.*
   - `SELECT count(*) FROM sqlite_master` để biết khóa đúng (PRAGMA key luôn trả "ok" kể cả khi sai khóa).
   - Lần tạo CSDL: sau khi tạo bảng (chưa có dữ liệu người dùng), chạy `PRAGMA wal_checkpoint(TRUNCATE)` để dữ liệu ra tệp chính, rồi kiểm tệp `wholewell.db` dài ít nhất một trang (đọc `PRAGMA page_size`, không viết cứng) và 16 byte đầu không phải `SQLite format 3\0`. Không đạt thì xóa tệp và dừng như trên. Chỉ sau đó mới ghi đồng ý và hồ sơ.
 
@@ -58,7 +58,7 @@ Lưu mọi dữ liệu người dùng trên máy trong một CSDL mã hóa, thay
 - **`readDbKey()` trả bốn trạng thái phân biệt**, không gộp lỗi vào "không có khóa":
   - `KeyPresent(key)`.
   - `KeyAbsent`: không có bản khóa đã mã hóa (Android) hoặc Keychain trả `errSecItemNotFound` (iOS).
-  - `KeyLost`: **chỉ hai trường hợp** trên Android: có bản khóa đã mã hóa nhưng alias Keystore không còn, hoặc gặp `KeyPermanentlyInvalidatedException`. iOS không có trường hợp này.
+  - `KeyLost`: **chỉ các trường hợp sau** trên Android: có bản khóa đã mã hóa nhưng alias Keystore không còn; gặp `KeyPermanentlyInvalidatedException`; hoặc **tệp bản khóa hỏng khi máy đang mở khóa** (sai cấu trúc, giải mã báo sai tag `AEADBadTagException`, hoặc khóa giải ra không đủ 32 byte). Tệp hỏng khi máy đang khóa vẫn là `KeyUnavailable`. iOS không có trường hợp này. *Thêm 24/11/2026, chủ dự án đồng ý: tệp hỏng lặp lại y hệt mỗi lần đọc, nếu để `KeyUnavailable` thì người không có bản sao lưu kẹt mãi.*
   - `KeyUnavailable`: **mọi lỗi khác** (máy đang khóa, lỗi Keystore riêng của hãng, iOS `errSecInteractionNotAllowed`…). Chờ mở khóa rồi đọc lại.
 - **Lối thoát khi `KeyUnavailable` kéo dài:** máy đã mở khóa (Android `KeyguardManager.isDeviceLocked() == false`, iOS `isProtectedDataAvailable`) mà vẫn lỗi sau 3 lần thử thì hiện "Chưa đọc được khóa dữ liệu trên máy này." + [Thử lại] [Khôi phục từ bản sao lưu]. Không có [Bắt đầu lại] ở màn này.
 - `createDbKey()` chỉ gọi ở bước Đồng ý; nếu đã có khóa thì báo lỗi, không ghi đè.
@@ -176,7 +176,7 @@ Lưu mọi dữ liệu người dùng trên máy trong một CSDL mã hóa, thay
 
 | Tình huống | Xử lý |
 |---|---|
-| Có tệp, khóa `KeyAbsent` hoặc `KeyLost` (cài lại app có giữ dữ liệu, khóa Keystore bị xóa) | Màn "Không mở được dữ liệu đã lưu trên máy." + [Khôi phục từ bản sao lưu] [Bắt đầu lại] (gõ XÓA) |
+| Có tệp, khóa `KeyAbsent` hoặc `KeyLost` (cài lại app có giữ dữ liệu, khóa Keystore bị xóa, tệp bản khóa hỏng) | Màn "Không mở được dữ liệu đã lưu trên máy." + [Khôi phục từ bản sao lưu] [Bắt đầu lại] (gõ XÓA) |
 | Khóa sai, tệp hỏng (`sqlite_master` lỗi, mã xác thực trang sai) | Như trên |
 | `KeyUnavailable` (máy đang khóa, lỗi tạm) | "Mở khóa máy để xem dữ liệu." Đọc lại khi app trở lại hoặc máy mở khóa. **Không** dẫn tới màn có [Bắt đầu lại] |
 | `KeyUnavailable` khi máy đã mở khóa, sau 3 lần thử | "Chưa đọc được khóa dữ liệu trên máy này." + [Thử lại] [Khôi phục từ bản sao lưu]; không có [Bắt đầu lại] |
@@ -200,7 +200,7 @@ Màn "Cần cập nhật": "Cần cập nhật WholeWell. Dữ liệu của bạ
 - [ ] Mở với khóa sai thì lỗi, không tạo dữ liệu mới, không ghi đè tệp.
 - [ ] `readDbKey()` trả `KeyUnavailable`: không tạo khóa mới, không xóa gì, không hiện [Bắt đầu lại]; trả `KeyPresent` ở lần sau thì mở bình thường.
 - [ ] `createDbKey()` khi đã có khóa thì lỗi, khóa cũ giữ nguyên.
-- [ ] Phân loại khóa (bản giả của nền tảng): không có bản khóa → `KeyAbsent`; alias mất hoặc `KeyPermanentlyInvalidatedException` → `KeyLost`; mọi lỗi khác → `KeyUnavailable`.
+- [ ] Phân loại khóa (test JVM `DbKeyRules`): không có bản khóa → `KeyAbsent`; alias mất, `KeyPermanentlyInvalidatedException`, hoặc tệp bản khóa hỏng khi máy đang mở khóa → `KeyLost`; tệp hỏng khi máy đang khóa và mọi lỗi khác → `KeyUnavailable`.
 - [ ] `KeyUnavailable` 3 lần khi máy đã mở khóa: hiện [Thử lại] [Khôi phục từ bản sao lưu], không có [Bắt đầu lại].
 - [ ] Cố tình làm `PRAGMA key` lỗi: thông báo và `toString()` của lỗi ném ra không chứa chuỗi hex của khóa hay câu lệnh.
 - [ ] Lần tạo CSDL: kiểm đầu tệp chạy sau `wal_checkpoint(TRUNCATE)`; tệp chính dài ít nhất `page_size` byte.
