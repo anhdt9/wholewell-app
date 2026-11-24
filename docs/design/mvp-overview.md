@@ -1,6 +1,6 @@
 # Thiết kế UX: Tổng thể MVP
 
-Trạng thái: Nháp  <!-- Nháp | Đã duyệt -->
+Trạng thái: Đã duyệt  <!-- Nháp | Đã duyệt -->
 Đặc tả: không có đặc tả riêng (tài liệu khung). Quy tắc tính toán và quyết định sản phẩm ở [plan.md](../plan.md); nguyên tắc thiết kế ở [README.md](README.md).
 
 Tài liệu này chốt **khung giao diện** cho mọi màn của MVP: điều hướng, luồng chính, màn hình, trạng thái, chữ, thành phần dùng chung. Thiết kế của từng tính năng chỉ thêm chi tiết, không đổi khung này khi chưa sửa tệp này.
@@ -10,11 +10,11 @@ Tài liệu này chốt **khung giao diện** cho mọi màn của MVP: điều 
 | Chủ đề | Quyết định |
 |---|---|
 | Đối tượng | Màn Điều kiện trước màn Đồng ý: dưới 18 tuổi, mang thai, cho con bú thì Chưa dùng được; dùng thuốc theo chỉ định hoặc có bệnh mạn tính thì dùng ở chế độ thận trọng (plan, mục 1) |
-| Chế độ thận trọng | Dòng nhắc cố định ở Hôm nay ngay sau thẻ cảnh báo; "mục tiêu", "mức khuyến nghị" đổi thành "mức tham chiếu cho người khỏe mạnh"; ẩn ODA; cảnh báo giữ nguyên |
+| Chế độ thận trọng | Dòng nhắc cố định ở Hôm nay (ngay sau thẻ cảnh báo), Chi tiết chất, Chi tiết cảnh báo. Chỉ đổi các chuỗi liệt kê ở Nội dung chữ, dòng "Chế độ thận trọng"; chuỗi khác giữ nguyên. Cảnh báo giữ nguyên. Ẩn ODA khi có ODA (giai đoạn 3; MVP không có ODA) |
 | Điều hướng | Thanh dưới 4 mục: **Hôm nay · Nhật ký · Bổ sung · Tôi**. Nút nổi **Ghi** ở Hôm nay và Nhật ký mở bảng chọn: Món ăn, Bổ sung, Nước, Buổi tập |
-| Ngày đang xem | Hôm nay và Nhật ký dùng chung một ngày đang xem; ghi mới vào ngày đó; tiêu đề bảng ghi luôn hiện ngày |
+| Ngày đang xem | Hôm nay và Nhật ký dùng chung một ngày đang xem; ghi mới vào ngày đó; tiêu đề bảng ghi luôn hiện ngày. Tự về hôm nay khi app nằm nền quá 5 phút hoặc khi qua nửa đêm, trừ khi đang mở màn ghi hoặc màn sửa; chạm lại tab Hôm nay cũng về hôm nay |
 | Cảnh báo | Thẻ cảnh báo luôn đứng đầu Hôm nay, còn vượt thì còn hiện; vừa ghi mà vượt thì mở bảng cảnh báo; lịch vượt thì báo trước khi lưu. Không chặn việc ghi hay lưu |
-| Ẩn số calo | Một công tắc chung (Tôi → Hiển thị, biểu tượng mắt trên thẻ Năng lượng); khi bật, không màn nào hiện số kcal |
+| Ẩn số calo | Một công tắc chung (Tôi → Hiển thị, biểu tượng mắt trên thẻ Năng lượng); khi bật, không màn nào hiện số kcal, và thẻ Năng lượng bỏ cả thanh calo; đạm (g), tỷ lệ đạm béo bột đường, đường bổ sung vẫn hiện |
 | Mạng | Không màn nào cần mạng; chỉ sao lưu Google Drive có trạng thái mất mạng |
 | Quảng cáo | Không có trong MVP, không chừa chỗ (plan, mục 1) |
 
@@ -33,9 +33,10 @@ Mọi số trong wireframe lấy từ một tình huống để các màn khớp
   | Magie | Magie 250 mg (magie citrat) | 20:00 | Còn 5, sắp hết |
 
 - **Lịch vượt:** magie từ bổ sung theo lịch 150 + 250 = **400 mg/ngày**, giới hạn 350 mg; người dùng đã chọn "Vẫn lưu".
+- **Lưu ý lịch:** lần 08:00 có canxi 500 + 100 = **600 mg** trong một lần, trên 500 mg (quy tắc lịch 1).
 - **Đã ghi tới 14:05:** đi bộ nhanh 30 phút (06:30); phở bò 1 bát (07:30); cà phê sữa 1 ly (08:00, 18 g đường bổ sung); Canxi D3 và Vitamin tổng hợp mỗi loại 1 viên (08:05); cơm trắng 1 bát, cá kho 1 khúc (12:10); nước 5 × 250 ml.
 - **Tổng tới 14:05:** 1.150 kcal; đạm 62 g (22%); béo 30%; bột đường 138 g (48%); chất xơ 9 g; đường bổ sung 18 g (6%). Canxi 770 mg (thực phẩm 170, bổ sung 600). Vitamin D 37 µg. Magie 240 mg (thực phẩm 90, bổ sung 150). Kali 1.400 mg. Vận động 7 ngày: 120 phút vừa, 20 phút mạnh, 1 ngày tập tăng cơ.
-- **Lúc 20:05**, sau khi bấm "Đã uống" lần 20:00: magie từ bổ sung **400 mg** → cờ vượt trong ngày.
+- **Lúc 20:05**, sau khi bấm "Đã uống" lần 20:00: magie từ bổ sung **400 mg** → cờ vượt trong ngày. Wireframe Chi tiết cảnh báo là lúc 20:05; các màn khác là lúc 14:05.
 
 ## Sơ đồ màn hình
 
@@ -60,16 +61,20 @@ flowchart TD
   GM --> NL[Nhập theo nhãn]
   G --> GB[Ghi bổ sung] --> G1[Ghi một lần]
   G --> GN[Ghi nước]
+  H -->|thẻ Nước| GN
   G --> GT[Ghi buổi tập]
   H --> CC[Chi tiết chất]
   H --> CW[Chi tiết cảnh báo]
   H --> LU[Lần uống hôm nay]
+  H -->|thẻ Vận động| N
   N --> SM[Sửa mục]
   B --> LU
   B --> SP[Chi tiết sản phẩm] --> DL[Đặt lịch uống]
+  SP --> ST[Sửa thành phần]
   B --> TS[Thêm sản phẩm]
   T --> HS[Hồ sơ]
   T --> HT[Hiển thị]
+  T --> GN2[Giờ trong ngày]
   T --> NG[Nhắc giờ]
   T --> SL[Sao lưu]
   T --> QR[Quyền riêng tư]
@@ -121,8 +126,13 @@ flowchart LR
   D -->|vượt| CW[Bảng cảnh báo · Hoàn tác lần ghi]
 ```
 
-- Ghi cho hôm nay một sản phẩm còn lần uống theo lịch chưa đánh dấu thì tự gắn vào lần gần giờ hiện tại nhất ("Đã ghi lần uống 20:00 theo lịch"); không có thì là lần uống thêm (plan, mục Thực phẩm bổ sung).
-- "Đã uống" từ thông báo mà vượt giới hạn: gửi thêm thông báo chung "Có thông tin mới cần xem trong WholeWell"; chạm mở Chi tiết cảnh báo.
+- **Khung ±2 giờ** quanh giờ của mỗi lần theo lịch (quy tắc của app, plan mục Thực phẩm bổ sung), áp cho **mọi** cách ghi:
+  - Ghi từ nút Ghi: trong khung của một lần chưa đánh dấu thì tự gắn vào lần đó ("Đã ghi lần uống 20:00 theo lịch"), ngoài khung là lần uống thêm ("Đã ghi lần uống thêm"); thông báo nhỏ có "Sửa" để đổi. Xét cả các lần của ngày trước có khung kéo qua nửa đêm: 00:30 ghi bằng nút Ghi vẫn gắn vào lần 23:00 hôm trước, giống nút trên thông báo.
+  - Nút của một lần theo lịch (thẻ Lần uống tới, Bổ sung, Lần uống hôm nay): trong khung là [Đã uống]; trước khung là [Uống sớm?], chạm thì hỏi "Lần 20:00 theo lịch" hay "Lần uống thêm".
+  - Hai khung chồng nhau (vd. 08:00 và 09:00) thì gắn vào lần gần giờ uống nhất.
+- **Ranh giới ngày:** lượng nạp tính vào ngày của giờ uống thực tế. Lần 23:00 bấm "Đã uống" lúc 00:30 (còn trong khung) vẫn đánh dấu lần 23:00, nhưng lượng nạp tính cho ngày mới. Hết khung (2 giờ sau giờ lịch) mà chưa đánh dấu thì lần đó hiện "Chưa đánh dấu" ở Lần uống hôm nay; người dùng vẫn đánh dấu muộn được, chọn giờ thực tế. Thông báo của lần đó: Android tự gỡ khi hết khung; iOS không gỡ được, nên chạm sau khi hết khung thì mở app và hỏi cách ghi.
+- **Đổi giờ hoặc ngày khi ghi** ("Chạm giờ để đổi", ghi cho ngày cũ): tính lại cách gắn theo lịch của ngày được chọn. Vd. sáng hôm sau ghi bù lần 20:00 hôm qua: chọn hôm qua, 20:10 → thành lần 20:00 theo lịch.
+- "Đã uống" trên thông báo mở app (máy yêu cầu mở khóa) rồi ghi ngay, có Hoàn tác; không ghi trong nền. Vượt giới hạn: gửi thêm thông báo chung "Có thông tin mới cần xem trong WholeWell"; chạm mở Chi tiết cảnh báo.
 
 ### 4. Xem tổng kết
 
@@ -147,8 +157,13 @@ Ba loại cờ và cách tính ở plan (mục Cảnh báo giới hạn an toàn
 
 - **Mỗi chất một thẻ,** liệt kê đủ các loại cờ của chất đó (trong ngày, 7 ngày, lịch); thẻ xếp theo % vượt giảm dần.
 - **Thay đổi làm vượt** (đổi hồ sơ, tuổi tự tăng): lưu xong hiện bảng cảnh báo liệt kê mọi chất mới vượt, hoặc thẻ ở Hôm nay nếu là thay đổi tự động.
-- **Không có nút tắt vĩnh viễn;** "Đã hiểu" chỉ thu gọn thẻ thành một dòng.
-- **Lưu ý không phải cờ vượt** dùng `SafetyNote`, màu trung tính: *lưu ý lịch* theo quy tắc lịch (trong Đặt lịch uống, ở sản phẩm liên quan, ở Hôm nay khi lịch dính quy tắc; nội dung ở thiết kế Lịch uống).
+- **Không có nút tắt vĩnh viễn;** "Đã hiểu" chỉ thu gọn thẻ thành một dòng; thẻ mở rộng lại khi chất đó có thêm loại cờ mới.
+- **Tần suất:** Bảng cảnh báo chỉ bật khi lần ghi làm xuất hiện cờ mới (chất mới vượt, hoặc thêm loại cờ). Chất đang vượt mà ghi thêm: không bật bảng, chỉ thêm dòng "{Chất} vẫn vượt giới hạn: {lượng}" vào thông báo nhỏ.
+- **Mỗi lần ghi chỉ một phản hồi:** có Bảng cảnh báo thì không có thông báo nhỏ; đầu bảng có dòng kết quả ghi (vd. "Đã ghi lần uống thêm · Sửa") và dòng đường bổ sung nếu bữa đó quá 10 g. Không có bảng thì một thông báo nhỏ gộp tối đa ba dòng theo thứ tự: chất vẫn vượt giới hạn → đường bổ sung quá 10 g mỗi bữa → "Đã ghi …"; nút Sửa, Hoàn tác, Xem (nếu có dòng vượt).
+- **Xem ngày cũ:** thẻ hiện cờ trong ngày của ngày đó và cờ 7 ngày tính tới ngày đó; cờ lịch theo lịch hiện tại, chỉ hiện khi xem hôm nay.
+- **Lưu ý không phải cờ vượt** dùng `SafetyNote`, màu trung tính: *lưu ý lịch* theo quy tắc lịch (nội dung ở thiết kế Lịch uống).
+  - Quy tắc 1, 3, 4 (lượng mỗi lần, uống cùng giờ): lưu ý ở Đặt lịch uống, sản phẩm liên quan, Lần uống hôm nay và Hôm nay. Ở Hôm nay có "Đã hiểu" để thu gọn thành một dòng; mở lại khi lịch đổi.
+  - Quy tắc 2, 5 (uống cùng bữa): chỉ là gợi ý ở Đặt lịch uống. "Cùng bữa" là giờ uống trong ±1 giờ quanh giờ một bữa chính ở Giờ trong ngày (quy tắc của app). Dữ liệu mẫu 08:00 và 20:00 cùng bữa 07:00 và 19:00, nên không có gợi ý.
 
 ## Danh sách màn hình
 
@@ -156,12 +171,12 @@ Ba loại cờ và cách tính ở plan (mục Cảnh báo giới hạn an toàn
 |---|---|---|---|
 | Chào mừng | Vai tham chiếu, dữ liệu ở máy | Mở app lần đầu | Điều kiện; Khôi phục |
 | Điều kiện | Tuổi; mang thai hoặc cho con bú; thuốc theo chỉ định của bác sĩ hoặc bệnh mạn tính | Chào mừng | Đồng ý; Chưa dùng được |
-| Chưa dùng được | Báo bản này chưa hỗ trợ dưới 18 tuổi, mang thai, cho con bú | Điều kiện | Đóng app |
+| Chưa dùng được | Báo bản này chưa hỗ trợ dưới 18 tuổi, mang thai, cho con bú | Điều kiện | Điều kiện (Quay lại) |
 | Đồng ý | Đồng ý xử lý dữ liệu sức khỏe trên máy | Điều kiện; khôi phục bản cũ | Hồ sơ cơ thể; Chào mừng |
 | Hồ sơ cơ thể / Hồ sơ | Giới, chiều cao, cân nặng, mức vận động (Hồ sơ từ Tôi có thêm tuổi, câu thuốc và bệnh, dòng nhắc thai kỳ) | Đồng ý; Tôi | Hiển thị calo; Tôi |
 | Hiển thị calo | Hiện hay ẩn số calo | Hồ sơ cơ thể | Hôm nay |
-| **Hôm nay** | Cảnh báo, lưu ý, lần uống tới, năng lượng, vi chất, nước, vận động, Bạn có biết | Thanh dưới | Bảng Ghi, Chi tiết chất, Chi tiết cảnh báo, Lần uống hôm nay |
-| **Nhật ký** | Mục đã ghi của ngày đang xem | Thanh dưới | Bảng Ghi, Sửa mục |
+| **Hôm nay** | Cảnh báo, lưu ý, lần uống tới, năng lượng, vi chất, nước, vận động, Bạn có biết | Thanh dưới | Bảng Ghi, Chi tiết chất, Chi tiết cảnh báo, Lần uống hôm nay, Ghi nước (thẻ Nước), Nhật ký (thẻ Vận động) |
+| **Nhật ký** | Mục đã ghi của ngày đang xem, có bộ lọc | Thanh dưới; thẻ Vận động (lọc Buổi tập) | Bảng Ghi, Sửa mục |
 | **Bổ sung** | Lần uống hôm nay, kho | Thanh dưới | Lần uống hôm nay, Chi tiết sản phẩm, Thêm sản phẩm |
 | **Tôi** | Hồ sơ, cài đặt | Thanh dưới | Các màn cài đặt |
 | Bảng Ghi | Chọn loại cần ghi | Nút Ghi | 4 màn ghi |
@@ -172,8 +187,9 @@ Ba loại cờ và cách tính ở plan (mục Cảnh báo giới hạn an toàn
 | Lần uống hôm nay | Đánh dấu từng loại | Hôm nay; Bổ sung; thông báo | Màn trước |
 | Chi tiết chất | So với mức khuyến nghị, giới hạn, đóng góp, 7 ngày | Hôm nay | Nguồn số liệu; Sửa mục |
 | Chi tiết cảnh báo, Bảng cảnh báo, Bảng cảnh báo lịch | Cờ vượt giới hạn | Thẻ; sau khi lưu; thông báo | Nhật ký; Đặt lịch; Nguồn số liệu |
-| Chi tiết sản phẩm | Thành phần theo chất và dạng, kho, lịch | Bổ sung | Đặt lịch uống; Sửa thành phần |
-| Hiển thị, Quyền riêng tư, Nguồn số liệu, Giới thiệu | Cài đặt, thông tin | Tôi | Tôi |
+| Chi tiết sản phẩm | Thành phần theo chất và dạng, kho theo hộp, lịch | Bổ sung | Đặt lịch uống; Sửa thành phần |
+| Sửa thành phần | Sửa từng dòng chất, dạng, lượng (khung ở đây, chi tiết ở thiết kế Chụp nhãn) | Chi tiết sản phẩm | Chi tiết sản phẩm; Bảng cảnh báo lịch |
+| Hiển thị, Giờ trong ngày, Quyền riêng tư, Nguồn số liệu, Giới thiệu | Cài đặt, thông tin | Tôi | Tôi |
 
 ## Wireframe
 
@@ -203,12 +219,12 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 │ không cho con bú. Hãy hỏi bác│
 │ sĩ hoặc dược sĩ về dinh dưỡng│
 │ và thực phẩm bổ sung.        │
-│                 [   Đóng   ] │
+│                 [ Quay lại ] │
 └──────────────────────────────┘
 ```
 
-- Điều kiện: tuổi bàn phím số, 1–120; hai câu bắt buộc chọn, không chọn sẵn. Dưới 18 hoặc đang mang thai, cho con bú thì sang Chưa dùng được. Câu thứ hai trả lời "Có" thì vào app ở chế độ thận trọng. App lưu tuổi và ngày nhập, tự cộng 1 mỗi 12 tháng và báo ở Hôm nay ("Tuổi trong hồ sơ đã được cập nhật thành 36. Sửa").
-- Chưa dùng được: không có Quay lại, không lưu gì.
+- Điều kiện: tuổi bàn phím số, 1–120; hai câu bắt buộc chọn, không chọn sẵn. Dưới 18 hoặc đang mang thai, cho con bú thì sang Chưa dùng được. Câu thứ hai trả lời "Có" thì vào app ở chế độ thận trọng. App lưu tuổi và ngày nhập, tự cộng 1 mỗi 12 tháng và báo ở Hôm nay ("Tuổi trong hồ sơ đã được cập nhật thành 36. Sửa"). Vì không biết ngày sinh, gần mốc đổi nhóm thì giới hạn lấy mức thấp hơn (plan, mục Nhật ký, năng lượng, vận động).
+- Chưa dùng được: [Quay lại] về màn Điều kiện để sửa (vd. gõ nhầm tuổi); không lưu gì; không có nút thoát app (iOS không cho app tự thoát).
 
 ### Đồng ý
 
@@ -290,9 +306,13 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 │ │ nếu cần.                 │ │
 │ │              [Xem thêm ›]│ │
 │ └──────────────────────────┘ │
+│ ⓘ Lần 08:00 có 600 mg canxi; │
+│ canxi hấp thu tốt nhất khi   │
+│ mỗi lần không quá 500 mg.    │
+│                    [Đã hiểu] │
 │ ┌ Lần uống tới · 20:00 ────┐ │
 │ │ Canxi D3, Magie · 2 loại │ │
-│ │ [ Đã uống ]  [ Chi tiết ]│ │
+│ │ [Uống sớm?]  [ Chi tiết ]│ │
 │ └──────────────────────────┘ │
 │ ┌ Năng lượng          [👁] ┐ │
 │ │ 1.150 / 2.000 kcal       │ │
@@ -322,7 +342,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 │ └──────────────────────────┘ │
 │ ┌ Vận động 7 ngày qua ─────┐ │
 │ │ Tương đương 160 phút vừa │ │
-│ │ ▓▓▓▓▓▓▓▓░░ mức tham chiếu│ │
+│ │ ▓▓▓▓▓░░░░░ mức tham chiếu│ │
 │ │ 150–300 phút mỗi tuần    │ │
 │ │ Tập tăng cơ: 1 ngày ·    │ │
 │ │ mức tham chiếu từ 2 ngày │ │
@@ -333,24 +353,48 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 └──────────────────────────────┘
 ```
 
-- **Thứ tự cố định:** cảnh báo → dòng thận trọng (nếu có) → dòng nhắc hồ sơ (tuổi, gợi ý mức vận động) → lần uống tới → năng lượng → vi chất → nước → vận động → Bạn có biết. Thẻ không có dữ liệu thì ẩn, trừ Năng lượng và Vi chất.
+- **Thứ tự cố định:** cảnh báo → dòng thận trọng (nếu có) → lưu ý lịch (nếu lịch dính quy tắc) → dòng nhắc hồ sơ (tuổi, gợi ý mức vận động) → lần uống tới → năng lượng → vi chất → nước → vận động → Bạn có biết. Thẻ không có dữ liệu thì ẩn, trừ Năng lượng, Vi chất và Nước (để luôn có nút ghi nước 1 chạm).
+- **Xem ngày khác hôm nay:** ẩn Lần uống tới, cờ lịch, lưu ý lịch, Bạn có biết.
 - **‹ ngày ›:** không tiến quá hôm nay; tiêu đề "Hôm qua", "Thứ Bảy, 21/11". Chế độ 7 ngày ẩn thẻ Lần uống tới.
-- **Năng lượng:** thanh calo một màu trung tính, không đổi màu khi vượt, không "còn được ăn". Tỷ lệ ghi chữ trong / dưới / trên khoảng, không xanh đỏ. Đường bổ sung: số gam và % năng lượng, không có ngưỡng trong ngày; giới hạn 10 g mỗi bữa báo ngay. "Thêm ▾": bột đường so với mức khuyến nghị, chất xơ, omega-6, omega-3 so với mức ước tính.
-- **Vi chất:** vitamin và khoáng chất có mức khuyến nghị hoặc ước tính; lọc Tất cả / Có bổ sung / Dưới mức khuyến nghị. Thanh hai đoạn thực phẩm và bổ sung phân biệt bằng mật độ và chú thích; trên 100% thì thanh đầy, không khen. Chất chỉ có giới hạn (bo, niken, vanadi) chỉ xuất hiện khi có cảnh báo.
-- **Nước:** chỉ lượng đã uống, không so. Nút nhanh dùng lượng ghi gần nhất.
-- **Vận động:** 7 ngày gần nhất; phút tương đương vừa và ngày tập tăng cơ so với mức tham chiếu; thanh trung tính, không khen chê; ghi "theo các buổi bạn đã ghi".
+- **Năng lượng:** thanh calo một màu trung tính, không đổi màu khi vượt, không "còn được ăn". Tỷ lệ ghi chữ trong / dưới / trên khoảng, không xanh đỏ. Đường bổ sung: số gam và % năng lượng, không có ngưỡng trong ngày. Giới hạn 10 g áp cho từng bữa Sáng, Trưa, Tối; món bữa Phụ có giờ ăn cách món Phụ ngay trước dưới 30 phút thì vào cùng bữa (nối chuỗi: 15:00, 15:25, 15:50 là một bữa; quy tắc của app). Quá giới hạn thì báo ngay bằng thông báo nhỏ (không phải Bảng cảnh báo) và dòng trong thẻ Năng lượng. "Thêm ▾": bột đường so với mức khuyến nghị, chất xơ, omega-6, omega-3 so với mức ước tính.
+- **Vi chất:** vitamin và khoáng chất có mức khuyến nghị hoặc ước tính; lọc Tất cả / Có bổ sung / Dưới mức khuyến nghị (thận trọng: Dưới mức tham chiếu). Thanh hai đoạn thực phẩm và bổ sung phân biệt bằng mật độ và chú thích; trên 100% thì thanh đầy, không khen. Chất chỉ có giới hạn (bo, niken, vanadi) chỉ xuất hiện khi có cảnh báo.
+- **Nước:** chỉ lượng đã uống, không so. Luôn hiện; chưa ghi thì "Chưa ghi nước hôm nay" + [+250 ml]. Nút nhanh dùng lượng ghi gần nhất (lần đầu 250 ml); chạm thẻ mở Ghi nước.
+- **Vận động:** 7 ngày gần nhất; phút tương đương vừa và ngày tập tăng cơ so với mức tham chiếu; thanh trung tính, thang 0–300 phút, có vạch ở 150 phút, quá 300 thì đầy; không khen chê; ghi "theo các buổi bạn đã ghi".
 - **Bạn có biết** (`TipCard`): một câu của quy tắc lịch trong gói dữ liệu, chữ đứng yên.
-  - Chỉ lấy quy tắc mà mọi chất của nó có trong ít nhất một sản phẩm ở kho (vd. quy tắc sắt–kẽm cần cả sắt và kẽm). Mỗi ngày một câu, lần lượt theo thứ tự trong gói; không có quy tắc phù hợp thì ẩn thẻ.
+  - Chỉ lấy quy tắc mà mọi chất của nó có trong ít nhất một sản phẩm ở kho (vd. quy tắc sắt–kẽm cần cả sắt và kẽm), bỏ qua quy tắc đang hiện ở lưu ý lịch. Mỗi ngày một câu, lần lượt theo thứ tự trong gói; không có quy tắc phù hợp thì ẩn thẻ.
   - Chỉ hiện ở chế độ Hôm nay của ngày hôm nay. Ẩn khi đang có cờ vượt giới hạn (wireframe trên có cờ magie nên không có thẻ).
-  - "Nguồn: NIH ODS ›" mở Nguồn số liệu tại quy tắc đó; "Ẩn" chỉ ẩn trong hôm nay; tắt hẳn ở Tôi → Hiển thị.
+  - "Xem nguồn ›" mở Nguồn số liệu tại quy tắc đó (tên nguồn chỉ ghi ở màn đó); "Ẩn" chỉ ẩn trong hôm nay; tắt hẳn ở Tôi → Hiển thị.
 
 ```
 ┌ Bạn có biết ─────────────┐
 │ Canxi hấp thu tốt nhất   │
 │ khi mỗi lần không quá    │
 │ 500 mg.                  │
-│ Nguồn: NIH ODS ›    Ẩn   │
+│ Xem nguồn ›         Ẩn   │
 └──────────────────────────┘
+```
+
+**Chế độ thận trọng** (đầu màn Hôm nay, cùng dữ liệu mẫu, thẻ cảnh báo thu gọn):
+
+```
+┌──────────────────────────────┐
+│ Hôm nay      ‹ 23/11 ›       │
+├──────────────────────────────┤
+│ ┌ ⚠ Magie ─────────────────┐ │
+│ │ Lịch uống vượt giới hạn  │ │
+│ │ an toàn · Vượt 50 mg/ngày│ │
+│ └──────────────────────────┘ │
+│ ⓘ Các mức trong app dành cho │
+│ người khỏe mạnh. Với tình    │
+│ trạng của bạn, mức phù hợp có│
+│ thể khác; hãy hỏi bác sĩ.    │
+│ ┌ Năng lượng          [👁] ┐ │
+│ │ 1.150 / 2.000 kcal       │ │
+│ │ mức calo tham chiếu      │ │
+│ └──────────────────────────┘ │
+│ Canxi          770/1.000 mg  │
+│ ▓▓▒▒▒▒▒▒░░ 77% mức tham chiếu│
+└──────────────────────────────┘
 ```
 
 ### Bảng Ghi
@@ -370,7 +414,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 ```
 ┌──────────────────────────────┐  ┌──────────────────────────────┐
 │ ←  Ghi món                   │  │ Phở bò               ước tính│
-│ [Sáng] [Trưa✓] [Tối] [Phụ]   │  │ [ Bát ] [ Gram ]             │
+│ [Sáng] [Trưa] [Tối] [Phụ✓]   │  │ [ Bát ] [ Gram ]             │
 │ [ 🔍 Tìm món...      🎤 ▥ ]  │  │ Số lượng  [ − ]  1  [ + ]    │
 ├──────────────────────────────┤  │ Khoảng 450 kcal              │
 │ Gần đây                      │  │ [         Lưu             ]  │
@@ -382,7 +426,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 └──────────────────────────────┘
 ```
 
-- Bữa tự chọn theo giờ. Chạm món gần đây: lưu với khẩu phần lần trước, thông báo nhỏ "Đã ghi Cơm trắng, 1 bát · Sửa · Hoàn tác" (7 giây). 🎤 ▥ chỉ hiện khi tính năng có và máy hỗ trợ.
+- Bữa tự chọn theo Giờ trong ngày: trong ±1,5 giờ quanh giờ một bữa chính thì chọn bữa đó, ngoài ra là Phụ; người dùng đổi được. Chạm món gần đây: lưu với khẩu phần lần trước, thông báo nhỏ "Đã ghi Cơm trắng, 1 bát · Sửa · Hoàn tác" (7 giây). 🎤 ▥ chỉ hiện khi tính năng có và máy hỗ trợ.
 
 ### Nhập theo nhãn
 
@@ -416,16 +460,16 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 ├──────────────────────────────┤  ├──────────────────────────────┤
 │ Trong kho                    │  │ Tên (không bắt buộc)         │
 │ Canxi D3 · 1 viên            │  │ Thành phần đã uống           │
-│  lần 20:00 chưa đánh dấu     │  │ Chất  [ Vitamin C     ▾ ]    │
+│  ngoài giờ lịch: uống thêm   │  │ Chất  [ Vitamin C     ▾ ]    │
 │ Magie · 1 viên               │  │ Lượng [ 1000 ] [ mg ▾ ]      │
-│  lần 20:00 chưa đánh dấu     │  │ Dạng  [ Nhãn không ghi▾ ]    │
+│  ngoài giờ lịch: uống thêm   │  │ Dạng  [ Nhãn không ghi▾ ]    │
 │ Vitamin tổng hợp · 1 viên    │  │ [ + Thêm chất ]              │
 │ [ Ghi một lần, không lưu kho]│  │ [         Lưu             ]  │
 │ [ + Thêm sản phẩm ]          │  └──────────────────────────────┘
 └──────────────────────────────┘
 ```
 
-- Chạm sản phẩm: liều theo lịch (không có lịch thì 1 khẩu phần), giờ hiện tại. Ví dụ chạm Magie lúc 14:05: gắn vào lần 20:00, magie thành 400 mg → Bảng cảnh báo. Chạm giờ để đổi.
+- Chạm sản phẩm: liều theo lịch (không có lịch thì 1 khẩu phần), giờ hiện tại. Dưới mỗi sản phẩm có lịch ghi trước cách ghi: "lần {giờ} theo lịch" (trong khung) hoặc "ngoài giờ lịch: uống thêm". Ví dụ chạm Magie lúc 14:05: ngoài khung của lần 20:00 (18:00–22:00) nên là lần uống thêm; magie thành 400 mg → Bảng cảnh báo; lần 20:00 vẫn chờ đánh dấu. Chạm giờ để đổi.
 - Ghi một lần dùng cùng bộ nhập thành phần với Thêm sản phẩm; ô Dạng chỉ hiện với chất mà dạng ảnh hưởng tới phép tính.
 
 ### Ghi nước, Ghi buổi tập
@@ -450,13 +494,14 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 ```
 ┌──────────────────────────────┐  ┌──────────────────────────────┐
 │ Nhật ký      ‹ 23/11 ›       │  │ ←  Phở bò                    │
-├──────────────────────────────┤  ├──────────────────────────────┤
-│ Sáng                         │  │ Khẩu phần [Bát] [−] 1 [+]    │
-│  Phở bò · 1 bát        07:30 │  │ Bữa [Sáng✓] [Trưa] [Tối]     │
-│  Cà phê sữa · 1 ly     08:00 │  │ Giờ [ 07:30 ]                │
-│ Trưa                         │  │ [         Lưu             ]  │
-│  Cơm trắng · 1 bát     12:10 │  │  Xóa khỏi nhật ký            │
-│  Cá kho · 1 khúc       12:10 │  └──────────────────────────────┘
+│ Lọc [ Tất cả ▾ ]             │  ├──────────────────────────────┤
+├──────────────────────────────┤  │ Khẩu phần [Bát] [−] 1 [+]    │
+│ Sáng                         │  │ Bữa [Sáng✓][Trưa][Tối][Phụ]  │
+│  Phở bò · 1 bát        07:30 │  │ Giờ [ 07:30 ]                │
+│  Cà phê sữa · 1 ly     08:00 │  │ [         Lưu             ]  │
+│ Trưa                         │  │  Xóa khỏi nhật ký            │
+│  Cơm trắng · 1 bát     12:10 │  └──────────────────────────────┘
+│  Cá kho · 1 khúc       12:10 │
 │ Bổ sung                      │
 │  Canxi D3 · 1 viên     08:05 │
 │  Vitamin tổng hợp ·    08:05 │
@@ -469,7 +514,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 └──────────────────────────────┘
 ```
 
-- kcal bên phải chỉ hiện khi không ẩn số calo. Xóa hỏi lại. Lần uống bổ sung: sửa liều, giờ; xóa thì trả kho và bỏ đánh dấu lần uống theo lịch. Lưu xong kiểm lại mọi cờ.
+- Lọc: Tất cả / Món ăn / Bổ sung / Nước / Buổi tập; thẻ Vận động mở Nhật ký lọc Buổi tập. kcal bên phải chỉ hiện khi không ẩn số calo. Xóa hỏi lại. Lần uống bổ sung: sửa liều, giờ; xóa thì trả kho và bỏ đánh dấu lần uống theo lịch. Lưu xong kiểm lại mọi cờ.
 
 ### Bổ sung, Lần uống hôm nay
 
@@ -480,13 +525,15 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 │ Hôm nay              [Xem ›] │  │ 08:00                        │
 │  ✓ 08:00 Canxi D3, Vitamin   │  │  ✓ Canxi D3 · Đã uống 08:05  │
 │          tổng hợp            │  │  ✓ Vitamin tổng hợp · 08:05  │
-│  ○ 20:00 Canxi D3, Magie     │  │ 20:00                        │
-│           [ Đã uống ]        │  │  ○ Canxi D3 · 1 viên         │
-│ Kho                          │  │    [ Đã uống ] [ Bỏ qua ]    │
-│ Canxi D3 · còn 42 · hết      │  │  ○ Magie · 1 viên            │
-│  khoảng 14/12 · HSD 06/2027  │  │    [ Đã uống ] [ Bỏ qua ]    │
-│ Vitamin tổng hợp · còn 30 ·  │  │  [ Đã uống cả 2 ]            │
+│  ○ 20:00 Canxi D3, Magie     │  │  ⓘ Canxi 600 mg một lần      │
+│           [Uống sớm?]        │  │ 20:00                        │
+│ Kho                          │  │  ○ Canxi D3 · 1 viên         │
+│ Canxi D3 · còn 42 · hết      │  │    [Uống sớm?] [ Bỏ qua ]    │
+│  khoảng 14/12 · HSD 06/2027  │  │  ○ Magie · 1 viên            │
+│  ⓘ Lưu ý lịch (canxi 08:00)  │  │    [Uống sớm?] [ Bỏ qua ]    │
+│ Vitamin tổng hợp · còn 30 ·  │  │  [Uống sớm cả 2?]            │
 │  hết khoảng 23/12            │  └──────────────────────────────┘
+│  ⓘ Lưu ý lịch (canxi 08:00)  │
 │  ⚠ Lịch vượt giới hạn (magie)│
 │ Magie · còn 5 · sắp hết      │
 │  ⚠ Lịch vượt giới hạn (magie)│
@@ -496,7 +543,8 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 └──────────────────────────────┘
 ```
 
-- Chưa có lịch: "Chưa có lịch uống. Mở một sản phẩm để đặt lịch." Dòng cảnh báo lịch hiện ở mọi sản phẩm góp vào chất bị vượt. "Sắp hết", "Đã hết hạn" ghi bằng chữ. Không link cửa hàng.
+- Chưa có lịch: "Chưa có lịch uống. Mở một sản phẩm để đặt lịch." Dòng cảnh báo lịch và lưu ý lịch hiện ở mọi sản phẩm góp vào. "Sắp hết", "Đã hết hạn" ghi bằng chữ. Không link cửa hàng.
+- **Kho theo hộp:** một sản phẩm có thể có nhiều hộp, mỗi hộp một số còn lại và hạn dùng. "Còn", "hết khoảng" chỉ tính hộp còn hạn; HSD hiện hộp còn hạn sớm nhất; **Lần uống luôn được ghi và luôn tính vào giới hạn;** kho chỉ ảnh hưởng việc trừ. Có hộp còn hạn: trừ hộp hết hạn sớm nhất. Chỉ còn hộp đã hết hạn: hỏi "Trừ vào hộp đã hết hạn?" [Trừ] [Không trừ]. Kho còn 0: vẫn ghi, báo "Kho đã hết · Thêm hộp". Số còn không bao giờ âm. Hộp đã hết hạn hiện riêng "Đã hết hạn: {n} viên". "Sắp hết" khi dự kiến còn dùng được ≤7 ngày; "Đã hết hạn" khi qua tháng ghi trên hộp (quy tắc của app).
 - Lần uống: chạm giờ để sửa giờ thực tế; bỏ qua không trừ kho. Nhắc lại, dời lịch ở thiết kế Lịch uống.
 
 ### Chi tiết chất
@@ -542,8 +590,11 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 │ ▓▓▓▒▒▒▒░░░                   │
 │ Thực phẩm 90 · bổ sung 150   │
 │ Tính vào giới hạn an toàn:   │
-│ 150 / 350 mg · chỉ bổ sung   │
-│ và thuốc, không tính thức ăn │
+│ 150 / 350 mg                 │
+│ chỉ tính bổ sung bạn ghi,    │
+│ không tính thức ăn           │
+│ App không tính thuốc, trừ khi│
+│ bạn ghi.                     │
 │ Đóng góp hôm nay             │
 │  Vitamin tổng hợp     150 mg │
 │   bổ sung · tính vào giới hạn│
@@ -555,6 +606,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 │ Nguồn số liệu ›              │
 └──────────────────────────────┘
 ```
+- Mọi chất có giới hạn: dòng "App không tính thuốc, trừ khi bạn ghi." Không mời ghi thuốc, không nhắc tên loại thuốc. Chế độ thận trọng: dòng nhắc ở đầu màn.
 - Biểu đồ có bảng số cho trình đọc màn hình. Sắt: thêm dòng thông tin vitamin C tăng hấp thu sắt không heme (không phải gợi ý).
 
 ### Chi tiết cảnh báo, Bảng cảnh báo lịch
@@ -567,10 +619,10 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 │ Hôm nay từ bổ sung: 400 mg   │  │ 400 mg/ngày                  │
 │ Giới hạn an toàn: 350 mg/ngày│  │ Giới hạn: 350 mg/ngày        │
 │ Vượt: 50 mg (14%)            │  │ Vượt: 50 mg/ngày (14%)       │
-│ Tính từ thực phẩm bổ sung và │  │ Góp vào                      │
-│ thuốc, không tính từ thức ăn.│  │  Vitamin tổng hợp · 1 viên   │
-│ Lịch uống: 400 mg/ngày, cũng │  │  × 1 lần/ngày         150 mg │
-│ vượt giới hạn.               │  │  Magie · 1 viên              │
+│ Chỉ tính bổ sung bạn ghi,    │  │ Góp vào                      │
+│ không tính thức ăn.          │  │  Vitamin tổng hợp · 1 viên   │
+│ Lịch uống: 400 mg/ngày ·     │  │  × 1 lần/ngày         150 mg │
+│ Vượt: 50 mg/ngày (14%)       │  │  Magie · 1 viên              │
 │ Các mục góp vào              │  │  × 1 lần/ngày         250 mg │
 │  Vitamin tổng hợp ·   150 mg │  │ Hỏi bác sĩ hoặc dược sĩ nếu  │
 │  08:05                       │  │ cần.                         │
@@ -583,7 +635,8 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 └──────────────────────────────┘
 ```
 
-- **Bảng cảnh báo** (sau khi ghi, sửa): cùng nội dung, trượt lên che 3/4 màn; [Đã hiểu] [Xem chi tiết] và nút chữ "Hoàn tác lần ghi"; không tự đóng.
+- Wireframe này ở lúc 20:05 (dữ liệu mẫu). Chế độ thận trọng: dòng nhắc ngay dưới tiêu đề.
+- **Bảng cảnh báo** (sau khi ghi, sửa): dòng kết quả ghi ở đầu, rồi cùng nội dung như trên, trượt lên che 3/4 màn; [Đã hiểu] [Xem chi tiết] và nút chữ "Hoàn tác lần ghi"; không tự đóng.
 - Cờ 7 ngày: thêm "Trung bình {n} ngày có ghi trong 7 ngày qua: {x}/ngày". Ngày đang xem khác hôm nay thì đổi chữ "Hôm nay".
 - **Nội dung chỉ là số** (plan, mục Cảnh báo giới hạn an toàn); mỗi loại cờ có dòng "Vượt" riêng, % làm tròn số nguyên.
 - Chất tính mọi nguồn, cờ lịch: thêm "Chưa tính thức ăn; thức ăn sẽ cộng thêm khi bạn ghi nhật ký." Chất chưa kiểm được: "Chưa kiểm được giới hạn an toàn cho {chất} trong {sản phẩm}."
@@ -597,8 +650,9 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 ├──────────────────────────────┤
 │ 1 khẩu phần = 1 viên         │
 │ Còn 30 · hết khoảng 23/12 ·  │
-│ HSD 03/2027                  │
+│ HSD 03/2027 · 1 hộp        › │
 │ ⚠ Lịch vượt giới hạn (magie)›│
+│ ⓘ Lưu ý lịch (canxi 08:00)  ›│
 │ Thành phần mỗi viên  (9)     │
 │ Vitamin A        750 µg      │
 │  retinyl palmitat · tính vào │
@@ -610,13 +664,18 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 │  (nhãn 1.000 IU)             │
 │ Vitamin E        15 mg       │
 │  d-alpha-tocopherol (22,4 IU)│
-│ Niacin           20 mg       │
-│ Axit folic       400 µg      │
 │  · tính vào giới hạn         │
+│ Niacin           20 mg       │
+│  niacinamid · tính vào       │
+│  giới hạn                    │
+│ Axit folic       400 µg      │
+│  = 680 µg DFE · tính vào giới│
+│  hạn                         │
 │ Canxi            100 mg      │
 │  canxi citrat (nhãn 476 mg)  │
 │ Magie            150 mg      │
-│  magie oxit                  │
+│  magie oxit · tính vào       │
+│  giới hạn                    │
 │ Coenzyme Q10     30 mg       │
 │  không có mức tham chiếu     │
 │ [ Sửa thành phần ]           │
@@ -626,6 +685,8 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 ```
 
 - Mỗi dòng một chất, một dạng; số đã chuẩn hóa, số gốc nhỏ bên dưới. Cách đổi đơn vị, hợp chất, dạng chưa rõ, chất ngoài gói theo plan (mục Thực phẩm bổ sung).
+- Chất có phạm vi riêng (magie, niacin, vitamin E, vitamin A, folate) luôn ghi "tính / không tính vào giới hạn". Axit folic ghi µg axit folic (dùng cho giới hạn) và µg DFE (= × 1,7, dùng cho mức khuyến nghị).
+- "1 hộp ›" mở danh sách hộp (còn lại, hạn dùng từng hộp), thêm hộp mới.
 - Dòng "chưa rõ dạng" có ⓘ; dòng "chưa tính được" ghi lý do.
 - Sửa thành phần lưu xong thì kiểm lại cờ lịch. Không link cửa hàng.
 
@@ -638,19 +699,21 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 │ Hồ sơ                      › │  │ Đồng ý đã cho                │
 │  Nữ · 35 tuổi · 160 cm · 55kg│  │  Xử lý dữ liệu sức khỏe      │
 │ Hiển thị                   › │  │  23/11/2026 09:12            │
-│ Nhắc giờ                   › │  │  [ Rút đồng ý ]              │
-│ Sao lưu và khôi phục       › │  │  Nhắc giờ: chưa bật          │
-│  Chưa sao lưu                │  │  Google Drive: chưa bật      │
-│ Quyền riêng tư             › │  │ [ Xuất dữ liệu ]             │
-│ Nguồn số liệu              › │  │ [ Xóa toàn bộ dữ liệu ]      │
-│ Giới thiệu                 › │  └──────────────────────────────┘
+│ Giờ trong ngày             › │  │  [ Rút đồng ý ]              │
+│ Nhắc giờ                   › │  │  Nhắc giờ: chưa bật          │
+│ Sao lưu và khôi phục       › │  │  Google Drive: chưa bật      │
+│  Chưa sao lưu                │  │ [ Xuất dữ liệu ]             │
+│ Quyền riêng tư             › │  │ [ Xóa toàn bộ dữ liệu ]      │
+│ Nguồn số liệu              › │  └──────────────────────────────┘
+│ Giới thiệu                 › │
 ├──────────────────────────────┤
 │ Hôm nay Nhật ký Bổ sung  Tôi │
 └──────────────────────────────┘
 ```
 
 - **Hiển thị:** công tắc Ẩn số calo; công tắc thẻ "Bạn có biết" (mặc định bật); giao diện Theo máy / Sáng / Tối; cỡ chữ theo máy.
-- **Quyền riêng tư:** rút đồng ý = xóa toàn bộ và về Chào mừng (hỏi lại trước); xuất ra tệp đọc được, cảnh báo không mã hóa; xóa toàn bộ phải gõ "XÓA", nút màu `error`.
+- **Giờ trong ngày:** giờ thức, ba bữa chính, giờ ngủ; mặc định 06:00, 07:00, 12:00, 19:00, 22:30. Dùng để chọn bữa theo giờ, xếp lịch theo quy tắc lịch 2 và 5, gợi ý giờ khi đặt lịch. Lần đầu đặt lịch uống thì hỏi xác nhận các giờ này.
+- **Quyền riêng tư:** rút đồng ý = xóa toàn bộ và về Chào mừng (hỏi lại trước); xuất ra tệp đọc được, cảnh báo không mã hóa; xóa toàn bộ phải gõ "XÓA", nút màu `error`. Đã bật Google Drive thì màn xác nhận có ô "Xóa cả bản sao lưu trên Google Drive" (rút đồng ý: đánh sẵn; xóa toàn bộ: không đánh sẵn) và ghi rõ tệp sao lưu đã xuất ra ngoài thì app không xóa được. Dữ liệu trên máy luôn xóa ngay. Mất mạng hoặc hết phiên đăng nhập Google: app chỉ giữ một dấu "cần xóa bản trên Drive" (không có dữ liệu sức khỏe), báo "Chưa xóa được bản trên Google Drive. App sẽ thử lại khi có mạng." và thử lại mỗi lần mở app; hết phiên thì hiện [Đăng nhập để xóa] và cách tự xóa trong Google Drive (Cài đặt → Quản lý ứng dụng). Xóa xong bản trên Drive thì thu hồi quyền đăng nhập Google và xóa dấu "cần xóa".
 - **Nguồn số liệu:** màn duy nhất ghi tên chuẩn (RDA, AI, UL, EER, AMDR, MET, Physical Activity Guidelines, FDA) và tổ chức, mỗi chuẩn một câu giải thích, ngày tra, link mở trình duyệt; danh sách quy tắc lịch kèm nguồn; phiên bản gói dữ liệu. Lấy từ gói dữ liệu, không viết tay.
 - **Giới thiệu:** phiên bản, vai tham chiếu (không chẩn đoán, không kê đơn, không gợi ý liều), giấy phép dữ liệu (USDA CC0…), giấy phép mã nguồn mở.
 
@@ -664,7 +727,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 └──────────────────────────────┘
 ```
 
-- Màn hình khóa chỉ nội dung chung. "Đã uống" đánh dấu mọi loại trong lần nhắc; "Mở app" mở Lần uống hôm nay.
+- Màn hình khóa chỉ nội dung chung. "Đã uống" mở app (máy yêu cầu mở khóa), rồi đánh dấu mọi loại trong lần nhắc, có Hoàn tác; không ghi trong nền. Nút có hiệu lực tới hết khung 2 giờ sau giờ lịch (Android tự gỡ thông báo; iOS chạm sau khung thì mở app và hỏi cách ghi). Nội dung lưu kèm lịch nhắc (thư viện nhắc giờ lưu ngoài CSDL mã hóa) chỉ có mã lần uống, không có tên sản phẩm hay tên chất. Cách làm trên Android (khóa trong Keystore chỉ dùng khi máy đã mở khóa, API 28+) thử trên máy thật ở đặc tả CSDL mã hóa và Nhắc giờ; "Mở app" mở Lần uống hôm nay.
 
 ## Thành phần dùng chung
 
@@ -675,8 +738,8 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 | `MetricCard` | Tiêu đề, số chính, dòng phụ, nút tùy chọn | Cả thẻ một vùng chạm ≥48 dp; đọc gộp tiêu đề + số |
 | `LabeledProgress` | Giá trị, mức, %, tối đa hai đoạn | Luôn có số bằng chữ; đoạn phân biệt bằng mật độ + chú thích; không đổi màu đỏ; đọc: "Canxi, 770 trên 1.000 miligam, 77 phần trăm mức khuyến nghị" |
 | `WarningCard` | ⚠, chất, các loại cờ, lượng, giới hạn, vượt bao nhiêu (đơn vị và %), phạm vi, dòng hỏi bác sĩ | Màu cảnh báo + biểu tượng + chữ; mở / thu gọn; được đọc trước các thẻ khác |
-| `SafetyNote` | ⓘ, "Lưu ý", một hai câu (lưu ý lịch, dòng thận trọng) | Màu trung tính |
-| `TipCard` | "Bạn có biết", một câu quy tắc, link nguồn, nút Ẩn | Màu trung tính; chữ đứng yên, không tự chuyển, không hoạt ảnh; đọc cả câu |
+| `SafetyNote` | ⓘ, "Lưu ý", một hai câu (lưu ý lịch, dòng thận trọng) | Màu trung tính; lưu ý lịch ở Hôm nay có "Đã hiểu" để thu gọn thành một dòng, mở lại khi lịch đổi; dòng thận trọng không thu gọn |
+| `TipCard` | "Bạn có biết", một câu quy tắc, "Xem nguồn", nút Ẩn | Màu trung tính; chữ đứng yên, không tự chuyển, không hoạt ảnh; đọc cả câu |
 | `NutrientRow` | Tên, số, %, "mức ước tính", `LabeledProgress` | Chạm mở Chi tiết chất; chữ lớn thì số xuống dòng |
 | `IngredientRow` | Chất, lượng chuẩn hóa, số gốc, dạng hoặc nguồn, các trạng thái (tính / không tính vào giới hạn, chưa rõ dạng, chưa tính được, không có mức tham chiếu) | Mọi trạng thái bằng chữ |
 | `EstimateChip` | Chữ "ước tính" | Có chữ, không chỉ biểu tượng |
@@ -690,8 +753,8 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 
 **Quy ước:**
 - **Màu:** Material 3, gốc teal, có chế độ tối. Màu cảnh báo vàng hổ phách qua `ThemeExtension` (không đè `tertiary`), đạt AA ở cả hai chế độ, chỉ cho cờ giới hạn và đường bổ sung vượt mỗi bữa. Đỏ (`error`) chỉ cho lỗi và nút xóa.
-- **Số:** chấm ngăn nghìn, phẩy thập phân (1.150; 2,5 mg); ≥100 số nguyên, 10–99 một số lẻ, <10 tối đa hai. Vận động ghi "khoảng".
-- **Đơn vị:** mg, µg, g, ml, kcal; µg RAE, µg DFE, mg NE chỉ ở Chi tiết chất kèm một dòng giải thích.
+- **Số:** chấm ngăn nghìn, phẩy thập phân (1.150; 2,5 mg); ≥100 số nguyên, 10–99 tối đa một số lẻ, <10 tối đa hai. Vận động ghi "khoảng".
+- **Đơn vị:** mg, µg, g, ml, kcal; µg RAE, µg DFE, mg NE chỉ ở Chi tiết chất và Chi tiết sản phẩm, kèm một dòng giải thích.
 - **Ngày giờ:** "Hôm nay", "Hôm qua", "Thứ Bảy, 21/11"; 24 giờ; hạn dùng tháng/năm.
 - **Cỡ chữ 200%:** "tên · số" tách hai dòng; không cắt chữ; nhãn thanh dưới ≤7 ký tự.
 
@@ -699,7 +762,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 
 | Màn | Trống | Đang xử lý | Lỗi | Cảnh báo |
 |---|---|---|---|---|
-| Hôm nay | Chưa ghi: Năng lượng hiện mục tiêu calo, Vi chất "Chưa có món nào hôm nay" + [Ghi món]; 7 ngày: "Chưa có ngày nào được ghi trong 7 ngày qua." | Khung xám nếu >300 ms | `ErrorState` + [Thử lại] | `WarningCard` đầu màn; dòng đường bổ sung |
+| Hôm nay | Chưa ghi: Năng lượng hiện mục tiêu calo (ẩn số calo thì chỉ "Chưa có món nào hôm nay"), Vi chất "Chưa có món nào hôm nay" + [Ghi món], Nước "Chưa ghi nước hôm nay" + [+250 ml]; 7 ngày: "Chưa có ngày nào được ghi trong 7 ngày qua." | Khung xám nếu >300 ms | `ErrorState` + [Thử lại] | `WarningCard` đầu màn; dòng đường bổ sung |
 | Hôm nay – không có mục tiêu calo | 18 tuổi: "Chưa có mục tiêu calo cho người 18 tuổi." | – | – | Vi chất, giới hạn vẫn đủ |
 | Nhật ký | "Chưa có gì trong ngày này." + [Ghi] | Khung xám | "Chưa lưu được. Thử lại" | – |
 | Bổ sung | "Kho đang trống. Thêm sản phẩm để theo dõi lần uống và ngày hết." | – | – | Sắp hết, hết hạn, lịch vượt |
@@ -711,7 +774,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 | Chi tiết sản phẩm | – | – | Dòng "chưa tính được" có lý do | Lịch vượt; `SafetyNote` khi chưa kiểm được |
 | Chi tiết cảnh báo | – | – | Cờ đã hết: "Hiện không còn vượt giới hạn." + [Về Hôm nay] | – |
 | Lần đầu | – | Nút chính có vòng xoay | Không đủ điều kiện: Chưa dùng được; số ngoài khoảng: nhắc dưới ô | – |
-| Toàn app | – | – | Gói dữ liệu hỏng: màn chặn "Không đọc được dữ liệu tham chiếu. Hãy cài lại WholeWell từ cửa hàng ứng dụng.", không hiện số nào. Không mở được CSDL: "Không mở được dữ liệu đã lưu trên máy." + [Khôi phục từ bản sao lưu] [Bắt đầu lại] | – |
+| Toàn app | – | – | Gói dữ liệu hỏng: màn chặn "Không đọc được dữ liệu tham chiếu. Hãy cài lại WholeWell từ cửa hàng ứng dụng.", không hiện số nào. Không mở được CSDL: "Không mở được dữ liệu đã lưu trên máy." + [Khôi phục từ bản sao lưu] [Bắt đầu lại]; "Bắt đầu lại" hỏi lại và phải gõ XÓA vì dữ liệu cũ bị xóa | – |
 
 ## Nội dung chữ
 
@@ -720,26 +783,27 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 | Thanh dưới, nút nổi | Hôm nay · Nhật ký · Bổ sung · Tôi · Ghi |
 | Chào mừng | So lượng vi chất bạn nạp từ bữa ăn và thực phẩm bổ sung với mức khuyến nghị. · Chỉ để tham khảo, không thay lời khuyên của bác sĩ · Dữ liệu chỉ nằm trên máy này, không gửi đi đâu · Không cần mạng |
 | Điều kiện | Vài câu để chọn mức tham chiếu phù hợp. · Đang mang thai hoặc cho con bú? · Đang dùng thuốc theo chỉ định của bác sĩ, hoặc có bệnh mạn tính (vd. thận, gan, tim, tiểu đường)? · Có · Không |
-| Chưa dùng được | WholeWell hiện dành cho người từ 18 tuổi, không mang thai, không cho con bú. Hãy hỏi bác sĩ hoặc dược sĩ về dinh dưỡng và thực phẩm bổ sung. |
+| Chưa dùng được | WholeWell hiện dành cho người từ 18 tuổi, không mang thai, không cho con bú. Hãy hỏi bác sĩ hoặc dược sĩ về dinh dưỡng và thực phẩm bổ sung. · Quay lại |
 | Thai kỳ (Hồ sơ) | Nếu bạn mang thai hoặc cho con bú, bản này của WholeWell chưa hỗ trợ. · Xuất dữ liệu · Xóa toàn bộ dữ liệu |
-| Chế độ thận trọng | Các mức trong app dành cho người khỏe mạnh. Với tình trạng của bạn, mức phù hợp có thể khác; hãy hỏi bác sĩ. · mức tham chiếu cho người khỏe mạnh |
+| Chế độ thận trọng | Dòng nhắc: Các mức trong app dành cho người khỏe mạnh. Với tình trạng của bạn, mức phù hợp có thể khác; hãy hỏi bác sĩ. · Chuỗi đổi (thường → thận trọng): "{x}% mức khuyến nghị" → "{x}% mức tham chiếu"; "Mục tiêu calo" → "Mức calo tham chiếu"; "mức khuyến nghị {g}" (đạm, bột đường) → "mức tham chiếu {g}"; bộ lọc "Dưới mức khuyến nghị" → "Dưới mức tham chiếu"; "{x}% mức khuyến nghị {lượng}" (Chi tiết chất) → "{x}% mức tham chiếu {lượng}"; nhãn đọc của `LabeledProgress` "… phần trăm mức khuyến nghị" → "… phần trăm mức tham chiếu"; "Chưa có mục tiêu calo cho người 18 tuổi." → "Chưa có mức calo tham chiếu cho người 18 tuổi." Giữ nguyên: "{x}% mức ước tính", "Chưa đủ dữ liệu để đặt mức khuyến nghị chính thức; đây là mức ước tính." |
 | Đồng ý | Tôi đồng ý cho app xử lý dữ liệu sức khỏe của tôi cho mục đích trên. · Không đồng ý: App cần đồng ý này để tính toán. Bạn có thể quay lại bất cứ lúc nào. |
 | Hiển thị calo | Bạn muốn thấy số calo không? · Hiện số calo · Ẩn số calo · App vẫn tính, chỉ không hiện con số. |
 | Năng lượng | Mục tiêu calo · Đạm {g} · mức khuyến nghị {g} · {x}% · trong khoảng / dưới khoảng / trên khoảng |
 | Đường bổ sung | Đường bổ sung: đến giờ {g} · {x}% năng lượng · Bữa {sáng} có {g} đường bổ sung, quá giới hạn 10 g mỗi bữa. · Chưa tính đường bổ sung của {n} món (nhãn không ghi riêng). |
 | Vi chất | {x}% mức khuyến nghị · {x}% mức ước tính · Chưa đủ dữ liệu để đặt mức khuyến nghị chính thức; đây là mức ước tính. · Tổng mọi nguồn: {lượng} · Thực phẩm {lượng} · bổ sung {lượng} · Tính vào giới hạn an toàn: {lượng} / {giới hạn} · tính vào giới hạn · không tính vào giới hạn |
 | Trung bình 7 ngày | Trung bình {n} ngày có ghi trong 7 ngày qua · Chưa có ngày nào được ghi trong 7 ngày qua. |
-| Nước, vận động | Đã uống {ml} · Vận động 7 ngày qua · tương đương {n} phút vừa · mức tham chiếu 150–300 phút vừa mỗi tuần · Tập tăng cơ: {n} ngày · mức tham chiếu từ 2 ngày · theo các buổi bạn đã ghi |
+| Nước, vận động | Đã uống {ml} · Chưa ghi nước hôm nay · Vận động 7 ngày qua · tương đương {n} phút vừa · mức tham chiếu 150–300 phút vừa mỗi tuần · Tập tăng cơ: {n} ngày · mức tham chiếu từ 2 ngày · theo các buổi bạn đã ghi |
 | Gợi ý mức vận động | Theo các buổi tập 7 ngày qua, mức vận động của bạn gần với "{mức}". [Dùng mức này] [Giữ mức hiện tại] |
-| Cảnh báo | Vượt giới hạn an toàn hôm nay · Trung bình 7 ngày vượt giới hạn an toàn · Lịch uống vượt giới hạn an toàn · Vượt: {lượng} ({x}%) · Hỏi bác sĩ hoặc dược sĩ nếu cần. · Đã hiểu · Xem chi tiết · Hoàn tác lần ghi · Sửa lịch · Vẫn lưu |
-| Phạm vi giới hạn | Tính mọi nguồn · Tính từ thực phẩm bổ sung và thuốc, không tính từ thức ăn · Tính từ thực phẩm bổ sung và thực phẩm tăng cường · Chỉ tính retinol (vitamin A dạng có sẵn) · Chỉ tính axit folic · Chưa xác định giới hạn an toàn |
-| Giải thích thêm | Chưa tính thức ăn; thức ăn sẽ cộng thêm khi bạn ghi nhật ký. · Chưa kiểm được giới hạn an toàn cho {chất} trong {sản phẩm}. · chưa rõ dạng · chưa chắc |
+| Cảnh báo | Vượt giới hạn an toàn hôm nay · Trung bình 7 ngày vượt giới hạn an toàn · Lịch uống vượt giới hạn an toàn · Vượt: {lượng} ({x}%) · {Chất} vẫn vượt giới hạn: {lượng} · Xem · Hỏi bác sĩ hoặc dược sĩ nếu cần. · Đã hiểu · Xem chi tiết · Hoàn tác lần ghi · Sửa lịch · Vẫn lưu |
+| Phạm vi giới hạn | Tính mọi nguồn · Chỉ tính bổ sung bạn ghi, không tính thức ăn · App không tính thuốc, trừ khi bạn ghi. · Tính từ thực phẩm bổ sung và thực phẩm tăng cường · Chỉ tính retinol (vitamin A dạng có sẵn) · Chỉ tính axit folic · Chưa xác định giới hạn an toàn |
+| Giải thích thêm | Chưa tính thức ăn; thức ăn sẽ cộng thêm khi bạn ghi nhật ký. · Chưa kiểm được giới hạn an toàn cho {chất} trong {sản phẩm}. · chưa rõ dạng · chưa chắc · = {x} µg DFE |
 | Lưu ý lịch | Canxi hấp thu tốt nhất khi mỗi lần không quá 500 mg. · Canxi carbonat hấp thu tốt hơn khi uống cùng bữa ăn. · Canxi có thể làm giảm hấp thu sắt (chưa chắc chắn); có thể xếp hai loại vào giờ khác nhau. · Sắt từ 25 mg trở lên uống cùng lúc với kẽm làm giảm hấp thu kẽm. · Vitamin D hấp thu tốt hơn khi uống cùng bữa có chút chất béo. |
-| Bạn có biết | Bạn có biết · {câu ở dòng Lưu ý lịch} · Nguồn: NIH ODS · Ẩn · Thẻ "Bạn có biết" |
-| Ghi | Ghi cho hôm nay, {ngày} · Đã ghi {tên}, {khẩu phần} · Đã ghi lần uống {giờ} theo lịch · Sửa · Hoàn tác |
+| Bạn có biết | Bạn có biết · {câu ở dòng Lưu ý lịch} · Xem nguồn · Ẩn · Thẻ "Bạn có biết" |
+| Ghi | Ghi cho hôm nay, {ngày} · Đã ghi {tên}, {khẩu phần} · Đã ghi lần uống {giờ} theo lịch · Đã ghi lần uống thêm · Uống sớm? · Lần {giờ} theo lịch · Lần uống thêm · ngoài giờ lịch: uống thêm · Chưa đánh dấu · Sửa · Hoàn tác |
+| Kho, giờ | Sắp hết · Đã hết hạn · Đã hết hạn: {n} viên · Kho đã hết · Thêm hộp · Trừ vào hộp đã hết hạn? · Trừ · Không trừ · {n} hộp · Giờ trong ngày · Thức dậy · Bữa sáng · Bữa trưa · Bữa tối · Đi ngủ |
 | Thông báo | Đến giờ uống, {n} loại · Đã uống · Mở app · Có thông tin mới cần xem trong WholeWell |
 | Hồ sơ tự cập nhật | Tuổi trong hồ sơ đã được cập nhật thành {n}. Sửa |
-| Xóa, quyền riêng tư | Xóa “{tên}” khỏi nhật ký? · Rút đồng ý sẽ xóa mọi dữ liệu trên máy này. Bạn có bản sao lưu nếu muốn dùng lại sau. · Tệp này không được mã hóa. Ai có tệp đều đọc được. · Mọi dữ liệu trên máy này sẽ bị xóa và không lấy lại được, trừ khi bạn có bản sao lưu. Gõ XÓA để xác nhận. |
+| Xóa, quyền riêng tư | Xóa “{tên}” khỏi nhật ký? · Rút đồng ý sẽ xóa mọi dữ liệu trên máy này. Nếu có bản sao lưu, bạn có thể khôi phục sau. · Xóa cả bản sao lưu trên Google Drive · Tệp sao lưu bạn đã xuất ra ngoài thì app không xóa được. · Chưa xóa được bản trên Google Drive. App sẽ thử lại khi có mạng. · Đăng nhập để xóa · Tệp này không được mã hóa. Ai có tệp đều đọc được. · Mọi dữ liệu trên máy này sẽ bị xóa và không lấy lại được, trừ khi bạn có bản sao lưu. Gõ XÓA để xác nhận. |
 | Lỗi | Chưa lưu được. Thử lại · Không đọc được dữ liệu tham chiếu. Hãy cài lại WholeWell từ cửa hàng ứng dụng. |
 
 Không dùng ở đâu: "bạn bị thiếu", "nên uống", "nên ăn thêm", "nên giảm", "tốt", "xấu", "tuyệt vời", "chuỗi ngày", "đốt", "được ăn thêm", "điều trị", "ngừng uống".
