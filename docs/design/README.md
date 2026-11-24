@@ -19,7 +19,7 @@ Mọi thiết kế trong `docs/design/` tuân các nguyên tắc dưới đây. 
 ## Quảng cáo (khi đã bật)
 
 - Chỉ ở màn danh sách, thống kê. Không ở màn cảnh báo, không trong thông báo, widget; không chèn toàn màn hình lúc bấm "Đã uống".
-- Thiết kế phải chừa sẵn vị trí quảng cáo ở màn được phép, để bật sau không phải làm lại bố cục.
+- MVP không có quảng cáo và không chừa chỗ; vị trí quảng cáo thiết kế ở giai đoạn sau. Không bao giờ đặt ở màn Hôm nay.
 
 ## Dễ dùng
 
