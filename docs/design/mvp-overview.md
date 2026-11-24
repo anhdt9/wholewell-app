@@ -131,7 +131,7 @@ flowchart LR
   - Nút của một lần theo lịch (thẻ Lần uống tới, Bổ sung, Lần uống hôm nay): trong khung là [Đã uống]; trước khung là [Uống sớm?], chạm thì hỏi "Lần 20:00 theo lịch" hay "Lần uống thêm".
   - Hai khung chồng nhau (vd. 08:00 và 09:00) thì gắn vào lần gần giờ uống nhất.
 - **Ranh giới ngày:** lượng nạp tính vào ngày của giờ uống thực tế. Lần 23:00 bấm "Đã uống" lúc 00:30 (còn trong khung) vẫn đánh dấu lần 23:00, nhưng lượng nạp tính cho ngày mới. Hết khung (2 giờ sau giờ lịch) mà chưa đánh dấu thì lần đó hiện "Chưa đánh dấu" ở Lần uống hôm nay; người dùng vẫn đánh dấu muộn được, chọn giờ thực tế. Thông báo của lần đó: Android tự gỡ khi hết khung; iOS không gỡ được, nên chạm sau khi hết khung thì mở app và hỏi cách ghi.
-- **Đổi giờ hoặc ngày khi ghi** ("Chạm giờ để đổi", ghi cho ngày cũ): tính lại cách gắn theo lịch của ngày được chọn. Vd. sáng hôm sau ghi bù lần 20:00 hôm qua: chọn hôm qua, 20:10 → thành lần 20:00 theo lịch.
+- **Đổi giờ hoặc ngày khi ghi** ("Chạm giờ để đổi", ghi cho ngày cũ): tính lại cách gắn theo lịch của ngày được chọn, xét cả các lần của ngày trước có khung kéo qua nửa đêm (vd. 00:30 ghi bằng nút Ghi vẫn gắn vào lần 23:00 hôm trước, giống nút trên thông báo). Vd. sáng hôm sau ghi bù lần 20:00 hôm qua: chọn hôm qua, 20:10 → thành lần 20:00 theo lịch.
 - "Đã uống" trên thông báo mở app (máy yêu cầu mở khóa) rồi ghi ngay, có Hoàn tác; không ghi trong nền. Vượt giới hạn: gửi thêm thông báo chung "Có thông tin mới cần xem trong WholeWell"; chạm mở Chi tiết cảnh báo.
 
 ### 4. Xem tổng kết
@@ -800,7 +800,7 @@ Khung ~360 dp. `[ ]` nút, `( )` lựa chọn, `▓▒░` thanh tiến độ.
 | Lưu ý lịch | Canxi hấp thu tốt nhất khi mỗi lần không quá 500 mg. · Canxi carbonat hấp thu tốt hơn khi uống cùng bữa ăn. · Canxi có thể làm giảm hấp thu sắt (chưa chắc chắn); có thể xếp hai loại vào giờ khác nhau. · Sắt từ 25 mg trở lên uống cùng lúc với kẽm làm giảm hấp thu kẽm. · Vitamin D hấp thu tốt hơn khi uống cùng bữa có chút chất béo. |
 | Bạn có biết | Bạn có biết · {câu ở dòng Lưu ý lịch} · Xem nguồn · Ẩn · Thẻ "Bạn có biết" |
 | Ghi | Ghi cho hôm nay, {ngày} · Đã ghi {tên}, {khẩu phần} · Đã ghi lần uống {giờ} theo lịch · Đã ghi lần uống thêm · Uống sớm? · Lần {giờ} theo lịch · Lần uống thêm · ngoài giờ lịch: uống thêm · Chưa đánh dấu · Sửa · Hoàn tác |
-| Kho, giờ | Sắp hết · Đã hết hạn · Đã hết hạn: {n} viên · Kho đã hết · Thêm hộp · Trừ vào hộp đã hết hạn? · Trừ · Không trừ · {n} hộp · Thêm hộp · Giờ trong ngày · Thức dậy · Bữa sáng · Bữa trưa · Bữa tối · Đi ngủ |
+| Kho, giờ | Sắp hết · Đã hết hạn · Đã hết hạn: {n} viên · Kho đã hết · Thêm hộp · Trừ vào hộp đã hết hạn? · Trừ · Không trừ · {n} hộp · Giờ trong ngày · Thức dậy · Bữa sáng · Bữa trưa · Bữa tối · Đi ngủ |
 | Thông báo | Đến giờ uống, {n} loại · Đã uống · Mở app · Có thông tin mới cần xem trong WholeWell |
 | Hồ sơ tự cập nhật | Tuổi trong hồ sơ đã được cập nhật thành {n}. Sửa |
 | Xóa, quyền riêng tư | Xóa “{tên}” khỏi nhật ký? · Rút đồng ý sẽ xóa mọi dữ liệu trên máy này. Nếu có bản sao lưu, bạn có thể khôi phục sau. · Xóa cả bản sao lưu trên Google Drive · Tệp sao lưu bạn đã xuất ra ngoài thì app không xóa được. · Chưa xóa được bản trên Google Drive. App sẽ thử lại khi có mạng. · Đăng nhập để xóa · Tệp này không được mã hóa. Ai có tệp đều đọc được. · Mọi dữ liệu trên máy này sẽ bị xóa và không lấy lại được, trừ khi bạn có bản sao lưu. Gõ XÓA để xác nhận. |
