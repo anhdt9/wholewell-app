@@ -125,6 +125,20 @@ void main() {
       expect(nwPkg.ingredients[2].amount, 225);
       expect(nwPkg.ingredients[2].unit, LabelUnit.ug);
       expect(nwPkg.ingredients[2].form, NutrientForm.unknown);
+
+      final longParagraph = SupplementLabelParser.parsePackage(const [
+        'Each capsule contains: Vitamin A (retinyl palmitate) 225 micrograms RE, Vitamin D3 25 micrograms, Calcium (as calcium carbonate) 1,250 mg',
+        'Vitamin B1 10 mg Vitamin B2 10 mg Vitamin B6 5 mg',
+      ]);
+      expect(longParagraph.ingredients, hasLength(6));
+      expect(longParagraph.ingredients[0].nutrientId, 'vitA');
+      expect(longParagraph.ingredients[0].form, NutrientForm.retinol);
+      expect(longParagraph.ingredients[1].nutrientId, 'vitD');
+      expect(longParagraph.ingredients[2].nutrientId, 'calcium');
+      expect(longParagraph.ingredients[2].amount, 1250);
+      expect(longParagraph.ingredients[3].nutrientId, 'thiamin');
+      expect(longParagraph.ingredients[4].nutrientId, 'riboflavin');
+      expect(longParagraph.ingredients[5].nutrientId, 'vitB6');
     });
 
     test('parseAiJson đọc JSON từ Gemini Nano và trả null khi JSON lỗi', () {

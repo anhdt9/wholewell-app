@@ -191,8 +191,39 @@ class SupplementLabelParser {
     return null;
   }
 
+  static List<String> _splitSegments(List<String> rawLines) {
+    final segments = <String>[];
+    for (final raw in rawLines) {
+      final t = raw.trim();
+      if (t.isEmpty) continue;
+      // Tách theo dấu `;` hoặc `, ` (không cắt dấu phẩy hàng nghìn như `1,250`).
+      final parts = t.split(RegExp(r'[;,]\s+(?=[a-zA-ZÀ-ỹ(])'));
+      for (final part in parts) {
+        final p = part.trim();
+        if (p.isEmpty) continue;
+        final matches = _amountUnitRe.allMatches(p).toList();
+        if (matches.length <= 1) {
+          segments.add(p);
+        } else {
+          // Nhiều cặp số + đơn vị nối liền không dấu phẩy: cắt ngay sau mỗi đơn vị.
+          var start = 0;
+          for (final m in matches) {
+            final slice = p.substring(start, m.end).trim();
+            if (slice.isNotEmpty) segments.add(slice);
+            start = m.end;
+          }
+          final tail = p.substring(start).trim();
+          if (tail.isNotEmpty && RegExp(r'[a-zA-ZÀ-ỹ]{2,}').hasMatch(tail)) {
+            segments.add(tail);
+          }
+        }
+      }
+    }
+    return segments;
+  }
+
   static ParsedLabelPackage parsePackage(List<String> rawLines) {
-    final lines = [for (final r in rawLines) if (r.trim().isNotEmpty) r.trim()];
+    final lines = _splitSegments(rawLines);
     final ingredients = <ParsedIngredientLine>[];
     String? suggestedName;
     double? suggestedBoxCount;
