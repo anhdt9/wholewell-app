@@ -1,198 +1,219 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:health_engine/health_engine.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
-import 'labels.dart';
+import 'body_metrics_fields.dart';
+import 'common/common_widgets.dart';
 
+/// Màn Hồ sơ (mở từ `Tôi -> Hồ sơ` hoặc nút `Sửa` ở dòng nhắc tuổi trên Hôm nay).
 class ProfileScreen extends StatefulWidget {
-  final bool firstRun;
-  const ProfileScreen({super.key, this.firstRun = false});
+  const ProfileScreen({super.key});
+
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final _form = GlobalKey<FormState>();
-  final _age = TextEditingController();
-  final _height = TextEditingController();
-  final _weight = TextEditingController();
-  final _week = TextEditingController();
-  final _months = TextEditingController();
+  final _ageCtl = TextEditingController();
+  final _heightCtl = TextEditingController();
+  final _weightCtl = TextEditingController();
+
   Sex _sex = Sex.female;
-  LifeStage _stage = LifeStage.none;
-  BmiClass? _bmi;
-  ActivityLevel _level = ActivityLevel.inactive;
-  bool _loaded = false;
+  ActivityLevel _level = ActivityLevel.lowActive;
+  bool _caution = false;
+  BodyMeasureValidation? _heightCheck;
+  BodyMeasureValidation? _weightCheck;
+  String? _ageError;
+  bool _inited = false;
+  bool _saving = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_loaded) return;
-    _loaded = true;
-    final p = AppScope.of(context).profile;
+    if (_inited) return;
+    _inited = true;
+    final state = AppScope.of(context);
+    final p = state.profile;
+    _caution = state.caution;
     if (p != null) {
-      _age.text = '${p.ageYears}';
-      _height.text = fmt(p.heightCm);
-      _weight.text = fmt(p.weightKg);
+      _ageCtl.text = '${p.ageYears}';
+      _heightCtl.text = '${p.heightCm.round()}';
+      _weightCtl.text = '${p.weightKg.round()}';
       _sex = p.sex;
-      _stage = p.stage;
-      _bmi = p.prePregnancyBmi;
       _level = p.activityLevel;
-      if (p.gestationWeek != null) _week.text = '${p.gestationWeek}';
-      if (p.monthsPostpartum != null) _months.text = '${p.monthsPostpartum}';
+      _heightCheck = BodyMeasureValidation.validateHeight(_heightCtl.text);
+      _weightCheck = BodyMeasureValidation.validateWeight(_weightCtl.text);
     }
   }
 
   @override
   void dispose() {
-    for (final c in [_age, _height, _weight, _week, _months]) {
-      c.dispose();
-    }
+    _ageCtl.dispose();
+    _heightCtl.dispose();
+    _weightCtl.dispose();
     super.dispose();
   }
 
-  double? _d(TextEditingController c) => double.tryParse(c.text.trim().replaceAll(',', '.'));
-
-  String? _range(String? s, double min, double max, String what) {
-    final v = double.tryParse((s ?? '').trim().replaceAll(',', '.'));
-    if (v == null || v < min || v > max) return '$what từ ${fmt(min)} đến ${fmt(max)}';
+  String? _validateAge(int minAge) {
+    final v = int.tryParse(_ageCtl.text.trim());
+    if (v == null) return 'Nhập tuổi từ $minAge đến 120.';
+    if (v < minAge) return 'WholeWell hiện chỉ hỗ trợ từ $minAge tuổi.';
+    if (v > 120) return 'Nhập tuổi từ $minAge đến 120.';
     return null;
   }
 
-  void _save() {
-    if (!_form.currentState!.validate()) return;
-    AppScope.of(context).saveProfile(Profile(
-      ageYears: int.parse(_age.text.trim()),
-      sex: _sex,
-      heightCm: _d(_height)!,
-      weightKg: _d(_weight)!,
-      stage: _sex == Sex.female ? _stage : LifeStage.none,
-      gestationWeek: _stage == LifeStage.pregnant ? int.tryParse(_week.text.trim()) : null,
-      prePregnancyBmi: _stage == LifeStage.pregnant ? _bmi : null,
-      monthsPostpartum: _stage == LifeStage.lactating ? int.tryParse(_months.text.trim()) : null,
-      activityLevel: _level,
-    ));
-    if (!widget.firstRun) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã lưu hồ sơ.')));
-    }
+  void _revalidateMeasures() {
+    setState(() {
+      _heightCheck = BodyMeasureValidation.validateHeight(_heightCtl.text);
+      _weightCheck = BodyMeasureValidation.validateWeight(_weightCtl.text);
+    });
+  }
+
+  Future<void> _save() async {
+    final state = AppScope.of(context);
+    final minAge = state.pack.minProfileAge;
+    final ageErr = _validateAge(minAge);
+    final hc = BodyMeasureValidation.validateHeight(_heightCtl.text);
+    final wc = BodyMeasureValidation.validateWeight(_weightCtl.text);
+    setState(() {
+      _ageError = ageErr;
+      _heightCheck = hc;
+      _weightCheck = wc;
+    });
+    if (ageErr != null || !hc.isValid || !wc.isValid) return;
+
+    final age = int.parse(_ageCtl.text.trim());
+    setState(() => _saving = true);
+    final ok = await state.saveProfileFromSettings(
+      Profile(
+        ageYears: age,
+        sex: _sex,
+        heightCm: hc.value!,
+        weightKg: wc.value!,
+        activityLevel: _level,
+      ),
+      caution: _caution,
+    );
+    if (!mounted) return;
+    setState(() => _saving = false);
+    if (!ok) return;
+    ScaffoldMessenger.maybeOf(context)
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(const SnackBar(content: Text('Đã lưu hồ sơ.')));
+    Navigator.of(context).maybePop();
+  }
+
+  Future<void> _wipeFromPregnancyCard() async {
+    final confirmed = await showWipeConfirmDialog(context);
+    if (!confirmed || !mounted) return;
+    final state = AppScope.of(context);
+    Navigator.of(context).popUntil((r) => r.isFirst);
+    await state.withdrawConsentAndReset();
   }
 
   @override
   Widget build(BuildContext context) {
     final state = AppScope.of(context);
-    final suggested = state.profile == null ? null : state.suggestedLevel();
     final minAge = state.pack.minProfileAge;
-    final body = Form(
-      key: _form,
-      child: ListView(
+    final cs = Theme.of(context).colorScheme;
+    final t = Theme.of(context).textTheme;
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Hồ sơ')),
+      body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          if (widget.firstRun)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Text('Dữ liệu chỉ lưu trên máy này. App dành cho người từ $minAge tuổi, '
-                  'chỉ để tham khảo, không chẩn đoán hay kê đơn.'),
-            ),
-          TextFormField(
-            controller: _age,
+          TextField(
+            controller: _ageCtl,
+            enabled: !_saving,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: 'Tuổi'),
-            validator: (s) {
-              final v = int.tryParse((s ?? '').trim());
-              if (v == null || v < minAge || v > 110) return 'Tuổi từ $minAge đến 110';
-              return null;
-            },
-          ),
-          const SizedBox(height: 12),
-          SegmentedButton<Sex>(
-            segments: const [
-              ButtonSegment(value: Sex.female, label: Text('Nữ')),
-              ButtonSegment(value: Sex.male, label: Text('Nam')),
-            ],
-            selected: {_sex},
-            onSelectionChanged: (s) => setState(() => _sex = s.first),
-          ),
-          TextFormField(
-            controller: _height,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(labelText: 'Chiều cao (cm)'),
-            validator: (s) => _range(s, 120, 230, 'Chiều cao'),
-          ),
-          TextFormField(
-            controller: _weight,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(labelText: 'Cân nặng (kg)'),
-            validator: (s) => _range(s, 30, 250, 'Cân nặng'),
-          ),
-          if (_sex == Sex.female) ...[
-            const SizedBox(height: 12),
-            DropdownButtonFormField<LifeStage>(
-              key: ValueKey(_stage),
-              initialValue: _stage,
-              decoration: const InputDecoration(labelText: 'Mang thai hoặc cho con bú'),
-              items: [
-                for (final s in LifeStage.values) DropdownMenuItem(value: s, child: Text(stageLabel(s))),
-              ],
-              onChanged: (s) => setState(() => _stage = s!),
+            decoration: InputDecoration(
+              labelText: 'Tuổi',
+              border: const OutlineInputBorder(),
+              errorText: _ageError,
             ),
-            if (_stage == LifeStage.pregnant) ...[
-              TextFormField(
-                controller: _week,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Tuần thai'),
-                validator: (s) => _range(s, 1, 42, 'Tuần thai'),
-              ),
-              DropdownButtonFormField<BmiClass>(
-                key: ValueKey(_bmi),
-                initialValue: _bmi,
-                decoration: const InputDecoration(labelText: 'Cân nặng trước khi mang thai'),
-                items: [
-                  for (final b in BmiClass.values) DropdownMenuItem(value: b, child: Text(bmiLabel(b))),
-                ],
-                onChanged: (b) => setState(() => _bmi = b),
-              ),
-            ],
-            if (_stage == LifeStage.lactating)
-              TextFormField(
-                controller: _months,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Số tháng sau sinh'),
-                validator: (s) => _range(s, 0, 36, 'Số tháng'),
-              ),
-          ],
-          const SizedBox(height: 12),
-          DropdownButtonFormField<ActivityLevel>(
-            key: ValueKey(_level),
-            initialValue: _level,
-            decoration: const InputDecoration(labelText: 'Mức vận động thường ngày'),
-            items: [
-              for (final l in ActivityLevel.values) DropdownMenuItem(value: l, child: Text(levelLabel(l))),
-            ],
-            onChanged: (l) => setState(() => _level = l!),
+            onChanged: (_) => setState(() => _ageError = _validateAge(minAge)),
           ),
-          if (suggested != null && suggested != _level)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Row(children: [
-                Expanded(child: Text('Theo buổi tập 7 ngày qua, gợi ý: ${levelLabel(suggested)}.')),
-                TextButton(onPressed: () => setState(() => _level = suggested), child: const Text('Dùng')),
-              ]),
-            ),
-          if (!widget.firstRun) ...[
-            const Divider(height: 32),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Ẩn số calo'),
-              subtitle: const Text('Không hiện calo ở mọi màn hình'),
-              value: state.hideCalories,
-              onChanged: state.setHideCalories,
-            ),
-          ],
           const SizedBox(height: 16),
-          FilledButton(onPressed: _save, child: Text(widget.firstRun ? 'Bắt đầu' : 'Lưu hồ sơ')),
+          BodyMetricsFields(
+            sex: _sex,
+            onSexChanged: (s) => setState(() => _sex = s),
+            heightCtl: _heightCtl,
+            weightCtl: _weightCtl,
+            heightCheck: _heightCheck,
+            weightCheck: _weightCheck,
+            level: _level,
+            onLevelChanged: (l) => setState(() => _level = l),
+            onChanged: _revalidateMeasures,
+            enabled: !_saving,
+            suggestedLevel: state.todayWorkouts.isEmpty ? null : state.suggestedLevel(),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Đang dùng thuốc theo chỉ định của bác sĩ, hoặc có bệnh mạn tính (vd. thận, gan, tim, tiểu đường)?',
+            style: t.bodyLarge,
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: [
+              ChoiceChip(
+                label: const Text('Có'),
+                selected: _caution,
+                materialTapTargetSize: MaterialTapTargetSize.padded,
+                onSelected: _saving ? null : (_) => setState(() => _caution = true),
+              ),
+              ChoiceChip(
+                label: const Text('Không'),
+                selected: !_caution,
+                materialTapTargetSize: MaterialTapTargetSize.padded,
+                onSelected: _saving ? null : (_) => setState(() => _caution = false),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          FilledButton(
+            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+            onPressed: _saving ? null : _save,
+            child: _saving
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('Lưu'),
+          ),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: cs.outlineVariant),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Nếu bạn mang thai hoặc cho con bú, bản này của WholeWell chưa hỗ trợ. '
+                  'Xuất dữ liệu sẽ có ở bản cập nhật sau.',
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size(48, 48),
+                    foregroundColor: cs.error,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  onPressed: _saving ? null : _wipeFromPregnancyCard,
+                  child: const Text('Xóa toàn bộ dữ liệu'),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
-    return widget.firstRun ? Scaffold(appBar: AppBar(title: const Text('Hồ sơ')), body: body) : body;
   }
 }

@@ -15,7 +15,7 @@ import 'state/app_scope.dart';
 import 'state/app_state.dart';
 import 'ui/data_status_screen.dart';
 import 'ui/home_screen.dart';
-import 'ui/profile_screen.dart';
+import 'ui/onboarding_flow.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -61,10 +61,9 @@ class _WholeWellAppState extends State<WholeWellApp> {
   @override
   void initState() {
     super.initState();
-    // Máy đang khóa: đọc lại khóa khi app trở lại.
+    // Máy đang khóa: đọc lại khóa khi app trở lại; đã mở thì kiểm tự tăng tuổi.
     _lifecycle = AppLifecycleListener(onResume: () {
-      final s = widget.state.status;
-      if (s == DataStatus.waitingForUnlock || s == DataStatus.lowStorage) widget.state.start();
+      unawaited(widget.state.onAppResume());
     });
     widget.state.addListener(_onState);
   }
@@ -104,9 +103,14 @@ class _WholeWellAppState extends State<WholeWellApp> {
         home: ListenableBuilder(
           listenable: state,
           builder: (context, _) => switch (state.status) {
-            DataStatus.welcome => const ProfileScreen(firstRun: true),
-            DataStatus.ready =>
-              state.profile == null ? const ProfileScreen(firstRun: true) : const HomeScreen(),
+            DataStatus.welcome => const OnboardingFlow(),
+            DataStatus.ready => switch (state.stage) {
+                SessionStage.welcome => const OnboardingFlow(),
+                SessionStage.upgradeRequired => const UpgradeConsentFlow(),
+                SessionStage.onboardingBodyProfile => const OnboardingBodyProfileScreen(),
+                SessionStage.onboardingCalorieDisplay => const OnboardingCalorieDisplayScreen(),
+                SessionStage.ready => const HomeScreen(),
+              },
             final s => DataStatusScreen(status: s),
           },
         ),

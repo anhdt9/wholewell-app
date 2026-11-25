@@ -12,6 +12,7 @@ class DayJournalData {
   final List<FoodEntry> foods;
   final List<DoseEntry> doses;
   final List<WorkoutRecord> workouts;
+  final List<WaterRecord> waters;
   final List<List<IntakeItem>> last7;
   final List<WorkoutEntry> workouts7;
 
@@ -19,6 +20,7 @@ class DayJournalData {
     required this.foods,
     required this.doses,
     required this.workouts,
+    required this.waters,
     required this.last7,
     required this.workouts7,
   });
@@ -27,6 +29,7 @@ class DayJournalData {
     foods: [],
     doses: [],
     workouts: [],
+    waters: [],
     last7: [],
     workouts7: [],
   );
@@ -58,6 +61,9 @@ class DiaryController extends ChangeNotifier {
 
   Profile? _profile;
   bool _hideCalories = false;
+  bool _caution = false;
+  double _lastWaterMl = 250.0;
+  int? _ageBumpedNotice;
   DateTime _day = _dateOnly(DateTime.now());
   DayJournalData _data = DayJournalData.empty;
   bool _saveFailed = false;
@@ -75,13 +81,19 @@ class DiaryController extends ChangeNotifier {
   bool get foodLibraryBroken => _foodLibraryBroken;
   Profile? get profile => _profile;
   bool get hideCalories => _hideCalories;
+  bool get caution => _caution;
+  double get lastWaterMl => _lastWaterMl;
+  int? get ageBumpedNotice => _ageBumpedNotice;
   DateTime get day => _day;
+  bool get isViewingToday => dayKey(_day) == dayKey(DateTime.now());
   bool get saveFailed => _saveFailed;
   bool get readFailed => _readFailed;
 
   List<FoodEntry> get todayFoods => _data.foods;
   List<DoseEntry> get todayDoses => _data.doses;
   List<WorkoutRecord> get todayWorkouts => _data.workouts;
+  List<WaterRecord> get todayWaters => _data.waters;
+  double get todayWaterTotalMl => _data.waters.fold<double>(0, (s, w) => s + w.ml);
   List<WorkoutEntry> get todayWorkoutEntries => [for (final w in _data.workouts) w.workout];
   List<IntakeItem> get todayItems => intakeItemsFor(_data.foods, _data.doses);
 
@@ -99,6 +111,9 @@ class DiaryController extends ChangeNotifier {
     _loadGen++;
     _profile = null;
     _hideCalories = false;
+    _caution = false;
+    _lastWaterMl = 250.0;
+    _ageBumpedNotice = null;
     _data = DayJournalData.empty;
     notifyListeners();
   }
@@ -156,13 +171,22 @@ class DiaryController extends ChangeNotifier {
     final gen = ++_loadGen;
     final day = _day;
     try {
-      final profile = await repo.loadProfile();
-      final hide = await repo.loadHideCalories() ?? false;
-      final data = await _loadDayAndWindow(repo, day);
+      final results = await Future.wait([
+        repo.loadProfile(),
+        repo.loadHideCalories(),
+        repo.loadConsentProfile(),
+        repo.lastWaterMl(),
+        repo.loadAgeBumpedNotice(),
+        _loadDayAndWindow(repo, day),
+      ]);
       if (gen != _loadGen) return;
-      _profile = profile;
-      _hideCalories = hide;
-      _data = data;
+      _profile = results[0] as Profile?;
+      _hideCalories = (results[1] as bool?) ?? false;
+      final consentProfile = results[2] as ConsentProfileState?;
+      _caution = consentProfile?.caution ?? false;
+      _lastWaterMl = (results[3] as double?) ?? 250.0;
+      _ageBumpedNotice = results[4] as int?;
+      _data = results[5] as DayJournalData;
       _readFailed = false;
     } on JournalStorageException {
       if (gen == _loadGen) _readFailed = true;
@@ -170,6 +194,38 @@ class DiaryController extends ChangeNotifier {
       if (gen == _loadGen) _readFailed = true;
     }
     notifyListeners();
+  }
+
+  /// Chỉ chạy 1 lần khi phiên vào trạng thái `ready` (`start()` / `onResume`), không gọi trong [reload].
+  Future<void> checkAgeBumpOnReady({DateTime? now}) async {
+    final repo = _repo;
+    if (repo == null) return;
+    try {
+      final bumped = await repo.bumpAgeIfDue(now ?? DateTime.now());
+      final notice = await repo.loadAgeBumpedNotice();
+      final p = bumped == null ? _profile : await repo.loadProfile();
+      if (bumped != null) _profile = p;
+      _ageBumpedNotice = notice;
+      notifyListeners();
+    } on JournalStorageException {
+      // Không chặn mở app nếu kiểm tra tự tăng tuổi lỗi tạm.
+    } on StorageFullException {
+      // Không chặn mở app nếu đầy bộ nhớ khi tự tăng tuổi.
+    }
+  }
+
+  Future<void> dismissAgeBumpedNotice() async {
+    final repo = _repo;
+    _ageBumpedNotice = null;
+    notifyListeners();
+    if (repo == null) return;
+    try {
+      await repo.clearAgeBumpedNotice();
+    } on JournalStorageException {
+      // Bỏ qua nếu xóa khóa UI lỗi.
+    } on StorageFullException {
+      // Bỏ qua nếu đầy bộ nhớ.
+    }
   }
 
   static Future<DayJournalData> _loadDayAndWindow(JournalRepository repo, DateTime day) async {
@@ -180,11 +236,13 @@ class DiaryController extends ChangeNotifier {
       repo.foodsBetween(fromDay, toDay),
       repo.dosesBetween(fromDay, toDay),
       repo.workoutsBetween(fromDay, toDay),
+      repo.waterOn(toDay),
     ]);
 
     final allFoods = results[0] as List<FoodEntry>;
     final allDoses = results[1] as List<DoseEntry>;
     final allWorkouts = results[2] as List<WorkoutRecord>;
+    final waters = results[3] as List<WaterRecord>;
 
     final foodsByDay = <String, List<FoodEntry>>{};
     for (final f in allFoods) {
@@ -206,6 +264,7 @@ class DiaryController extends ChangeNotifier {
       foods: foodsByDay[toDay] ?? const [],
       doses: dosesByDay[toDay] ?? const [],
       workouts: [for (final w in allWorkouts) if (w.day == toDay) w],
+      waters: waters,
       last7: last7,
       workouts7: [for (final w in allWorkouts) w.workout],
     );
@@ -228,12 +287,67 @@ class DiaryController extends ChangeNotifier {
     return null;
   }
 
-  Future<void> setHideCalories(bool v) => _write((repo) => repo.saveHideCalories(v));
+  Future<bool> setHideCalories(bool v) async =>
+      (await _write((repo) async {
+        await repo.saveHideCalories(v);
+        return true;
+      })) ??
+      false;
+
+  Future<bool> saveBodyProfileForOnboarding(Profile p) async =>
+      (await _write((repo) async {
+        await repo.saveProfile(p);
+        await repo.saveOnboardingStep(OnboardingStep.calorieDisplay);
+        return true;
+      })) ??
+      false;
+
+  Future<bool> completeCalorieDisplayOnboarding(bool hideCalories) async =>
+      (await _write((repo) async {
+        await repo.saveHideCalories(hideCalories);
+        await repo.saveOnboardingStep(OnboardingStep.done);
+        return true;
+      })) ??
+      false;
 
   Future<void> saveProfileAndDone(Profile p) => _write((repo) async {
         await repo.saveProfile(p);
         await repo.saveOnboardingStep(OnboardingStep.done);
       });
+
+  Future<bool> saveProfileFromSettings(Profile p, {required bool caution}) async =>
+      (await _write((repo) async {
+        await repo.saveProfileWithCaution(p, caution: caution);
+        await repo.clearAgeBumpedNotice();
+        return true;
+      })) ??
+      false;
+
+  DateTime defaultWaterAt([DateTime? now]) {
+    final current = now ?? DateTime.now();
+    if (dayKey(_day) == dayKey(current)) {
+      return DateTime(_day.year, _day.month, _day.day, current.hour, current.minute, current.second);
+    }
+    return DateTime(_day.year, _day.month, _day.day, 12, 0);
+  }
+
+  Future<int?> addWater(DateTime at, double ml) => _write((repo) => repo.addWater(at, ml));
+
+  Future<int?> quickAddWater({DateTime? now}) => addWater(defaultWaterAt(now), _lastWaterMl);
+
+  Future<bool> updateWater(int id, {required DateTime at, required double ml}) async =>
+      (await _write((repo) async {
+        await repo.updateWater(id, at: at, ml: ml);
+        return true;
+      })) ??
+      false;
+
+  Future<bool> deleteWater(int id) async =>
+      (await _write((repo) async {
+        await repo.deleteWater(id);
+        return true;
+      })) ??
+      false;
 
   Future<List<FoodEntry>> recentFoods({int limit = 10}) async {
     final repo = _repo;

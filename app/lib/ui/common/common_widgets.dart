@@ -190,6 +190,170 @@ class ErrorState extends StatelessWidget {
   }
 }
 
+/// Khung chuẩn các bước thiết lập (`1/4`..`4/4`, nâng cấp): nút chính luôn thấy khi bàn phím mở.
+class StepScaffold extends StatelessWidget {
+  final String? stepLabel;
+  final String? title;
+  final VoidCallback? onBack;
+  final Widget body;
+  final String primaryLabel;
+  final VoidCallback? onPrimary;
+  final bool busy;
+  final String? secondaryLabel;
+  final VoidCallback? onSecondary;
+
+  const StepScaffold({
+    super.key,
+    this.stepLabel,
+    this.title,
+    this.onBack,
+    required this.body,
+    required this.primaryLabel,
+    this.onPrimary,
+    this.busy = false,
+    this.secondaryLabel,
+    this.onSecondary,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: onBack == null
+            ? null
+            : IconButton(
+                tooltip: 'Quay lại',
+                icon: const Icon(Icons.arrow_back),
+                onPressed: busy ? null : onBack,
+              ),
+        title: title != null ? Text(title!) : null,
+        actions: [
+          if (stepLabel != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Center(child: Text(stepLabel!, style: t.titleSmall)),
+            ),
+        ],
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                child: body,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FilledButton(
+                    style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+                    onPressed: busy ? null : onPrimary,
+                    child: busy
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(primaryLabel),
+                  ),
+                  if (secondaryLabel != null) ...[
+                    const SizedBox(height: 8),
+                    TextButton(
+                      style: TextButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+                      onPressed: busy ? null : onSecondary,
+                      child: Text(secondaryLabel!),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Hộp thoại xác nhận gõ `XÓA` khi rút đồng ý hoặc xóa toàn bộ dữ liệu trên máy.
+Future<bool> showWipeConfirmDialog(
+  BuildContext context, {
+  String title = 'Xóa toàn bộ dữ liệu?',
+  String message = 'Mọi dữ liệu trên máy này sẽ bị xóa và không lấy lại được.',
+  String actionLabel = 'Xóa toàn bộ',
+}) async {
+  var typed = '';
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setState) {
+        final cs = Theme.of(ctx).colorScheme;
+        final canConfirm = typed.trim() == 'XÓA';
+        return AlertDialog(
+          title: Text(title),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(message),
+              const SizedBox(height: 12),
+              const Text('Gõ XÓA để xác nhận.'),
+              const SizedBox(height: 8),
+              TextField(
+                autofocus: true,
+                textCapitalization: TextCapitalization.characters,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'XÓA',
+                ),
+                onChanged: (v) => setState(() => typed = v),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Hủy'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: cs.error,
+                foregroundColor: cs.onError,
+              ),
+              onPressed: canConfirm ? () => Navigator.of(ctx).pop(true) : null,
+              child: Text(actionLabel),
+            ),
+          ],
+        );
+      },
+    ),
+  );
+  return ok == true;
+}
+
+/// Thông báo ngắn 7 giây sau khi ghi nước, kèm nút Hoàn tác.
+void showUndoWaterSnack(
+  BuildContext context, {
+  required double ml,
+  required Future<void> Function() onUndo,
+}) {
+  final messenger = ScaffoldMessenger.maybeOf(context);
+  if (messenger == null) return;
+  messenger
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(
+      duration: const Duration(seconds: 7),
+      content: Text('Đã ghi ${fmtWaterMl(ml)} ml nước'),
+      action: SnackBarAction(label: 'Hoàn tác', onPressed: onUndo),
+    ));
+}
+
 /// Format giờ phút theo 24 giờ (`07:30`).
 String fmtTime24(DateTime t) =>
     '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
