@@ -12,6 +12,56 @@ enum BmiClass { underweight, normal, overweight, obese }
 /// Nguồn của một lượng chất, dùng để xác định phạm vi UL.
 enum IntakeSource { food, fortified, supplement }
 
+/// Bữa ăn trong ngày.
+enum MealSlot { breakfast, lunch, dinner, snack }
+
+/// Phân biệt số trên nhãn là nguyên tố hay khối lượng hợp chất.
+enum CompoundKind { elemental, compound, unknown }
+
+/// Đơn vị đọc từ nhãn thực phẩm hoặc thực phẩm bổ sung.
+enum LabelUnit { g, mg, ug, iu, ugRae, ugDfe, mgNe }
+
+/// Mã dạng (`form`) dùng chung giữa gói dữ liệu, engine và CSDL.
+abstract final class NutrientForm {
+  static const unknown = 'unknown';
+
+  // Vitamin A
+  static const retinol = 'retinol';
+  static const betaCarotene = 'beta_carotene';
+
+  // Folate
+  static const folicAcid = 'folic_acid';
+  static const naturalFolate = 'natural_folate';
+
+  // Vitamin E
+  static const natural2r = 'natural_2r';
+  static const synthetic2r = 'synthetic_2r';
+  static const syntheticMass = 'synthetic_mass';
+  static const dAlphaTocopherylAcetate = 'd_alpha_tocopheryl_acetate';
+  static const dlAlphaTocopherylAcetate = 'dl_alpha_tocopheryl_acetate';
+  static const dAlphaTocopherylSuccinate = 'd_alpha_tocopheryl_succinate';
+  static const dlAlphaTocopherylSuccinate = 'dl_alpha_tocopheryl_succinate';
+
+  // Khoáng chất
+  static const elemental = 'elemental';
+
+  static const vitaminEEsters = {
+    dAlphaTocopherylAcetate,
+    dlAlphaTocopherylAcetate,
+    dAlphaTocopherylSuccinate,
+    dlAlphaTocopherylSuccinate,
+  };
+
+  static bool isVitaminEEster(String form) => vitaminEEsters.contains(form);
+
+  /// `true` cho este nguồn tự nhiên (`d-`), `false` cho tổng hợp (`dl-`), `null` nếu không thuộc tập cố định.
+  static bool? vitaminEEsterIsNatural(String form) => switch (form) {
+        dAlphaTocopherylAcetate || dAlphaTocopherylSuccinate => true,
+        dlAlphaTocopherylAcetate || dlAlphaTocopherylSuccinate => false,
+        _ => null,
+      };
+}
+
 class Profile {
   final int ageYears;
   final Sex sex;
@@ -75,17 +125,29 @@ class Profile {
 class IntakeItem {
   final String label;
   final IntakeSource source;
-  final String? mealId;
+  final MealSlot? meal;
+  final DateTime? at;
+  final bool addedSugarKnown;
+  final String? entryId;
   final Map<String, double> nutrients;
+
+  /// Lượng tính vào giới hạn an toàn cho các khóa khác [nutrients].
+  final Map<String, double>? ulNutrients;
 
   const IntakeItem({
     required this.label,
     required this.source,
     required this.nutrients,
-    this.mealId,
+    this.ulNutrients,
+    this.meal,
+    this.at,
+    this.addedSugarKnown = true,
+    this.entryId,
   });
 
   double amount(String key) => nutrients[key] ?? 0;
+
+  double amountForUlKey(String key) => ulNutrients?[key] ?? nutrients[key] ?? 0;
 }
 
 /// Một buổi tập người dùng tự nhập.
@@ -93,7 +155,10 @@ class WorkoutEntry {
   final String activityCode;
   final double minutes;
 
-  const WorkoutEntry({required this.activityCode, required this.minutes});
+  /// Ngày YYYY-MM-DD (dùng để đếm số ngày phân biệt tập tăng cơ).
+  final String? day;
+
+  const WorkoutEntry({required this.activityCode, required this.minutes, this.day});
 }
 
 /// Lý do engine không tính được một giá trị (để UI giải thích, không đoán).
@@ -103,6 +168,10 @@ enum NotComputedReason {
   missingGestationWeek,
   missingPrePregnancyBmi,
   unknownActivity,
+  missingFoodBetaCaroteneFactor,
+  missingEsterRatio,
+  missingCompoundRatio,
+  missingNutrientInPack,
 }
 
 class NotComputed implements Exception {

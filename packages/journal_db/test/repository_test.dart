@@ -48,13 +48,14 @@ void main() {
     final after = await snapshot(await reopened(o));
 
     String show(IntakeItem i) =>
-        '${i.label}|${i.source}|${i.mealId}|${(i.nutrients.entries.map((e) => '${e.key}=${e.value}').toList()..sort()).join(',')}';
+        '${i.label}|${i.source}|${i.meal}|${(i.nutrients.entries.map((e) => '${e.key}=${e.value}').toList()..sort()).join(',')}';
     expect(after.$1.map(show).toList(), before.$1.map(show).toList());
     expect(after.$1, hasLength(2));
     expect(after.$2.eerKcal, before.$2.eerKcal);
     expect(after.$2.ulFlags.map((f) => (f.nutrientId, f.amount)), before.$2.ulFlags.map((f) => (f.nutrientId, f.amount)));
     expect(after.$2.ulFlags.map((f) => f.nutrientId), contains('magnesium'));
     expect(after.$3.single.workout.minutes, 30);
+    expect(after.$3.single.workout.day, day);
     expect(after.$4.single.ml, 250);
   });
 
@@ -309,14 +310,21 @@ void main() {
       expect((await repo.dosesOn(dayKey(testNow()))).single.name, 'Viên kẽm');
     });
 
-    test('dòng có lượng tính giới hạn riêng bị từ chối khi engine chưa hỗ trợ', () async {
+    test('ghi và kiểm tra giới hạn từ dòng có lượng tính giới hạn riêng (ulAmounts)', () async {
       const ul = IntakeLine(
-          nutrientId: 'vitE', source: IntakeSource.supplement, uncertain: true,
-          amounts: {'vitE': 45}, ulAmounts: {'vitE': 91});
-      await expectLater(repo.recordDose(DoseInput(
-          at: testNow(), kind: DoseKind.oneOff, servings: 1, packVersion: testPack, lines: const [ul])),
-          throwsA(isA<UlAmountsNotSupported>()));
-      expect(await _count(repo, 'SELECT count(*) FROM dose_entries'), 0);
+          nutrientId: 'vitE',
+          source: IntakeSource.supplement,
+          form: NutrientForm.synthetic2r,
+          uncertain: false,
+          amounts: {'vitE': 540},
+          ulAmounts: {'vitE': 1090.91});
+      final res = await repo.recordDose(DoseInput(
+          at: testNow(), kind: DoseKind.oneOff, servings: 1, packVersion: testPack, lines: const [ul]));
+      expect(res, isA<DoseRecorded>());
+      final items = intakeItemsFor(const [], await repo.dosesOn(dayKey(testNow())));
+      final flags = checkUlDay(_pack, _profile, items);
+      expect(flags.single.nutrientId, 'vitE');
+      expect(flags.single.amount, closeTo(1090.91, 1e-6));
     });
   });
 

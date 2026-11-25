@@ -39,18 +39,12 @@ class _DayData {
   const _DayData(this.entries, this.workouts, this.last7, this.workouts7);
 }
 
-/// Tên bữa của khung tạm. Bữa phụ hiện chung "phụ".
-const _mealVi = {Meal.breakfast: 'sáng', Meal.lunch: 'trưa', Meal.dinner: 'tối', Meal.snack: 'phụ'};
-
-Meal _mealOf(String? vi) =>
-    _mealVi.entries.firstWhere((e) => e.value == vi, orElse: () => const MapEntry(Meal.snack, 'phụ')).key;
-
-IntakeItem _withMealLabel(IntakeItem i) {
-  final id = i.mealId;
-  if (id == null) return i;
-  final meal = id.startsWith('snack') ? Meal.snack : Meal.values.byName(id);
-  return IntakeItem(label: i.label, source: i.source, mealId: _mealVi[meal], nutrients: i.nutrients);
-}
+Meal _mealFromSlot(MealSlot? s) => switch (s) {
+      MealSlot.breakfast => Meal.breakfast,
+      MealSlot.lunch => Meal.lunch,
+      MealSlot.dinner => Meal.dinner,
+      MealSlot.snack || null => Meal.snack,
+    };
 
 /// Trạng thái app. Toàn bộ dữ liệu ở máy, trong CSDL mã hóa ([DbOpener]).
 class AppState extends ChangeNotifier {
@@ -184,8 +178,7 @@ class AppState extends ChangeNotifier {
   static Future<_DayData> _loadDay(JournalRepository repo, DateTime day) async {
     final key = dayKey(day);
     final entries = [
-      for (final f in await repo.foodsOn(key))
-        _Entry(false, f.id, [for (final i in intakeItemsOfFood(f)) _withMealLabel(i)]),
+      for (final f in await repo.foodsOn(key)) _Entry(false, f.id, intakeItemsOfFood(f)),
       for (final d in await repo.dosesOn(key)) _Entry(true, d.id, intakeItemsOfDose(d)),
     ];
     final workouts = await repo.workoutsOn(key);
@@ -193,9 +186,8 @@ class AppState extends ChangeNotifier {
     final ws = <WorkoutEntry>[];
     for (var i = 6; i >= 0; i--) {
       final d = dayKey(day.subtract(Duration(days: i)));
-      last7.add([
-        for (final x in intakeItemsFor(await repo.foodsOn(d), await repo.dosesOn(d))) _withMealLabel(x),
-      ]);
+      final items = intakeItemsFor(await repo.foodsOn(d), await repo.dosesOn(d));
+      if (items.isNotEmpty) last7.add(items);
       ws.addAll([for (final w in await repo.workoutsOn(d)) w.workout]);
     }
     return _DayData(entries, workouts, last7, ws);
@@ -255,11 +247,19 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> addItem(IntakeItem it) {
+    final keys = {...it.nutrients.keys, ...?it.ulNutrients?.keys};
     final lines = [
-      for (final e in it.nutrients.entries)
-        IntakeLine(nutrientId: e.key, source: it.source, amounts: {e.key: e.value}),
+      for (final k in keys)
+        IntakeLine(
+          nutrientId: k,
+          source: it.source,
+          amounts: it.nutrients.containsKey(k) ? {k: it.nutrients[k]!} : const {},
+          ulAmounts: it.ulNutrients != null && it.ulNutrients!.containsKey(k)
+              ? {k: it.ulNutrients![k]!}
+              : null,
+        ),
     ];
-    final at = _atNow();
+    final at = it.at ?? _atNow();
     if (it.source == IntakeSource.supplement) {
       return _write((repo) => repo.recordDose(DoseInput(
             at: at,
@@ -272,15 +272,25 @@ class AppState extends ChangeNotifier {
     }
     return _write((repo) => repo.addFood(FoodEntryInput(
           at: at,
-          meal: _mealOf(it.mealId),
+          meal: _mealFromSlot(it.meal),
           name: it.label,
           portionUnit: 'phần',
           portionQty: 1,
-          addedSugarKnown: it.nutrients.containsKey('addedSugar'),
+          addedSugarKnown: it.addedSugarKnown,
           packVersion: pack.version,
           lines: lines,
         )));
   }
+
+  /// Ghi một lần bổ sung với danh sách [IntakeLine] đã quy đổi sẵn (gồm cả `ulAmounts`).
+  Future<void> recordDose(String name, List<IntakeLine> lines) => _write((repo) => repo.recordDose(DoseInput(
+        at: _atNow(),
+        name: name,
+        kind: DoseKind.oneOff,
+        servings: 1,
+        packVersion: pack.version,
+        lines: lines,
+      )));
 
   Future<void> removeItem(int index) {
     var i = index;
@@ -306,7 +316,14 @@ class AppState extends ChangeNotifier {
   DailyReport? report() {
     final p = _profile;
     if (p == null) return null;
-    return dailyReport(pack, p, todayItems, workouts: todayWorkouts, last7Days: _data.last7);
+    return dailyReport(
+      pack,
+      p,
+      todayItems,
+      workouts: todayWorkouts,
+      last7Days: _data.last7,
+      workouts7: _data.workouts7,
+    );
   }
 
   /// Gợi ý mức vận động từ buổi tập 7 ngày gần nhất.

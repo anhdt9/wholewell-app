@@ -1,6 +1,6 @@
 # Trạng thái dự án
 
-Cập nhật 24/11/2026. Agent cập nhật tệp này khi xong một việc.
+Cập nhật 25/11/2026. Agent cập nhật tệp này khi xong một việc.
 
 Người mới nhận dự án: đọc [handoff.md](handoff.md) trước.
 
@@ -20,7 +20,7 @@ Kết quả kiểm sớm bằng tài liệu và các bài còn phải thử trê
 
 Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã duyệt trước khi code.
 
-1. **CSDL mã hóa** (đặc tả [specs/encrypted-db.md](specs/encrypted-db.md): **đã duyệt** 24/11/2026; không cần UX; **đang code** ở nhánh `feat/encrypted-db-v1`: gói `packages/journal_db`, khóa Android, app dùng CSDL; còn thử trên máy thật): drift + SQLite3MultipleCiphers (cipher `chacha20`, khóa thô, kiểm bản mã hóa mỗi lần mở); khóa đọc ra bốn trạng thái, không bao giờ tự ghi đè; loại khỏi sao lưu tự động của hệ điều hành; thay `InMemoryJournalRepository`. Lược đồ:
+1. **CSDL mã hóa** (đặc tả [specs/encrypted-db.md](specs/encrypted-db.md): **đã duyệt** 24/11/2026; không cần UX; **PR #12 đã gộp** vào `main`: gói `packages/journal_db`, khóa Android, app dùng CSDL; còn thử tay trên máy thật): drift + SQLite3MultipleCiphers (cipher `chacha20`, khóa thô, kiểm bản mã hóa mỗi lần mở); khóa đọc ra bốn trạng thái, không bao giờ tự ghi đè; loại khỏi sao lưu tự động của hệ điều hành; thay `InMemoryJournalRepository`. Lược đồ:
    - **Khung tạm chỉ để thử nội bộ, không phát cho người thử bên ngoài:** chưa có màn Điều kiện, Đồng ý, nên lần lưu hồ sơ đầu tiên ghi một đồng ý `khung-tam-0` và câu thuốc, bệnh là "Không" mà người dùng chưa trả lời.
    - **Thử trên máy thật (làm tay, ghi kết quả vào PR):** truy vấn một ngày với 2 năm dữ liệu dưới 50 ms; Android 12+ khóa và mở khóa máy, khởi động lại, cài đè bản mới; máy không đặt khóa màn hình; đổi mã khóa màn hình, xóa khóa màn hình (khóa còn đọc được không, hay ra "Không mở được"); tiến trình app được dựng lại khi máy đang khóa (không đọc khóa, không tạo khóa); tệp bản khóa hỏng (`noBackupFilesDir/wholewell_db_key.bin` sửa vài byte) khi máy mở khóa ra "Không mở được dữ liệu…" có [Bắt đầu lại]; với tệp khóa còn nguyên, khởi động lại máy rồi mở app (cả trước và sau lần mở khóa đầu tiên) nhiều lần, khóa luôn đọc được, không bao giờ ra lỗi sai tag (nếu có, phân loại tệp hỏng thành mất khóa là sai, phải sửa trước khi phát hành); "Đã uống" từ thông báo khi máy khóa.
    - Khóa chỉ dùng được khi máy đã mở khóa: iOS dùng mức Keychain tương ứng; Android tự dùng Keystore với `setUnlockedDeviceRequired` (API 28+), flutter_secure_storage không có sẵn. Nút "Đã uống" trên thông báo mở app thay vì ghi trong nền. Thử trên máy thật.
@@ -29,7 +29,7 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
    - Sản phẩm → nhiều thành phần {chất (id trong gói hoặc tên tự do), dạng hoặc "nhãn không ghi", lượng mỗi khẩu phần, đơn vị gốc, lượng gốc trên nhãn, nguyên tố hay hợp chất, nguồn dòng, đã xác nhận}; nhiều hộp (còn lại, hạn dùng).
    - Nhật ký (món, lần uống, nước, buổi tập); mỗi lần ghi lưu danh sách dòng chất (nguồn, dạng, lượng so mức khuyến nghị, lượng tính giới hạn, số trên nhãn) kèm dữ liệu gốc.
    - Lịch uống có ngày hiệu lực; trạng thái từng lần (đã uống, bỏ qua); trừ kho ghi theo từng hộp; sản phẩm có đơn vị đếm và số đơn vị mỗi khẩu phần.
-2. **Sửa engine** (đặc tả; **phải xong trước mọi đường ghi có thể sinh lượng tính giới hạn riêng**: Nhập theo nhãn, Ghi một lần, chụp nhãn, mã vạch, tức trước việc 3; xem đặc tả CSDL, mục Lượng đã ghi). Mỗi thay đổi sửa cả `tools/reference_engine.py` và sinh lại fixtures:
+2. **Sửa engine** (đặc tả [specs/engine-v2.md](specs/engine-v2.md): **đã duyệt** 25/11/2026; không cần UX riêng; **đã code xong** trên nhánh `feat/engine-v2`, chờ commit/push CI và duyệt PR; **đã xong trước mọi đường ghi sinh `ulAmounts`**): đã sửa `tools/build_pack.py` (`schema: 2`), `tools/verify_pack.py`, `tools/reference_engine.py`, `packages/health_engine`, bật `engineSupportsUlAmounts = true` ở `packages/journal_db` và đồng bộ `app/`:
    - Nhóm tham chiếu là dữ liệu: bỏ mốc tuổi viết cứng (`driGroupFor` dùng 14, 19; đạm và AMDR dùng 19); tuổi tối thiểu tạo hồ sơ đọc từ gói.
    - Gần mốc đổi nhóm tuổi (12 tháng trước 19, 31, 51, 71): giới hạn lấy mức thấp hơn của hai nhóm.
    - Đường bổ sung: giới hạn 10 g theo từng bữa chính; món bữa phụ cách món phụ ngay trước dưới 30 phút thì vào cùng bữa (nối chuỗi).

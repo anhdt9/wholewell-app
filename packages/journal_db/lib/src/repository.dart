@@ -146,7 +146,13 @@ class InMemoryJournalRepository implements JournalRepository {
   @override
   Future<int> addWorkout(DateTime startAt, WorkoutEntry w) async {
     final id = _nextId++;
-    _workouts.add(WorkoutRecord(id, startAt, dayKey(startAt), w));
+    final d = dayKey(startAt);
+    _workouts.add(WorkoutRecord(
+      id,
+      startAt,
+      d,
+      WorkoutEntry(activityCode: w.activityCode, minutes: w.minutes, day: d),
+    ));
     _changed();
     return id;
   }

@@ -5,41 +5,92 @@ Chỉ lưu số liệu (sự kiện) theo cấu trúc riêng của dự án, kè
 Không chép văn bản hay bố cục bảng của NASEM / LPI.
 
 Chạy:  python3 tools/build_pack.py
-Kết quả: packages/health_engine/assets/reference_pack.json
+Kết quả: packages/health_engine/assets/reference_pack.json và app/assets/reference_pack.json
 """
 import json
 import pathlib
+import sys
 
-PACK_VERSION = "2026.11.24-1"
-RETRIEVED = "2026-11-22"
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
+PACK_VERSION = "2026.11.25-1"
+RETRIEVED = "2026-11-25"
 
 # ---------------------------------------------------------------- nguồn
 SOURCES = [
     {"id": "nasem_dri_summary", "label": "A",
      "title": "NASEM – bảng tóm tắt DRI (RDA, AI, UL), cập nhật 2019",
      "url": "https://www.nationalacademies.org/read/25353/chapter/28",
-     "via": "https://ods.od.nih.gov/healthinformation/nutrientrecommendations/"},
+     "via": "https://ods.od.nih.gov/healthinformation/nutrientrecommendations/",
+     "retrieved": "2026-11-25"},
     {"id": "nasem_energy_2023", "label": "A",
      "title": "NASEM – Dietary Reference Intakes for Energy (2023), phương trình EER",
      "url": "https://www.nationalacademies.org/read/26818/chapter/7"},
     {"id": "nasem_amdr", "label": "A",
      "title": "NASEM – AMDR (khoảng phân bố năng lượng từ đạm, béo, bột đường)",
      "url": "https://nap.nationalacademies.org/read/10490/chapter/13"},
+    {"id": "nasem_vit_e_2000", "label": "A",
+     "title": "NASEM – Dietary Reference Intakes for Vitamin C, Vitamin E, Selenium, and Carotenoids (2000), Ch. 6 & Ch. 9",
+     "url": "https://www.nationalacademies.org/read/9810/chapter/8",
+     "retrieved": "2026-11-25"},
+    {"id": "nih_ods_vit_e", "label": "A",
+     "title": "NIH ODS – Vitamin E Fact Sheet for Health Professionals (cập nhật 19/10/2026)",
+     "url": "https://ods.od.nih.gov/factsheets/VitaminE-HealthProfessional/",
+     "retrieved": "2026-11-25"},
+    {"id": "fda_unit_conversions", "label": "A",
+     "title": "FDA – Guidance for Industry: Converting Units of Measure for Folate, Niacin, and Vitamins A, D, and E (2019); 21 CFR 101.9, 101.36",
+     "url": "https://www.fda.gov/media/129863/download",
+     "retrieved": "2026-11-25"},
     {"id": "dga_2025_2030", "label": "A",
      "title": "USDA, HHS – Dietary Guidelines for Americans 2025–2030",
-     "url": "https://cdn.realfood.gov/DGA.pdf"},
+     "url": "https://cdn.realfood.gov/DGA.pdf",
+     "retrieved": "2026-11-24"},
     {"id": "compendium_2024", "label": "A",
      "title": "2024 Adult Compendium of Physical Activities (miễn phí cả cho mục đích thương mại)",
      "url": "https://pacompendium.com/adult-compendium/"},
     {"id": "pag_2", "label": "A",
-     "title": "HHS – Physical Activity Guidelines for Americans, bản 2",
-     "url": "https://health.gov/sites/default/files/2019-09/Physical_Activity_Guidelines_2nd_edition.pdf"},
+     "title": "HHS – Physical Activity Guidelines for Americans, bản 2 (2018)",
+     "url": "https://odphp.health.gov/sites/default/files/2019-09/Physical_Activity_Guidelines_2nd_edition.pdf",
+     "retrieved": "2026-11-25"},
 ]
 
-GROUPS = ["m14_18", "m19_30", "m31_50", "m51_70", "m71",
-          "f14_18", "f19_30", "f31_50", "f51_70", "f71",
-          "p14_18", "p19_30", "p31_50",
-          "l14_18", "l19_30", "l31_50"]
+MIN_PROFILE_AGE = 18
+
+
+def _grp(id_, sex, stage, min_age, max_age, amdr_key, protein_per_kg, eer_type):
+    return {
+        "id": id_,
+        "sex": sex,
+        "stage": stage,
+        "minAge": min_age,
+        "maxAge": max_age,
+        "amdrKey": amdr_key,
+        "proteinPerKg": protein_per_kg,
+        "eerType": eer_type,
+    }
+
+
+GROUPS_META = [
+    _grp("m14_18", "male", "none", 14, 18, "age4_18", None, "none"),
+    _grp("m19_30", "male", "none", 19, 30, "adult19", 0.8, "adult"),
+    _grp("m31_50", "male", "none", 31, 50, "adult19", 0.8, "adult"),
+    _grp("m51_70", "male", "none", 51, 70, "adult19", 0.8, "adult"),
+    _grp("m71",    "male", "none", 71, None, "adult19", 0.8, "adult"),
+    _grp("f14_18", "female", "none", 14, 18, "age4_18", None, "none"),
+    _grp("f19_30", "female", "none", 19, 30, "adult19", 0.8, "adult"),
+    _grp("f31_50", "female", "none", 31, 50, "adult19", 0.8, "adult"),
+    _grp("f51_70", "female", "none", 51, 70, "adult19", 0.8, "adult"),
+    _grp("f71",    "female", "none", 71, None, "adult19", 0.8, "adult"),
+    _grp("p14_18", "female", "pregnant", 14, 18, "age4_18", None, "none"),
+    _grp("p19_30", "female", "pregnant", 19, 30, "adult19", None, "pregnant"),
+    _grp("p31_50", "female", "pregnant", 31, None, "adult19", None, "pregnant"),
+    _grp("l14_18", "female", "lactating", 14, 18, "age4_18", None, "none"),
+    _grp("l19_30", "female", "lactating", 19, 30, "adult19", None, "lactating"),
+    _grp("l31_50", "female", "lactating", 31, None, "adult19", None, "lactating"),
+]
+
+GROUPS = [g["id"] for g in GROUPS_META]
 
 
 def row(m14, m19, m31, m51, m71, f14, f19, f31, f51, f71, p14, p19, p31, l14, l19, l31):
@@ -189,15 +240,10 @@ nut("linoleic", "Axit linoleic (omega-6)", "g", "AI",
 nut("ala", "Axit alpha-linolenic (omega-3)", "g", "AI",
     row(1.6, 1.6, 1.6, 1.6, 1.6, 1.1, 1.1, 1.1, 1.1, 1.1, 1.4, 1.4, 1.4, 1.3, 1.3, 1.3), group=M)
 
-# đạm theo cân nặng cho người lớn không mang thai, không cho con bú
-PROTEIN_PER_KG = {"adult19": 0.8, "source": "nasem_dri_summary",
-                  "note": "RDA 0,8 g/kg cân nặng/ngày cho người 19+; nhóm khác dùng g/ngày trong bảng"}
-
 # ---------------------------------------------------------------- năng lượng
 # TEE = a + b*tuổi + c*cao(cm) + d*nặng(kg) [+ e*tuần thai]
 EER = {
     "source": "nasem_energy_2023",
-    "minAge": 19,
     "palRanges19": {"inactive": [1.00, 1.53], "lowActive": [1.53, 1.68],
                     "active": [1.68, 1.85], "veryActive": [1.85, 2.50]},
     "adult": {
@@ -243,64 +289,64 @@ ENERGY_PER_GRAM = {"protein": 4, "carbohydrate": 4, "fat": 9, "alcohol": 7,
 
 # ---------------------------------------------------------------- vận động
 ACTIVITIES = [
-    # code, MET, tên tiếng Việt
-    ("17152", 2.8, "Đi bộ chậm (3,2–3,9 km/h)"),
-    ("17170", 3.0, "Đi bộ 4 km/h"),
-    ("17190", 3.8, "Đi bộ vừa (4,5–5,5 km/h)"),
-    ("17200", 4.8, "Đi bộ nhanh (5,6–6,3 km/h)"),
-    ("17220", 5.5, "Đi bộ rất nhanh (6,4–7,1 km/h)"),
-    ("17230", 7.0, "Đi bộ rất nhanh (7,2–7,9 km/h)"),
-    ("17160", 3.5, "Đi dạo"),
-    ("17080", 6.0, "Leo núi, đi bộ đường dài"),
-    ("17131", 6.8, "Leo cầu thang"),
-    ("12020", 7.5, "Chạy bộ nhẹ (tự chọn tốc độ)"),
-    ("12028", 6.5, "Chạy 6,4–6,8 km/h"),
-    ("12030", 8.5, "Chạy 8,0–8,4 km/h"),
-    ("12050", 9.3, "Chạy 9,7–10,1 km/h"),
-    ("12060", 10.5, "Chạy 10,8 km/h"),
-    ("12070", 11.0, "Chạy 11,3 km/h"),
-    ("12090", 12.0, "Chạy 12,9 km/h"),
-    ("12110", 13.0, "Chạy 14,5 km/h"),
-    ("12120", 14.8, "Chạy 16,1 km/h"),
-    ("01010", 4.0, "Đạp xe nhẹ (dưới 16 km/h)"),
-    ("01011", 6.8, "Đạp xe đi làm"),
-    ("01020", 6.8, "Đạp xe 16–19 km/h"),
-    ("01030", 8.0, "Đạp xe 19–22 km/h"),
-    ("01040", 10.0, "Đạp xe 22–25 km/h"),
-    ("01214", 4.0, "Xe đạp tập, nhẹ"),
-    ("01220", 6.0, "Xe đạp tập, vừa"),
-    ("01236", 10.8, "Xe đạp tập, mạnh"),
-    ("02054", 3.5, "Tập tạ nhiều bài, 8–15 lần"),
-    ("02050", 6.0, "Tập tạ nặng, thể hình"),
-    ("02024", 2.8, "Bài tập thể lực nhẹ (plank, gập bụng)"),
-    ("02022", 3.8, "Bài tập thể lực vừa (chống đẩy, lunge)"),
-    ("02020", 7.5, "Bài tập thể lực mạnh (burpee, nhảy)"),
-    ("02150", 2.3, "Yoga Hatha"),
-    ("02160", 4.0, "Power yoga"),
-    ("02105", 2.8, "Pilates"),
-    ("02048", 5.0, "Máy elliptical, vừa"),
-    ("02071", 5.0, "Máy chèo thuyền, vừa"),
-    ("02035", 5.0, "Circuit training, vừa"),
-    ("02040", 7.5, "Circuit training, mạnh"),
-    ("02210", 7.0, "HIIT, vừa"),
-    ("02214", 11.0, "HIIT, mạnh"),
-    ("02068", 11.0, "Nhảy dây"),
-    ("02101", 2.3, "Giãn cơ nhẹ"),
-    ("15030", 5.5, "Cầu lông phong trào"),
-    ("15020", 7.0, "Cầu lông thi đấu"),
-    ("15610", 7.0, "Bóng đá phong trào"),
-    ("15605", 9.5, "Bóng đá thi đấu"),
-    ("15055", 7.5, "Bóng rổ"),
-    ("15720", 3.0, "Bóng chuyền phong trào"),
-    ("15675", 6.8, "Quần vợt, vừa"),
-    ("15660", 4.0, "Bóng bàn"),
-    ("15670", 3.3, "Thái cực quyền, khí công"),
-    ("18240", 5.8, "Bơi sải chậm"),
-    ("18230", 9.8, "Bơi sải nhanh"),
-    ("18310", 6.0, "Bơi thư giãn"),
-    ("18265", 5.3, "Bơi ếch"),
-    ("18255", 4.8, "Bơi ngửa"),
-    ("18355", 5.5, "Thể dục dưới nước"),
+    # code, MET, tên tiếng Việt, muscleStrengthening (theo PAG bản 2, 2018)
+    ("17152", 2.8, "Đi bộ chậm (3,2–3,9 km/h)", False),
+    ("17170", 3.0, "Đi bộ 4 km/h", False),
+    ("17190", 3.8, "Đi bộ vừa (4,5–5,5 km/h)", False),
+    ("17200", 4.8, "Đi bộ nhanh (5,6–6,3 km/h)", False),
+    ("17220", 5.5, "Đi bộ rất nhanh (6,4–7,1 km/h)", False),
+    ("17230", 7.0, "Đi bộ rất nhanh (7,2–7,9 km/h)", False),
+    ("17160", 3.5, "Đi dạo", False),
+    ("17080", 6.0, "Leo núi, đi bộ đường dài", False),
+    ("17131", 6.8, "Leo cầu thang", False),
+    ("12020", 7.5, "Chạy bộ nhẹ (tự chọn tốc độ)", False),
+    ("12028", 6.5, "Chạy 6,4–6,8 km/h", False),
+    ("12030", 8.5, "Chạy 8,0–8,4 km/h", False),
+    ("12050", 9.3, "Chạy 9,7–10,1 km/h", False),
+    ("12060", 10.5, "Chạy 10,8 km/h", False),
+    ("12070", 11.0, "Chạy 11,3 km/h", False),
+    ("12090", 12.0, "Chạy 12,9 km/h", False),
+    ("12110", 13.0, "Chạy 14,5 km/h", False),
+    ("12120", 14.8, "Chạy 16,1 km/h", False),
+    ("01010", 4.0, "Đạp xe nhẹ (dưới 16 km/h)", False),
+    ("01011", 6.8, "Đạp xe đi làm", False),
+    ("01020", 6.8, "Đạp xe 16–19 km/h", False),
+    ("01030", 8.0, "Đạp xe 19–22 km/h", False),
+    ("01040", 10.0, "Đạp xe 22–25 km/h", False),
+    ("01214", 4.0, "Xe đạp tập, nhẹ", False),
+    ("01220", 6.0, "Xe đạp tập, vừa", False),
+    ("01236", 10.8, "Xe đạp tập, mạnh", False),
+    ("02054", 3.5, "Tập tạ nhiều bài, 8–15 lần", True),
+    ("02050", 6.0, "Tập tạ nặng, thể hình", True),
+    ("02024", 2.8, "Bài tập thể lực nhẹ (plank, gập bụng)", True),
+    ("02022", 3.8, "Bài tập thể lực vừa (chống đẩy, lunge)", True),
+    ("02020", 7.5, "Bài tập thể lực mạnh (burpee, nhảy)", True),
+    ("02150", 2.3, "Yoga Hatha", False),
+    ("02160", 4.0, "Power yoga", False),
+    ("02105", 2.8, "Pilates", False),
+    ("02048", 5.0, "Máy elliptical, vừa", False),
+    ("02071", 5.0, "Máy chèo thuyền, vừa", False),
+    ("02035", 5.0, "Circuit training, vừa", True),
+    ("02040", 7.5, "Circuit training, mạnh", True),
+    ("02210", 7.0, "HIIT, vừa", False),
+    ("02214", 11.0, "HIIT, mạnh", False),
+    ("02068", 11.0, "Nhảy dây", False),
+    ("02101", 2.3, "Giãn cơ nhẹ", False),
+    ("15030", 5.5, "Cầu lông phong trào", False),
+    ("15020", 7.0, "Cầu lông thi đấu", False),
+    ("15610", 7.0, "Bóng đá phong trào", False),
+    ("15605", 9.5, "Bóng đá thi đấu", False),
+    ("15055", 7.5, "Bóng rổ", False),
+    ("15720", 3.0, "Bóng chuyền phong trào", False),
+    ("15675", 6.8, "Quần vợt, vừa", False),
+    ("15660", 4.0, "Bóng bàn", False),
+    ("15670", 3.3, "Thái cực quyền, khí công", False),
+    ("18240", 5.8, "Bơi sải chậm", False),
+    ("18230", 9.8, "Bơi sải nhanh", False),
+    ("18310", 6.0, "Bơi thư giãn", False),
+    ("18265", 5.3, "Bơi ếch", False),
+    ("18255", 4.8, "Bơi ngửa", False),
+    ("18355", 5.5, "Thể dục dưới nước", False),
 ]
 
 PAG = {"source": "pag_2", "moderateMinMet": 3.0, "vigorousMinMet": 6.0,
@@ -317,29 +363,38 @@ UNIT_CONVERSIONS = {
     "vitD_IU_to_ug": 0.025,
     "vitA_retinol_IU_to_ug_RAE": 0.3,
     "vitA_supplemental_betacarotene_IU_to_ug_RAE": 0.3,
+    "vitA_food_betacarotene_IU_to_ug_RAE": None,
     "vitE_natural_IU_to_mg": 0.67,
     "vitE_synthetic_IU_to_mg": 0.45,
+    "vitE_ul_natural_IU_to_mg": 0.67,
+    "vitE_ul_synthetic_IU_to_mg": 1000 / 1100,
     "folicAcid_ug_to_ug_DFE": 1.7,
-    "source": "nasem_dri_summary",
-    "note": "hệ số đổi IU theo NIH ODS (fact sheet vitamin A, D, E)",
+    "vitaminEEsters": {},
+    "compounds": {},
+    "source": "fda_unit_conversions",
+    "ulSource": "nih_ods_vit_e",
+    "ulCrossRefSource": "nasem_vit_e_2000",
+    "note": "Hệ số RDA/IU theo FDA 2019 (21 CFR 101.9/101.36); hệ số UL vitamin E theo NASEM 2000 Bảng 9-1 và NIH ODS (tra 25/11/2026)",
 }
 
 
 def main():
     pack = {
-        "schema": 1,
+        "schema": 2,
         "version": PACK_VERSION,
         "retrieved": RETRIEVED,
-        "groups": GROUPS,
+        "minProfileAge": MIN_PROFILE_AGE,
+        "groups": GROUPS_META,
         "sources": SOURCES,
         "nutrients": NUTRIENTS,
-        "proteinPerKg": PROTEIN_PER_KG,
         "eer": EER,
         "amdr": AMDR,
         "addedSugar": ADDED_SUGAR,
         "energyPerGram": ENERGY_PER_GRAM,
-        "activities": [{"code": c, "met": m, "nameVi": n, "source": "compendium_2024"}
-                       for c, m, n in ACTIVITIES],
+        "activities": [
+            {"code": c, "met": m, "nameVi": n, "muscleStrengthening": s, "source": "compendium_2024"}
+            for c, m, n, s in ACTIVITIES
+        ],
         "pag": PAG,
         "palSuggestion": PAL_SUGGESTION,
         "unitConversions": UNIT_CONVERSIONS,
