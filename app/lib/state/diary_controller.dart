@@ -971,6 +971,7 @@ class DiaryController extends ChangeNotifier {
   Future<DoseLogOutcome> updateSupplementDose({
     required int doseId,
     int? productId,
+    String? name,
     required double servings,
     required DateTime at,
     required List<IntakeLine> lines,
@@ -985,6 +986,7 @@ class DiaryController extends ChangeNotifier {
       final before = await _reportForDay(repo, at);
       final res = await repo.updateDose(UpdateDoseInput(
         doseId: doseId,
+        name: name,
         servings: servings,
         at: at,
         packVersion: pack.version,

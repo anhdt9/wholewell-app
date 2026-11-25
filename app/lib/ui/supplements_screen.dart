@@ -126,6 +126,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
   String? _statusMsg;
   bool _busy = false;
   bool _cameraDenied = false;
+  bool _scannerPaused = false;
 
   bool get _useLiveMobileScanner =>
       !kIsWeb &&
@@ -167,8 +168,12 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
     if (_busy) return;
     setState(() {
       _busy = true;
+      _scannerPaused = true;
       _statusMsg = null;
     });
+    // Nhả camera từ MobileScanner trước khi mở DocumentScanner / ImagePicker.
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    if (!mounted) return;
     final state = AppScope.of(context);
     final picked = fromCamera
         ? await state.ocrEngine.captureLabelImage()
@@ -177,17 +182,23 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
     if (picked.permissionDenied) {
       setState(() {
         _busy = false;
+        _scannerPaused = false;
         _cameraDenied = fromCamera;
-        _statusMsg = 'Chưa có quyền máy ảnh. Bạn có thể chọn ảnh từ thư viện hoặc nhập tay.';
+        _statusMsg = 'Chưa có quyền máy ảnh. Bạn có thể mở cài đặt, chọn ảnh từ thư viện hoặc nhập tay.';
       });
       return;
     }
     if (picked.paths.isEmpty) {
-      setState(() => _busy = false);
+      setState(() {
+        _busy = false;
+        _scannerPaused = false;
+      });
       return;
     }
     setState(() {
       _busy = false;
+      _scannerPaused = false;
+      _cameraDenied = false;
       _imagePaths.addAll(picked.paths);
       _statusMsg = 'Đã thêm ${picked.paths.length} ảnh (tổng ${_imagePaths.length}). Có thể chụp thêm mặt khác rồi bấm Đọc thông tin.';
     });
@@ -254,7 +265,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
               icon: const Icon(Icons.qr_code_scanner),
               label: const Text('Quét mã vạch'),
             )
-          else if (_useLiveMobileScanner)
+          else if (_useLiveMobileScanner && !_scannerPaused)
             SizedBox(
               height: 180,
               child: ClipRRect(
@@ -308,6 +319,14 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
                   ? TextStyle(color: Theme.of(context).colorScheme.error)
                   : Theme.of(context).textTheme.bodyMedium,
             ),
+            if (_cameraDenied) ...[
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                onPressed: () => AppScope.of(context).ocrEngine.openAppSettings(),
+                icon: const Icon(Icons.settings_outlined),
+                label: const Text('Mở cài đặt'),
+              ),
+            ],
             const SizedBox(height: 12),
           ],
           if (_busy)

@@ -832,11 +832,11 @@ class InMemoryJournalRepository implements JournalRepository {
       at: input.at,
       day: dayKey(input.at),
       productId: old.productId,
-      name: old.name,
+      name: input.name ?? old.name,
       kind: old.kind,
       servings: input.servings,
       packVersion: input.packVersion,
-      lines: List.unmodifiable(input.lines),
+      lines: List.unmodifiable(newDeductions.isEmpty && old.productId != null ? input.lines : input.lines),
       deductions: List.unmodifiable(newDeductions),
     );
     _changed();

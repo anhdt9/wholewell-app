@@ -388,6 +388,7 @@ class ProductSummary {
 
 class UpdateDoseInput {
   final int doseId;
+  final String? name;
   final double servings;
   final DateTime at;
   final String packVersion;
@@ -396,6 +397,7 @@ class UpdateDoseInput {
 
   const UpdateDoseInput({
     required this.doseId,
+    this.name,
     required this.servings,
     required this.at,
     required this.packVersion,

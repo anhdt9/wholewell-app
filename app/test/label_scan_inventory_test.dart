@@ -93,6 +93,14 @@ void main() {
       expect(pkg.ingredients[1].unit, LabelUnit.iu);
       expect(pkg.ingredients[2].nutrientId, 'zinc');
       expect(pkg.ingredients[2].unit, LabelUnit.ug);
+
+      final viPkg = SupplementLabelParser.parsePackage(const [
+        'Khẩu phần: 2 viên',
+        'Mỗi lần uống 1 gói',
+        'Vitamin C 500 mg',
+      ]);
+      expect(viPkg.suggestedUnitsPerServing, 2);
+      expect(viPkg.suggestedBoxRemaining, isNull);
     });
 
     test('parseExpiryMmYyyy kiểm hợp lệ tháng 01..12 và chuyển sang YYYY-MM', () {
@@ -162,10 +170,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('8935001122'), findsOneWidget);
 
-      // Chụp ảnh bị từ chối quyền camera -> thông báo chuyển sang chọn ảnh thư viện.
+      // Chụp ảnh bị từ chối quyền camera -> thông báo chuyển sang chọn ảnh thư viện + nút Mở cài đặt.
       await tester.tap(find.text('Chụp ảnh nhãn (tên, thành phần)'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Chưa có quyền máy ảnh'), findsOneWidget);
+      expect(find.text('Mở cài đặt'), findsOneWidget);
 
       // Chọn ảnh từ thư viện -> bấm Đọc thông tin từ 1 ảnh -> mở Xác nhận thành phần.
       await tester.tap(find.text('Chọn ảnh từ thư viện'));
@@ -279,6 +288,61 @@ void main() {
       expect(find.textContaining('Magie vượt giới hạn an toàn'), findsAtLeastNWidgets(1));
       expect(find.text('Kho đã hết · Thêm hộp'), findsOneWidget);
       expect(find.byType(SnackBar), findsNothing);
+
+      // Đóng bảng cảnh báo -> sang Nhật ký phải hiện đúng tên sản phẩm "Magie Cao" (không bị "Bổ sung").
+      await tester.tap(find.text('Đã hiểu'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Nhật ký'));
+      await tester.pumpAndSettle();
+      expect(find.text('Magie Cao'), findsOneWidget);
+    });
+
+    testWidgets('sửa lần uống Ghi một lần giữ tên mới và khôi phục dạng Vitamin A/E', (tester) async {
+      final state = await makeReadyState(ocr: FakeOcrEngine(), scanner: FakeBarcodeScanner());
+      await state.diary.recordSupplementDose(
+        name: 'Viên cũ',
+        servings: 1,
+        at: DateTime(2026, 11, 25, 9, 0),
+        lines: const [
+          IntakeLine(
+            nutrientId: 'vitE',
+            source: IntakeSource.supplement,
+            form: NutrientForm.synthetic2r,
+            labelAmount: 100,
+            labelUnit: 'iu',
+            amounts: {'vitE': 45},
+            ulAmounts: {'vitE': 90.9},
+          ),
+          IntakeLine(
+            nutrientId: 'vitA',
+            source: IntakeSource.supplement,
+            form: NutrientForm.betaCarotene,
+            labelAmount: 1000,
+            labelUnit: 'iu',
+            amounts: {'vitA': 300},
+          ),
+        ],
+        summaryLabel: 'Viên cũ',
+      );
+
+      await tester.pumpWidget(WholeWellApp(state: state));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Nhật ký'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Viên cũ'));
+      await tester.pumpAndSettle();
+
+      // Khôi phục đúng dạng Vitamin E tổng hợp và Vitamin A beta-caroten (Switch == false).
+      expect(find.text('Dạng tổng hợp (dl-alpha)'), findsOneWidget);
+      final vitASwitch = tester.widget<SwitchListTile>(find.byType(SwitchListTile));
+      expect(vitASwitch.value, isFalse);
+
+      // Đổi tên mới -> Lưu -> Nhật ký hiện tên mới.
+      await tester.enterText(find.widgetWithText(TextField, 'Tên sản phẩm (tùy chọn)'), 'Viên mới');
+      await tester.tap(find.text('Lưu').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Viên mới'), findsOneWidget);
     });
   });
 }

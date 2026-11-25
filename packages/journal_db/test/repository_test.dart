@@ -633,6 +633,7 @@ void main() {
         // updateDose từ 1 -> 6 khẩu phần (hoàn lại 2 viên về 10, cần 12 viên): thiếu 2 (shortfall = 2).
         final upd = await repo.updateDose(UpdateDoseInput(
           doseId: doseId,
+          name: 'Canxi D3 Cập Nhật',
           servings: 6,
           at: now,
           packVersion: '2026.11.25-2',
@@ -647,6 +648,7 @@ void main() {
         ));
         expect(upd, isA<DoseRecorded>());
         expect((upd as DoseRecorded).shortfall, 2);
+        expect((await repo.dosesOn('2026-11-25')).single.name, 'Canxi D3 Cập Nhật');
 
         // Sửa và xóa hộp hết hạn.
         await repo.updateBox(bExpired, remaining: 6, expiryMonth: '2026-10');

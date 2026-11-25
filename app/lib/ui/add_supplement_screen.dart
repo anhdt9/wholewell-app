@@ -87,6 +87,14 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
         final amt = line.labelAmount ?? line.amounts[line.nutrientId!];
         if (amt != null) l.amount.text = fmt(amt);
         if (line.labelUnit == LabelUnit.iu.name) l.unit = _Unit.iu;
+        if (line.nutrientId == 'vitE') {
+          l.eForm = (line.form == NutrientForm.synthetic2r || line.form == NutrientForm.syntheticMass)
+              ? VitaminEForm.synthetic
+              : VitaminEForm.natural;
+        }
+        if (line.nutrientId == 'vitA') {
+          l.vitAPreformed = line.form != NutrientForm.betaCarotene;
+        }
         _lines.add(l);
       }
     }
@@ -210,7 +218,8 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
       }
       servings = parsedServings;
       productId = _selectedProduct!.product.id;
-      summaryLabel = _selectedProduct!.product.name;
+      name = _selectedProduct!.product.name;
+      summaryLabel = name;
       lines = state.diary.buildDoseLinesFromIngredients(_selectedProduct!.ingredients, servings);
     } else {
       lines = _buildOneOffLines(state.pack);
@@ -230,6 +239,7 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
       outcome = await state.diary.updateSupplementDose(
         doseId: widget.existingDose!.id,
         productId: productId,
+        name: name,
         servings: servings,
         at: at,
         lines: lines,

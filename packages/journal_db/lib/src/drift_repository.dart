@@ -1029,8 +1029,8 @@ class DriftJournalRepository implements JournalRepository {
 
         final (ms, tz, day) = _when(input.at);
         await _update(
-          'UPDATE dose_entries SET at = ?, tz_offset = ?, day = ?, servings = ?, pack_version = ? WHERE id = ?',
-          [ms, tz, day, input.servings, input.packVersion, input.doseId],
+          'UPDATE dose_entries SET at = ?, tz_offset = ?, day = ?, name = COALESCE(?, name), servings = ?, pack_version = ? WHERE id = ?',
+          [ms, tz, day, input.name, input.servings, input.packVersion, input.doseId],
         );
         await _update('DELETE FROM intake_lines WHERE dose_entry_id = ?', [input.doseId]);
         await _insertLines(input.lines, doseId: input.doseId, day: day);

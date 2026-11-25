@@ -207,7 +207,11 @@ class SupplementLabelParser {
         }
       }
       final countMatch = _packCountRe.firstMatch(lower);
-      if (suggestedBoxCount == null && countMatch != null && !lower.contains('serving')) {
+      if (suggestedBoxCount == null &&
+          countMatch != null &&
+          !lower.contains('serving') &&
+          !lower.contains('khẩu phần') &&
+          !lower.contains('mỗi lần')) {
         suggestedBoxCount = double.tryParse(countMatch.group(1)!);
         final u = countMatch.group(2)!;
         if (u.contains('softgel') || u.contains('mềm')) {

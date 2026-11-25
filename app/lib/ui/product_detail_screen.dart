@@ -227,6 +227,7 @@ class ProductDetailScreen extends StatefulWidget {
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   ProductDetail? _detail;
+  ProductSummary? _summary;
   bool _loading = true;
 
   @override
@@ -236,10 +237,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Future<void> _load() async {
-    final detail = await AppScope.of(context).diary.getProductDetail(widget.productId);
+    final diary = AppScope.of(context).diary;
+    final detail = await diary.getProductDetail(widget.productId);
+    final summaries = await diary.listProducts(includeArchived: true);
+    final summary = summaries.where((s) => s.product.id == widget.productId).firstOrNull;
     if (!mounted) return;
     setState(() {
       _detail = detail;
+      _summary = summary;
       _loading = false;
     });
   }
@@ -294,13 +299,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
 
     final p = detail.product;
-    final summary = summarizeProduct(
-      product: p,
-      boxes: detail.boxes,
-      activeSchedules: const [],
-      recentDoses14Days: const [],
-      now: DateTime.now(),
-    );
+    final summary = _summary ??
+        summarizeProduct(
+          product: p,
+          boxes: detail.boxes,
+          activeSchedules: const [],
+          recentDoses14Days: const [],
+          now: DateTime.now(),
+        );
     final unit = countUnitLabel(p.countUnit);
     final stockText = summary.validRemaining > 0
         ? 'Còn ${fmt(summary.validRemaining)} $unit'

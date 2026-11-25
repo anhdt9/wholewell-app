@@ -28,6 +28,7 @@ abstract interface class OcrEngine {
   Future<OcrImagePickResult> pickLabelImageFromGallery();
   Future<OcrLabelResult> recognizeLabelFromImage(String imagePath);
   Future<OcrLabelResult> recognizeLabelFromImages(List<String> imagePaths);
+  Future<void> openAppSettings();
   Future<void> dispose();
 }
 
@@ -156,6 +157,16 @@ class MlKitOcrEngine implements OcrEngine {
   }
 
   @override
+  Future<void> openAppSettings() async {
+    try {
+      const channel = MethodChannel('vn.wholewell.app/settings');
+      await channel.invokeMethod<void>('openAppSettings');
+    } on Object {
+      // Nền tảng khác Android không cần mở cài đặt hệ thống qua kênh này.
+    }
+  }
+
+  @override
   Future<void> dispose() async {
     await _recognizer?.close();
     _recognizer = null;
@@ -203,6 +214,9 @@ class FakeOcrEngine implements OcrEngine {
     if (all.isEmpty && err != null) return OcrLabelResult(errorMessage: err);
     return OcrLabelResult(lines: all);
   }
+
+  @override
+  Future<void> openAppSettings() async {}
 
   @override
   Future<void> dispose() async {}
