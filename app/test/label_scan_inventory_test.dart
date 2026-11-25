@@ -59,6 +59,24 @@ void main() {
       expect(pkg.ingredients[1].form, 'calcium_carbonate');
     });
 
+    test('parsePackage xử lý đúng text OCR thật từ nhãn SCanPrev Zinc Bis Glycinate 25', () {
+      final pkg = SupplementLabelParser.parsePackage(const [
+        'SCanPrev',
+        'Zinc',
+        'Bis Glycinate e 25',
+        '25mg of Pure Elementa inc perCopulo',
+        'P PROESSENIA',
+        '7B19240 VEGETARE CAPSUES VO',
+        'MATURAL HEALIH PRODUCTS',
+      ]);
+      expect(pkg.suggestedProductName, 'SCanPrev');
+      expect(pkg.ingredients, hasLength(1));
+      expect(pkg.ingredients.single.nutrientId, 'zinc');
+      expect(pkg.ingredients.single.amount, 25);
+      expect(pkg.ingredients.single.unit, LabelUnit.mg);
+      expect(pkg.ingredients.single.compoundKind, CompoundKind.elemental);
+    });
+
     test('parseExpiryMmYyyy kiểm hợp lệ tháng 01..12 và chuyển sang YYYY-MM', () {
       expect(parseExpiryMmYyyy('').ok, isTrue);
       expect(parseExpiryMmYyyy('').yyyyMm, isNull);

@@ -48,7 +48,7 @@ class SupplementLabelParser {
   );
 
   static final _packCountRe = RegExp(
-    r'(\d+)\s*(tablets?|capsules?|softgels?|sachets?|gummies|viên\s*nang\s*mềm|viên\s*nang|viên|gói)\b',
+    r'\b(\d{1,4})\s*(tablets?|capsules?|capsues|softgels?|sachets?|gummies|viên\s*nang\s*mềm|viên\s*nang|viên|gói)\b',
     caseSensitive: false,
   );
 
@@ -91,11 +91,12 @@ class SupplementLabelParser {
     'cách dùng',
     'hướng dẫn',
     'thực phẩm bảo vệ sức khỏe',
+    'natural health products',
+    'natural healih products',
   ];
 
   static double? _parseNumber(String raw) {
     final s = raw.trim();
-    // Hỗ trợ dấu phân cách nghìn kiểu Mỹ (1,250) hoặc VN (1.250).
     if (RegExp(r'^\d{1,3}(,\d{3})+$').hasMatch(s)) {
       return double.tryParse(s.replaceAll(',', ''));
     }
@@ -119,7 +120,7 @@ class SupplementLabelParser {
     double? suggestedBoxCount;
     CountUnit? suggestedUnit;
 
-    // 1. Gợi ý tên sản phẩm & quy cách đóng gói từ các dòng đầu/không phải dòng thành phần.
+    // 1. Gợi ý tên sản phẩm & quy cách đóng gói.
     for (var i = 0; i < lines.length; i++) {
       final line = lines[i];
       final lower = line.toLowerCase();
@@ -129,7 +130,7 @@ class SupplementLabelParser {
         final u = countMatch.group(2)!;
         if (u.contains('softgel') || u.contains('mềm')) {
           suggestedUnit = CountUnit.softgel;
-        } else if (u.contains('capsule') || u.contains('nang')) {
+        } else if (u.contains('capsule') || u.contains('capsue') || u.contains('nang')) {
           suggestedUnit = CountUnit.capsule;
         } else if (u.contains('sachet') || u.contains('gói')) {
           suggestedUnit = CountUnit.sachet;
@@ -152,27 +153,29 @@ class SupplementLabelParser {
       }
     }
 
-    // 2. Phân tích từng dòng thành phần (có ghép cặp khi tên chất và số lượng tách 2 dòng kề nhau).
+    // 2. Phân tích từng dòng thành phần (giữ ngữ cảnh tên chất trong cửa sổ 3 dòng).
+    String? pendingNutrientId;
+    int pendingIndex = -99;
+    final contextBuffer = <String>[];
+
     for (var i = 0; i < lines.length; i++) {
       final line = lines[i];
-      var m = _amountUnitRe.firstMatch(line);
-      var combinedLine = line;
+      final lowerLine = line.toLowerCase();
+      final m = _amountUnitRe.firstMatch(line);
+      final lineNutrient = _matchNutrientId(lowerLine);
 
       if (m == null) {
-        // Thử ghép nếu dòng hiện tại có tên chất nhưng số lượng nằm ngay ở dòng kế tiếp.
-        final hasNutrient = _matchNutrientId(line.toLowerCase()) != null;
-        if (hasNutrient && i + 1 < lines.length) {
-          final nextLine = lines[i + 1];
-          final nextMatch = _amountUnitRe.firstMatch(nextLine);
-          if (nextMatch != null && _matchNutrientId(nextLine.toLowerCase()) == null) {
-            combinedLine = '$line $nextLine';
-            m = _amountUnitRe.firstMatch(combinedLine);
-            i++;
-          }
+        if (lineNutrient != null) {
+          pendingNutrientId = lineNutrient;
+          pendingIndex = i;
+          contextBuffer
+            ..clear()
+            ..add(line);
+        } else if (pendingNutrientId != null && i - pendingIndex <= 2) {
+          contextBuffer.add(line);
         }
+        continue;
       }
-
-      if (m == null) continue;
 
       final amount = _parseNumber(m.group(1)!);
       if (amount == null || amount <= 0) continue;
@@ -186,14 +189,25 @@ class SupplementLabelParser {
         _ => null,
       };
 
+      String? matchedNid = lineNutrient;
+      String combinedLine = line;
+      if (matchedNid == null && pendingNutrientId != null && i - pendingIndex <= 3) {
+        matchedNid = pendingNutrientId;
+        combinedLine = '${contextBuffer.join(' ')} $line';
+      }
+      pendingNutrientId = null;
+      contextBuffer.clear();
+
       final lower = combinedLine.toLowerCase();
-      final matchedNid = _matchNutrientId(lower);
-      final freeName = matchedNid == null ? _extractName(combinedLine, m.start) : null;
+      final freeName = matchedNid == null ? _extractName(line, m.start) : null;
       if (matchedNid == null && (freeName == null || freeName.length < 2)) continue;
 
       var form = NutrientForm.unknown;
       var compoundKind = CompoundKind.elemental;
-      if (matchedNid == 'calcium') {
+      final explicitElemental =
+          lower.contains('elemental') || lower.contains('elementa') || lower.contains('nguyên tố');
+
+      if (matchedNid == 'calcium' && !explicitElemental) {
         if (lower.contains('carbonate') || lower.contains('carbonat')) {
           form = 'calcium_carbonate';
           compoundKind = CompoundKind.compound;
@@ -201,7 +215,7 @@ class SupplementLabelParser {
           form = 'calcium_citrate';
           compoundKind = CompoundKind.compound;
         }
-      } else if (matchedNid == 'iron') {
+      } else if (matchedNid == 'iron' && !explicitElemental) {
         if (lower.contains('fumarate') || lower.contains('fumarat')) {
           form = 'ferrous_fumarate';
           compoundKind = CompoundKind.compound;
