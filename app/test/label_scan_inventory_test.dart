@@ -107,6 +107,8 @@ void main() {
       expect(unitLabel(LabelUnit.ugDfe.name), 'µg DFE');
       expect(unitLabel(LabelUnit.ugRae.name), 'µg RAE');
       expect(unitLabel(LabelUnit.mgNe.name), 'mg NE');
+      expect(unitLabel(LabelUnit.iu.name), 'IU');
+      expect(unitLabel(LabelUnit.ug.name), 'µg');
     });
 
     test('parseAiJson đọc JSON từ Gemini Nano và trả null khi JSON lỗi', () {

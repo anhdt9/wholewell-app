@@ -88,6 +88,7 @@ String reasonLabel(NotComputedReason r, {bool caution = false}) => switch (r) {
 
 String unitLabel(String u) => switch (u) {
       'ug' => 'µg',
+      'iu' => 'IU',
       'ug_RAE' || 'ugRae' => 'µg RAE',
       'ug_DFE' || 'ugDfe' => 'µg DFE',
       'mg_NE' || 'mgNe' => 'mg NE',
