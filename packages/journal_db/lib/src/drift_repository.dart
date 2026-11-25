@@ -144,17 +144,61 @@ class DriftJournalRepository implements JournalRepository {
         );
       });
 
-  /// Tuổi và câu thuốc, bệnh đã lưu ở bước Đồng ý.
-  Future<({int ageYears, String ageEnteredOn, bool caution})?> loadConsentProfile() => _guard(() async {
-        final rows = await _select('SELECT age_years, age_entered_on, caution FROM profile WHERE id = 1');
+  @override
+  Future<HealthConsentStatus?> latestHealthConsent() => _guard(() async {
+        final rows = await _select(
+          "SELECT content_version, granted_at FROM consents "
+          "WHERE kind = 'health_data' AND withdrawn_at IS NULL "
+          "ORDER BY granted_at DESC, id DESC LIMIT 1",
+        );
+        if (rows.isEmpty) return null;
+        final r = rows.first;
+        return HealthConsentStatus(r['content_version'] as String, _at(r['granted_at']));
+      });
+
+  /// Tuổi, ngày nhập và câu thuốc, bệnh đã lưu ở bước Đồng ý.
+  @override
+  Future<ConsentProfileState?> loadConsentProfile() => _guard(() async {
+        final rows = await _select(
+            'SELECT age_years, age_entered_on, caution, caution_answered_on FROM profile WHERE id = 1');
         if (rows.isEmpty) return null;
         final r = rows.first;
         return (
           ageYears: r['age_years'] as int,
           ageEnteredOn: r['age_entered_on'] as String,
           caution: r['caution'] == 1,
+          cautionAnsweredOn: r['caution_answered_on'] as String,
         );
       });
+
+  @override
+  Future<void> upgradeHealthConsent({
+    required String contentVersion,
+    required int ageYears,
+    required bool caution,
+  }) =>
+      _guard(
+          write: true,
+          () => db.transaction(() async {
+                final nowMs = _nowMs;
+                final today = dayKey(_now());
+                await _update(
+                  "UPDATE consents SET withdrawn_at = ? WHERE kind = 'health_data' AND withdrawn_at IS NULL",
+                  [nowMs],
+                );
+                await _insert(
+                  "INSERT INTO consents (kind, content_version, granted_at) VALUES ('health_data', ?, ?)",
+                  [contentVersion, nowMs],
+                );
+                final n = await _update(
+                  'UPDATE profile SET '
+                  'age_entered_on = CASE WHEN age_years = ? THEN age_entered_on ELSE ? END, '
+                  'age_years = ?, caution = ?, caution_answered_on = ?, updated_at = ? '
+                  'WHERE id = 1',
+                  [ageYears, today, ageYears, caution, today, nowMs],
+                );
+                if (n != 1) throw StateError('Chưa có hồ sơ để nâng cấp đồng ý');
+              }));
 
   /// Lưu giới tính, chiều cao, cân nặng, mức vận động, tuổi. Giai đoạn mang thai,
   /// cho con bú không lưu (MVP; giai đoạn 2 thêm bằng di chuyển lược đồ).
@@ -170,6 +214,54 @@ class DriftJournalRepository implements JournalRepository {
         );
         if (n != 1) throw StateError('Chưa có hồ sơ: hồ sơ được tạo ở bước Đồng ý');
       });
+
+  @override
+  Future<void> saveProfileWithCaution(Profile p, {required bool caution}) => _guard(
+      write: true,
+      () => db.transaction(() async {
+            final today = dayKey(_now());
+            final n = await _update(
+              'UPDATE profile SET '
+              'age_entered_on = CASE WHEN age_years = ? THEN age_entered_on ELSE ? END, '
+              'age_years = ?, caution = ?, caution_answered_on = ?, '
+              'sex = ?, height_cm = ?, weight_kg = ?, activity_level = ?, updated_at = ? '
+              'WHERE id = 1',
+              [
+                p.ageYears,
+                today,
+                p.ageYears,
+                caution,
+                today,
+                p.sex.name,
+                p.heightCm,
+                p.weightKg,
+                p.activityLevel.name,
+                _nowMs,
+              ],
+            );
+            if (n != 1) throw StateError('Chưa có hồ sơ: hồ sơ được tạo ở bước Đồng ý');
+          }));
+
+  @override
+  Future<int?> bumpAgeIfDue(DateTime now) => _guard(
+      write: true,
+      () => db.transaction(() async {
+            final rows = await _select('SELECT age_years, age_entered_on FROM profile WHERE id = 1');
+            if (rows.isEmpty) return null;
+            final r = rows.first;
+            final bump = computeAgeBump(r['age_years'] as int, r['age_entered_on'] as String, now);
+            if (bump == null) return null;
+            await _update(
+              'UPDATE profile SET age_years = ?, age_entered_on = ?, updated_at = ? WHERE id = 1',
+              [bump.newAgeYears, bump.newEnteredOn, _nowMs],
+            );
+            await _insert(
+              'INSERT INTO ui_state (key, value) VALUES (?, ?) '
+              'ON CONFLICT (key) DO UPDATE SET value = excluded.value',
+              [ageBumpedNoticeKey, '${bump.newAgeYears}'],
+            );
+            return bump.newAgeYears;
+          }));
 
   @override
   Future<bool?> loadHideCalories() => _guard(() async {
@@ -189,17 +281,29 @@ class DriftJournalRepository implements JournalRepository {
   Future<void> saveOnboardingStep(OnboardingStep s) => _guard(
       write: true, () => _update('UPDATE meta SET onboarding_step = ? WHERE id = 1', [_stepDb(s)]));
 
+  @override
   Future<String?> getUiState(String key) => _guard(() async {
         final rows = await _select('SELECT value FROM ui_state WHERE key = ?', [key]);
         return rows.isEmpty ? null : rows.first['value'] as String;
       });
 
+  @override
   Future<void> setUiState(String key, String value) => _guard(
       write: true,
       () => _insert(
           'INSERT INTO ui_state (key, value) VALUES (?, ?) '
           'ON CONFLICT (key) DO UPDATE SET value = excluded.value',
           [key, value]));
+
+  @override
+  Future<void> deleteUiState(String key) =>
+      _guard(write: true, () => _update('DELETE FROM ui_state WHERE key = ?', [key]));
+
+  @override
+  Future<int?> loadAgeBumpedNotice() async => int.tryParse(await getUiState(ageBumpedNoticeKey) ?? '');
+
+  @override
+  Future<void> clearAgeBumpedNotice() => deleteUiState(ageBumpedNoticeKey);
 
   // ---------------------------------------------------------------- dòng chất
 
@@ -713,6 +817,7 @@ class DriftJournalRepository implements JournalRepository {
 
   // ---------------------------------------------------------------- nước, buổi tập
 
+  @override
   Future<int> addWater(DateTime at, double ml) {
     final (ms, tz, day) = _when(at);
     return _guard(
@@ -720,13 +825,36 @@ class DriftJournalRepository implements JournalRepository {
         () => _insert('INSERT INTO water_entries (at, tz_offset, day, ml) VALUES (?, ?, ?, ?)', [ms, tz, day, ml]));
   }
 
+  @override
+  Future<void> updateWater(int id, {required DateTime at, required double ml}) {
+    final (ms, tz, day) = _when(at);
+    return _guard(
+        write: true,
+        () => _update(
+            'UPDATE water_entries SET at = ?, tz_offset = ?, day = ?, ml = ? WHERE id = ?',
+            [ms, tz, day, ml, id]));
+  }
+
+  @override
   Future<void> deleteWater(int id) =>
       _guard(write: true, () => _update('DELETE FROM water_entries WHERE id = ?', [id]));
 
-  Future<List<WaterRecord>> waterOn(String day) => _guard(() async => [
-        for (final r in await _select('SELECT * FROM water_entries WHERE day = ? ORDER BY at, id', [day]))
+  @override
+  Future<List<WaterRecord>> waterOn(String day) => waterBetween(day, day);
+
+  @override
+  Future<List<WaterRecord>> waterBetween(String fromDay, String toDay) => _guard(() async => [
+        for (final r in await _select(
+            'SELECT * FROM water_entries WHERE day >= ? AND day <= ? ORDER BY day, at, id',
+            [fromDay, toDay]))
           WaterRecord(r['id'] as int, _at(r['at']), _d(r['ml'])),
       ]);
+
+  @override
+  Future<double?> lastWaterMl() => _guard(() async {
+        final rows = await _select('SELECT ml FROM water_entries ORDER BY at DESC, id DESC LIMIT 1');
+        return rows.isEmpty ? null : _d(rows.first['ml']);
+      });
 
   @override
   Future<int> addWorkout(DateTime startAt, WorkoutEntry w) {
