@@ -1,6 +1,6 @@
 {
  "schema": 2,
- "version": "2026.11.25-1",
+ "version": "2026.11.25-2",
  "retrieved": "2026-11-25",
  "minProfileAge": 18,
  "groups": [
@@ -2315,7 +2315,7 @@
   "vitD_IU_to_ug": 0.025,
   "vitA_retinol_IU_to_ug_RAE": 0.3,
   "vitA_supplemental_betacarotene_IU_to_ug_RAE": 0.3,
-  "vitA_food_betacarotene_IU_to_ug_RAE": null,
+  "vitA_food_betacarotene_IU_to_ug_RAE": 0.05,
   "vitE_natural_IU_to_mg": 0.67,
   "vitE_synthetic_IU_to_mg": 0.45,
   "vitE_ul_natural_IU_to_mg": 0.67,
@@ -2326,6 +2326,6 @@
   "source": "fda_unit_conversions",
   "ulSource": "nih_ods_vit_e",
   "ulCrossRefSource": "nasem_vit_e_2000",
-  "note": "Hệ số RDA/IU theo FDA 2019 (21 CFR 101.9/101.36); hệ số UL vitamin E theo NASEM 2000 Bảng 9-1 và NIH ODS (tra 25/11/2026)"
+  "note": "Hệ số RDA/IU theo FDA 2019 Bảng 3 (FDA-2016-D-4484, tr. 19; 21 CFR 101.9/101.36); hệ số UL vitamin E theo NASEM 2000 Bảng 9-1 và NIH ODS (tra 25/11/2026)"
  }
 }
