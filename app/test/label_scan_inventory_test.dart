@@ -104,6 +104,9 @@ void main() {
       expect(viPkg.suggestedBoxRemaining, isNull);
       expect(viPkg.ingredients[1].nutrientId, 'folate');
       expect(viPkg.ingredients[1].unit, LabelUnit.ugDfe);
+      expect(unitLabel(LabelUnit.ugDfe.name), 'µg DFE');
+      expect(unitLabel(LabelUnit.ugRae.name), 'µg RAE');
+      expect(unitLabel(LabelUnit.mgNe.name), 'mg NE');
     });
 
     test('parseAiJson đọc JSON từ Gemini Nano và trả null khi JSON lỗi', () {
