@@ -558,4 +558,161 @@ void main() {
       }
     });
   });
+
+  group('việc 5: sản phẩm, thành phần, hộp, updateDose và archiveProduct', () {
+    test('CRUD sản phẩm, barcode, thành phần không hồi tố lịch sử, hộp và listProducts', () async {
+      final now = DateTime(2026, 11, 25, 10, 0);
+      final driftRepo = await createdRepo(testOpener(tempDir(), FakeSecureKeyStore(), now: () => now));
+      final memRepo = InMemoryJournalRepository();
+
+      for (final repo in <JournalRepository>[driftRepo, memRepo]) {
+        final pid = await repo.addProduct('Canxi D3', CountUnit.tablet, 2, barcode: '893500123');
+        expect((await repo.productByBarcode('893500123'))?.id, pid);
+
+        await repo.saveProductIngredients(pid, const [
+          IngredientDraft(
+            nutrientId: 'calcium',
+            form: 'calcium_carbonate',
+            amountPerServing: 500,
+            unit: 'mg',
+            labelAmount: 1250,
+            labelUnit: 'mg',
+            isCompound: true,
+            origin: IngredientOrigin.ocr,
+            confirmed: true,
+          ),
+        ]);
+
+        final bValid = await repo.addBox(pid, 10, expiryMonth: '2027-08');
+        final bExpired = await repo.addBox(pid, 4, expiryMonth: '2026-09');
+        var list = await repo.listProducts();
+        expect(list.single.validRemaining, 10);
+        expect(list.single.expiredRemaining, 4);
+        expect(list.single.nearestExpiryMonth, '2027-08');
+        // Chưa có lịch và 14 ngày qua chưa uống => không tính ngày dự kiến hết.
+        expect(list.single.estimatedDaysLeft, isNull);
+        expect(list.single.isLowStock, isFalse);
+
+        // Ghi 1 lần uống với thành phần 500 mg Canxi.
+        final rec = await repo.recordDose(DoseInput(
+          at: now,
+          productId: pid,
+          kind: DoseKind.extra,
+          servings: 1,
+          packVersion: '2026.11.25-2',
+          lines: const [
+            IntakeLine(
+              nutrientId: 'calcium',
+              source: IntakeSource.supplement,
+              form: 'calcium_carbonate',
+              amounts: {'calcium': 500},
+            ),
+          ],
+        ));
+        expect(rec, isA<DoseRecorded>());
+        final doseId = (rec as DoseRecorded).id;
+        expect(rec.shortfall, 0);
+
+        // Đổi thành phần sang 600 mg: lần uống cũ phải giữ nguyên 500 mg!
+        await repo.saveProductIngredients(pid, const [
+          IngredientDraft(
+            nutrientId: 'calcium',
+            form: 'calcium_carbonate',
+            amountPerServing: 600,
+            unit: 'mg',
+            labelAmount: 1500,
+            labelUnit: 'mg',
+            isCompound: true,
+            origin: IngredientOrigin.manual,
+            confirmed: true,
+          ),
+        ]);
+        final oldDoses = await repo.dosesOn('2026-11-25');
+        expect(oldDoses.single.lines.single.amounts['calcium'], 500);
+
+        // updateDose từ 1 -> 6 khẩu phần (hoàn lại 2 viên về 10, cần 12 viên): thiếu 2 (shortfall = 2).
+        final upd = await repo.updateDose(UpdateDoseInput(
+          doseId: doseId,
+          name: 'Canxi D3 Cập Nhật',
+          servings: 6,
+          at: now,
+          packVersion: '2026.11.25-2',
+          lines: const [
+            IntakeLine(
+              nutrientId: 'calcium',
+              source: IntakeSource.supplement,
+              form: 'calcium_carbonate',
+              amounts: {'calcium': 3600},
+            ),
+          ],
+        ));
+        expect(upd, isA<DoseRecorded>());
+        expect((upd as DoseRecorded).shortfall, 2);
+        expect((await repo.dosesOn('2026-11-25')).single.name, 'Canxi D3 Cập Nhật');
+
+        // Sửa và xóa hộp hết hạn.
+        await repo.updateBox(bExpired, remaining: 6, expiryMonth: '2026-10');
+        expect((await repo.boxesOf(pid)).firstWhere((b) => b.id == bExpired).remaining, 6);
+        await repo.deleteBox(bValid);
+
+        // Lúc này chỉ còn hộp hết hạn (6 viên): updateDose với ask -> trả NeedsExpiredChoice, không sửa dose!
+        final askUpd = await repo.updateDose(UpdateDoseInput(
+          doseId: doseId,
+          servings: 2,
+          at: now,
+          packVersion: '2026.11.25-2',
+          lines: const [
+            IntakeLine(
+              nutrientId: 'calcium',
+              source: IntakeSource.supplement,
+              form: 'calcium_carbonate',
+              amounts: {'calcium': 1200},
+            ),
+          ],
+        ));
+        expect(askUpd, isA<NeedsExpiredChoice>());
+        expect((await repo.dosesOn('2026-11-25')).single.servings, 6);
+        expect((await repo.boxesOf(pid)).single.remaining, 6);
+
+        // Chọn deduct -> trừ hộp hết hạn còn 2.
+        final dedUpd = await repo.updateDose(UpdateDoseInput(
+          doseId: doseId,
+          servings: 2,
+          at: now,
+          packVersion: '2026.11.25-2',
+          lines: const [
+            IntakeLine(
+              nutrientId: 'calcium',
+              source: IntakeSource.supplement,
+              form: 'calcium_carbonate',
+              amounts: {'calcium': 1200},
+            ),
+          ],
+          expiredBoxes: ExpiredBoxChoice.deduct,
+        ));
+        expect(dedUpd, isA<DoseRecorded>());
+        expect((await repo.boxesOf(pid)).single.remaining, 2);
+
+        // updateProduct & archiveProduct
+        await repo.updateProduct(pid, name: 'Canxi D3 Mới', countUnit: CountUnit.capsule, unitsPerServing: 2, barcode: '999');
+        expect((await repo.productDetail(pid)).product.name, 'Canxi D3 Mới');
+        await repo.archiveProduct(pid);
+        expect(await repo.listProducts(), isEmpty);
+        expect(await repo.productByBarcode('999'), isNull);
+        await repo.close();
+      }
+    });
+
+    test('archiveProduct trên Drift đóng lịch đang mở bằng valid_to = today', () async {
+      final now = DateTime(2026, 11, 25, 10, 0);
+      final repo = await createdRepo(testOpener(tempDir(), FakeSecureKeyStore(), now: () => now));
+      final pid = await repo.addProduct('Magie', CountUnit.tablet, 1);
+      await repo.addSchedule(pid, 480, 1, validFrom: '2026-11-20');
+      expect(await repo.schedulesOn('2026-11-25'), hasLength(1));
+
+      await repo.archiveProduct(pid);
+      expect(await repo.schedulesOn('2026-11-25'), isEmpty);
+      await repo.close();
+    });
+  });
 }

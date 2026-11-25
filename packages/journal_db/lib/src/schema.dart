@@ -5,8 +5,40 @@
 /// của gói dữ liệu. Không có cột tên bệnh, tên thuốc; thai kỳ thêm ở giai đoạn 2.
 library;
 
+import 'package:sqlite3/sqlite3.dart' show Database;
+
 /// Phiên bản lược đồ bản app này biết.
-const currentSchemaVersion = 1;
+const currentSchemaVersion = 2;
+
+/// Các bước di chuyển lược đồ mặc định (từ phiên bản n lên n + 1).
+final Map<int, void Function(Database db)> defaultDbMigrations = {
+  1: (db) {
+    db.execute('ALTER TABLE products ADD COLUMN barcode TEXT');
+    db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_products_barcode ON products (barcode) WHERE barcode IS NOT NULL',
+    );
+  },
+};
+
+/// Các câu tạo lược đồ mới nhất (v2), chạy trong một giao dịch khi tạo CSDL mới.
+List<String> get schemaCurrent => [
+      ...schemaV1.map(
+        (s) => s.contains('CREATE TABLE products (')
+            ? '''
+CREATE TABLE products (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  count_unit TEXT NOT NULL
+    CHECK (count_unit IN ('tablet', 'capsule', 'softgel', 'sachet', 'drop', 'ml', 'g')),
+  units_per_serving REAL NOT NULL CHECK (units_per_serving > 0),
+  barcode TEXT,
+  created_at INTEGER NOT NULL,
+  archived INTEGER NOT NULL DEFAULT 0 CHECK (archived IN (0, 1))
+)'''
+            : s,
+      ),
+      'CREATE INDEX IF NOT EXISTS idx_products_barcode ON products (barcode) WHERE barcode IS NOT NULL',
+    ];
 
 /// Các câu tạo lược đồ v1, chạy trong một giao dịch.
 const schemaV1 = <String>[

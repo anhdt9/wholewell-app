@@ -519,4 +519,29 @@ void main() {
       expect(empty.nutrients.every((n) => n.totalAmount == 0 && n.ulAmount == 0), isTrue);
     });
   });
+
+  group('compoundMeta và checkIngredientSanity', () {
+    test('đọc compoundMeta từ reference_pack.json', () {
+      expect(pack.compounds['calcium']?['calcium_carbonate'], 0.40);
+      expect(pack.compounds['calcium']?['calcium_citrate'], 0.21);
+      expect(pack.compounds['iron']?['ferrous_fumarate'], 0.33);
+      expect(pack.compounds['iron']?['ferrous_sulfate'], 0.20);
+      expect(pack.compounds['iron']?['ferrous_gluconate'], 0.12);
+      expect(pack.compoundMeta['calcium']?['calcium_carbonate']?.nameVi, isNotEmpty);
+      expect(pack.compoundMeta['iron']?['ferrous_fumarate']?.source, 'nih_ods_iron');
+    });
+
+    final conv = UnitConverter(pack);
+    for (final c in (cases['sanityCases'] as List).cast<Map<String, dynamic>>()) {
+      final cname = c['name'] as String;
+      test('sanity: $cname', () {
+        final p = profileOf(profiles[c['profile'] as String]!);
+        final inp = lineInputOf(c['input'] as Map<String, dynamic>);
+        final got = conv.checkIngredientSanity(p, inp);
+        final want = (expect_['sanityCheck'] as Map<String, dynamic>)[cname] as Map<String, dynamic>;
+        expect(got.suspectedUnitMistake, want['suspectedUnitMistake']);
+        expect(got.exceedsSingleServingUl, want['exceedsSingleServingUl']);
+      });
+    }
+  });
 }

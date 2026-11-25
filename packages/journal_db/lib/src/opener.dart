@@ -116,12 +116,13 @@ class DbOpener {
     required this.keys,
     this.executorFactory = backgroundExecutor,
     this.schemaVersion = currentSchemaVersion,
-    this.migrations = const {},
+    Map<int, Migration>? migrations,
     this.unlockedReadAttempts = 3,
     this.retryDelay = const Duration(milliseconds: 500),
     this.extraFilesToWipe = const [],
     DateTime Function()? now,
-  }) : now = now ?? DateTime.now;
+  })  : migrations = migrations ?? defaultDbMigrations,
+        now = now ?? DateTime.now;
 
   /// Mở app (luồng 2). Chỉ gọi khi giao diện đã hiện; mã chạy nền không gọi.
   Future<OpenOutcome> open() async {
@@ -315,7 +316,7 @@ class DbOpener {
     try {
       setUpConnection(db, key);
       db.execute('BEGIN');
-      for (final s in schemaV1) {
+      for (final s in schemaCurrent) {
         db.execute(s);
       }
       db.execute("INSERT INTO meta (id, schema_version, created_at, onboarding_step) VALUES (1, ?, ?, 'body_profile')",

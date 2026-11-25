@@ -281,12 +281,179 @@ final class NeedsExpiredChoice extends DoseResult {
   const NeedsExpiredChoice();
 }
 
+enum IngredientOrigin { manual, barcode, ocr }
+
 class Product {
   final int id;
   final String name;
   final CountUnit countUnit;
   final double unitsPerServing;
-  const Product(this.id, this.name, this.countUnit, this.unitsPerServing);
+  final String? barcode;
+  final bool archived;
+  const Product(
+    this.id,
+    this.name,
+    this.countUnit,
+    this.unitsPerServing, {
+    this.barcode,
+    this.archived = false,
+  });
+}
+
+class IngredientDraft {
+  final String? nutrientId;
+  final String? freeName;
+  final String form;
+  final double? amountPerServing;
+  final String? unit;
+  final double? labelAmount;
+  final String? labelUnit;
+  final bool isCompound;
+  final IngredientOrigin origin;
+  final bool confirmed;
+
+  const IngredientDraft({
+    this.nutrientId,
+    this.freeName,
+    this.form = 'unknown',
+    this.amountPerServing,
+    this.unit,
+    this.labelAmount,
+    this.labelUnit,
+    this.isCompound = false,
+    this.origin = IngredientOrigin.manual,
+    this.confirmed = false,
+  });
+}
+
+class ProductIngredient {
+  final int id;
+  final int productId;
+  final String? nutrientId;
+  final String? freeName;
+  final String form;
+  final double? amountPerServing;
+  final String? unit;
+  final double? labelAmount;
+  final String? labelUnit;
+  final bool isCompound;
+  final IngredientOrigin origin;
+  final bool confirmed;
+
+  const ProductIngredient({
+    required this.id,
+    required this.productId,
+    required this.nutrientId,
+    required this.freeName,
+    required this.form,
+    required this.amountPerServing,
+    required this.unit,
+    required this.labelAmount,
+    required this.labelUnit,
+    required this.isCompound,
+    required this.origin,
+    required this.confirmed,
+  });
+}
+
+class ProductDetail {
+  final Product product;
+  final List<ProductIngredient> ingredients;
+  final List<StockBox> boxes;
+
+  const ProductDetail({
+    required this.product,
+    required this.ingredients,
+    required this.boxes,
+  });
+}
+
+class ProductSummary {
+  final Product product;
+  final double validRemaining;
+  final double expiredRemaining;
+  final String? nearestExpiryMonth;
+  final int? estimatedDaysLeft;
+  final bool isLowStock;
+
+  const ProductSummary({
+    required this.product,
+    required this.validRemaining,
+    required this.expiredRemaining,
+    required this.nearestExpiryMonth,
+    required this.estimatedDaysLeft,
+    required this.isLowStock,
+  });
+}
+
+class UpdateDoseInput {
+  final int doseId;
+  final String? name;
+  final double servings;
+  final DateTime at;
+  final String packVersion;
+  final List<IntakeLine> lines;
+  final ExpiredBoxChoice expiredBoxes;
+
+  const UpdateDoseInput({
+    required this.doseId,
+    this.name,
+    required this.servings,
+    required this.at,
+    required this.packVersion,
+    required this.lines,
+    this.expiredBoxes = ExpiredBoxChoice.ask,
+  });
+}
+
+/// Tổng hợp tồn kho và ngày dự kiến còn dùng được cho một sản phẩm.
+ProductSummary summarizeProduct({
+  required Product product,
+  required List<StockBox> boxes,
+  required List<Schedule> activeSchedules,
+  required List<DoseEntry> recentDoses14Days,
+  required DateTime now,
+}) {
+  final m = '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}';
+  var validRem = 0.0;
+  var expiredRem = 0.0;
+  String? nearest;
+  for (final b in boxes) {
+    final exp = b.expiryMonth;
+    final isExpired = exp != null && exp.compareTo(m) < 0;
+    if (isExpired) {
+      expiredRem += b.remaining;
+    } else {
+      validRem += b.remaining;
+      if (b.remaining > 0 && exp != null) {
+        if (nearest == null || exp.compareTo(nearest) < 0) {
+          nearest = exp;
+        }
+      }
+    }
+  }
+  var dailyUnits = 0.0;
+  if (activeSchedules.isNotEmpty) {
+    for (final s in activeSchedules) {
+      dailyUnits += s.servings * product.unitsPerServing;
+    }
+  } else if (recentDoses14Days.isNotEmpty) {
+    var sum = 0.0;
+    for (final d in recentDoses14Days) {
+      sum += d.servings * product.unitsPerServing;
+    }
+    dailyUnits = sum / 14.0;
+  }
+  final int? daysLeft =
+      validRem > 0 && dailyUnits > 0 ? (validRem / dailyUnits).floor() : null;
+  return ProductSummary(
+    product: product,
+    validRemaining: validRem,
+    expiredRemaining: expiredRem,
+    nearestExpiryMonth: nearest,
+    estimatedDaysLeft: daysLeft,
+    isLowStock: daysLeft != null && daysLeft <= 7,
+  );
 }
 
 class StockBox {

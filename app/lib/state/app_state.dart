@@ -3,13 +3,17 @@ import 'package:food_library/food_library.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 
+import '../platform/label_scanner.dart';
 import 'db_session_controller.dart';
 import 'diary_controller.dart';
 
+export '../platform/label_scanner.dart';
 export 'db_session_controller.dart'
     show DataStatus, DbSessionController, SessionStage, khungTamConsentVersion;
-export 'diary_controller.dart' show DayJournalData, DiaryController, FoodLogFeedback;
+export 'diary_controller.dart'
+    show DayJournalData, DiaryController, DoseLogged, DoseLogOutcome, DoseNeedsExpiredChoice, FoodLogFeedback;
 export 'label_food_builder.dart';
+export 'supplement_label_parser.dart';
 
 /// Điều phối chung kết hợp [DbSessionController] và [DiaryController].
 /// Giữ tương thích với khung tạm và các test cũ, đồng thời tách miền trạng thái sang `diary`.
@@ -17,6 +21,8 @@ class AppState extends ChangeNotifier {
   final ReferencePack pack;
   final DbSessionController session;
   final DiaryController diary;
+  final OcrEngine ocrEngine;
+  final BarcodeScanner? barcodeScanner;
   final Future<FoodLibraryRepository> Function()? _openFoodLibrary;
 
   AppState({
@@ -24,7 +30,10 @@ class AppState extends ChangeNotifier {
     required DbOpener opener,
     Future<FoodLibraryRepository> Function()? openFoodLibrary,
     FoodLibraryRepository? foodLibrary,
+    OcrEngine? ocrEngine,
+    this.barcodeScanner,
   })  : _openFoodLibrary = openFoodLibrary,
+        ocrEngine = ocrEngine ?? MlKitOcrEngine(),
         session = DbSessionController(opener: opener),
         diary = DiaryController(pack: pack, foodLibrary: foodLibrary) {
     session.addListener(notifyListeners);
@@ -36,7 +45,10 @@ class AppState extends ChangeNotifier {
     required this.pack,
     required JournalRepository repo,
     FoodLibraryRepository? foodLibrary,
+    OcrEngine? ocrEngine,
+    this.barcodeScanner,
   })  : _openFoodLibrary = null,
+        ocrEngine = ocrEngine ?? FakeOcrEngine(),
         session = DbSessionController(repo: repo, initialStatus: DataStatus.ready),
         diary = DiaryController(pack: pack, repo: repo, foodLibrary: foodLibrary) {
     session.addListener(notifyListeners);
@@ -46,6 +58,8 @@ class AppState extends ChangeNotifier {
   /// Nền tảng chưa có kho khóa: không mở, không ghi gì.
   AppState.unsupportedPlatform({required this.pack})
       : _openFoodLibrary = null,
+        ocrEngine = FakeOcrEngine(),
+        barcodeScanner = null,
         session = DbSessionController(initialStatus: DataStatus.unsupportedPlatform),
         diary = DiaryController(pack: pack) {
     session.addListener(notifyListeners);

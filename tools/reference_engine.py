@@ -721,15 +721,56 @@ LINE_CASES = [
     ("row13_vitE_mg_ester_d_ext", True, {"nutrientId": "vitE", "source": "supplement", "form": "d_alpha_tocopheryl_acetate", "amount": 30, "unit": "mg"}),
     ("row13_vitE_mg_ester_dl_ext", True, {"nutrientId": "vitE", "source": "supplement", "form": "dl_alpha_tocopheryl_succinate", "amount": 30, "unit": "mg"}),
     ("row14_vitE_mg_unknown", False, {"nutrientId": "vitE", "source": "supplement", "form": "unknown", "amount": 15, "unit": "mg"}),
-    ("row15_compound_missing", False, {"nutrientId": "calcium", "source": "supplement", "form": "calcium_carbonate", "amount": 1.25, "unit": "g", "compoundKind": "compound"}),
+    ("row15_compound_missing", False, {"nutrientId": "magnesium", "source": "supplement", "form": "magnesium_oxide", "amount": 400, "unit": "mg", "compoundKind": "compound"}),
+    ("row15_compound_calcium_pack", False, {"nutrientId": "calcium", "source": "supplement", "form": "calcium_carbonate", "amount": 1.25, "unit": "g", "compoundKind": "compound"}),
+    ("row15_compound_calcium_citrate_pack", False, {"nutrientId": "calcium", "source": "supplement", "form": "calcium_citrate", "amount": 1000, "unit": "mg", "compoundKind": "compound"}),
+    ("row15_compound_iron_fumarate_pack", False, {"nutrientId": "iron", "source": "supplement", "form": "ferrous_fumarate", "amount": 100, "unit": "mg", "compoundKind": "compound"}),
+    ("row15_compound_iron_sulfate_pack", False, {"nutrientId": "iron", "source": "supplement", "form": "ferrous_sulfate", "amount": 100, "unit": "mg", "compoundKind": "compound"}),
+    ("row15_compound_iron_gluconate_pack", False, {"nutrientId": "iron", "source": "supplement", "form": "ferrous_gluconate", "amount": 100, "unit": "mg", "compoundKind": "compound"}),
     ("row15_compound_calcium_ext", True, {"nutrientId": "calcium", "source": "supplement", "form": "calcium_carbonate", "amount": 1.25, "unit": "g", "compoundKind": "compound"}),
     ("row15_compound_copper_ug_ext", True, {"nutrientId": "copper", "source": "supplement", "form": "copper_sulfate", "amount": 2, "unit": "mg", "compoundKind": "compound"}),
-    ("row16_compound_unknown_missing", False, {"nutrientId": "calcium", "source": "supplement", "form": "unknown", "amount": 500, "unit": "mg", "compoundKind": "unknown"}),
+    ("row16_compound_unknown_missing", False, {"nutrientId": "magnesium", "source": "supplement", "form": "unknown", "amount": 250, "unit": "mg", "compoundKind": "unknown"}),
+    ("row16_compound_unknown_pack", False, {"nutrientId": "calcium", "source": "supplement", "form": "unknown", "amount": 500, "unit": "mg", "compoundKind": "unknown"}),
     ("row16_compound_unknown_ext", True, {"nutrientId": "calcium", "source": "supplement", "form": "unknown", "amount": 500, "unit": "mg", "compoundKind": "unknown"}),
     ("row17_elemental_with_form", False, {"nutrientId": "calcium", "source": "supplement", "form": "calcium_carbonate", "amount": 500, "unit": "mg", "compoundKind": "elemental"}),
     ("row17_vitD_iu", False, {"nutrientId": "vitD", "source": "supplement", "form": "unknown", "amount": 1000, "unit": "iu"}),
     ("row17_niacin_mg", False, {"nutrientId": "niacin", "source": "supplement", "form": "unknown", "amount": 20, "unit": "mg"}),
     ("row18_unknown_nutrient", False, {"nutrientId": None, "freeName": "Coenzyme Q10", "source": "supplement", "form": "unknown", "amount": 30, "unit": "mg"}),
+]
+
+
+def check_ingredient_sanity(p, inp, pack=PACK):
+    nid = inp.get("nutrientId")
+    nuts = _nut_map(pack)
+    d = nuts.get(nid) if nid else None
+    if d is None:
+        return {"suspectedUnitMistake": False, "exceedsSingleServingUl": False}
+    conv = convert_intake_line(inp, pack)
+    ul_lim = ul_for(p, d["id"], pack)
+    ul_key = d.get("ulKey") or d["id"]
+    ul_val = (conv.get("ulAmounts") or {}).get(ul_key)
+    if ul_val is None:
+        ul_val = conv.get("amounts", {}).get(ul_key)
+    exceeds = ul_lim is not None and ul_val is not None and ul_val > ul_lim
+
+    suspected = False
+    if d["unit"] == "ug" and inp["unit"] in ("mg", "g"):
+        val_cmp = ul_val if ul_val is not None else conv.get("amounts", {}).get(d["id"], 0.0)
+        if ul_lim is not None:
+            suspected = val_cmp > ul_lim * 10
+        else:
+            t = target(p, d["id"], pack)
+            if t is not None and t > 0:
+                suspected = conv.get("amounts", {}).get(d["id"], 0.0) > t * 100
+    return {"suspectedUnitMistake": suspected, "exceedsSingleServingUl": exceeds}
+
+
+SANITY_CASES = [
+    ("vitD_normal_ug", "man30", {"nutrientId": "vitD", "source": "supplement", "form": "unknown", "amount": 25, "unit": "ug"}),
+    ("vitD_mistake_mg", "man30", {"nutrientId": "vitD", "source": "supplement", "form": "unknown", "amount": 25, "unit": "mg"}),
+    ("vitB12_mistake_mg_no_ul", "man30", {"nutrientId": "vitB12", "source": "supplement", "form": "unknown", "amount": 10, "unit": "mg"}),
+    ("magnesium_exceed_ul", "man30", {"nutrientId": "magnesium", "source": "supplement", "form": "unknown", "amount": 400, "unit": "mg"}),
+    ("free_nutrient", "man30", {"nutrientId": None, "freeName": "Coenzyme Q10", "source": "supplement", "form": "unknown", "amount": 100, "unit": "mg"}),
 ]
 
 
@@ -744,8 +785,9 @@ def main():
         "expect": {
             "eer": {}, "group": {}, "targets": {}, "uls": {}, "ulDay": {}, "macros": {},
             "sugar": {}, "ulAvg": {}, "activity": {}, "workoutKcal": {},
-            "dailyReport": {}, "averageReport": {}, "convertLine": {},
+            "dailyReport": {}, "averageReport": {}, "convertLine": {}, "sanityCheck": {},
         },
+        "sanityCases": [{"name": n, "profile": p, "input": inp} for n, p, inp in SANITY_CASES],
     }
     ex = cases["expect"]
     for name, p in PROFILES.items():
@@ -791,6 +833,8 @@ def main():
     ex["averageReport"]["man30|empty"] = average_report(PROFILES["man30"], [])
     for cname, ext, inp in LINE_CASES:
         ex["convertLine"][cname] = convert_intake_line(inp, EXTENDED_PACK if ext else PACK)
+    for sname, pname, inp in SANITY_CASES:
+        ex["sanityCheck"][sname] = check_ingredient_sanity(PROFILES[pname], inp, PACK)
 
     out = ROOT / "packages/health_engine/test/fixtures/cases.json"
     out.parent.mkdir(parents=True, exist_ok=True)

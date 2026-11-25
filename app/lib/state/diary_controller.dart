@@ -37,6 +37,9 @@ class DayJournalData {
 
 class FoodLogFeedback {
   final int? savedFoodId;
+  final int? savedDoseId;
+  final double stockShortfall;
+  final int? shortfallProductId;
   final String summaryText;
   final List<UlFlag> newUlFlags;
   final List<String> stillOverUlLines;
@@ -45,12 +48,28 @@ class FoodLogFeedback {
 
   const FoodLogFeedback({
     this.savedFoodId,
+    this.savedDoseId,
+    this.stockShortfall = 0,
+    this.shortfallProductId,
     required this.summaryText,
     this.newUlFlags = const [],
     this.stillOverUlLines = const [],
     this.mealsOverSugar = const [],
     this.failed = false,
   });
+}
+
+sealed class DoseLogOutcome {
+  const DoseLogOutcome();
+}
+
+final class DoseLogged extends DoseLogOutcome {
+  final FoodLogFeedback feedback;
+  const DoseLogged(this.feedback);
+}
+
+final class DoseNeedsExpiredChoice extends DoseLogOutcome {
+  const DoseNeedsExpiredChoice();
 }
 
 class DiaryController extends ChangeNotifier {
@@ -735,6 +754,307 @@ class DiaryController extends ChangeNotifier {
       )));
 
   Future<void> deleteDoseEntry(int id) => _write((repo) => repo.deleteDose(id));
+
+  // ---- Sản phẩm bổ sung, kho, hộp, ghi/sửa lần uống (Việc 5) ----
+
+  Future<List<ProductSummary>> listProducts({bool includeArchived = false}) async {
+    final repo = _repo;
+    if (repo == null) return const [];
+    try {
+      return await repo.listProducts(includeArchived: includeArchived);
+    } on Object {
+      return const [];
+    }
+  }
+
+  Future<ProductDetail?> getProductDetail(int productId) async {
+    final repo = _repo;
+    if (repo == null) return null;
+    try {
+      return await repo.productDetail(productId);
+    } on Object {
+      return null;
+    }
+  }
+
+  Future<Product?> findProductByBarcode(String barcode) async {
+    final repo = _repo;
+    if (repo == null) return null;
+    try {
+      return await repo.productByBarcode(barcode);
+    } on Object {
+      return null;
+    }
+  }
+
+  Future<int?> createProductWithIngredientsAndBox({
+    required String name,
+    required CountUnit countUnit,
+    required double unitsPerServing,
+    String? barcode,
+    required List<IngredientDraft> ingredients,
+    double? initialBoxRemaining,
+    String? initialBoxExpiryMonth,
+  }) =>
+      _write((repo) async {
+        final pid = await repo.addProduct(
+          name,
+          countUnit,
+          unitsPerServing,
+          barcode: barcode,
+        );
+        await repo.saveProductIngredients(pid, ingredients);
+        if (initialBoxRemaining != null && initialBoxRemaining >= 0) {
+          await repo.addBox(pid, initialBoxRemaining, expiryMonth: initialBoxExpiryMonth);
+        }
+        return pid;
+      });
+
+  Future<bool> updateProductInfo(
+    int id, {
+    required String name,
+    required CountUnit countUnit,
+    required double unitsPerServing,
+    String? barcode,
+  }) async =>
+      await _write((repo) async {
+        await repo.updateProduct(
+          id,
+          name: name,
+          countUnit: countUnit,
+          unitsPerServing: unitsPerServing,
+          barcode: barcode,
+        );
+        return true;
+      }) ??
+      false;
+
+  Future<bool> saveProductIngredients(int productId, List<IngredientDraft> items) async =>
+      await _write((repo) async {
+        await repo.saveProductIngredients(productId, items);
+        return true;
+      }) ??
+      false;
+
+  Future<bool> archiveProduct(int id) async =>
+      await _write((repo) async {
+        await repo.archiveProduct(id);
+        return true;
+      }) ??
+      false;
+
+  Future<int?> addProductBox(
+    int productId, {
+    required double remaining,
+    String? expiryMonth,
+  }) =>
+      _write((repo) => repo.addBox(productId, remaining, expiryMonth: expiryMonth));
+
+  Future<bool> updateProductBox(
+    int boxId, {
+    required double remaining,
+    String? expiryMonth,
+  }) async =>
+      await _write((repo) async {
+        await repo.updateBox(boxId, remaining: remaining, expiryMonth: expiryMonth);
+        return true;
+      }) ??
+      false;
+
+  Future<bool> deleteProductBox(int boxId) async =>
+      await _write((repo) async {
+        await repo.deleteBox(boxId);
+        return true;
+      }) ??
+      false;
+
+  /// Chuyển danh sách thành phần sản phẩm thành `IntakeLine` cho [servings] khẩu phần.
+  List<IntakeLine> buildDoseLinesFromIngredients(
+    List<ProductIngredient> ingredients,
+    double servings,
+  ) {
+    final conv = UnitConverter(pack);
+    final out = <IntakeLine>[];
+    for (final ing in ingredients) {
+      if (ing.nutrientId == null || ing.labelAmount == null || ing.labelUnit == null) {
+        if (ing.freeName != null && ing.freeName!.trim().isNotEmpty) {
+          out.add(IntakeLine(
+            freeName: ing.freeName,
+            source: IntakeSource.supplement,
+            form: ing.form,
+            labelAmount: ing.labelAmount == null ? null : ing.labelAmount! * servings,
+            labelUnit: ing.labelUnit,
+            amounts: const {},
+          ));
+        }
+        continue;
+      }
+      final lu = LabelUnit.values.where((u) => u.name == ing.labelUnit).firstOrNull;
+      if (lu == null) continue;
+      final converted = conv.convertIntakeLine(IntakeLineInput(
+        nutrientId: ing.nutrientId,
+        source: IntakeSource.supplement,
+        form: ing.form,
+        amount: ing.labelAmount! * servings,
+        unit: lu,
+        compoundKind: ing.isCompound
+            ? (ing.form == NutrientForm.unknown ? CompoundKind.unknown : CompoundKind.compound)
+            : CompoundKind.elemental,
+      ));
+      out.add(IntakeLine(
+        nutrientId: ing.nutrientId,
+        source: IntakeSource.supplement,
+        form: ing.form,
+        uncertain: converted.uncertain,
+        labelAmount: ing.labelAmount! * servings,
+        labelUnit: ing.labelUnit,
+        amounts: converted.amounts,
+        ulAmounts: converted.ulAmounts,
+      ));
+    }
+    return out;
+  }
+
+  Future<DoseLogOutcome> recordSupplementDose({
+    int? productId,
+    String? name,
+    required double servings,
+    required DateTime at,
+    required List<IntakeLine> lines,
+    ExpiredBoxChoice expiredBoxes = ExpiredBoxChoice.ask,
+    required String summaryLabel,
+  }) async {
+    final repo = _repo;
+    if (repo == null) {
+      return const DoseLogged(FoodLogFeedback(summaryText: 'Không lưu được.', failed: true));
+    }
+    try {
+      final before = await _reportForDay(repo, at);
+      final res = await repo.recordDose(DoseInput(
+        at: at,
+        productId: productId,
+        name: name,
+        kind: productId == null ? DoseKind.oneOff : DoseKind.extra,
+        servings: servings,
+        packVersion: pack.version,
+        lines: lines,
+        expiredBoxes: expiredBoxes,
+      ));
+      if (res is NeedsExpiredChoice) {
+        return const DoseNeedsExpiredChoice();
+      }
+      final recorded = res as DoseRecorded;
+      final after = await _reportForDay(repo, at);
+      await reload();
+      return DoseLogged(_buildDoseFeedback(
+        doseId: recorded.id,
+        shortfall: recorded.shortfall,
+        productId: productId,
+        summaryLabel: summaryLabel,
+        before: before,
+        after: after,
+      ));
+    } on StorageFullException {
+      _saveFailed = true;
+      notifyListeners();
+      return const DoseLogged(FoodLogFeedback(
+        summaryText: 'Máy không còn đủ dung lượng. Hãy giải phóng bộ nhớ.',
+        failed: true,
+      ));
+    } on JournalStorageException {
+      _saveFailed = true;
+      notifyListeners();
+      return const DoseLogged(FoodLogFeedback(summaryText: 'Không lưu được.', failed: true));
+    }
+  }
+
+  Future<DoseLogOutcome> updateSupplementDose({
+    required int doseId,
+    int? productId,
+    String? name,
+    required double servings,
+    required DateTime at,
+    required List<IntakeLine> lines,
+    ExpiredBoxChoice expiredBoxes = ExpiredBoxChoice.ask,
+    required String summaryLabel,
+  }) async {
+    final repo = _repo;
+    if (repo == null) {
+      return const DoseLogged(FoodLogFeedback(summaryText: 'Không lưu được.', failed: true));
+    }
+    try {
+      final before = await _reportForDay(repo, at);
+      final res = await repo.updateDose(UpdateDoseInput(
+        doseId: doseId,
+        name: name,
+        servings: servings,
+        at: at,
+        packVersion: pack.version,
+        lines: lines,
+        expiredBoxes: expiredBoxes,
+      ));
+      if (res is NeedsExpiredChoice) {
+        return const DoseNeedsExpiredChoice();
+      }
+      final recorded = res as DoseRecorded;
+      final after = await _reportForDay(repo, at);
+      await reload();
+      return DoseLogged(_buildDoseFeedback(
+        doseId: recorded.id,
+        shortfall: recorded.shortfall,
+        productId: productId,
+        summaryLabel: summaryLabel,
+        before: before,
+        after: after,
+      ));
+    } on StorageFullException {
+      _saveFailed = true;
+      notifyListeners();
+      return const DoseLogged(FoodLogFeedback(
+        summaryText: 'Máy không còn đủ dung lượng. Hãy giải phóng bộ nhớ.',
+        failed: true,
+      ));
+    } on JournalStorageException {
+      _saveFailed = true;
+      notifyListeners();
+      return const DoseLogged(FoodLogFeedback(summaryText: 'Không lưu được.', failed: true));
+    }
+  }
+
+  FoodLogFeedback _buildDoseFeedback({
+    required int doseId,
+    required double shortfall,
+    required int? productId,
+    required String summaryLabel,
+    required DailyReport? before,
+    required DailyReport? after,
+  }) {
+    final beforeKeys = {
+      for (final f in before?.ulFlags ?? const <UlFlag>[]) (f.nutrientId, f.kind),
+    };
+    final newFlags = [
+      for (final f in after?.ulFlags ?? const <UlFlag>[])
+        if (!beforeKeys.contains((f.nutrientId, f.kind))) f,
+    ];
+    final stillOver = <String>[];
+    if (newFlags.isEmpty && after != null) {
+      for (final f in after.ulFlags) {
+        final name = pack.nutrients[f.nutrientId]?.nameVi ?? f.nutrientId;
+        stillOver.add('Đã vượt giới hạn $name');
+      }
+    }
+    final summary = shortfall > 0 && newFlags.isEmpty
+        ? 'Đã ghi $summaryLabel · Kho đã hết'
+        : 'Đã ghi $summaryLabel';
+    return FoodLogFeedback(
+      savedDoseId: doseId,
+      stockShortfall: shortfall,
+      shortfallProductId: shortfall > 0 ? productId : null,
+      summaryText: summary,
+      newUlFlags: newFlags,
+      stillOverUlLines: stillOver,
+    );
+  }
 
   Future<void> removeItemByIndex(int index) {
     var i = index;

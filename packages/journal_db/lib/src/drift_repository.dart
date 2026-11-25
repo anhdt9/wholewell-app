@@ -585,32 +585,192 @@ class DriftJournalRepository implements JournalRepository {
 
   // ---------------------------------------------------------------- sản phẩm, kho, lịch
 
-  Future<int> addProduct(String name, CountUnit unit, double unitsPerServing) => _guard(
-      write: true,
-      () => _insert(
-          'INSERT INTO products (name, count_unit, units_per_serving, created_at) VALUES (?, ?, ?, ?)',
-          [name, unit.name, unitsPerServing, _nowMs]));
+  @override
+  Future<int> addProduct(
+    String name,
+    CountUnit unit,
+    double unitsPerServing, {
+    String? barcode,
+  }) =>
+      _guard(
+        write: true,
+        () => _insert(
+          'INSERT INTO products (name, count_unit, units_per_serving, barcode, created_at) VALUES (?, ?, ?, ?, ?)',
+          [name, unit.name, unitsPerServing, barcode, _nowMs],
+        ),
+      );
+
+  Product _productFromRow(Map<String, Object?> r) => Product(
+        r['id'] as int,
+        r['name'] as String,
+        CountUnit.values.byName(r['count_unit'] as String),
+        _d(r['units_per_serving']),
+        barcode: r['barcode'] as String?,
+        archived: (r['archived'] as int? ?? 0) != 0,
+      );
 
   Future<Product> _product(int id) async {
     final rows = await _select('SELECT * FROM products WHERE id = ?', [id]);
     if (rows.isEmpty) throw StateError('Không có sản phẩm $id');
-    final r = rows.first;
-    return Product(id, r['name'] as String, CountUnit.values.byName(r['count_unit'] as String),
-        _d(r['units_per_serving']));
+    return _productFromRow(rows.first);
   }
 
+  @override
   Future<Product> productById(int id) => _guard(() => _product(id));
 
+  @override
+  Future<Product?> productByBarcode(String barcode) => _guard(() async {
+        final rows = await _select(
+          'SELECT * FROM products WHERE barcode = ? AND archived = 0 ORDER BY id DESC LIMIT 1',
+          [barcode],
+        );
+        return rows.isEmpty ? null : _productFromRow(rows.first);
+      });
+
+  @override
+  Future<List<ProductSummary>> listProducts({bool includeArchived = false}) => _guard(() async {
+        final t = _now();
+        final today = dayKey(t);
+        final from = dayKey(t.subtract(const Duration(days: 13)));
+        final prods = await _select(
+          includeArchived
+              ? 'SELECT * FROM products ORDER BY id DESC'
+              : 'SELECT * FROM products WHERE archived = 0 ORDER BY id DESC',
+        );
+        final activeScheds = await schedulesOn(today);
+        final recentDoses = await dosesBetween(from, today);
+        final out = <ProductSummary>[];
+        for (final r in prods) {
+          final p = _productFromRow(r);
+          final boxes = await boxesOf(p.id);
+          out.add(summarizeProduct(
+            product: p,
+            boxes: boxes,
+            activeSchedules: [for (final s in activeScheds) if (s.productId == p.id) s],
+            recentDoses14Days: [for (final d in recentDoses) if (d.productId == p.id) d],
+            now: t,
+          ));
+        }
+        return out;
+      });
+
+  @override
+  Future<ProductDetail> productDetail(int productId) => _guard(() async {
+        final p = await _product(productId);
+        final ingRows = await _select(
+          'SELECT * FROM ingredients WHERE product_id = ? ORDER BY id',
+          [productId],
+        );
+        final ings = [
+          for (final r in ingRows)
+            ProductIngredient(
+              id: r['id'] as int,
+              productId: r['product_id'] as int,
+              nutrientId: r['nutrient_id'] as String?,
+              freeName: r['free_name'] as String?,
+              form: r['form'] as String,
+              amountPerServing: r['amount_per_serving'] == null ? null : _d(r['amount_per_serving']),
+              unit: r['unit'] as String?,
+              labelAmount: r['label_amount'] == null ? null : _d(r['label_amount']),
+              labelUnit: r['label_unit'] as String?,
+              isCompound: (r['is_compound'] as int? ?? 0) != 0,
+              origin: IngredientOrigin.values.byName(r['origin'] as String),
+              confirmed: (r['confirmed'] as int? ?? 0) != 0,
+            ),
+        ];
+        final boxes = await boxesOf(productId);
+        return ProductDetail(product: p, ingredients: ings, boxes: boxes);
+      });
+
+  @override
+  Future<void> updateProduct(
+    int id, {
+    required String name,
+    required CountUnit countUnit,
+    required double unitsPerServing,
+    String? barcode,
+  }) =>
+      _guard(
+        write: true,
+        () => _update(
+          'UPDATE products SET name = ?, count_unit = ?, units_per_serving = ?, barcode = ? WHERE id = ?',
+          [name, countUnit.name, unitsPerServing, barcode, id],
+        ),
+      );
+
+  @override
+  Future<void> archiveProduct(int id) => _guard(
+        write: true,
+        () => db.transaction(() async {
+          final today = dayKey(_now());
+          await _update('UPDATE products SET archived = 1 WHERE id = ?', [id]);
+          await _update(
+            'UPDATE schedules SET valid_to = ? WHERE product_id = ? AND (valid_to IS NULL OR valid_to > ?)',
+            [today, id, today],
+          );
+        }),
+      );
+
+  @override
+  Future<void> saveProductIngredients(int productId, List<IngredientDraft> items) => _guard(
+        write: true,
+        () => db.transaction(() async {
+          await _product(productId);
+          await _update('DELETE FROM ingredients WHERE product_id = ?', [productId]);
+          for (final item in items) {
+            await _insert(
+              'INSERT INTO ingredients '
+              '(product_id, nutrient_id, free_name, form, amount_per_serving, unit, label_amount, label_unit, is_compound, origin, confirmed) '
+              'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+              [
+                productId,
+                item.nutrientId,
+                item.freeName,
+                item.form,
+                item.amountPerServing,
+                item.unit,
+                item.labelAmount,
+                item.labelUnit,
+                item.isCompound ? 1 : 0,
+                item.origin.name,
+                item.confirmed ? 1 : 0,
+              ],
+            );
+          }
+        }),
+      );
+
   /// [remaining] theo đơn vị đếm của sản phẩm; [expiryMonth] dạng YYYY-MM.
+  @override
   Future<int> addBox(int productId, double remaining, {String? expiryMonth}) => _guard(
       write: true,
       () => _insert('INSERT INTO boxes (product_id, remaining, expiry_month, added_at) VALUES (?, ?, ?, ?)',
           [productId, remaining, expiryMonth, _nowMs]));
 
+  @override
   Future<List<StockBox>> boxesOf(int productId) => _guard(() async => [
         for (final r in await _select('SELECT * FROM boxes WHERE product_id = ? ORDER BY id', [productId]))
           StockBox(r['id'] as int, r['product_id'] as int, _d(r['remaining']), r['expiry_month'] as String?),
       ]);
+
+  @override
+  Future<void> updateBox(int boxId, {required double remaining, String? expiryMonth}) {
+    if (remaining < 0) throw ArgumentError.value(remaining, 'remaining');
+    return _guard(
+      write: true,
+      () => _update('UPDATE boxes SET remaining = ?, expiry_month = ? WHERE id = ?',
+          [remaining, expiryMonth, boxId]),
+    );
+  }
+
+  @override
+  Future<void> deleteBox(int boxId) => _guard(
+        write: true,
+        () => db.transaction(() async {
+          await _update('DELETE FROM dose_box_deductions WHERE box_id = ?', [boxId]);
+          await _update('DELETE FROM boxes WHERE id = ?', [boxId]);
+        }),
+      );
 
   Future<int> addSchedule(int productId, int timeOfDay, double servings, {required String validFrom}) =>
       _guard(
@@ -778,11 +938,106 @@ class DriftJournalRepository implements JournalRepository {
   Future<void> deleteDose(int id) => _guard(write: true, () => db.transaction(() => _deleteDoseTx(id)));
 
   /// Đổi giờ, ngày của lần uống; các dòng chất đổi `day` cùng giao dịch.
+  @override
   Future<void> moveDose(int id, DateTime at) => _guard(write: true, () => db.transaction(() async {
         final (ms, tz, day) = _when(at);
         await _update('UPDATE dose_entries SET at = ?, tz_offset = ?, day = ? WHERE id = ?', [ms, tz, day, id]);
         await _update('UPDATE intake_lines SET day = ? WHERE dose_entry_id = ?', [day, id]);
       }));
+
+  @override
+  Future<DoseResult> updateDose(UpdateDoseInput input) async {
+    checkLinesWritable(input.lines);
+    if (input.servings <= 0) throw ArgumentError.value(input.servings, 'servings');
+    return _guard(
+      write: true,
+      () => db.transaction<DoseResult>(() async {
+        final rows = await _select('SELECT * FROM dose_entries WHERE id = ?', [input.doseId]);
+        if (rows.isEmpty) throw StateError('Không có lần uống ${input.doseId}');
+        final old = rows.first;
+        final productId = old['product_id'] as int?;
+        final oldDeductions = await _select(
+          'SELECT box_id, amount FROM dose_box_deductions WHERE dose_entry_id = ?',
+          [input.doseId],
+        );
+
+        final month = monthKey(input.at);
+        bool expired(Map<String, Object?> b) {
+          final m = b['expiry_month'] as String?;
+          return m != null && m.compareTo(month) < 0;
+        }
+
+        if (productId != null && input.expiredBoxes == ExpiredBoxChoice.ask) {
+          final restoredByBox = <int, double>{
+            for (final r in oldDeductions) r['box_id'] as int: _d(r['amount']),
+          };
+          final allBoxes = await _select(
+            'SELECT id, remaining, expiry_month FROM boxes WHERE product_id = ?',
+            [productId],
+          );
+          final effective = [
+            for (final b in allBoxes)
+              if (_d(b['remaining']) + (restoredByBox[b['id'] as int] ?? 0) > 0) b,
+          ];
+          final hasValid = effective.any((b) => !expired(b));
+          final hasOld = effective.any(expired);
+          if (!hasValid && hasOld) {
+            return const NeedsExpiredChoice();
+          }
+        }
+
+        for (final r in oldDeductions) {
+          await _update(
+            'UPDATE boxes SET remaining = remaining + ? WHERE id = ?',
+            [_d(r['amount']), r['box_id']],
+          );
+        }
+        await _update('DELETE FROM dose_box_deductions WHERE dose_entry_id = ?', [input.doseId]);
+
+        var shortfall = 0.0;
+        if (productId != null) {
+          final product = await _product(productId);
+          var need = input.servings * product.unitsPerServing;
+          final boxes = await _select(
+            'SELECT id, remaining, expiry_month FROM boxes WHERE product_id = ? AND remaining > 0 '
+            'ORDER BY expiry_month IS NULL, expiry_month, added_at, id',
+            [productId],
+          );
+          final valid = [for (final b in boxes) if (!expired(b)) b];
+          final oldBoxes = [for (final b in boxes) if (expired(b)) b];
+          final List<Map<String, Object?>> use;
+          if (valid.isNotEmpty) {
+            use = valid;
+          } else if (oldBoxes.isNotEmpty) {
+            use = input.expiredBoxes == ExpiredBoxChoice.deduct ? oldBoxes : const [];
+          } else {
+            use = const [];
+          }
+          for (final b in use) {
+            if (need <= 0) break;
+            final rem = _d(b['remaining']);
+            final take = rem < need ? rem : need;
+            await _update('UPDATE boxes SET remaining = remaining - ? WHERE id = ?', [take, b['id']]);
+            await _insert(
+              'INSERT INTO dose_box_deductions (dose_entry_id, box_id, amount) VALUES (?, ?, ?)',
+              [input.doseId, b['id'], take],
+            );
+            need -= take;
+          }
+          shortfall = need > 1e-9 ? need : 0.0;
+        }
+
+        final (ms, tz, day) = _when(input.at);
+        await _update(
+          'UPDATE dose_entries SET at = ?, tz_offset = ?, day = ?, name = COALESCE(?, name), servings = ?, pack_version = ? WHERE id = ?',
+          [ms, tz, day, input.name, input.servings, input.packVersion, input.doseId],
+        );
+        await _update('DELETE FROM intake_lines WHERE dose_entry_id = ?', [input.doseId]);
+        await _insertLines(input.lines, doseId: input.doseId, day: day);
+        return DoseRecorded(input.doseId, shortfall);
+      }),
+    );
+  }
 
   @override
   Future<List<DoseEntry>> dosesOn(String day) => dosesBetween(day, day);

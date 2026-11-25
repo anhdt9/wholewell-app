@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
 import '../state/diary_controller.dart';
+import 'add_supplement_screen.dart';
 import 'common/common_widgets.dart';
 import 'common/food_feedback_sheet.dart';
 import 'edit_food_screen.dart';
@@ -102,6 +103,11 @@ class _DiaryScreenState extends State<DiaryScreen> {
                 title: d.name ?? 'Bổ sung',
                 subtitle: '${fmt(d.servings)} lần · ${d.lines.length} chất',
                 timeText: fmtTime24(d.at),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => AddSupplementScreen(existingDose: d),
+                  ),
+                ),
               ),
             ),
           const SizedBox(height: 16),

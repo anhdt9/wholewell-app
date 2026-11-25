@@ -127,6 +127,12 @@ class VitaminEEsterDef {
   const VitaminEEsterDef({required this.tocopherolRatio, required this.isNatural});
 }
 
+class CompoundMeta {
+  final String nameVi;
+  final String source;
+  const CompoundMeta({required this.nameVi, required this.source});
+}
+
 class ReferencePack {
   final String version;
   final int minProfileAge;
@@ -155,6 +161,7 @@ class ReferencePack {
   final double? foodBetaCaroteneIuToUgRae;
   final Map<String, VitaminEEsterDef> vitaminEEsters;
   final Map<String, Map<String, double>> compounds;
+  final Map<String, Map<String, CompoundMeta>> compoundMeta;
 
   ReferencePack._({
     required this.version,
@@ -182,6 +189,7 @@ class ReferencePack {
     required this.foodBetaCaroteneIuToUgRae,
     required this.vitaminEEsters,
     required this.compounds,
+    required this.compoundMeta,
   });
 
   factory ReferencePack.fromJsonString(String s) =>
@@ -271,6 +279,17 @@ class ReferencePack {
     final compounds = <String, Map<String, double>>{
       for (final e in compRaw.entries) e.key: _numMap(e.value),
     };
+    final cMetaRaw = (j['compoundMeta'] as Map<String, dynamic>?) ?? const {};
+    final compoundMeta = <String, Map<String, CompoundMeta>>{
+      for (final e in cMetaRaw.entries)
+        e.key: {
+          for (final fe in (e.value as Map<String, dynamic>).entries)
+            fe.key: CompoundMeta(
+              nameVi: (fe.value as Map<String, dynamic>)['nameVi'] as String,
+              source: (fe.value as Map<String, dynamic>)['source'] as String,
+            ),
+        },
+    };
 
     return ReferencePack._(
       version: j['version'] as String,
@@ -316,6 +335,7 @@ class ReferencePack {
           (uc['vitA_food_betacarotene_IU_to_ug_RAE'] as num?)?.toDouble(),
       vitaminEEsters: esters,
       compounds: compounds,
+      compoundMeta: compoundMeta,
     );
   }
 }
