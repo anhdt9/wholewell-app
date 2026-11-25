@@ -106,6 +106,26 @@ void main() {
       expect(viPkg.ingredients[1].unit, LabelUnit.ugDfe);
     });
 
+    test('parseAiJson đọc JSON từ Gemini Nano và trả null khi JSON lỗi', () {
+      expect(SupplementLabelParser.parseAiJson('not-json', const []), isNull);
+      final pkg = SupplementLabelParser.parseAiJson(
+        '{"productName":"Sports Research B-Complex","boxCount":120,"servings":2,"unit":"capsule",'
+        '"ingredients":[{"name":"Folate","amount":667,"unit":"ug_dfe","form":"L-5-Methylfolate","elemental":false},'
+        '{"name":"Vitamin B12","amount":500,"unit":"ug","form":"Methylcobalamin","elemental":false}]}',
+        const ['raw'],
+      );
+      expect(pkg, isNotNull);
+      expect(pkg!.suggestedProductName, 'Sports Research B-Complex');
+      expect(pkg.suggestedBoxRemaining, 120);
+      expect(pkg.suggestedUnitsPerServing, 2);
+      expect(pkg.suggestedCountUnit, CountUnit.capsule);
+      expect(pkg.ingredients, hasLength(2));
+      expect(pkg.ingredients[0].nutrientId, 'folate');
+      expect(pkg.ingredients[0].unit, LabelUnit.ugDfe);
+      expect(pkg.ingredients[1].nutrientId, 'vitB12');
+      expect(pkg.ingredients[1].unit, LabelUnit.ug);
+    });
+
     test('parseExpiryMmYyyy kiểm hợp lệ tháng 01..12 và chuyển sang YYYY-MM', () {
       expect(parseExpiryMmYyyy('').ok, isTrue);
       expect(parseExpiryMmYyyy('').yyyyMm, isNull);

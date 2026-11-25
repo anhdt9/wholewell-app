@@ -213,12 +213,21 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
     final state = AppScope.of(context);
     final ocr = await state.ocrEngine.recognizeLabelFromImages(_imagePaths);
     if (!mounted) return;
-    setState(() => _busy = false);
     if (ocr.errorMessage != null && ocr.lines.isEmpty) {
-      setState(() => _statusMsg = ocr.errorMessage);
+      setState(() {
+        _busy = false;
+        _statusMsg = ocr.errorMessage;
+      });
       return;
     }
-    final pkg = SupplementLabelParser.parsePackage(ocr.lines);
+    ParsedLabelPackage? pkg;
+    final aiJson = await state.ocrEngine.extractLabelJsonWithOnDeviceAi(ocr.lines);
+    if (aiJson != null) {
+      pkg = SupplementLabelParser.parseAiJson(aiJson, ocr.lines);
+    }
+    pkg ??= SupplementLabelParser.parsePackage(ocr.lines);
+    if (!mounted) return;
+    setState(() => _busy = false);
     _openConfirm(
       [for (final p in pkg.ingredients) EditableIngredient.fromParsed(p, state.pack)],
       pkg: pkg,

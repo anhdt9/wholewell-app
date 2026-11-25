@@ -49,6 +49,9 @@ flutter {
 }
 
 dependencies {
+    // Gemini Nano on-device qua Android AICore (tự fallback về OCR nếu máy không hỗ trợ).
+    implementation("com.google.mlkit:genai-prompt:1.0.0-beta5")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     // Test JVM cho quy tắc kho khóa (DbKeyRules).
     testImplementation("junit:junit:4.13.2")
 }

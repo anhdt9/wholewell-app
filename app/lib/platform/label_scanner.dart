@@ -28,6 +28,7 @@ abstract interface class OcrEngine {
   Future<OcrImagePickResult> pickLabelImageFromGallery();
   Future<OcrLabelResult> recognizeLabelFromImage(String imagePath);
   Future<OcrLabelResult> recognizeLabelFromImages(List<String> imagePaths);
+  Future<String?> extractLabelJsonWithOnDeviceAi(List<String> ocrLines);
   Future<void> openAppSettings();
   Future<void> dispose();
 }
@@ -157,6 +158,19 @@ class MlKitOcrEngine implements OcrEngine {
   }
 
   @override
+  Future<String?> extractLabelJsonWithOnDeviceAi(List<String> ocrLines) async {
+    if (ocrLines.isEmpty) return null;
+    try {
+      const channel = MethodChannel('vn.wholewell.app/genai_label');
+      return await channel.invokeMethod<String>('extractLabelJson', {
+        'ocrText': ocrLines.join('\n'),
+      });
+    } on Object {
+      return null;
+    }
+  }
+
+  @override
   Future<void> openAppSettings() async {
     try {
       const channel = MethodChannel('vn.wholewell.app/settings');
@@ -180,12 +194,14 @@ class FakeOcrEngine implements OcrEngine {
   OcrImagePickResult nextCaptureResult;
   OcrImagePickResult nextGalleryResult;
   OcrLabelResult nextOcrResult;
+  String? nextAiJson;
   final Map<String, OcrLabelResult> resultsByPath;
 
   FakeOcrEngine({
     this.nextCaptureResult = const OcrImagePickResult(paths: ['/fake/camera.jpg']),
     this.nextGalleryResult = const OcrImagePickResult(paths: ['/fake/gallery.jpg']),
     this.nextOcrResult = const OcrLabelResult(),
+    this.nextAiJson,
     this.resultsByPath = const {},
   });
 
@@ -214,6 +230,9 @@ class FakeOcrEngine implements OcrEngine {
     if (all.isEmpty && err != null) return OcrLabelResult(errorMessage: err);
     return OcrLabelResult(lines: all);
   }
+
+  @override
+  Future<String?> extractLabelJsonWithOnDeviceAi(List<String> ocrLines) async => nextAiJson;
 
   @override
   Future<void> openAppSettings() async {}

@@ -1,6 +1,7 @@
 /// Bộ phân tích văn bản OCR trên nhãn thực phẩm bổ sung (thuần Dart, hỗ trợ fuzzy matching).
 library;
 
+import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:health_engine/health_engine.dart';
@@ -68,13 +69,13 @@ class SupplementLabelParser {
     ('vitD', ['vitamin d3', 'vitamin d', 'vit d', 'cholecalciferol', 'ergocalciferol']),
     ('vitE', ['vitamin e', 'vit e', 'tocopherol', 'tocopheryl']),
     ('vitK', ['vitamin k2', 'vitamin k1', 'vitamin k', 'vit k', 'phylloquinone', 'menaquinone']),
+    ('vitB12', ['vitamin b12', 'vitamin b-12', 'cobalamin', 'cyanocobalamin', 'methylcobalamin']),
     ('thiamin', ['vitamin b1', 'vitamin b-1', 'thiamin', 'thiamine', 'benfotiamine']),
     ('riboflavin', ['vitamin b2', 'vitamin b-2', 'riboflavin']),
     ('niacin', ['vitamin b3', 'vitamin b-3', 'niacin', 'niacinamide', 'nicotinamide']),
     ('vitB6', ['vitamin b6', 'vitamin b-6', 'pyridoxine', 'pyridoxal']),
     ('folicAcid', ['folic acid', 'axit folic', 'acid folic']),
     ('folate', ['folate', 'methylfolate', 'dfe']),
-    ('vitB12', ['vitamin b12', 'vitamin b-12', 'cobalamin', 'cyanocobalamin', 'methylcobalamin']),
     ('biotin', ['biotin', 'vitamin b7', 'vitamin b-7']),
     ('pantothenic', ['pantothenic', 'pantothenate', 'vitamin b5', 'vitamin b-5']),
     ('choline', ['choline', 'bitartrate']),
@@ -369,6 +370,105 @@ class SupplementLabelParser {
 
   static List<ParsedIngredientLine> parseLines(List<String> rawLines) =>
       parsePackage(rawLines).ingredients;
+
+  /// Chuyển JSON từ Gemini Nano (on-device) thành [ParsedLabelPackage]; trả `null` nếu JSON lỗi hoặc rỗng.
+  static ParsedLabelPackage? parseAiJson(String jsonStr, List<String> rawLines) {
+    try {
+      final decoded = jsonDecode(jsonStr);
+      if (decoded is! Map<String, dynamic>) return null;
+      final rawList = decoded['ingredients'];
+      if (rawList is! List || rawList.isEmpty) return null;
+
+      final ingredients = <ParsedIngredientLine>[];
+      for (final item in rawList) {
+        if (item is! Map<String, dynamic>) continue;
+        final name = (item['name'] as String?)?.trim() ?? '';
+        final amount = (item['amount'] as num?)?.toDouble();
+        if (name.isEmpty || amount == null || amount <= 0) continue;
+
+        final unitStr = ((item['unit'] as String?) ?? 'mg').toLowerCase().trim();
+        final unit = switch (unitStr) {
+          'mg' => LabelUnit.mg,
+          'ug' || 'mcg' || 'µg' => LabelUnit.ug,
+          'iu' => LabelUnit.iu,
+          'g' => LabelUnit.g,
+          'ug_dfe' || 'mcg dfe' => LabelUnit.ugDfe,
+          'ug_rae' || 'mcg rae' => LabelUnit.ugRae,
+          'mg_ne' || 'mg ne' => LabelUnit.mgNe,
+          _ => LabelUnit.mg,
+        };
+        final formText = ((item['form'] as String?) ?? '').toLowerCase();
+        final explicitElemental = item['elemental'] == true ||
+            formText.contains('elemental') ||
+            formText.contains('nguyên tố');
+        final nid = _matchNutrientId(
+          '$name $formText ${unit == LabelUnit.ugDfe ? 'dfe' : ''}'.toLowerCase(),
+        );
+        final combined = '$name $formText'.toLowerCase();
+
+        var form = NutrientForm.unknown;
+        var compoundKind = CompoundKind.elemental;
+        if (nid == 'calcium' && !explicitElemental) {
+          if (combined.contains('carbonate') || combined.contains('carbonat')) {
+            form = 'calcium_carbonate';
+            compoundKind = CompoundKind.compound;
+          } else if (combined.contains('citrate') || combined.contains('citrat')) {
+            form = 'calcium_citrate';
+            compoundKind = CompoundKind.compound;
+          }
+        } else if (nid == 'iron' && !explicitElemental) {
+          if (combined.contains('fumarate') || combined.contains('fumarat')) {
+            form = 'ferrous_fumarate';
+            compoundKind = CompoundKind.compound;
+          } else if (combined.contains('sulfate') || combined.contains('sulfat')) {
+            form = 'ferrous_sulfate';
+            compoundKind = CompoundKind.compound;
+          } else if (combined.contains('gluconate') || combined.contains('gluconat')) {
+            form = 'ferrous_gluconate';
+            compoundKind = CompoundKind.compound;
+          }
+        } else if (nid == 'vitE') {
+          if (combined.contains('dl-alpha') || combined.contains('synthetic')) {
+            form = NutrientForm.synthetic2r;
+          } else if (combined.contains('d-alpha') || combined.contains('natural')) {
+            form = NutrientForm.natural2r;
+          }
+        } else if (nid == 'vitA') {
+          if (combined.contains('beta')) {
+            form = NutrientForm.betaCarotene;
+          } else if (combined.contains('retinyl') || combined.contains('retinol')) {
+            form = NutrientForm.retinol;
+          }
+        } else if (nid == 'folicAcid') {
+          form = NutrientForm.folicAcid;
+        }
+
+        ingredients.add(ParsedIngredientLine(
+          rawLine: '$name $amount $unitStr',
+          nutrientId: nid,
+          freeName: nid == null ? name : null,
+          form: form,
+          amount: amount,
+          unit: unit,
+          compoundKind: compoundKind,
+        ));
+      }
+      if (ingredients.isEmpty) return null;
+
+      final unitName = (decoded['unit'] as String?)?.toLowerCase().trim();
+      final countUnit = CountUnit.values.where((u) => u.name == unitName).firstOrNull;
+      return ParsedLabelPackage(
+        ingredients: ingredients,
+        suggestedProductName: (decoded['productName'] as String?)?.trim(),
+        suggestedBoxRemaining: (decoded['boxCount'] as num?)?.toDouble(),
+        suggestedUnitsPerServing: (decoded['servings'] as num?)?.toDouble(),
+        suggestedCountUnit: countUnit,
+        rawLines: rawLines,
+      );
+    } on Object {
+      return null;
+    }
+  }
 
   static String? _extractName(String line, int matchStart) {
     final prefix = line.substring(0, matchStart).replaceAll(RegExp(r'[:\-–()]+$'), '').trim();

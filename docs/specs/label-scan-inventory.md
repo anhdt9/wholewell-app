@@ -61,9 +61,7 @@ Các bảng trong `schemaV1` (`products`, `ingredients`, `boxes`, `dose_entries`
 
 ### 3. Interface nền tảng & Thử OCR trên máy thật (`app/lib/platform/`)
 - `OcrEngine`: tách rõ 2 đường lấy ảnh + bước nhận dạng chữ để khi người dùng từ chối quyền Camera vẫn chọn ảnh từ thư viện hoặc nhập tay được:
-  - `Future<String?> captureLabelImage()` (chụp bằng camera)
-  - `Future<String?> pickLabelImageFromGallery()` (chọn ảnh có sẵn)
-  - `Future<OcrLabelResult> recognizeLabelFromImage(String imagePath)` (ML Kit Text Recognition v2 on-device trên Android; `FakeOcrEngine` cho Windows/test).
+  - `captureLabelImage()` (Document Scanner on-device làm phẳng nhãn, fallback Camera), `pickLabelImageFromGallery()`, `recognizeLabelFromImages(...)` (ML Kit Text Recognition v2 on-device), và `extractLabelJsonWithOnDeviceAi(...)` (Gemini Nano on-device qua Android AICore khi thiết bị hỗ trợ; fallback tự động về `SupplementLabelParser` → nhập tay; không gửi ảnh ra ngoài).
 - Bộ phân tích nhãn thuần Dart (`SupplementLabelParser`): tách chuỗi OCR thô thành các dòng tiềm năng `{rawLine, nutrientId?, form?, amount?, unit?, isCompound}` để người dùng rà soát, chỉnh sửa và xác nhận từng dòng.
 - `BarcodeScanner`: `Future<String?> scanBarcode()`.
 - Kiểm thử sớm: chạy thử nghiệm `google_mlkit_text_recognition` + `mobile_scanner` trên Galaxy S24 Ultra với 5–10 ảnh nhãn thật trước khi chốt parser.
