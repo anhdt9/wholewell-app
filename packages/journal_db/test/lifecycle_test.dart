@@ -60,34 +60,55 @@ void main() {
     await createdRepo(o);
   });
 
-  test('di chuyển lỗi: giữ tệp và bản .pre-v1, Cần cập nhật; bản sửa lỗi di chuyển lại được', () async {
+  test('di chuyển lỗi: giữ tệp và bản .pre-v2, Cần cập nhật; bản sửa lỗi di chuyển lại được', () async {
     final dir = tempDir();
     final keys = FakeSecureKeyStore();
-    final v1 = testOpener(dir, keys);
-    final repo = await createdRepo(v1);
+    final vCur = testOpener(dir, keys);
+    final repo = await createdRepo(vCur);
     await repo.saveHideCalories(true);
     await repo.close();
 
-    final broken = testOpener(dir, keys, schemaVersion: 2, migrations: {
-      1: (db) {
+    final nextVer = currentSchemaVersion + 1;
+    final broken = testOpener(dir, keys, schemaVersion: nextVer, migrations: {
+      currentSchemaVersion: (db) {
         db.execute('CREATE TABLE extra (x)');
         throw StateError('lỗi giả của bản app');
       },
     });
     expect(await broken.open(), isA<NeedsUpdate>());
     expect(DbFiles(dir).db.existsSync(), isTrue);
-    expect(DbFiles(dir).preMigrationCopy(1).existsSync(), isTrue);
+    expect(DbFiles(dir).preMigrationCopy(currentSchemaVersion).existsSync(), isTrue);
     expect(await broken.open(), isA<NeedsUpdate>());
 
-    final fixed = testOpener(dir, keys, schemaVersion: 2, migrations: {
-      1: (db) => db.execute('CREATE TABLE extra (x)'),
+    final fixed = testOpener(dir, keys, schemaVersion: nextVer, migrations: {
+      currentSchemaVersion: (db) => db.execute('CREATE TABLE extra (x)'),
     });
     final r = await reopened(fixed);
     expect(await r.loadHideCalories(), isTrue);
     final v = await r.db.customSelect('SELECT schema_version FROM meta').getSingle();
-    expect(v.data['schema_version'], 2);
+    expect(v.data['schema_version'], nextVer);
     await r.db.customSelect('SELECT count(*) FROM extra').get();
-    expect(DbFiles(dir).preMigrationCopy(1).existsSync(), isFalse);
+    expect(DbFiles(dir).preMigrationCopy(currentSchemaVersion).existsSync(), isFalse);
+  });
+
+  test('di chuyển v1 -> v2 thêm cột barcode cho bảng products', () async {
+    final dir = tempDir();
+    final keys = FakeSecureKeyStore();
+    final o = testOpener(dir, keys);
+    final repo = await createdRepo(o);
+    // Giả lập tệp CSDL đang ở v1 chưa có cột barcode.
+    await repo.db.customStatement('DROP INDEX IF EXISTS idx_products_barcode');
+    await repo.db.customStatement('ALTER TABLE products DROP COLUMN barcode');
+    await repo.db.customStatement('UPDATE meta SET schema_version = 1');
+    await repo.close();
+
+    final migrated = await reopened(o);
+    final v = await migrated.db.customSelect('SELECT schema_version FROM meta').getSingle();
+    expect(v.data['schema_version'], 2);
+    final pid = await migrated.addProduct('Canxi D3', CountUnit.tablet, 1, barcode: '8935001');
+    final found = await migrated.productByBarcode('8935001');
+    expect(found?.id, pid);
+    expect(found?.barcode, '8935001');
   });
 
   test('lược đồ mới hơn bản app (cài bản cũ hơn): Cần cập nhật, tệp không đổi', () async {

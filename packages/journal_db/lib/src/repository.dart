@@ -71,7 +71,34 @@ abstract interface class JournalRepository {
   Future<List<CustomFood>> searchCustomFoods(String query, {int limit = 30});
   Future<void> archiveCustomFood(int id);
 
+  Future<int> addProduct(
+    String name,
+    CountUnit unit,
+    double unitsPerServing, {
+    String? barcode,
+  });
+  Future<Product> productById(int id);
+  Future<Product?> productByBarcode(String barcode);
+  Future<List<ProductSummary>> listProducts({bool includeArchived = false});
+  Future<ProductDetail> productDetail(int productId);
+  Future<void> updateProduct(
+    int id, {
+    required String name,
+    required CountUnit countUnit,
+    required double unitsPerServing,
+    String? barcode,
+  });
+  Future<void> archiveProduct(int id);
+  Future<void> saveProductIngredients(int productId, List<IngredientDraft> items);
+
+  Future<int> addBox(int productId, double remaining, {String? expiryMonth});
+  Future<List<StockBox>> boxesOf(int productId);
+  Future<void> updateBox(int boxId, {required double remaining, String? expiryMonth});
+  Future<void> deleteBox(int boxId);
+
   Future<DoseResult> recordDose(DoseInput d);
+  Future<DoseResult> updateDose(UpdateDoseInput input);
+  Future<void> moveDose(int id, DateTime at);
   Future<void> deleteDose(int id);
   Future<List<DoseEntry>> dosesOn(String day);
   Future<List<DoseEntry>> dosesBetween(String fromDay, String toDay);
@@ -98,6 +125,9 @@ class InMemoryJournalRepository implements JournalRepository {
   final _uiState = <String, String>{};
   final _foods = <FoodEntry>[];
   final _customFoods = <CustomFood>[];
+  final _products = <Product>[];
+  final _ingredients = <ProductIngredient>[];
+  final _boxes = <StockBox>[];
   final _doses = <DoseEntry>[];
   final _workouts = <WorkoutRecord>[];
   final _waters = <WaterRecord>[];
@@ -529,8 +559,223 @@ class InMemoryJournalRepository implements JournalRepository {
   }
 
   @override
+  Future<int> addProduct(
+    String name,
+    CountUnit unit,
+    double unitsPerServing, {
+    String? barcode,
+  }) async {
+    final id = _nextId++;
+    _products.add(Product(id, name, unit, unitsPerServing, barcode: barcode));
+    _changed();
+    return id;
+  }
+
+  @override
+  Future<Product> productById(int id) async =>
+      _products.firstWhere((p) => p.id == id, orElse: () => throw StateError('Không có sản phẩm $id'));
+
+  @override
+  Future<Product?> productByBarcode(String barcode) async {
+    for (final p in _products) {
+      if (!p.archived && p.barcode == barcode) return p;
+    }
+    return null;
+  }
+
+  @override
+  Future<List<ProductSummary>> listProducts({bool includeArchived = false}) async {
+    final now = DateTime.now();
+    final today = dayKey(now);
+    final from = dayKey(now.subtract(const Duration(days: 13)));
+    final out = <ProductSummary>[];
+    for (final p in _products) {
+      if (!includeArchived && p.archived) continue;
+      final boxes = [for (final b in _boxes) if (b.productId == p.id) b];
+      final recent = [
+        for (final d in _doses)
+          if (d.productId == p.id && d.day.compareTo(from) >= 0 && d.day.compareTo(today) <= 0) d,
+      ];
+      out.add(summarizeProduct(
+        product: p,
+        boxes: boxes,
+        activeSchedules: const [],
+        recentDoses14Days: recent,
+        now: now,
+      ));
+    }
+    return out;
+  }
+
+  @override
+  Future<ProductDetail> productDetail(int productId) async {
+    final p = await productById(productId);
+    final ing = [for (final i in _ingredients) if (i.productId == productId) i];
+    final boxes = await boxesOf(productId);
+    return ProductDetail(product: p, ingredients: ing, boxes: boxes);
+  }
+
+  @override
+  Future<void> updateProduct(
+    int id, {
+    required String name,
+    required CountUnit countUnit,
+    required double unitsPerServing,
+    String? barcode,
+  }) async {
+    final idx = _products.indexWhere((p) => p.id == id);
+    if (idx < 0) throw StateError('Không có sản phẩm $id');
+    final old = _products[idx];
+    _products[idx] = Product(
+      id,
+      name,
+      countUnit,
+      unitsPerServing,
+      barcode: barcode,
+      archived: old.archived,
+    );
+    _changed();
+  }
+
+  @override
+  Future<void> archiveProduct(int id) async {
+    final idx = _products.indexWhere((p) => p.id == id);
+    if (idx < 0) throw StateError('Không có sản phẩm $id');
+    final old = _products[idx];
+    _products[idx] = Product(
+      old.id,
+      old.name,
+      old.countUnit,
+      old.unitsPerServing,
+      barcode: old.barcode,
+      archived: true,
+    );
+    _changed();
+  }
+
+  @override
+  Future<void> saveProductIngredients(int productId, List<IngredientDraft> items) async {
+    await productById(productId);
+    _ingredients.removeWhere((i) => i.productId == productId);
+    for (final item in items) {
+      _ingredients.add(ProductIngredient(
+        id: _nextId++,
+        productId: productId,
+        nutrientId: item.nutrientId,
+        freeName: item.freeName,
+        form: item.form,
+        amountPerServing: item.amountPerServing,
+        unit: item.unit,
+        labelAmount: item.labelAmount,
+        labelUnit: item.labelUnit,
+        isCompound: item.isCompound,
+        origin: item.origin,
+        confirmed: item.confirmed,
+      ));
+    }
+    _changed();
+  }
+
+  @override
+  Future<int> addBox(int productId, double remaining, {String? expiryMonth}) async {
+    final id = _nextId++;
+    _boxes.add(StockBox(id, productId, remaining, expiryMonth));
+    _changed();
+    return id;
+  }
+
+  @override
+  Future<List<StockBox>> boxesOf(int productId) async =>
+      [for (final b in _boxes) if (b.productId == productId) b];
+
+  @override
+  Future<void> updateBox(int boxId, {required double remaining, String? expiryMonth}) async {
+    if (remaining < 0) throw ArgumentError.value(remaining, 'remaining');
+    final idx = _boxes.indexWhere((b) => b.id == boxId);
+    if (idx < 0) throw StateError('Không có hộp $boxId');
+    final old = _boxes[idx];
+    _boxes[idx] = StockBox(old.id, old.productId, remaining, expiryMonth);
+    _changed();
+  }
+
+  @override
+  Future<void> deleteBox(int boxId) async {
+    _boxes.removeWhere((b) => b.id == boxId);
+    _changed();
+  }
+
+  ({List<BoxDeduction> deductions, double shortfall})? _planDeduction(
+    int productId,
+    double servings,
+    DateTime at,
+    ExpiredBoxChoice expiredChoice,
+  ) {
+    final prod = _products.firstWhere(
+      (p) => p.id == productId,
+      orElse: () => throw StateError('Không có sản phẩm $productId'),
+    );
+    var need = servings * prod.unitsPerServing;
+    final month = monthKey(at);
+    final candidates = [for (final b in _boxes) if (b.productId == productId && b.remaining > 0) b]
+      ..sort((a, b) {
+        if (a.expiryMonth == null && b.expiryMonth == null) return a.id.compareTo(b.id);
+        if (a.expiryMonth == null) return 1;
+        if (b.expiryMonth == null) return -1;
+        final c = a.expiryMonth!.compareTo(b.expiryMonth!);
+        return c != 0 ? c : a.id.compareTo(b.id);
+      });
+    bool isExpired(StockBox b) => b.expiryMonth != null && b.expiryMonth!.compareTo(month) < 0;
+    final valid = [for (final b in candidates) if (!isExpired(b)) b];
+    final old = [for (final b in candidates) if (isExpired(b)) b];
+    final List<StockBox> use;
+    if (valid.isNotEmpty) {
+      use = valid;
+    } else if (old.isNotEmpty) {
+      switch (expiredChoice) {
+        case ExpiredBoxChoice.ask:
+          return null;
+        case ExpiredBoxChoice.deduct:
+          use = old;
+        case ExpiredBoxChoice.skip:
+          use = const [];
+      }
+    } else {
+      use = const [];
+    }
+    final deductions = <BoxDeduction>[];
+    for (final b in use) {
+      if (need <= 0) break;
+      final take = b.remaining < need ? b.remaining : need;
+      final idx = _boxes.indexWhere((x) => x.id == b.id);
+      _boxes[idx] = StockBox(b.id, b.productId, b.remaining - take, b.expiryMonth);
+      deductions.add(BoxDeduction(b.id, take));
+      need -= take;
+    }
+    return (deductions: deductions, shortfall: need > 1e-9 ? need : 0.0);
+  }
+
+  void _restoreDeductions(List<BoxDeduction> deductions) {
+    for (final d in deductions) {
+      final idx = _boxes.indexWhere((b) => b.id == d.boxId);
+      if (idx >= 0) {
+        final b = _boxes[idx];
+        _boxes[idx] = StockBox(b.id, b.productId, b.remaining + d.amount, b.expiryMonth);
+      }
+    }
+  }
+
+  @override
   Future<DoseResult> recordDose(DoseInput d) async {
     checkLinesWritable(d.lines);
+    if (d.servings <= 0) throw ArgumentError.value(d.servings, 'servings');
+    var deductions = const <BoxDeduction>[];
+    var shortfall = 0.0;
+    if (d.productId != null && d.deductStock) {
+      final res = _planDeduction(d.productId!, d.servings, d.at, d.expiredBoxes);
+      if (res == null) return const NeedsExpiredChoice();
+      deductions = res.deductions;
+      shortfall = res.shortfall;
+    }
     final id = _nextId++;
     _doses.add(DoseEntry(
       id: id,
@@ -542,16 +787,90 @@ class InMemoryJournalRepository implements JournalRepository {
       servings: d.servings,
       packVersion: d.packVersion,
       lines: List.unmodifiable(d.lines),
-      deductions: const [],
+      deductions: List.unmodifiable(deductions),
     ));
     _changed();
-    return DoseRecorded(id, 0);
+    return DoseRecorded(id, shortfall);
+  }
+
+  @override
+  Future<DoseResult> updateDose(UpdateDoseInput input) async {
+    checkLinesWritable(input.lines);
+    if (input.servings <= 0) throw ArgumentError.value(input.servings, 'servings');
+    final idx = _doses.indexWhere((d) => d.id == input.doseId);
+    if (idx < 0) throw StateError('Không có lần uống ${input.doseId}');
+    final old = _doses[idx];
+    // Tạm hoàn kho trong bộ nhớ để kiểm tra; nếu NeedsExpiredChoice thì khôi phục nguyên trạng.
+    _restoreDeductions(old.deductions);
+    var newDeductions = const <BoxDeduction>[];
+    var shortfall = 0.0;
+    if (old.productId != null && old.deductions.isNotEmpty) {
+      final res = _planDeduction(old.productId!, input.servings, input.at, input.expiredBoxes);
+      if (res == null) {
+        // Hoàn tác lại trạng thái kho cũ (trừ lại như cũ) vì chưa sửa.
+        for (final d in old.deductions) {
+          final bi = _boxes.indexWhere((b) => b.id == d.boxId);
+          if (bi >= 0) {
+            final b = _boxes[bi];
+            _boxes[bi] = StockBox(b.id, b.productId, b.remaining - d.amount, b.expiryMonth);
+          }
+        }
+        return const NeedsExpiredChoice();
+      }
+      newDeductions = res.deductions;
+      shortfall = res.shortfall;
+    } else if (old.productId != null) {
+      final res = _planDeduction(old.productId!, input.servings, input.at, input.expiredBoxes);
+      if (res == null) {
+        return const NeedsExpiredChoice();
+      }
+      newDeductions = res.deductions;
+      shortfall = res.shortfall;
+    }
+    _doses[idx] = DoseEntry(
+      id: old.id,
+      at: input.at,
+      day: dayKey(input.at),
+      productId: old.productId,
+      name: old.name,
+      kind: old.kind,
+      servings: input.servings,
+      packVersion: input.packVersion,
+      lines: List.unmodifiable(input.lines),
+      deductions: List.unmodifiable(newDeductions),
+    );
+    _changed();
+    return DoseRecorded(old.id, shortfall);
+  }
+
+  @override
+  Future<void> moveDose(int id, DateTime at) async {
+    final idx = _doses.indexWhere((d) => d.id == id);
+    if (idx < 0) return;
+    final old = _doses[idx];
+    _doses[idx] = DoseEntry(
+      id: old.id,
+      at: at,
+      day: dayKey(at),
+      productId: old.productId,
+      name: old.name,
+      kind: old.kind,
+      servings: old.servings,
+      packVersion: old.packVersion,
+      lines: old.lines,
+      deductions: old.deductions,
+    );
+    _changed();
   }
 
   @override
   Future<void> deleteDose(int id) async {
-    _doses.removeWhere((d) => d.id == id);
-    _changed();
+    final idx = _doses.indexWhere((d) => d.id == id);
+    if (idx >= 0) {
+      _restoreDeductions(_doses[idx].deductions);
+      _doses.removeAt(idx);
+      _changed();
+    }
   }
 
   @override

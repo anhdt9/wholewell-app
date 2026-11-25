@@ -23,7 +23,8 @@ DbOpener testOpener(
   Directory dir,
   SecureKeyStore keys, {
   int schemaVersion = currentSchemaVersion,
-  Map<int, Migration> migrations = const {},
+  Map<int, Migration>? migrations,
+  DateTime Function() now = testNow,
 }) =>
     DbOpener(
       files: DbFiles(dir),
@@ -32,7 +33,7 @@ DbOpener testOpener(
       schemaVersion: schemaVersion,
       migrations: migrations,
       retryDelay: Duration.zero,
-      now: testNow,
+      now: now,
     );
 
 /// Tạo CSDL ở bước Đồng ý; đóng tự động khi test xong.
