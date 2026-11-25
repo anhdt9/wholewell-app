@@ -4,6 +4,7 @@ import '../state/app_scope.dart';
 import 'common/log_sheet.dart';
 import 'diary_screen.dart';
 import 'me_screen.dart';
+import 'supplements_screen.dart';
 import 'today_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -19,10 +20,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final state = AppScope.of(context);
     final d = state.day;
-    const pages = [TodayScreen(), DiaryScreen(), MeScreen()];
+    const pages = [TodayScreen(), DiaryScreen(), SupplementsScreen(), MeScreen()];
     return Scaffold(
       appBar: AppBar(
-        title: Text(['Hôm nay', 'Nhật ký', 'Tôi'][_tab]),
+        title: Text(['Hôm nay', 'Nhật ký', 'Bổ sung', 'Tôi'][_tab]),
         actions: [
           if (_tab < 2)
             TextButton.icon(
@@ -55,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
         destinations: const [
           NavigationDestination(icon: Icon(Icons.insights), label: 'Hôm nay'),
           NavigationDestination(icon: Icon(Icons.restaurant), label: 'Nhật ký'),
+          NavigationDestination(icon: Icon(Icons.medication_outlined), label: 'Bổ sung'),
           NavigationDestination(icon: Icon(Icons.person), label: 'Tôi'),
         ],
       ),

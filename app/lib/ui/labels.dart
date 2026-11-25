@@ -1,4 +1,5 @@
 import 'package:health_engine/health_engine.dart';
+import 'package:journal_db/journal_db.dart';
 
 /// Nhãn tiếng Việt. Dùng lời thường, không hiện tên viết tắt của chuẩn.
 String levelLabel(ActivityLevel l) => switch (l) {
@@ -112,4 +113,31 @@ String fmtWaterMl(double ml) {
     return buf.toString();
   }
   return ml.toStringAsFixed(1).replaceAll('.', ',');
+}
+
+String countUnitLabel(CountUnit u) => switch (u) {
+      CountUnit.tablet => 'viên',
+      CountUnit.capsule => 'viên nang',
+      CountUnit.softgel => 'viên nang mềm',
+      CountUnit.sachet => 'gói',
+      CountUnit.drop => 'giọt',
+      CountUnit.ml => 'ml',
+      CountUnit.g => 'g',
+    };
+
+String fmtExpiryMonth(String yyyyMm) {
+  final parts = yyyyMm.split('-');
+  if (parts.length != 2) return yyyyMm;
+  return '${parts[1]}/${parts[0]}';
+}
+
+/// Kiểm hợp lệ `MM/YYYY` (tháng `01..12`, năm 4 chữ số) và chuyển sang `YYYY-MM`.
+({bool ok, String? yyyyMm}) parseExpiryMmYyyy(String raw) {
+  final t = raw.trim();
+  if (t.isEmpty) return (ok: true, yyyyMm: null);
+  final m = RegExp(r'^(\d{2})/(\d{4})$').firstMatch(t);
+  if (m == null) return (ok: false, yyyyMm: null);
+  final month = int.parse(m.group(1)!);
+  if (month < 1 || month > 12) return (ok: false, yyyyMm: null);
+  return (ok: true, yyyyMm: '${m.group(2)}-${m.group(1)}');
 }

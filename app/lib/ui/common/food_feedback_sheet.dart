@@ -19,6 +19,7 @@ Future<void> presentFoodFeedback(
   required ReferencePack pack,
   VoidCallback? onEdit,
   VoidCallback? onUndo,
+  VoidCallback? onAddBox,
 }) async {
   final messenger = ScaffoldMessenger.maybeOf(context);
   if (feedback.failed) {
@@ -37,15 +38,16 @@ Future<void> presentFoodFeedback(
       builder: (ctx) {
         final cs = Theme.of(ctx).colorScheme;
         final t = Theme.of(ctx).textTheme;
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(child: Text(feedback.summaryText, style: t.bodyMedium)),
+        return SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: Text(feedback.summaryText, style: t.bodyMedium)),
                   if (onEdit != null)
                     TextButton(
                       onPressed: () {
@@ -96,6 +98,25 @@ Future<void> presentFoodFeedback(
                   ),
                 ),
               ],
+              if (feedback.stockShortfall > 0)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.inventory_2_outlined, size: 18),
+                      const SizedBox(width: 8),
+                      const Expanded(child: Text('Kho đã hết · Thêm hộp')),
+                      if (onAddBox != null)
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            onAddBox();
+                          },
+                          child: const Text('Thêm hộp'),
+                        ),
+                    ],
+                  ),
+                ),
               Row(
                 children: [
                   Expanded(
@@ -116,7 +137,8 @@ Future<void> presentFoodFeedback(
                     child: const Text('Hoàn tác lần ghi'),
                   ),
                 ),
-            ],
+              ],
+            ),
           ),
         );
       },
