@@ -49,7 +49,7 @@ class ParsedLabelPackage {
 class SupplementLabelParser {
   // Bắt số + đơn vị, kể cả một số lỗi nhận nhầm ký tự phổ biến của OCR (mq/m9 -> mg, meg/ucg -> ug, 1u/lu -> iu).
   static final _amountUnitRe = RegExp(
-    r'(\d+(?:[.,]\d+)?)\s*(mcg\s*dfe|µg\s*dfe|ug\s*dfe|mcg\s*rae|µg\s*rae|ug\s*rae|mg\s*ne|mcg|µg|ug|meg|ucg|pcg|u9|mg|mq|m9|iu|ui|1u|lu|g)(?![a-zA-ZÀ-ỹ])',
+    r'(\d+(?:[.,]\d+)?)\s*(mcg\s*dfe|µg\s*dfe|ug\s*dfe|mcg\s*rae|µg\s*rae|ug\s*rae|mg\s*ne|micrograms?|milligrams?|grams?|international\s+units?|mcg|µg|ug|meg|ucg|pcg|u9|mg|mq|m9|iu|ui|1u|lu|g)(?![a-zA-ZÀ-ỹ])',
     caseSensitive: false,
   );
 
@@ -276,10 +276,12 @@ class SupplementLabelParser {
         'mcg dfe' || 'µg dfe' || 'ug dfe' => LabelUnit.ugDfe,
         'mcg rae' || 'µg rae' || 'ug rae' => LabelUnit.ugRae,
         'mg ne' => LabelUnit.mgNe,
-        'mg' || 'mq' || 'm9' => LabelUnit.mg,
-        'mcg' || 'µg' || 'ug' || 'meg' || 'ucg' || 'pcg' || 'u9' => LabelUnit.ug,
-        'iu' || 'ui' || '1u' || 'lu' => LabelUnit.iu,
-        'g' => LabelUnit.g,
+        'mg' || 'mq' || 'm9' || 'milligram' || 'milligrams' => LabelUnit.mg,
+        'mcg' || 'µg' || 'ug' || 'meg' || 'ucg' || 'pcg' || 'u9' || 'microgram' || 'micrograms' =>
+          LabelUnit.ug,
+        'iu' || 'ui' || '1u' || 'lu' || 'international unit' || 'international units' =>
+          LabelUnit.iu,
+        'g' || 'gram' || 'grams' => LabelUnit.g,
         _ => null,
       };
 

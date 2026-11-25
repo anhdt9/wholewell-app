@@ -109,6 +109,17 @@ void main() {
       expect(unitLabel(LabelUnit.mgNe.name), 'mg NE');
       expect(unitLabel(LabelUnit.iu.name), 'IU');
       expect(unitLabel(LabelUnit.ug.name), 'µg');
+
+      final nwPkg = SupplementLabelParser.parsePackage(const [
+        "Nature's Way Kids Smart",
+        'Vitamin D3 25 micrograms',
+        'Vitamin C 100 milligrams',
+      ]);
+      expect(nwPkg.ingredients, hasLength(2));
+      expect(nwPkg.ingredients[0].nutrientId, 'vitD');
+      expect(nwPkg.ingredients[0].unit, LabelUnit.ug);
+      expect(nwPkg.ingredients[1].nutrientId, 'vitC');
+      expect(nwPkg.ingredients[1].unit, LabelUnit.mg);
     });
 
     test('parseAiJson đọc JSON từ Gemini Nano và trả null khi JSON lỗi', () {
