@@ -14,12 +14,18 @@ class ProductInfoScreen extends StatefulWidget {
   final List<IngredientDraft>? initialIngredients;
   final Product? editingProduct;
   final String? initialBarcode;
+  final String? initialName;
+  final double? initialBoxRemaining;
+  final CountUnit? initialCountUnit;
 
   const ProductInfoScreen({
     super.key,
     this.initialIngredients,
     this.editingProduct,
     this.initialBarcode,
+    this.initialName,
+    this.initialBoxRemaining,
+    this.initialCountUnit,
   });
 
   @override
@@ -42,10 +48,13 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
   void initState() {
     super.initState();
     final p = widget.editingProduct;
-    _name = TextEditingController(text: p?.name ?? '');
+    _name = TextEditingController(text: p?.name ?? widget.initialName ?? '');
     _barcode = TextEditingController(text: p?.barcode ?? widget.initialBarcode ?? '');
     _unitsPerServing = TextEditingController(text: p == null ? '1' : fmt(p.unitsPerServing));
-    _countUnit = p?.countUnit ?? CountUnit.tablet;
+    _countUnit = p?.countUnit ?? widget.initialCountUnit ?? CountUnit.tablet;
+    if (p == null && widget.initialBoxRemaining != null) {
+      _boxRemaining.text = fmt(widget.initialBoxRemaining!);
+    }
   }
 
   @override

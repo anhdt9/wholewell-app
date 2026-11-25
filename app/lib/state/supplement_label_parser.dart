@@ -2,6 +2,7 @@
 library;
 
 import 'package:health_engine/health_engine.dart';
+import 'package:journal_db/journal_db.dart';
 
 class ParsedIngredientLine {
   final String rawLine;
@@ -23,10 +24,31 @@ class ParsedIngredientLine {
   });
 }
 
-/// Phân tích các dòng text OCR thành danh sách dòng thành phần tiềm năng để người dùng xác nhận.
+class ParsedLabelPackage {
+  final List<ParsedIngredientLine> ingredients;
+  final String? suggestedProductName;
+  final double? suggestedBoxRemaining;
+  final CountUnit? suggestedCountUnit;
+  final List<String> rawLines;
+
+  const ParsedLabelPackage({
+    required this.ingredients,
+    this.suggestedProductName,
+    this.suggestedBoxRemaining,
+    this.suggestedCountUnit,
+    this.rawLines = const [],
+  });
+}
+
+/// Phân tích các dòng text OCR thành danh sách dòng thành phần và gợi ý thông tin sản phẩm.
 class SupplementLabelParser {
   static final _amountUnitRe = RegExp(
-    r'(\d+(?:[.,]\d+)?)\s*(mcg|µg|ug|mg|iu|g)\b',
+    r'(\d+(?:[.,]\d+)?)\s*(mcg|µg|ug|mg|iu|ui|g)\b',
+    caseSensitive: false,
+  );
+
+  static final _packCountRe = RegExp(
+    r'(\d+)\s*(tablets?|capsules?|softgels?|sachets?|gummies|viên\s*nang\s*mềm|viên\s*nang|viên|gói)\b',
     caseSensitive: false,
   );
 
@@ -35,56 +57,139 @@ class SupplementLabelParser {
     ('vitC', ['vitamin c', 'vit c', 'ascorbic acid', 'ascorbat']),
     ('vitD', ['vitamin d3', 'vitamin d', 'vit d', 'cholecalciferol', 'ergocalciferol']),
     ('vitE', ['vitamin e', 'vit e', 'tocopherol', 'tocopheryl']),
-    ('vitK', ['vitamin k', 'vit k', 'phylloquinone', 'menaquinone']),
+    ('vitK', ['vitamin k2', 'vitamin k1', 'vitamin k', 'vit k', 'phylloquinone', 'menaquinone']),
     ('thiamin', ['vitamin b1', 'thiamin', 'thiamine']),
     ('riboflavin', ['vitamin b2', 'riboflavin']),
     ('niacin', ['vitamin b3', 'niacin', 'niacinamide', 'nicotinamide']),
     ('vitB6', ['vitamin b6', 'pyridoxine']),
-    ('folicAcid', ['folic acid', 'axit folic']),
+    ('folicAcid', ['folic acid', 'axit folic', 'acid folic']),
     ('folate', ['folate', 'dfe']),
     ('vitB12', ['vitamin b12', 'cobalamin', 'cyanocobalamin', 'methylcobalamin']),
     ('biotin', ['biotin', 'vitamin b7']),
     ('pantothenic', ['pantothenic', 'vitamin b5']),
-    ('calcium', ['calcium', 'canxi']),
-    ('iron', ['iron', 'ferrous', 'ferric', 'sắt']),
+    ('calcium', ['calcium', 'canxi', 'calci']),
+    ('iron', ['iron', 'ferrous', 'ferric', 'sắt', 'sat']),
     ('magnesium', ['magnesium', 'magie', 'magnesi']),
-    ('zinc', ['zinc', 'kẽm']),
+    ('zinc', ['zinc', 'kẽm', 'kem']),
     ('selenium', ['selenium', 'selen']),
     ('copper', ['copper', 'đồng']),
     ('iodine', ['iodine', 'iốt', 'iod']),
-    ('phosphorus', ['phosphorus', 'phốt pho']),
+    ('phosphorus', ['phosphorus', 'phốt pho', 'phot pho']),
     ('potassium', ['potassium', 'kali']),
   ];
 
-  static List<ParsedIngredientLine> parseLines(List<String> rawLines) {
-    final out = <ParsedIngredientLine>[];
-    for (final raw in rawLines) {
-      final line = raw.trim();
-      if (line.isEmpty) continue;
-      final m = _amountUnitRe.firstMatch(line);
+  static const _ignoredHeaderWords = [
+    'supplement facts',
+    'nutrition facts',
+    'thành phần',
+    'serving size',
+    'servings per',
+    'amount per serving',
+    'daily value',
+    '% dv',
+    'directions',
+    'cách dùng',
+    'hướng dẫn',
+    'thực phẩm bảo vệ sức khỏe',
+  ];
+
+  static double? _parseNumber(String raw) {
+    final s = raw.trim();
+    // Hỗ trợ dấu phân cách nghìn kiểu Mỹ (1,250) hoặc VN (1.250).
+    if (RegExp(r'^\d{1,3}(,\d{3})+$').hasMatch(s)) {
+      return double.tryParse(s.replaceAll(',', ''));
+    }
+    if (RegExp(r'^\d{1,3}(\.\d{3})+$').hasMatch(s)) {
+      return double.tryParse(s.replaceAll('.', ''));
+    }
+    return double.tryParse(s.replaceAll(',', '.'));
+  }
+
+  static String? _matchNutrientId(String lower) {
+    for (final (nid, keys) in _nutrientPatterns) {
+      if (keys.any(lower.contains)) return nid;
+    }
+    return null;
+  }
+
+  static ParsedLabelPackage parsePackage(List<String> rawLines) {
+    final lines = [for (final r in rawLines) if (r.trim().isNotEmpty) r.trim()];
+    final ingredients = <ParsedIngredientLine>[];
+    String? suggestedName;
+    double? suggestedBoxCount;
+    CountUnit? suggestedUnit;
+
+    // 1. Gợi ý tên sản phẩm & quy cách đóng gói từ các dòng đầu/không phải dòng thành phần.
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      final lower = line.toLowerCase();
+      final countMatch = _packCountRe.firstMatch(lower);
+      if (suggestedBoxCount == null && countMatch != null) {
+        suggestedBoxCount = double.tryParse(countMatch.group(1)!);
+        final u = countMatch.group(2)!;
+        if (u.contains('softgel') || u.contains('mềm')) {
+          suggestedUnit = CountUnit.softgel;
+        } else if (u.contains('capsule') || u.contains('nang')) {
+          suggestedUnit = CountUnit.capsule;
+        } else if (u.contains('sachet') || u.contains('gói')) {
+          suggestedUnit = CountUnit.sachet;
+        } else {
+          suggestedUnit = CountUnit.tablet;
+        }
+      }
+      final nextIsAmountOnly = i + 1 < lines.length &&
+          _amountUnitRe.hasMatch(lines[i + 1]) &&
+          _matchNutrientId(lines[i + 1].toLowerCase()) == null;
+      if (suggestedName == null &&
+          countMatch == null &&
+          !nextIsAmountOnly &&
+          line.length >= 3 &&
+          line.length <= 60 &&
+          !_amountUnitRe.hasMatch(line) &&
+          !_ignoredHeaderWords.any(lower.contains) &&
+          RegExp(r'[a-zA-ZÀ-ỹ]').hasMatch(line)) {
+        suggestedName = line;
+      }
+    }
+
+    // 2. Phân tích từng dòng thành phần (có ghép cặp khi tên chất và số lượng tách 2 dòng kề nhau).
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      var m = _amountUnitRe.firstMatch(line);
+      var combinedLine = line;
+
+      if (m == null) {
+        // Thử ghép nếu dòng hiện tại có tên chất nhưng số lượng nằm ngay ở dòng kế tiếp.
+        final hasNutrient = _matchNutrientId(line.toLowerCase()) != null;
+        if (hasNutrient && i + 1 < lines.length) {
+          final nextLine = lines[i + 1];
+          final nextMatch = _amountUnitRe.firstMatch(nextLine);
+          if (nextMatch != null && _matchNutrientId(nextLine.toLowerCase()) == null) {
+            combinedLine = '$line $nextLine';
+            m = _amountUnitRe.firstMatch(combinedLine);
+            i++;
+          }
+        }
+      }
+
       if (m == null) continue;
 
-      final amtStr = m.group(1)!.replaceAll(',', '.');
-      final amount = double.tryParse(amtStr);
+      final amount = _parseNumber(m.group(1)!);
       if (amount == null || amount <= 0) continue;
 
       final unitRaw = m.group(2)!.toLowerCase();
       final unit = switch (unitRaw) {
         'mg' => LabelUnit.mg,
         'mcg' || 'µg' || 'ug' => LabelUnit.ug,
-        'iu' => LabelUnit.iu,
+        'iu' || 'ui' => LabelUnit.iu,
         'g' => LabelUnit.g,
         _ => null,
       };
 
-      final lower = line.toLowerCase();
-      String? matchedNid;
-      for (final (nid, keys) in _nutrientPatterns) {
-        if (keys.any(lower.contains)) {
-          matchedNid = nid;
-          break;
-        }
-      }
+      final lower = combinedLine.toLowerCase();
+      final matchedNid = _matchNutrientId(lower);
+      final freeName = matchedNid == null ? _extractName(combinedLine, m.start) : null;
+      if (matchedNid == null && (freeName == null || freeName.length < 2)) continue;
 
       var form = NutrientForm.unknown;
       var compoundKind = CompoundKind.elemental;
@@ -123,21 +228,31 @@ class SupplementLabelParser {
         form = NutrientForm.folicAcid;
       }
 
-      out.add(ParsedIngredientLine(
-        rawLine: line,
+      ingredients.add(ParsedIngredientLine(
+        rawLine: combinedLine,
         nutrientId: matchedNid,
-        freeName: matchedNid == null ? _extractName(line, m.start) : null,
+        freeName: freeName,
         form: form,
         amount: amount,
         unit: unit,
         compoundKind: compoundKind,
       ));
     }
-    return out;
+
+    return ParsedLabelPackage(
+      ingredients: ingredients,
+      suggestedProductName: suggestedName,
+      suggestedBoxRemaining: suggestedBoxCount,
+      suggestedCountUnit: suggestedUnit,
+      rawLines: lines,
+    );
   }
 
+  static List<ParsedIngredientLine> parseLines(List<String> rawLines) =>
+      parsePackage(rawLines).ingredients;
+
   static String? _extractName(String line, int matchStart) {
-    final prefix = line.substring(0, matchStart).replaceAll(RegExp(r'[:\-–]+$'), '').trim();
+    final prefix = line.substring(0, matchStart).replaceAll(RegExp(r'[:\-–()]+$'), '').trim();
     return prefix.isEmpty ? null : prefix;
   }
 }

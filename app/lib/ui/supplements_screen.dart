@@ -121,6 +121,7 @@ class ScanProductScreen extends StatefulWidget {
 }
 
 class _ScanProductScreenState extends State<ScanProductScreen> {
+  final List<String> _imagePaths = [];
   String? _barcode;
   String? _statusMsg;
   bool _busy = false;
@@ -162,7 +163,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
     if (code != null && mounted) await _handleBarcode(code);
   }
 
-  Future<void> _runOcr({required bool fromCamera}) async {
+  Future<void> _addImage({required bool fromCamera}) async {
     if (_busy) return;
     setState(() {
       _busy = true;
@@ -185,31 +186,40 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
       setState(() => _busy = false);
       return;
     }
-    setState(() => _statusMsg = 'Đang đọc chữ trên nhãn...');
-    final ocr = await state.ocrEngine.recognizeLabelFromImage(picked.path!);
+    setState(() {
+      _busy = false;
+      _imagePaths.add(picked.path!);
+      _statusMsg = 'Đã thêm ảnh ${_imagePaths.length}. Có thể chụp thêm mặt khác (tên, bảng thành phần) rồi bấm Đọc thông tin.';
+    });
+  }
+
+  Future<void> _analyzeImages() async {
+    if (_busy || _imagePaths.isEmpty) return;
+    setState(() {
+      _busy = true;
+      _statusMsg = 'Đang đọc chữ trên ${_imagePaths.length} ảnh...';
+    });
+    final state = AppScope.of(context);
+    final ocr = await state.ocrEngine.recognizeLabelFromImages(_imagePaths);
     if (!mounted) return;
     setState(() => _busy = false);
-    if (ocr.errorMessage != null) {
+    if (ocr.errorMessage != null && ocr.lines.isEmpty) {
       setState(() => _statusMsg = ocr.errorMessage);
       return;
     }
-    final parsed = SupplementLabelParser.parseLines(ocr.lines);
-    if (parsed.isEmpty) {
-      setState(() {
-        _statusMsg = 'Không đọc được chữ rõ trên ảnh. Hãy chụp lại hoặc nhập tay.';
-      });
-      return;
-    }
-    _openConfirm([
-      for (final p in parsed) EditableIngredient.fromParsed(p, state.pack),
-    ]);
+    final pkg = SupplementLabelParser.parsePackage(ocr.lines);
+    _openConfirm(
+      [for (final p in pkg.ingredients) EditableIngredient.fromParsed(p, state.pack)],
+      pkg: pkg,
+    );
   }
 
-  void _openConfirm(List<EditableIngredient> initial) {
+  void _openConfirm(List<EditableIngredient> initial, {ParsedLabelPackage? pkg}) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => ConfirmIngredientsScreen(
           initialLines: initial,
+          rawOcrLines: pkg?.rawLines ?? const [],
           scannedBarcode: _barcode,
           onConfirmed: (ctx, drafts) async {
             await Navigator.of(ctx).pushReplacement(
@@ -217,6 +227,9 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
                 builder: (_) => ProductInfoScreen(
                   initialIngredients: drafts,
                   initialBarcode: _barcode,
+                  initialName: pkg?.suggestedProductName,
+                  initialBoxRemaining: pkg?.suggestedBoxRemaining,
+                  initialCountUnit: pkg?.suggestedCountUnit,
                 ),
               ),
             );
@@ -242,7 +255,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
             )
           else if (_useLiveMobileScanner)
             SizedBox(
-              height: 200,
+              height: 180,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: MobileScanner(
@@ -257,7 +270,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
             )
           else
             Container(
-              height: 120,
+              height: 110,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
@@ -271,6 +284,22 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
               padding: const EdgeInsets.only(bottom: 8),
               child: Text('Mã vạch đã quét: $_barcode'),
             ),
+          if (_imagePaths.isNotEmpty) ...[
+            Text('Ảnh đã chọn (${_imagePaths.length})', style: Theme.of(context).textTheme.titleSmall),
+            const SizedBox(height: 4),
+            for (var i = 0; i < _imagePaths.length; i++)
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.image_outlined),
+                title: Text('Ảnh ${i + 1}'),
+                trailing: IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: _busy ? null : () => setState(() => _imagePaths.removeAt(i)),
+                ),
+              ),
+            const SizedBox(height: 8),
+          ],
           if (_statusMsg != null) ...[
             Text(
               _statusMsg!,
@@ -285,16 +314,24 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
               padding: EdgeInsets.symmetric(vertical: 12),
               child: Center(child: CircularProgressIndicator()),
             ),
-          FilledButton.icon(
-            onPressed: _busy ? null : () => _runOcr(fromCamera: true),
+          if (_imagePaths.isNotEmpty) ...[
+            FilledButton.icon(
+              onPressed: _busy ? null : _analyzeImages,
+              icon: const Icon(Icons.document_scanner_outlined),
+              label: Text('Đọc thông tin từ ${_imagePaths.length} ảnh'),
+            ),
+            const SizedBox(height: 8),
+          ],
+          OutlinedButton.icon(
+            onPressed: _busy ? null : () => _addImage(fromCamera: true),
             icon: const Icon(Icons.photo_camera),
-            label: const Text('Chụp ảnh bảng thành phần'),
+            label: Text(_imagePaths.isEmpty ? 'Chụp ảnh nhãn (tên, thành phần)' : 'Chụp thêm ảnh khác'),
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
-            onPressed: _busy ? null : () => _runOcr(fromCamera: false),
+            onPressed: _busy ? null : () => _addImage(fromCamera: false),
             icon: const Icon(Icons.photo_library_outlined),
-            label: const Text('Chọn ảnh từ thư viện'),
+            label: Text(_imagePaths.isEmpty ? 'Chọn ảnh từ thư viện' : 'Chọn thêm ảnh từ thư viện'),
           ),
           const SizedBox(height: 8),
           TextButton(

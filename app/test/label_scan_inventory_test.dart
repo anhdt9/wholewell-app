@@ -39,6 +39,26 @@ void main() {
       expect(parsed[3].amount, 30);
     });
 
+    test('parsePackage ghép dòng 2 cột, hỗ trợ 1,250 và gợi ý tên/số viên từ ảnh mặt trước', () {
+      final pkg = SupplementLabelParser.parsePackage(const [
+        'Nature Made D3 + Calcium',
+        '60 Tablets',
+        'Supplement Facts',
+        'Vitamin D3',
+        '1000 IU',
+        'Calcium (as calcium carbonate) 1,250 mg',
+      ]);
+      expect(pkg.suggestedProductName, 'Nature Made D3 + Calcium');
+      expect(pkg.suggestedBoxRemaining, 60);
+      expect(pkg.suggestedCountUnit, CountUnit.tablet);
+      expect(pkg.ingredients, hasLength(2));
+      expect(pkg.ingredients[0].nutrientId, 'vitD');
+      expect(pkg.ingredients[0].amount, 1000);
+      expect(pkg.ingredients[1].nutrientId, 'calcium');
+      expect(pkg.ingredients[1].amount, 1250);
+      expect(pkg.ingredients[1].form, 'calcium_carbonate');
+    });
+
     test('parseExpiryMmYyyy kiểm hợp lệ tháng 01..12 và chuyển sang YYYY-MM', () {
       expect(parseExpiryMmYyyy('').ok, isTrue);
       expect(parseExpiryMmYyyy('').yyyyMm, isNull);
@@ -107,12 +127,14 @@ void main() {
       expect(find.textContaining('8935001122'), findsOneWidget);
 
       // Chụp ảnh bị từ chối quyền camera -> thông báo chuyển sang chọn ảnh thư viện.
-      await tester.tap(find.text('Chụp ảnh bảng thành phần'));
+      await tester.tap(find.text('Chụp ảnh nhãn (tên, thành phần)'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Chưa có quyền máy ảnh'), findsOneWidget);
 
-      // Chọn ảnh từ thư viện -> chạy OCR -> mở Xác nhận thành phần.
+      // Chọn ảnh từ thư viện -> bấm Đọc thông tin từ 1 ảnh -> mở Xác nhận thành phần.
       await tester.tap(find.text('Chọn ảnh từ thư viện'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Đọc thông tin từ 1 ảnh'));
       await tester.pumpAndSettle();
       expect(find.text('Xác nhận thành phần'), findsOneWidget);
       // Vitamin D3 25 mg phải hiện cảnh báo nghi nhầm đơn vị!

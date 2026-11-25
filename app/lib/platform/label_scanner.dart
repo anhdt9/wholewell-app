@@ -1,6 +1,8 @@
 /// Interface và cài đặt trên máy cho chụp/chọn ảnh nhãn, OCR và quét mã vạch.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/services.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
@@ -22,6 +24,7 @@ abstract interface class OcrEngine {
   Future<OcrImagePickResult> captureLabelImage();
   Future<OcrImagePickResult> pickLabelImageFromGallery();
   Future<OcrLabelResult> recognizeLabelFromImage(String imagePath);
+  Future<OcrLabelResult> recognizeLabelFromImages(List<String> imagePaths);
   Future<void> dispose();
 }
 
@@ -61,17 +64,66 @@ class MlKitOcrEngine implements OcrEngine {
       final rec = _recognizer ??= TextRecognizer(script: TextRecognitionScript.latin);
       final input = InputImage.fromFilePath(imagePath);
       final recognized = await rec.processImage(input);
-      final lines = <String>[
+
+      // Nhóm các TextLine theo hàng ngang (Y) để ghép cột trái (tên chất) + cột phải (số lượng).
+      final allLines = <TextLine>[
         for (final block in recognized.blocks)
           for (final line in block.lines)
-            if (line.text.trim().isNotEmpty) line.text.trim(),
+            if (line.text.trim().isNotEmpty) line,
       ];
-      return OcrLabelResult(lines: lines);
+      if (allLines.isEmpty) return const OcrLabelResult(lines: []);
+
+      allLines.sort((a, b) => a.boundingBox.top.compareTo(b.boundingBox.top));
+      final rows = <List<TextLine>>[];
+      for (final line in allLines) {
+        final cy = line.boundingBox.center.dy;
+        final h = math.max(10.0, line.boundingBox.height);
+        List<TextLine>? targetRow;
+        for (final row in rows) {
+          final ref = row.first;
+          final refCy = ref.boundingBox.center.dy;
+          final refH = math.max(10.0, ref.boundingBox.height);
+          if ((cy - refCy).abs() <= math.min(h, refH) * 0.65) {
+            targetRow = row;
+            break;
+          }
+        }
+        if (targetRow != null) {
+          targetRow.add(line);
+        } else {
+          rows.add([line]);
+        }
+      }
+
+      final merged = <String>[];
+      for (final row in rows) {
+        row.sort((a, b) => a.boundingBox.left.compareTo(b.boundingBox.left));
+        merged.add(row.map((l) => l.text.trim()).join(' '));
+      }
+      return OcrLabelResult(lines: merged);
     } on Object {
       return const OcrLabelResult(
         errorMessage: 'Không đọc được chữ rõ trên ảnh. Hãy chụp lại hoặc nhập tay.',
       );
     }
+  }
+
+  @override
+  Future<OcrLabelResult> recognizeLabelFromImages(List<String> imagePaths) async {
+    final all = <String>[];
+    String? err;
+    for (final path in imagePaths) {
+      final res = await recognizeLabelFromImage(path);
+      if (res.errorMessage != null) {
+        err = res.errorMessage;
+      } else {
+        all.addAll(res.lines);
+      }
+    }
+    if (all.isEmpty && err != null) {
+      return OcrLabelResult(errorMessage: err);
+    }
+    return OcrLabelResult(lines: all);
   }
 
   @override
@@ -86,11 +138,13 @@ class FakeOcrEngine implements OcrEngine {
   OcrImagePickResult nextCaptureResult;
   OcrImagePickResult nextGalleryResult;
   OcrLabelResult nextOcrResult;
+  final Map<String, OcrLabelResult> resultsByPath;
 
   FakeOcrEngine({
     this.nextCaptureResult = const OcrImagePickResult(path: '/fake/camera.jpg'),
     this.nextGalleryResult = const OcrImagePickResult(path: '/fake/gallery.jpg'),
     this.nextOcrResult = const OcrLabelResult(),
+    this.resultsByPath = const {},
   });
 
   @override
@@ -100,7 +154,24 @@ class FakeOcrEngine implements OcrEngine {
   Future<OcrImagePickResult> pickLabelImageFromGallery() async => nextGalleryResult;
 
   @override
-  Future<OcrLabelResult> recognizeLabelFromImage(String imagePath) async => nextOcrResult;
+  Future<OcrLabelResult> recognizeLabelFromImage(String imagePath) async =>
+      resultsByPath[imagePath] ?? nextOcrResult;
+
+  @override
+  Future<OcrLabelResult> recognizeLabelFromImages(List<String> imagePaths) async {
+    final all = <String>[];
+    String? err;
+    for (final p in imagePaths) {
+      final res = await recognizeLabelFromImage(p);
+      if (res.errorMessage != null) {
+        err = res.errorMessage;
+      } else {
+        all.addAll(res.lines);
+      }
+    }
+    if (all.isEmpty && err != null) return OcrLabelResult(errorMessage: err);
+    return OcrLabelResult(lines: all);
+  }
 
   @override
   Future<void> dispose() async {}

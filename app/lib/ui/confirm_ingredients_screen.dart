@@ -70,6 +70,7 @@ class EditableIngredient {
 
 class ConfirmIngredientsScreen extends StatefulWidget {
   final List<EditableIngredient> initialLines;
+  final List<String> rawOcrLines;
   final String? scannedBarcode;
   final int? editingProductId;
   final Future<void> Function(BuildContext ctx, List<IngredientDraft> drafts) onConfirmed;
@@ -77,6 +78,7 @@ class ConfirmIngredientsScreen extends StatefulWidget {
   const ConfirmIngredientsScreen({
     super.key,
     required this.initialLines,
+    this.rawOcrLines = const [],
     this.scannedBarcode,
     this.editingProductId,
     required this.onConfirmed,
@@ -231,6 +233,18 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
             icon: const Icon(Icons.add),
             label: const Text('Thêm dòng thành phần'),
           ),
+          if (widget.rawOcrLines.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            ExpansionTile(
+              title: Text('Chữ đã đọc từ ảnh (${widget.rawOcrLines.length} dòng)'),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: SelectableText(widget.rawOcrLines.join('\n')),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
       bottomNavigationBar: SafeArea(
