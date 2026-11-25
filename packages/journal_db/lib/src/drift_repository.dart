@@ -349,11 +349,9 @@ class DriftJournalRepository implements JournalRepository {
             await _update('UPDATE intake_lines SET day = ? WHERE food_entry_id = ?', [day, id]);
           }));
 
-  /// Đổi khẩu phần của món nhập theo nhãn: mọi lượng × mới ÷ cũ (đổi đơn vị là
-  /// tuyến tính, nên bằng tính lại từ số trên nhãn × khẩu phần ÷ gốc nhãn).
-  /// Món USDA, công thức tính lại theo gói đang cài (việc 3): [replaceFoodLines].
+  /// Đổi khẩu phần (và tùy chọn giờ/ngày/bữa) của món nhập theo nhãn trong một giao dịch.
   @override
-  Future<void> scaleLabelFoodPortion(int id, double newQty) async {
+  Future<void> scaleLabelFoodPortion(int id, double newQty, {DateTime? at, Meal? meal}) async {
     if (newQty <= 0) throw ArgumentError.value(newQty, 'newQty');
     return _guard(write: true, () => db.transaction(() async {
           final f = await foodById(id);
@@ -362,33 +360,50 @@ class DriftJournalRepository implements JournalRepository {
             throw StateError('Món không theo nhãn: tính lại theo gói dữ liệu (replaceFoodLines)');
           }
           final factor = newQty / f.portionQty;
-          await _update('UPDATE food_entries SET portion_qty = ? WHERE id = ?', [newQty, id]);
+          final nextAt = at ?? f.at;
+          final (ms, tz, day) = _when(nextAt);
+          await _update(
+            'UPDATE food_entries SET portion_qty = ?, at = ?, tz_offset = ?, day = ?, meal = ? WHERE id = ?',
+            [newQty, ms, tz, day, (meal ?? f.meal).name, id],
+          );
           await _update('DELETE FROM intake_lines WHERE food_entry_id = ?', [id]);
-          await _insertLines([for (final l in f.lines) l.scaled(factor)], foodId: id, day: f.day);
+          await _insertLines([for (final l in f.lines) l.scaled(factor)], foodId: id, day: day);
         }));
   }
 
-  /// Thay khẩu phần và các dòng đã tính lại theo gói đang cài; cập nhật `pack_version`.
+  /// Thay khẩu phần (và tùy chọn đơn vị/giờ/ngày/bữa) và các dòng đã tính lại trong một giao dịch.
   @override
   Future<void> replaceFoodLines(int id,
       {required double portionQty,
       String? portionUnit,
+      DateTime? at,
+      Meal? meal,
       required List<IntakeLine> lines,
       required String packVersion}) async {
     if (portionQty <= 0) throw ArgumentError.value(portionQty, 'portionQty');
     checkLinesWritable(lines);
     return _guard(write: true, () => db.transaction(() async {
-          final rows = await _select('SELECT day FROM food_entries WHERE id = ?', [id]);
+          final rows = await _select('SELECT at, tz_offset, day, meal, portion_unit FROM food_entries WHERE id = ?', [id]);
           if (rows.isEmpty) throw StateError('Không có món $id');
-          if (portionUnit != null) {
-            await _update('UPDATE food_entries SET portion_qty = ?, portion_unit = ?, pack_version = ? WHERE id = ?',
-                [portionQty, portionUnit, packVersion, id]);
+          final cur = rows.first;
+          final String day;
+          final int ms;
+          final int tz;
+          if (at != null) {
+            (ms, tz, day) = _when(at);
           } else {
-            await _update('UPDATE food_entries SET portion_qty = ?, pack_version = ? WHERE id = ?',
-                [portionQty, packVersion, id]);
+            ms = cur['at'] as int;
+            tz = cur['tz_offset'] as int;
+            day = cur['day'] as String;
           }
+          final nextMeal = meal?.name ?? (cur['meal'] as String);
+          final nextUnit = portionUnit ?? (cur['portion_unit'] as String);
+          await _update(
+            'UPDATE food_entries SET portion_qty = ?, portion_unit = ?, at = ?, tz_offset = ?, day = ?, meal = ?, pack_version = ? WHERE id = ?',
+            [portionQty, nextUnit, ms, tz, day, nextMeal, packVersion, id],
+          );
           await _update('DELETE FROM intake_lines WHERE food_entry_id = ?', [id]);
-          await _insertLines(lines, foodId: id, day: rows.first['day'] as String);
+          await _insertLines(lines, foodId: id, day: day);
         }));
   }
 

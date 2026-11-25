@@ -297,7 +297,7 @@ class DiaryController extends ChangeNotifier {
     if (ref != null && !ref.startsWith('custom:') && _foodLibrary != null && !_foodLibraryBroken) {
       final detail = await _foodLibrary!.getById(ref);
       if (detail != null) {
-        final grams = _gramsForEntry(detail, sample.portionUnit, sample.portionQty);
+        final grams = detail.gramsForPortion(sample.portionUnit, sample.portionQty);
         if (grams != null && grams > 0) {
           return recordLibraryFood(
             food: detail,
@@ -363,6 +363,7 @@ class DiaryController extends ChangeNotifier {
         savedFoodId: id,
         summaryText: 'Đã ghi ${input.name}, ${_qtyLabel(input.portionQty)} ${input.portionUnit}',
         prevReport: prevReport,
+        nextReport: report(),
         addedLines: input.lines,
       );
     } on StorageFullException {
@@ -391,7 +392,7 @@ class DiaryController extends ChangeNotifier {
     return _recordFoodEntry(input);
   }
 
-  /// Sửa mục món ăn đã ghi (khẩu phần, bữa, ngày, giờ).
+  /// Sửa mục món ăn đã ghi (khẩu phần, bữa, ngày, giờ) trong một giao dịch duy nhất.
   Future<FoodLogFeedback> updateLoggedFood(
     FoodEntry old, {
     required double newQty,
@@ -404,14 +405,19 @@ class DiaryController extends ChangeNotifier {
     if (repo == null) {
       return const FoodLogFeedback(summaryText: 'Chưa lưu được. Thử lại', failed: true);
     }
-    final prevReport = report();
+    final targetDayKey = dayKey(newAt);
+    final isSameViewedDay = targetDayKey == dayKey(_day);
+    final prevTargetReport = isSameViewedDay ? report() : await _reportForDay(repo, _dateOnly(newAt));
     final targetUnit = newPortionUnit ?? old.portionUnit;
     var updatedLines = old.lines;
+
     try {
       final qtyChanged = (newQty - old.portionQty).abs() > 1e-9 || targetUnit != old.portionUnit;
+      final metaChanged = newMeal != old.meal || newAt != old.at;
+
       if (qtyChanged) {
         if (old.labelBasisQty != null) {
-          await repo.scaleLabelFoodPortion(old.id, newQty);
+          await repo.scaleLabelFoodPortion(old.id, newQty, at: newAt, meal: newMeal);
           final reloaded = await repo.foodById(old.id);
           if (reloaded != null) updatedLines = reloaded.lines;
         } else {
@@ -420,41 +426,47 @@ class DiaryController extends ChangeNotifier {
           if (ref != null && !ref.startsWith('custom:') && _foodLibrary != null && !_foodLibraryBroken) {
             detail = await _foodLibrary!.getById(ref);
           }
-          if (detail != null) {
-            final grams = newGramsIfLibrary ?? _gramsForEntry(detail, targetUnit, newQty);
-            if (grams != null && grams > 0) {
-              updatedLines = _foodLibrary!.computeLines(detail, grams, pack: pack);
-              await repo.replaceFoodLines(
-                old.id,
-                portionQty: newQty,
-                portionUnit: targetUnit,
-                lines: updatedLines,
-                packVersion: pack.version,
-              );
-            }
+          final grams = detail == null
+              ? null
+              : (newGramsIfLibrary ?? detail.gramsForPortion(targetUnit, newQty));
+          if (detail != null && grams != null && grams > 0) {
+            updatedLines = _foodLibrary!.computeLines(detail, grams, pack: pack);
+            await repo.replaceFoodLines(
+              old.id,
+              portionQty: newQty,
+              portionUnit: targetUnit,
+              at: newAt,
+              meal: newMeal,
+              lines: updatedLines,
+              packVersion: pack.version,
+            );
           } else {
-            // Fallback an toàn nếu món không còn trong thư viện mới.
+            // Fallback an toàn nếu món hoặc tên khẩu phần cũ không còn trong thư viện mới.
             final factor = newQty / old.portionQty;
             updatedLines = [for (final l in old.lines) l.scaled(factor)];
             await repo.replaceFoodLines(
               old.id,
               portionQty: newQty,
               portionUnit: targetUnit,
+              at: newAt,
+              meal: newMeal,
               lines: updatedLines,
               packVersion: old.packVersion,
             );
           }
         }
-      }
-      if (newMeal != old.meal || newAt != old.at) {
+      } else if (metaChanged) {
         await repo.updateFoodMeta(old.id, at: newAt, meal: newMeal);
       }
+
       _saveFailed = false;
       await reload();
+      final nextTargetReport = isSameViewedDay ? report() : await _reportForDay(repo, _dateOnly(newAt));
       return _feedbackAfterChange(
         savedFoodId: old.id,
         summaryText: 'Đã lưu ${old.name}, ${_qtyLabel(newQty)} $targetUnit',
-        prevReport: prevReport,
+        prevReport: prevTargetReport,
+        nextReport: nextTargetReport,
         addedLines: updatedLines,
       );
     } on StorageFullException {
@@ -464,6 +476,20 @@ class DiaryController extends ChangeNotifier {
     }
     notifyListeners();
     return const FoodLogFeedback(summaryText: 'Chưa lưu được. Thử lại', failed: true);
+  }
+
+  Future<DailyReport?> _reportForDay(JournalRepository repo, DateTime targetDate) async {
+    final p = _profile ?? await repo.loadProfile();
+    if (p == null) return null;
+    final data = await _loadDayAndWindow(repo, targetDate);
+    return dailyReport(
+      pack,
+      p,
+      intakeItemsFor(data.foods, data.doses),
+      workouts: [for (final w in data.workouts) w.workout],
+      last7Days: data.last7,
+      workouts7: data.workouts7,
+    );
   }
 
   Future<void> deleteFoodEntry(int id) => _write((repo) => repo.deleteFood(id));
@@ -485,6 +511,7 @@ class DiaryController extends ChangeNotifier {
         savedFoodId: id,
         summaryText: '$summaryVerb ${input.name}, ${_qtyLabel(input.portionQty)} ${input.portionUnit}',
         prevReport: prevReport,
+        nextReport: report(),
         addedLines: input.lines,
       );
     } on StorageFullException {
@@ -500,9 +527,9 @@ class DiaryController extends ChangeNotifier {
     required int savedFoodId,
     required String summaryText,
     required DailyReport? prevReport,
+    required DailyReport? nextReport,
     required List<IntakeLine> addedLines,
   }) {
-    final nextReport = report();
     if (nextReport == null) {
       return FoodLogFeedback(savedFoodId: savedFoodId, summaryText: summaryText);
     }
@@ -539,14 +566,6 @@ class DiaryController extends ChangeNotifier {
       stillOverUlLines: stillOver,
       mealsOverSugar: nextReport.sugar.mealsOverLimit,
     );
-  }
-
-  static double? _gramsForEntry(FoodDetail detail, String unitLabel, double qty) {
-    if (unitLabel.toLowerCase() == 'gram' || unitLabel.toLowerCase() == 'g') return qty;
-    for (final p in detail.portions) {
-      if (p.labelVi == unitLabel) return qty * p.grams;
-    }
-    return detail.defaultPortion == null ? null : qty * detail.defaultPortion!.grams;
   }
 
   static String _qtyLabel(double v) {

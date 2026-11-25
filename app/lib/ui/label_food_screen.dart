@@ -229,9 +229,12 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
     final built = LabelFoodBuilder.build(draft, pack: pack, profile: state.profile);
     if (built.warnings.isNotEmpty) {
       setState(() {
-        _flaggedNutrients
-          ..clear()
-          ..addAll(built.warnings.map((w) => w.nutrientId));
+        _flaggedNutrients.clear();
+        for (final w in built.warnings) {
+          _flaggedNutrients.add(w.nutrientId);
+          if (w.nutrientId == 'retinol') _flaggedNutrients.add('vitA');
+          if (w.nutrientId == 'folicAcid') _flaggedNutrients.add('folate');
+        }
       });
       final proceed = await _confirmUnitWarnings(built.warnings);
       if (proceed != true || !mounted) return;
@@ -327,6 +330,7 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: DropdownButtonFormField<String>(
+                          isExpanded: true,
                           initialValue: _basisUnit,
                           decoration: const InputDecoration(border: OutlineInputBorder()),
                           items: [for (final u in _basisUnits) DropdownMenuItem(value: u, child: Text(u))],
@@ -456,6 +460,7 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
             if (row.nutrientId == 'folate') ...[
               const SizedBox(height: 6),
               DropdownButtonFormField<LabelFolateMode>(
+                isExpanded: true,
                 initialValue: row.folateMode ?? LabelFolateMode.folateGeneral,
                 decoration: const InputDecoration(labelText: 'Cách ghi trên nhãn', border: OutlineInputBorder()),
                 items: const [
@@ -574,6 +579,8 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
       }
     }
     return DropdownButtonFormField<LabelUnit>(
+      isExpanded: true,
+      key: ValueKey('unit-${row.nutrientId}-${row.folateMode}-${row.unit}'),
       initialValue: items.any((i) => i.value == row.unit) ? row.unit : items.first.value,
       decoration: const InputDecoration(border: OutlineInputBorder()),
       items: items,
@@ -626,6 +633,8 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
     }
 
     return DropdownButtonFormField<String>(
+      isExpanded: true,
+      key: ValueKey('form-${row.nutrientId}-${row.folateMode}-${row.unit}-${row.form}'),
       initialValue: items.any((i) => i.value == row.form) ? row.form : items.first.value,
       decoration: const InputDecoration(labelText: 'Dạng', border: OutlineInputBorder()),
       items: items,

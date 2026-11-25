@@ -129,6 +129,16 @@ class FoodDetail {
     }
     return found ? sum : null;
   }
+
+  /// Quy đổi [qty] theo [unitLabel] sang gram; trả `null` nếu [unitLabel] không còn trong danh sách.
+  double? gramsForPortion(String unitLabel, double qty) {
+    final norm = unitLabel.trim().toLowerCase();
+    if (norm == 'gram' || norm == 'g') return qty;
+    for (final p in portions) {
+      if (p.labelVi == unitLabel) return qty * p.grams;
+    }
+    return null;
+  }
 }
 
 /// Tệp thư viện món thiếu, không giải nén được, hoặc sai mã băm SHA-256.

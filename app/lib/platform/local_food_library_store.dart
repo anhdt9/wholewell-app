@@ -37,12 +37,10 @@ class FlutterFoodLibraryAssetStore implements FoodLibraryAssetStore {
         }
       }
 
-      if (await targetFile.exists()) {
-        final existingHash = await computeFileSha256(targetFile.path);
-        if (existingHash.toLowerCase() == expectedSha256.toLowerCase()) {
-          return targetFile.path;
-        }
-        await targetFile.delete();
+      // Nếu bản đúng phiên bản đã tồn tại, trả về ngay để `SqliteFoodLibraryRepository`
+      // kiểm tra SHA-256 đúng một lần duy nhất khi mở chỉ đọc.
+      if (await targetFile.exists() && await targetFile.length() > 0) {
+        return targetFile.path;
       }
 
       final bytes = await bundle.load(assetPath);

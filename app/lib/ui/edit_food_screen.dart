@@ -88,13 +88,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
     return baseKcal * (_qty / widget.entry.portionQty);
   }
 
-  double? _selectedGrams(FoodDetail detail) {
-    if (_unitLabel.toLowerCase() == 'gram' || _unitLabel.toLowerCase() == 'g') return _qty;
-    for (final p in detail.portions) {
-      if (p.labelVi == _unitLabel) return _qty * p.grams;
-    }
-    return null;
-  }
+  double? _selectedGrams(FoodDetail detail) => detail.gramsForPortion(_unitLabel, _qty);
 
   void _stepQty(int dir) {
     final isGram = _unitLabel.toLowerCase() == 'gram' || _unitLabel.toLowerCase() == 'g' || _unitLabel.toLowerCase() == 'ml';

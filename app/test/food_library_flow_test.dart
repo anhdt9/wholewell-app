@@ -289,4 +289,134 @@ void main() {
     final lines = lib.computeLines(detail, detail.defaultPortion!.grams, pack: pack);
     expect(lines.any((l) => l.nutrientId == 'energyKcal' && (l.amounts['energyKcal'] ?? 0) > 200), isTrue);
   });
+
+  test('updateLoggedFood đổi ngày kiểm tra đúng cờ UL và đường bổ sung của ngày đích', () async {
+    final repo = InMemoryJournalRepository();
+    final state = AppState.withRepository(pack: pack, repo: repo);
+    await state.start();
+    await state.saveProfile(profile);
+
+    // Đang xem 23/11: tạo sẵn 1 món ngọt ngày 23/11 (20g đường) và 1 món Vitamin A cao (3200 ug retinol) định chuyển sang 22/11
+    await state.setDay(DateTime(2026, 11, 23));
+    await state.diary.recordLabelFood(
+      LabelFoodDraft(
+        name: 'Bánh ngọt 23/11',
+        meal: Meal.lunch,
+        at: DateTime(2026, 11, 23, 12, 0),
+        labelBasisQty: 100,
+        labelBasisUnit: 'g',
+        usedQty: 100,
+        addedSugarG: 20,
+      ),
+      saveForReuse: false,
+    );
+    final moveFb = await state.diary.recordLabelFood(
+      LabelFoodDraft(
+        name: 'Gan đậm đặc',
+        meal: Meal.breakfast,
+        at: DateTime(2026, 11, 23, 7, 30),
+        labelBasisQty: 100,
+        labelBasisUnit: 'g',
+        usedQty: 100,
+        addedSugarG: 0,
+        micros: const [
+          LabelMicroEntry(
+            nutrientId: 'vitA',
+            labelAmount: 3200,
+            unit: LabelUnit.ug,
+            form: NutrientForm.retinol,
+          ),
+        ],
+      ),
+      saveForReuse: false,
+    );
+    final entry = (await repo.foodById(moveFb.savedFoodId!))!;
+
+    // Dời món từ 23/11 -> 22/11 (ngày 22/11 chưa có đường quá 10g, nhưng vừa nhận 3200 ug retinol > UL 3000)
+    final editFb = await state.diary.updateLoggedFood(
+      entry,
+      newQty: 100,
+      newMeal: Meal.breakfast,
+      newAt: DateTime(2026, 11, 22, 8, 0),
+    );
+    expect(editFb.newUlFlags.any((f) => f.nutrientId == 'retinol' && f.kind == UlFlagKind.daily), isTrue);
+    expect(editFb.mealsOverSugar, isEmpty); // không lẫn đường bữa trưa 20g của ngày 23/11!
+  });
+
+  testWidgets('LabelFoodScreen đổi Vitamin E mg->IU, Folate mode không crash và tô đỏ inline vitA', (tester) async {
+    final repo = InMemoryJournalRepository();
+    final state = AppState.withRepository(pack: pack, repo: repo);
+    await state.start();
+    await state.saveProfile(profile);
+
+    await tester.pumpWidget(
+      AppScope(
+        state: state,
+        child: const MaterialApp(home: LabelFoodScreen(initialMeal: Meal.breakfast)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final mainScroll = find.byType(Scrollable).first;
+
+    Future<void> scrollToAndTap(Finder target) async {
+      await tester.scrollUntilVisible(target, 150, scrollable: mainScroll);
+      await tester.pumpAndSettle();
+      await tester.drag(mainScroll, const Offset(0, -100));
+      await tester.pumpAndSettle();
+      await tester.tap(target);
+      await tester.pumpAndSettle();
+    }
+
+    // Tên món
+    await tester.enterText(find.widgetWithText(TextFormField, 'Tên món'), 'Thử nhãn');
+
+    // Thêm Vitamin E
+    await scrollToAndTap(find.text('Thêm vi chất trên nhãn'));
+    await tester.enterText(find.widgetWithText(TextField, 'Tìm vitamin, khoáng chất...'), 'vitamin e');
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Vitamin E').last);
+    await tester.pumpAndSettle();
+
+    // Chọn Tổng hợp (dl-alpha, theo khối lượng) rồi đổi đơn vị sang IU -> không crash AssertionError
+    await scrollToAndTap(find.text('Nhãn không ghi rõ').last);
+    await tester.tap(find.text('Tổng hợp (dl-alpha, theo khối lượng)').last);
+    await tester.pumpAndSettle();
+
+    await scrollToAndTap(find.text('mg').last);
+    await tester.tap(find.text('IU').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Tổng hợp (dl-alpha)'), findsOneWidget);
+
+    // Thêm Folate và đổi mode
+    await scrollToAndTap(find.text('Thêm vi chất trên nhãn'));
+    await tester.enterText(find.widgetWithText(TextField, 'Tìm vitamin, khoáng chất...'), 'folate');
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Folate').last);
+    await tester.pumpAndSettle();
+
+    await scrollToAndTap(find.text('Folate').last);
+    await tester.tap(find.text('Axit folic').last);
+    await tester.pumpAndSettle();
+
+    // Thêm Vitamin A và nhập 5000 ug -> tô đỏ inline khi kiểm tra lại đơn vị
+    await scrollToAndTap(find.text('Thêm vi chất trên nhãn'));
+    await tester.enterText(find.widgetWithText(TextField, 'Tìm vitamin, khoáng chất...'), 'vitamin a');
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Vitamin A').last);
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(find.textContaining('Vitamin A').last, 150, scrollable: mainScroll);
+    await tester.drag(mainScroll, const Offset(0, -100));
+    await tester.pumpAndSettle();
+    final vitAAmountField = find.widgetWithText(TextFormField, 'Lượng trên nhãn').last;
+    await tester.enterText(vitAAmountField, '5000');
+    await tester.tap(find.widgetWithText(FilledButton, 'Lưu'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Kiểm tra lại đơn vị'), findsOneWidget);
+    await tester.tap(find.text('Kiểm tra lại'));
+    await tester.pumpAndSettle();
+    expect(find.text('Kiểm tra lại mg và µg'), findsOneWidget);
+  });
 }

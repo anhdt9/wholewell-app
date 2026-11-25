@@ -120,8 +120,12 @@ def main():
         "SELECT count(*) FROM foods WHERE folate_unseparated=1"
     ).fetchone()[0]
     assert sr_unsep > 0
+    recipe_unsep = cur.execute(
+        "SELECT count(*) FROM foods WHERE kind='recipe' AND (niacin_fortified_unseparated=1 OR folate_unseparated=1)"
+    ).fetchone()[0]
+    assert recipe_unsep > 0, "Công thức món Việt dùng nguyên liệu có niacin/folate chưa tách phải kế thừa cờ"
 
-    print(f"Công thức Việt: {len(recipes)} | Món chỉ có ở VN (chưa có công thức): {len(vn_only)}")
+    print(f"Công thức Việt: {len(recipes)} (có cờ chưa tách nguồn: {recipe_unsep}) | Món chỉ có ở VN (chưa có công thức): {len(vn_only)}")
     print(f"Tách nguồn OK: vitE_fort={vit_e_fort[0]}, folicAcid={folic[0]}, FPED_addedSugar={fped_row[0]}, folate_unseparated={sr_unsep}")
     print(f"Kiểm khớp {len(unique_q)} thực phẩm: {matched}/{len(unique_q)} khớp | TB {avg_ms:.2f} ms/truy vấn")
     if missed:

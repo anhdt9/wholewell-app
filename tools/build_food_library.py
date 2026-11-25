@@ -314,7 +314,7 @@ def extract_portions(food_id: str, food_obj: dict) -> tuple[list[tuple], str | N
     return portions, default_id
 
 
-def build_recipe_record(rec: dict, by_fdc: dict[int, list[tuple]]):
+def build_recipe_record(rec: dict, by_fdc: dict[str, list[tuple]], by_fdc_meta: dict[str, tuple[bool, bool]]):
     total_grams = sum(ing["grams"] for ing in rec["ingredients"])
     acc: dict[tuple, float] = {}  # (nutrient_id, source, form, unit) -> amount per 100g dish
     ul_acc: dict[tuple, float] = {}
@@ -325,6 +325,10 @@ def build_recipe_record(rec: dict, by_fdc: dict[int, list[tuple]]):
         fid = f"usda:{ing['fdcId']}"
         if fid not in by_fdc:
             raise KeyError(f"Công thức {rec['slug']} thiếu nguyên liệu fdcId={ing['fdcId']}")
+        if ing["grams"] > 0:
+            n_unsep, f_unsep = by_fdc_meta.get(fid, (False, False))
+            has_unsep_niacin |= n_unsep
+            has_unsep_folate |= f_unsep
         weight = ing["grams"] / total_grams
         for nid, src, form, amt, ul_amt, unit in by_fdc[fid]:
             key = (nid, src, form, unit)
@@ -421,6 +425,7 @@ def build_db(include_all_sr: bool = True) -> tuple[int, int, int]:
     portions_rows = []
     nutrient_rows = []
     by_fdc_nuts: dict[str, list[tuple]] = {}
+    by_fdc_meta: dict[str, tuple[bool, bool]] = {}
 
     def process_item(kind: str, obj: dict, force_keep: bool = False):
         fdc_id = int(obj["fdcId"])
@@ -456,6 +461,7 @@ def build_db(include_all_sr: bool = True) -> tuple[int, int, int]:
 
         food_id = f"usda:{fdc_id}"
         by_fdc_nuts[food_id] = nuts
+        by_fdc_meta[food_id] = (niacin_unsep, folate_unsep)
         vi_name, aliases_vi = COMMON_VI_NAMES.get(fdc_id, (desc, None))
         # Chỉ đưa tên tiếng Việt không dấu vào search_ascii; name_en đã được FTS5 đánh chỉ mục riêng.
         search_ascii = norm_ascii(f"{vi_name} {aliases_vi or ''}")
@@ -491,7 +497,7 @@ def build_db(include_all_sr: bool = True) -> tuple[int, int, int]:
 
     # Công thức món Việt
     for rec in recipes:
-        f_row, p_rows, n_rows = build_recipe_record(rec, by_fdc_nuts)
+        f_row, p_rows, n_rows = build_recipe_record(rec, by_fdc_nuts, by_fdc_meta)
         foods_rows.append(f_row)
         portions_rows.extend(p_rows)
         nutrient_rows.extend(n_rows)

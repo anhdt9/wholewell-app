@@ -30,11 +30,13 @@ abstract interface class JournalRepository {
   Future<FoodEntry?> foodById(int id);
   Future<void> moveFood(int id, DateTime at);
   Future<void> updateFoodMeta(int id, {required DateTime at, required Meal meal});
-  Future<void> scaleLabelFoodPortion(int id, double newQty);
+  Future<void> scaleLabelFoodPortion(int id, double newQty, {DateTime? at, Meal? meal});
   Future<void> replaceFoodLines(
     int id, {
     required double portionQty,
     String? portionUnit,
+    DateTime? at,
+    Meal? meal,
     required List<IntakeLine> lines,
     required String packVersion,
   });
@@ -184,7 +186,7 @@ class InMemoryJournalRepository implements JournalRepository {
   }
 
   @override
-  Future<void> scaleLabelFoodPortion(int id, double newQty) async {
+  Future<void> scaleLabelFoodPortion(int id, double newQty, {DateTime? at, Meal? meal}) async {
     if (newQty <= 0) throw ArgumentError.value(newQty, 'newQty');
     final idx = _foods.indexWhere((f) => f.id == id);
     if (idx < 0) throw StateError('Không có món $id');
@@ -193,11 +195,12 @@ class InMemoryJournalRepository implements JournalRepository {
       throw StateError('Món không theo nhãn: tính lại theo gói dữ liệu (replaceFoodLines)');
     }
     final factor = newQty / f.portionQty;
+    final nextAt = at ?? f.at;
     _foods[idx] = FoodEntry(
       id: f.id,
-      at: f.at,
-      day: f.day,
-      meal: f.meal,
+      at: nextAt,
+      day: dayKey(nextAt),
+      meal: meal ?? f.meal,
       name: f.name,
       foodRef: f.foodRef,
       portionUnit: f.portionUnit,
@@ -216,6 +219,8 @@ class InMemoryJournalRepository implements JournalRepository {
     int id, {
     required double portionQty,
     String? portionUnit,
+    DateTime? at,
+    Meal? meal,
     required List<IntakeLine> lines,
     required String packVersion,
   }) async {
@@ -224,11 +229,12 @@ class InMemoryJournalRepository implements JournalRepository {
     final idx = _foods.indexWhere((f) => f.id == id);
     if (idx < 0) throw StateError('Không có món $id');
     final f = _foods[idx];
+    final nextAt = at ?? f.at;
     _foods[idx] = FoodEntry(
       id: f.id,
-      at: f.at,
-      day: f.day,
-      meal: f.meal,
+      at: nextAt,
+      day: dayKey(nextAt),
+      meal: meal ?? f.meal,
       name: f.name,
       foodRef: f.foodRef,
       portionUnit: portionUnit ?? f.portionUnit,
