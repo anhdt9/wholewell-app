@@ -53,6 +53,14 @@ SOURCES = [
      "title": "HHS – Physical Activity Guidelines for Americans, bản 2 (2018)",
      "url": "https://odphp.health.gov/sites/default/files/2019-09/Physical_Activity_Guidelines_2nd_edition.pdf",
      "retrieved": "2026-11-25"},
+    {"id": "nih_ods_calcium", "label": "A",
+     "title": "NIH ODS – Calcium Fact Sheet for Health Professionals",
+     "url": "https://ods.od.nih.gov/factsheets/Calcium-HealthProfessional/",
+     "retrieved": "2026-11-25"},
+    {"id": "nih_ods_iron", "label": "A",
+     "title": "NIH ODS – Iron Fact Sheet for Health Professionals",
+     "url": "https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/",
+     "retrieved": "2026-11-25"},
 ]
 
 MIN_PROFILE_AGE = 18
@@ -370,11 +378,37 @@ UNIT_CONVERSIONS = {
     "vitE_ul_synthetic_IU_to_mg": 1000 / 1100,
     "folicAcid_ug_to_ug_DFE": 1.7,
     "vitaminEEsters": {},
-    "compounds": {},
+    "compounds": {
+        # NIH ODS Calcium Fact Sheet (tra 25/11/2026):
+        # "calcium carbonate is 40% calcium by weight, whereas calcium citrate is 21% calcium"
+        "calcium": {
+            "calcium_carbonate": 0.40,
+            "calcium_citrate": 0.21,
+        },
+        # NIH ODS Iron Fact Sheet (tra 25/11/2026):
+        # "ferrous fumarate is 33% elemental iron by weight, whereas ferrous sulfate is 20% and ferrous gluconate is 12% elemental iron"
+        "iron": {
+            "ferrous_fumarate": 0.33,
+            "ferrous_sulfate": 0.20,
+            "ferrous_gluconate": 0.12,
+        },
+    },
     "source": "fda_unit_conversions",
     "ulSource": "nih_ods_vit_e",
     "ulCrossRefSource": "nasem_vit_e_2000",
-    "note": "Hệ số RDA/IU theo FDA 2019 Bảng 3 (FDA-2016-D-4484, tr. 19; 21 CFR 101.9/101.36); hệ số UL vitamin E theo NASEM 2000 Bảng 9-1 và NIH ODS (tra 25/11/2026)",
+    "note": "Hệ số RDA/IU theo FDA 2019 Bảng 3 (FDA-2016-D-4484, tr. 19; 21 CFR 101.9/101.36); hệ số UL vitamin E theo NASEM 2000 Bảng 9-1 và NIH ODS (tra 25/11/2026); tỷ lệ nguyên tố hợp chất theo NIH ODS (tra 25/11/2026)",
+}
+
+COMPOUND_META = {
+    "calcium": {
+        "calcium_carbonate": {"nameVi": "Canxi carbonat (40%)", "source": "nih_ods_calcium"},
+        "calcium_citrate": {"nameVi": "Canxi citrat (21%)", "source": "nih_ods_calcium"},
+    },
+    "iron": {
+        "ferrous_fumarate": {"nameVi": "Sắt fumarat (33%)", "source": "nih_ods_iron"},
+        "ferrous_sulfate": {"nameVi": "Sắt sulfat (20%)", "source": "nih_ods_iron"},
+        "ferrous_gluconate": {"nameVi": "Sắt gluconat (12%)", "source": "nih_ods_iron"},
+    },
 }
 
 
@@ -398,6 +432,7 @@ def main():
         "pag": PAG,
         "palSuggestion": PAL_SUGGESTION,
         "unitConversions": UNIT_CONVERSIONS,
+        "compoundMeta": COMPOUND_META,
     }
     out = pathlib.Path(__file__).resolve().parent.parent / "packages/health_engine/assets/reference_pack.json"
     text = json.dumps(pack, ensure_ascii=False, indent=1)

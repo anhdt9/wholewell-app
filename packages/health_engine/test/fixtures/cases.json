@@ -625,7 +625,7 @@
   "source": "fda_unit_conversions",
   "ulSource": "nih_ods_vit_e",
   "ulCrossRefSource": "nasem_vit_e_2000",
-  "note": "Hệ số RDA/IU theo FDA 2019 Bảng 3 (FDA-2016-D-4484, tr. 19; 21 CFR 101.9/101.36); hệ số UL vitamin E theo NASEM 2000 Bảng 9-1 và NIH ODS (tra 25/11/2026)"
+  "note": "Hệ số RDA/IU theo FDA 2019 Bảng 3 (FDA-2016-D-4484, tr. 19; 21 CFR 101.9/101.36); hệ số UL vitamin E theo NASEM 2000 Bảng 9-1 và NIH ODS (tra 25/11/2026); tỷ lệ nguyên tố hợp chất theo NIH ODS (tra 25/11/2026)"
  },
  "lineCases": [
   {
@@ -908,11 +908,71 @@
    "name": "row15_compound_missing",
    "extended": false,
    "input": {
+    "nutrientId": "magnesium",
+    "source": "supplement",
+    "form": "magnesium_oxide",
+    "amount": 400,
+    "unit": "mg",
+    "compoundKind": "compound"
+   }
+  },
+  {
+   "name": "row15_compound_calcium_pack",
+   "extended": false,
+   "input": {
     "nutrientId": "calcium",
     "source": "supplement",
     "form": "calcium_carbonate",
     "amount": 1.25,
     "unit": "g",
+    "compoundKind": "compound"
+   }
+  },
+  {
+   "name": "row15_compound_calcium_citrate_pack",
+   "extended": false,
+   "input": {
+    "nutrientId": "calcium",
+    "source": "supplement",
+    "form": "calcium_citrate",
+    "amount": 1000,
+    "unit": "mg",
+    "compoundKind": "compound"
+   }
+  },
+  {
+   "name": "row15_compound_iron_fumarate_pack",
+   "extended": false,
+   "input": {
+    "nutrientId": "iron",
+    "source": "supplement",
+    "form": "ferrous_fumarate",
+    "amount": 100,
+    "unit": "mg",
+    "compoundKind": "compound"
+   }
+  },
+  {
+   "name": "row15_compound_iron_sulfate_pack",
+   "extended": false,
+   "input": {
+    "nutrientId": "iron",
+    "source": "supplement",
+    "form": "ferrous_sulfate",
+    "amount": 100,
+    "unit": "mg",
+    "compoundKind": "compound"
+   }
+  },
+  {
+   "name": "row15_compound_iron_gluconate_pack",
+   "extended": false,
+   "input": {
+    "nutrientId": "iron",
+    "source": "supplement",
+    "form": "ferrous_gluconate",
+    "amount": 100,
+    "unit": "mg",
     "compoundKind": "compound"
    }
   },
@@ -942,6 +1002,18 @@
   },
   {
    "name": "row16_compound_unknown_missing",
+   "extended": false,
+   "input": {
+    "nutrientId": "magnesium",
+    "source": "supplement",
+    "form": "unknown",
+    "amount": 250,
+    "unit": "mg",
+    "compoundKind": "unknown"
+   }
+  },
+  {
+   "name": "row16_compound_unknown_pack",
    "extended": false,
    "input": {
     "nutrientId": "calcium",
@@ -7395,6 +7467,46 @@
     "uncertain": false,
     "amountsNotComputed": "missingCompoundRatio"
    },
+   "row15_compound_calcium_pack": {
+    "amounts": {
+     "calcium": 500.0
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row15_compound_calcium_citrate_pack": {
+    "amounts": {
+     "calcium": 210.0
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row15_compound_iron_fumarate_pack": {
+    "amounts": {
+     "iron": 33.0
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row15_compound_iron_sulfate_pack": {
+    "amounts": {
+     "iron": 20.0
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row15_compound_iron_gluconate_pack": {
+    "amounts": {
+     "iron": 12.0
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
    "row15_compound_calcium_ext": {
     "amounts": {
      "calcium": 500.0
@@ -7414,10 +7526,20 @@
    "row16_compound_unknown_missing": {
     "amounts": {},
     "ulAmounts": {
-     "calcium": 500
+     "magnesium": 250
     },
     "uncertain": true,
     "amountsNotComputed": "missingCompoundRatio"
+   },
+   "row16_compound_unknown_pack": {
+    "amounts": {
+     "calcium": 105.0
+    },
+    "ulAmounts": {
+     "calcium": 500
+    },
+    "uncertain": true,
+    "amountsNotComputed": null
    },
    "row16_compound_unknown_ext": {
     "amounts": {
@@ -7459,6 +7581,86 @@
     "uncertain": false,
     "amountsNotComputed": "missingNutrientInPack"
    }
+  },
+  "sanityCheck": {
+   "vitD_normal_ug": {
+    "suspectedUnitMistake": false,
+    "exceedsSingleServingUl": false
+   },
+   "vitD_mistake_mg": {
+    "suspectedUnitMistake": true,
+    "exceedsSingleServingUl": true
+   },
+   "vitB12_mistake_mg_no_ul": {
+    "suspectedUnitMistake": true,
+    "exceedsSingleServingUl": false
+   },
+   "magnesium_exceed_ul": {
+    "suspectedUnitMistake": false,
+    "exceedsSingleServingUl": true
+   },
+   "free_nutrient": {
+    "suspectedUnitMistake": false,
+    "exceedsSingleServingUl": false
+   }
   }
- }
+ },
+ "sanityCases": [
+  {
+   "name": "vitD_normal_ug",
+   "profile": "man30",
+   "input": {
+    "nutrientId": "vitD",
+    "source": "supplement",
+    "form": "unknown",
+    "amount": 25,
+    "unit": "ug"
+   }
+  },
+  {
+   "name": "vitD_mistake_mg",
+   "profile": "man30",
+   "input": {
+    "nutrientId": "vitD",
+    "source": "supplement",
+    "form": "unknown",
+    "amount": 25,
+    "unit": "mg"
+   }
+  },
+  {
+   "name": "vitB12_mistake_mg_no_ul",
+   "profile": "man30",
+   "input": {
+    "nutrientId": "vitB12",
+    "source": "supplement",
+    "form": "unknown",
+    "amount": 10,
+    "unit": "mg"
+   }
+  },
+  {
+   "name": "magnesium_exceed_ul",
+   "profile": "man30",
+   "input": {
+    "nutrientId": "magnesium",
+    "source": "supplement",
+    "form": "unknown",
+    "amount": 400,
+    "unit": "mg"
+   }
+  },
+  {
+   "name": "free_nutrient",
+   "profile": "man30",
+   "input": {
+    "nutrientId": null,
+    "freeName": "Coenzyme Q10",
+    "source": "supplement",
+    "form": "unknown",
+    "amount": 100,
+    "unit": "mg"
+   }
+  }
+ ]
 }

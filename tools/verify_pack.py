@@ -98,6 +98,23 @@ if abs(uc.get("vitE_ul_synthetic_IU_to_mg", 0) - 1000 / 1100) > 1e-12:
 if not isinstance(uc.get("vitaminEEsters"), dict) or not isinstance(uc.get("compounds"), dict):
     err("vitaminEEsters và compounds phải là dict")
 
+GOLDEN_COMPOUNDS = {
+    ("calcium", "calcium_carbonate"): 0.40,
+    ("calcium", "calcium_citrate"): 0.21,
+    ("iron", "ferrous_fumarate"): 0.33,
+    ("iron", "ferrous_sulfate"): 0.20,
+    ("iron", "ferrous_gluconate"): 0.12,
+}
+compounds = uc.get("compounds", {})
+c_meta = p.get("compoundMeta", {})
+for (nid, fid), ratio in GOLDEN_COMPOUNDS.items():
+    got = compounds.get(nid, {}).get(fid)
+    if got != ratio:
+        err(f"GOLDEN compound {nid}/{fid}: {got} != {ratio}")
+    meta = c_meta.get(nid, {}).get(fid)
+    if not isinstance(meta, dict) or meta.get("source") not in src_ids or not meta.get("nameVi"):
+        err(f"compoundMeta thiếu hoặc sai nguồn cho {nid}/{fid}")
+
 # ---- vận động & PAG
 pag = p["pag"]
 if pag.get("source") not in src_ids:

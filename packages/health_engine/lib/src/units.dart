@@ -3,6 +3,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'dri.dart';
 import 'models.dart';
 import 'reference_pack.dart';
 
@@ -319,4 +320,62 @@ class UnitConverter {
       uncertain: true,
     );
   }
+
+  /// Kiểm tra hợp lý cho một dòng thành phần bổ sung (nghi nhầm `mg` ↔ `µg` hoặc vượt UL ngay 1 khẩu phần).
+  IngredientSanityResult checkIngredientSanity(
+    Profile profile,
+    IntakeLineInput input, {
+    ConvertedIntakeLine? converted,
+  }) {
+    final nid = input.nutrientId;
+    final def = nid == null ? null : _pack.nutrients[nid];
+    if (nid == null || def == null) {
+      return const IngredientSanityResult(
+        suspectedUnitMistake: false,
+        exceedsSingleServingUl: false,
+      );
+    }
+    final line = converted ?? convertIntakeLine(input);
+    final ulLimit = ulFor(_pack, profile, def.id);
+    final ulKey = def.ulKey ?? def.id;
+    final ulVal = line.ulAmounts?[ulKey] ?? line.amounts[ulKey];
+    final exceedsUl = ulLimit != null && ulVal != null && ulVal > ulLimit;
+
+    var suspectedUnit = false;
+    if (def.unit == 'ug' &&
+        (input.unit == LabelUnit.mg || input.unit == LabelUnit.g)) {
+      final valForCompare = ulVal ?? line.amounts[def.id] ?? 0.0;
+      if (ulLimit != null) {
+        suspectedUnit = valForCompare > ulLimit * 10;
+      } else {
+        final t = targetFor(_pack, profile, def.id)?.value;
+        if (t != null && t > 0) {
+          suspectedUnit = (line.amounts[def.id] ?? 0.0) > t * 100;
+        }
+      }
+    }
+
+    return IngredientSanityResult(
+      suspectedUnitMistake: suspectedUnit,
+      exceedsSingleServingUl: exceedsUl,
+      ulValue: ulVal,
+      ulLimit: ulLimit,
+    );
+  }
+}
+
+class IngredientSanityResult {
+  final bool suspectedUnitMistake;
+  final bool exceedsSingleServingUl;
+  final double? ulValue;
+  final double? ulLimit;
+
+  const IngredientSanityResult({
+    required this.suspectedUnitMistake,
+    required this.exceedsSingleServingUl,
+    this.ulValue,
+    this.ulLimit,
+  });
+
+  bool get hasWarning => suspectedUnitMistake || exceedsSingleServingUl;
 }
