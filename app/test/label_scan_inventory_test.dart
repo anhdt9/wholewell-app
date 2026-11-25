@@ -344,5 +344,45 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Viên mới'), findsOneWidget);
     });
+
+    testWidgets('OCR đọc nhầm đơn vị (Folate 400 mg) không crash đỏ và cho phép sửa sang µg',
+        (tester) async {
+      final ocr = FakeOcrEngine(
+        nextGalleryResult: const OcrImagePickResult(paths: ['/fake/bcomplex.jpg']),
+        nextOcrResult: const OcrLabelResult(lines: [
+          'Sports Research B-Complex',
+          'Folate 400 mg',
+          'Vitamin B12 500 mcg',
+        ]),
+      );
+      final state = await makeReadyState(ocr: ocr, scanner: FakeBarcodeScanner());
+
+      await tester.pumpWidget(WholeWellApp(state: state));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Bổ sung'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Thêm sản phẩm'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Chọn ảnh từ thư viện'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Đọc thông tin từ 1 ảnh'));
+      await tester.pumpAndSettle();
+
+      // Không crash đỏ, hiện cảnh báo đơn vị chưa phù hợp cho Folate 400 mg.
+      expect(find.text('Xác nhận thành phần'), findsOneWidget);
+      expect(find.textContaining('chưa phù hợp với chất này'), findsOneWidget);
+
+      // Sửa Folate từ mg sang µg -> cảnh báo biến mất.
+      await tester.tap(find.text('Sửa').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('mg').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('µg').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Xác nhận dòng này'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('chưa phù hợp với chất này'), findsNothing);
+    });
   });
 }

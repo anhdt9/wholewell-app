@@ -48,7 +48,7 @@ class ParsedLabelPackage {
 class SupplementLabelParser {
   // Bắt số + đơn vị, kể cả một số lỗi nhận nhầm ký tự phổ biến của OCR (mq/m9 -> mg, meg/ucg -> ug, 1u/lu -> iu).
   static final _amountUnitRe = RegExp(
-    r'(\d+(?:[.,]\d+)?)\s*(mcg|µg|ug|meg|ucg|pcg|u9|mg|mq|m9|iu|ui|1u|lu|g)\b',
+    r'(\d+(?:[.,]\d+)?)\s*(mcg\s*dfe|µg\s*dfe|ug\s*dfe|mcg\s*rae|µg\s*rae|ug\s*rae|mg\s*ne|mcg|µg|ug|meg|ucg|pcg|u9|mg|mq|m9|iu|ui|1u|lu|g)\b',
     caseSensitive: false,
   );
 
@@ -68,15 +68,16 @@ class SupplementLabelParser {
     ('vitD', ['vitamin d3', 'vitamin d', 'vit d', 'cholecalciferol', 'ergocalciferol']),
     ('vitE', ['vitamin e', 'vit e', 'tocopherol', 'tocopheryl']),
     ('vitK', ['vitamin k2', 'vitamin k1', 'vitamin k', 'vit k', 'phylloquinone', 'menaquinone']),
-    ('thiamin', ['vitamin b1', 'thiamin', 'thiamine']),
-    ('riboflavin', ['vitamin b2', 'riboflavin']),
-    ('niacin', ['vitamin b3', 'niacin', 'niacinamide', 'nicotinamide']),
-    ('vitB6', ['vitamin b6', 'pyridoxine']),
+    ('thiamin', ['vitamin b1', 'vitamin b-1', 'thiamin', 'thiamine', 'benfotiamine']),
+    ('riboflavin', ['vitamin b2', 'vitamin b-2', 'riboflavin']),
+    ('niacin', ['vitamin b3', 'vitamin b-3', 'niacin', 'niacinamide', 'nicotinamide']),
+    ('vitB6', ['vitamin b6', 'vitamin b-6', 'pyridoxine', 'pyridoxal']),
     ('folicAcid', ['folic acid', 'axit folic', 'acid folic']),
-    ('folate', ['folate', 'dfe']),
-    ('vitB12', ['vitamin b12', 'cobalamin', 'cyanocobalamin', 'methylcobalamin']),
-    ('biotin', ['biotin', 'vitamin b7']),
-    ('pantothenic', ['pantothenic', 'vitamin b5']),
+    ('folate', ['folate', 'methylfolate', 'dfe']),
+    ('vitB12', ['vitamin b12', 'vitamin b-12', 'cobalamin', 'cyanocobalamin', 'methylcobalamin']),
+    ('biotin', ['biotin', 'vitamin b7', 'vitamin b-7']),
+    ('pantothenic', ['pantothenic', 'pantothenate', 'vitamin b5', 'vitamin b-5']),
+    ('choline', ['choline', 'bitartrate']),
     ('calcium', ['calcium', 'canxi', 'calci']),
     ('iron', ['iron', 'ferrous', 'ferric', 'sắt']),
     ('magnesium', ['magnesium', 'magie', 'magnesi']),
@@ -268,8 +269,11 @@ class SupplementLabelParser {
       final amount = _parseNumber(m.group(1)!);
       if (amount == null || amount <= 0) continue;
 
-      final unitRaw = m.group(2)!.toLowerCase();
+      final unitRaw = m.group(2)!.toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
       final unit = switch (unitRaw) {
+        'mcg dfe' || 'µg dfe' || 'ug dfe' => LabelUnit.ugDfe,
+        'mcg rae' || 'µg rae' || 'ug rae' => LabelUnit.ugRae,
+        'mg ne' => LabelUnit.mgNe,
         'mg' || 'mq' || 'm9' => LabelUnit.mg,
         'mcg' || 'µg' || 'ug' || 'meg' || 'ucg' || 'pcg' || 'u9' => LabelUnit.ug,
         'iu' || 'ui' || '1u' || 'lu' => LabelUnit.iu,

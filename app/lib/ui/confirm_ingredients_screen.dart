@@ -98,8 +98,32 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
     _lines = [for (final l in widget.initialLines) l];
   }
 
-  bool get _allConfirmed =>
-      _lines.isNotEmpty && _lines.every((l) => l.confirmed && (l.labelAmount ?? 0) > 0);
+  bool _isUnitCompatible(EditableIngredient l, ReferencePack pack) {
+    if (l.nutrientId == null || l.labelAmount == null || l.labelAmount! <= 0) return true;
+    try {
+      UnitConverter(pack).convertIntakeLine(IntakeLineInput(
+        nutrientId: l.nutrientId,
+        source: IntakeSource.supplement,
+        form: l.form,
+        amount: l.labelAmount!,
+        unit: l.labelUnit,
+        compoundKind: l.isCompound
+            ? (l.form == NutrientForm.unknown ? CompoundKind.unknown : CompoundKind.compound)
+            : CompoundKind.elemental,
+      ));
+      return true;
+    } on ArgumentError {
+      return false;
+    }
+  }
+
+  bool get _allConfirmed {
+    if (_lines.isEmpty) return false;
+    final pack = AppScope.of(context).pack;
+    return _lines.every(
+      (l) => l.confirmed && (l.labelAmount ?? 0) > 0 && _isUnitCompatible(l, pack),
+    );
+  }
 
   IngredientDraft _toDraft(EditableIngredient l, ReferencePack pack) {
     final conv = UnitConverter(pack);
@@ -114,36 +138,54 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
         confirmed: l.confirmed,
       );
     }
-    final converted = conv.convertIntakeLine(IntakeLineInput(
-      nutrientId: l.nutrientId,
-      source: IntakeSource.supplement,
-      form: l.form,
-      amount: l.labelAmount!,
-      unit: l.labelUnit,
-      compoundKind: l.isCompound
-          ? (l.form == NutrientForm.unknown ? CompoundKind.unknown : CompoundKind.compound)
-          : CompoundKind.elemental,
-    ));
-    final def = pack.nutrients[l.nutrientId!];
-    final stdAmount = converted.amounts[l.nutrientId!] ?? converted.amounts.values.firstOrNull;
-    return IngredientDraft(
-      nutrientId: l.nutrientId,
-      form: l.form,
-      amountPerServing: stdAmount,
-      unit: def?.unit,
-      labelAmount: l.labelAmount,
-      labelUnit: l.labelUnit.name,
-      isCompound: l.isCompound,
-      origin: l.origin,
-      confirmed: l.confirmed,
-    );
+    try {
+      final converted = conv.convertIntakeLine(IntakeLineInput(
+        nutrientId: l.nutrientId,
+        source: IntakeSource.supplement,
+        form: l.form,
+        amount: l.labelAmount!,
+        unit: l.labelUnit,
+        compoundKind: l.isCompound
+            ? (l.form == NutrientForm.unknown ? CompoundKind.unknown : CompoundKind.compound)
+            : CompoundKind.elemental,
+      ));
+      final def = pack.nutrients[l.nutrientId!];
+      final stdAmount = converted.amounts[l.nutrientId!] ?? converted.amounts.values.firstOrNull;
+      return IngredientDraft(
+        nutrientId: l.nutrientId,
+        form: l.form,
+        amountPerServing: stdAmount,
+        unit: def?.unit,
+        labelAmount: l.labelAmount,
+        labelUnit: l.labelUnit.name,
+        isCompound: l.isCompound,
+        origin: l.origin,
+        confirmed: l.confirmed,
+      );
+    } on ArgumentError {
+      return IngredientDraft(
+        nutrientId: l.nutrientId,
+        form: l.form,
+        labelAmount: l.labelAmount,
+        labelUnit: l.labelUnit.name,
+        isCompound: l.isCompound,
+        origin: l.origin,
+        confirmed: false,
+      );
+    }
   }
 
-  IngredientSanityResult _sanity(EditableIngredient l, AppState state) {
+  ({IngredientSanityResult sanity, bool unitIncompatible}) _sanity(
+    EditableIngredient l,
+    AppState state,
+  ) {
     if (l.nutrientId == null || l.labelAmount == null || l.labelAmount! <= 0) {
-      return const IngredientSanityResult(
-        suspectedUnitMistake: false,
-        exceedsSingleServingUl: false,
+      return (
+        sanity: const IngredientSanityResult(
+          suspectedUnitMistake: false,
+          exceedsSingleServingUl: false,
+        ),
+        unitIncompatible: false,
       );
     }
     final profile = state.profile ??
@@ -154,19 +196,30 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
           weightKg: 65,
           activityLevel: ActivityLevel.inactive,
         );
-    return UnitConverter(state.pack).checkIngredientSanity(
-      profile,
-      IntakeLineInput(
-        nutrientId: l.nutrientId,
-        source: IntakeSource.supplement,
-        form: l.form,
-        amount: l.labelAmount!,
-        unit: l.labelUnit,
-        compoundKind: l.isCompound
-            ? (l.form == NutrientForm.unknown ? CompoundKind.unknown : CompoundKind.compound)
-            : CompoundKind.elemental,
-      ),
-    );
+    try {
+      final res = UnitConverter(state.pack).checkIngredientSanity(
+        profile,
+        IntakeLineInput(
+          nutrientId: l.nutrientId,
+          source: IntakeSource.supplement,
+          form: l.form,
+          amount: l.labelAmount!,
+          unit: l.labelUnit,
+          compoundKind: l.isCompound
+              ? (l.form == NutrientForm.unknown ? CompoundKind.unknown : CompoundKind.compound)
+              : CompoundKind.elemental,
+        ),
+      );
+      return (sanity: res, unitIncompatible: false);
+    } on ArgumentError {
+      return (
+        sanity: const IngredientSanityResult(
+          suspectedUnitMistake: false,
+          exceedsSingleServingUl: false,
+        ),
+        unitIncompatible: true,
+      );
+    }
   }
 
   Future<void> _editOrAddLine([int? index]) async {
@@ -272,7 +325,9 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
   ) {
     final def = l.nutrientId == null ? null : pack.nutrients[l.nutrientId!];
     final title = def?.nameVi ?? (l.freeName ?? 'Chưa chọn chất');
-    final sanity = _sanity(l, state);
+    final check = _sanity(l, state);
+    final sanity = check.sanity;
+    final unitBad = check.unitIncompatible;
 
     String subtitle = '';
     if (l.labelAmount != null) {
@@ -297,8 +352,8 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Checkbox(
-            value: l.confirmed,
-            onChanged: (l.labelAmount ?? 0) > 0
+            value: !unitBad && l.confirmed,
+            onChanged: !unitBad && (l.labelAmount ?? 0) > 0
                 ? (v) => setState(() => l.confirmed = v ?? false)
                 : null,
           ),
@@ -309,7 +364,20 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
                 Text(title, style: Theme.of(context).textTheme.titleSmall),
                 if (subtitle.isNotEmpty)
                   Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-                if (sanity.hasWarning)
+                if (unitBad)
+                  Container(
+                    margin: const EdgeInsets.only(top: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: cs.errorContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '⚠ Đơn vị "${unitLabel(l.labelUnit.name)}" chưa phù hợp với chất này. Bấm Sửa để chọn lại.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onErrorContainer),
+                    ),
+                  )
+                else if (sanity.hasWarning)
                   Container(
                     margin: const EdgeInsets.only(top: 4),
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -448,6 +516,9 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                     DropdownMenuItem(value: LabelUnit.ug, child: Text('µg')),
                     DropdownMenuItem(value: LabelUnit.iu, child: Text('IU')),
                     DropdownMenuItem(value: LabelUnit.g, child: Text('g')),
+                    DropdownMenuItem(value: LabelUnit.ugDfe, child: Text('µg DFE')),
+                    DropdownMenuItem(value: LabelUnit.ugRae, child: Text('µg RAE')),
+                    DropdownMenuItem(value: LabelUnit.mgNe, child: Text('mg NE')),
                   ],
                   onChanged: (u) {
                     if (u != null) setState(() => _unit = u);
@@ -524,6 +595,25 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                 if (amt == null || amt <= 0) return;
                 if (!_isFree && _nutrientId == null) return;
                 if (_isFree && _freeName.text.trim().isEmpty) return;
+                if (!_isFree) {
+                  try {
+                    UnitConverter(widget.pack).convertIntakeLine(IntakeLineInput(
+                      nutrientId: _nutrientId,
+                      source: IntakeSource.supplement,
+                      form: _form,
+                      amount: amt,
+                      unit: _unit,
+                      compoundKind: _isCompound
+                          ? (_form == NutrientForm.unknown ? CompoundKind.unknown : CompoundKind.compound)
+                          : CompoundKind.elemental,
+                    ));
+                  } on ArgumentError {
+                    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                      const SnackBar(content: Text('Đơn vị này không phù hợp với chất đã chọn.')),
+                    );
+                    return;
+                  }
+                }
                 Navigator.pop(
                   context,
                   EditableIngredient(
