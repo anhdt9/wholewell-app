@@ -114,12 +114,17 @@ void main() {
         "Nature's Way Kids Smart",
         'Vitamin D3 25 micrograms',
         'Vitamin C 100 milligrams',
+        'Vitamin A 225 micrograms RE',
       ]);
-      expect(nwPkg.ingredients, hasLength(2));
+      expect(nwPkg.ingredients, hasLength(3));
       expect(nwPkg.ingredients[0].nutrientId, 'vitD');
       expect(nwPkg.ingredients[0].unit, LabelUnit.ug);
       expect(nwPkg.ingredients[1].nutrientId, 'vitC');
       expect(nwPkg.ingredients[1].unit, LabelUnit.mg);
+      expect(nwPkg.ingredients[2].nutrientId, 'vitA');
+      expect(nwPkg.ingredients[2].amount, 225);
+      expect(nwPkg.ingredients[2].unit, LabelUnit.ug);
+      expect(nwPkg.ingredients[2].form, NutrientForm.unknown);
     });
 
     test('parseAiJson đọc JSON từ Gemini Nano và trả null khi JSON lỗi', () {
