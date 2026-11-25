@@ -1,0 +1,552 @@
+[
+  {
+    "slug": "pho-bo",
+    "name_vi": "Phở bò",
+    "name_en": "Vietnamese beef noodle soup (Pho bo)",
+    "aliases_vi": "pho bo tai nam chin",
+    "portions": [
+      {"id": "p_pho_bo_bat_vua", "label_vi": "Bát vừa", "grams": 550, "default": true},
+      {"id": "p_pho_bo_bat_lon", "label_vi": "Bát lớn", "grams": 700}
+    ],
+    "ingredients": [
+      {"fdcId": 168914, "grams": 180},
+      {"fdcId": 2646175, "grams": 75},
+      {"fdcId": 171538, "grams": 250},
+      {"fdcId": 790577, "grams": 20},
+      {"fdcId": 169137, "grams": 20},
+      {"fdcId": 169997, "grams": 5}
+    ]
+  },
+  {
+    "slug": "pho-ga",
+    "name_vi": "Phở gà",
+    "name_en": "Vietnamese chicken noodle soup (Pho ga)",
+    "aliases_vi": "pho ga thit ga",
+    "portions": [
+      {"id": "p_pho_ga_bat_vua", "label_vi": "Bát vừa", "grams": 540, "default": true},
+      {"id": "p_pho_ga_bat_lon", "label_vi": "Bát lớn", "grams": 680}
+    ],
+    "ingredients": [
+      {"fdcId": 168914, "grams": 180},
+      {"fdcId": 171075, "grams": 80},
+      {"fdcId": 171609, "grams": 250},
+      {"fdcId": 790577, "grams": 20},
+      {"fdcId": 169997, "grams": 10}
+    ]
+  },
+  {
+    "slug": "com-trang",
+    "name_vi": "Cơm trắng",
+    "name_en": "Steamed white rice (Vietnamese bowl)",
+    "aliases_vi": "com te com trang",
+    "portions": [
+      {"id": "p_com_trang_bat", "label_vi": "Bát", "grams": 150, "default": true},
+      {"id": "p_com_trang_bat_day", "label_vi": "Bát đầy", "grams": 200}
+    ],
+    "ingredients": [
+      {"fdcId": 168935, "grams": 150}
+    ]
+  },
+  {
+    "slug": "com-tam-suon-trung",
+    "name_vi": "Cơm tấm sườn trứng",
+    "name_en": "Broken rice with pork chop and egg",
+    "aliases_vi": "com tam suon bi cha trung op la",
+    "portions": [
+      {"id": "p_com_tam_dia", "label_vi": "Đĩa", "grams": 410, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 168935, "grams": 200},
+      {"fdcId": 167819, "grams": 100},
+      {"fdcId": 323604, "grams": 50},
+      {"fdcId": 2346406, "grams": 25},
+      {"fdcId": 170050, "grams": 20},
+      {"fdcId": 172370, "grams": 8},
+      {"fdcId": 746784, "grams": 4},
+      {"fdcId": 2706457, "grams": 3}
+    ]
+  },
+  {
+    "slug": "com-ga-xe",
+    "name_vi": "Cơm gà xé",
+    "name_en": "Vietnamese shredded chicken rice",
+    "aliases_vi": "com ga hoi an com ga xoi mo",
+    "portions": [
+      {"id": "p_com_ga_dia", "label_vi": "Đĩa", "grams": 340, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 168935, "grams": 200},
+      {"fdcId": 171075, "grams": 100},
+      {"fdcId": 790577, "grams": 20},
+      {"fdcId": 169997, "grams": 10},
+      {"fdcId": 172370, "grams": 5},
+      {"fdcId": 2706457, "grams": 5}
+    ]
+  },
+  {
+    "slug": "bun-cha",
+    "name_vi": "Bún chả",
+    "name_en": "Vietnamese grilled pork with rice vermicelli",
+    "aliases_vi": "bun cha ha noi thit nuong",
+    "portions": [
+      {"id": "p_bun_cha_suat", "label_vi": "Suất", "grams": 430, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 168914, "grams": 200},
+      {"fdcId": 167812, "grams": 60},
+      {"fdcId": 167819, "grams": 60},
+      {"fdcId": 746769, "grams": 60},
+      {"fdcId": 2258586, "grams": 25},
+      {"fdcId": 746784, "grams": 10},
+      {"fdcId": 172237, "grams": 10},
+      {"fdcId": 2706457, "grams": 5}
+    ]
+  },
+  {
+    "slug": "bun-bo-hue",
+    "name_vi": "Bún bò Huế",
+    "name_en": "Hue style beef vermicelli soup",
+    "aliases_vi": "bun bo gio heo",
+    "portions": [
+      {"id": "p_bun_bo_to", "label_vi": "Tô vừa", "grams": 570, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 168914, "grams": 180},
+      {"fdcId": 2646175, "grams": 60},
+      {"fdcId": 167812, "grams": 40},
+      {"fdcId": 171538, "grams": 250},
+      {"fdcId": 169137, "grams": 25},
+      {"fdcId": 790577, "grams": 15}
+    ]
+  },
+  {
+    "slug": "bun-thit-nuong",
+    "name_vi": "Bún thịt nướng",
+    "name_en": "Grilled pork rice vermicelli bowl",
+    "aliases_vi": "bun thit nuong lac rang",
+    "portions": [
+      {"id": "p_bun_thit_nuong_to", "label_vi": "Tô", "grams": 410, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 168914, "grams": 180},
+      {"fdcId": 167819, "grams": 90},
+      {"fdcId": 746769, "grams": 60},
+      {"fdcId": 2346406, "grams": 40},
+      {"fdcId": 173806, "grams": 15},
+      {"fdcId": 746784, "grams": 8},
+      {"fdcId": 172370, "grams": 12},
+      {"fdcId": 2706457, "grams": 5}
+    ]
+  },
+  {
+    "slug": "mien-ga",
+    "name_vi": "Miến gà",
+    "name_en": "Vietnamese chicken glass noodle soup",
+    "aliases_vi": "mien ga mang nam",
+    "portions": [
+      {"id": "p_mien_ga_bat", "label_vi": "Bát", "grams": 480, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 168914, "grams": 130},
+      {"fdcId": 171075, "grams": 80},
+      {"fdcId": 171609, "grams": 230},
+      {"fdcId": 1999629, "grams": 25},
+      {"fdcId": 790577, "grams": 15}
+    ]
+  },
+  {
+    "slug": "hu-tieu-nam-vang",
+    "name_vi": "Hủ tiếu thịt tôm",
+    "name_en": "Pork and shrimp rice noodle soup",
+    "aliases_vi": "hu tieu nam vang",
+    "portions": [
+      {"id": "p_hu_tieu_to", "label_vi": "Tô", "grams": 520, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 168914, "grams": 170},
+      {"fdcId": 2514745, "grams": 50},
+      {"fdcId": 2684443, "grams": 45},
+      {"fdcId": 171609, "grams": 220},
+      {"fdcId": 169137, "grams": 25},
+      {"fdcId": 790577, "grams": 10}
+    ]
+  },
+  {
+    "slug": "banh-mi-thit-trung",
+    "name_vi": "Bánh mì thịt trứng",
+    "name_en": "Vietnamese pork and egg baguette sandwich",
+    "aliases_vi": "banh mi thit nguoi op la",
+    "portions": [
+      {"id": "p_banh_mi_o", "label_vi": "Ổ", "grams": 220, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 172675, "grams": 90},
+      {"fdcId": 167819, "grams": 45},
+      {"fdcId": 323604, "grams": 45},
+      {"fdcId": 2346406, "grams": 15},
+      {"fdcId": 2258586, "grams": 15},
+      {"fdcId": 169997, "grams": 5},
+      {"fdcId": 172370, "grams": 5}
+    ]
+  },
+  {
+    "slug": "banh-mi-op-la",
+    "name_vi": "Bánh mì ốp la",
+    "name_en": "Vietnamese fried egg baguette",
+    "aliases_vi": "banh mi trung op la",
+    "portions": [
+      {"id": "p_banh_mi_op_o", "label_vi": "Ổ", "grams": 175, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 172675, "grams": 90},
+      {"fdcId": 323604, "grams": 60},
+      {"fdcId": 2346406, "grams": 15},
+      {"fdcId": 172370, "grams": 7},
+      {"fdcId": 172473, "grams": 3}
+    ]
+  },
+  {
+    "slug": "xoi-dau-xanh",
+    "name_vi": "Xôi đậu xanh",
+    "name_en": "Steamed sticky rice with mung bean",
+    "aliases_vi": "xoi xeo xoi do xanh",
+    "portions": [
+      {"id": "p_xoi_goi", "label_vi": "Gói / bát", "grams": 200, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 169711, "grams": 150},
+      {"fdcId": 174256, "grams": 35},
+      {"fdcId": 172370, "grams": 10},
+      {"fdcId": 2727586, "grams": 4},
+      {"fdcId": 746775, "grams": 1}
+    ]
+  },
+  {
+    "slug": "chao-thit-bam",
+    "name_vi": "Cháo thịt băm",
+    "name_en": "Rice porridge with minced pork",
+    "aliases_vi": "chao thit heo bam",
+    "portions": [
+      {"id": "p_chao_thit_bat", "label_vi": "Bát", "grams": 350, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 168935, "grams": 270},
+      {"fdcId": 2514745, "grams": 60},
+      {"fdcId": 790577, "grams": 12},
+      {"fdcId": 172370, "grams": 5},
+      {"fdcId": 2706457, "grams": 3}
+    ]
+  },
+  {
+    "slug": "chao-ga",
+    "name_vi": "Cháo gà",
+    "name_en": "Vietnamese chicken rice porridge",
+    "aliases_vi": "chao ga gung hanh",
+    "portions": [
+      {"id": "p_chao_ga_bat", "label_vi": "Bát", "grams": 360, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 168935, "grams": 265},
+      {"fdcId": 171075, "grams": 70},
+      {"fdcId": 790577, "grams": 15},
+      {"fdcId": 169231, "grams": 5},
+      {"fdcId": 2706457, "grams": 5}
+    ]
+  },
+  {
+    "slug": "thit-kho-trung",
+    "name_vi": "Thịt kho trứng",
+    "name_en": "Braised pork belly and egg",
+    "aliases_vi": "thit kho tau trung vit heo",
+    "portions": [
+      {"id": "p_thit_kho_phan", "label_vi": "Phần", "grams": 150, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 167812, "grams": 90},
+      {"fdcId": 173424, "grams": 50},
+      {"fdcId": 746784, "grams": 5},
+      {"fdcId": 2706457, "grams": 5}
+    ]
+  },
+  {
+    "slug": "ca-kho-to",
+    "name_vi": "Cá kho tộ",
+    "name_en": "Caramelized braised mackerel",
+    "aliases_vi": "ca kho khuc ca thu kho",
+    "portions": [
+      {"id": "p_ca_kho_khuc", "label_vi": "Khúc", "grams": 120, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 171994, "grams": 100},
+      {"fdcId": 746784, "grams": 6},
+      {"fdcId": 172370, "grams": 6},
+      {"fdcId": 2706457, "grams": 5},
+      {"fdcId": 1104647, "grams": 2},
+      {"fdcId": 170931, "grams": 1}
+    ]
+  },
+  {
+    "slug": "ca-hap-gung",
+    "name_vi": "Cá hấp gừng",
+    "name_en": "Steamed tilapia fillet with ginger",
+    "aliases_vi": "ca ro phi hap hanh gung",
+    "portions": [
+      {"id": "p_ca_hap_khuc", "label_vi": "Phần / khúc", "grams": 135, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 2684442, "grams": 110},
+      {"fdcId": 790577, "grams": 15},
+      {"fdcId": 169231, "grams": 5},
+      {"fdcId": 172473, "grams": 5}
+    ]
+  },
+  {
+    "slug": "dau-phu-sot-ca-chua",
+    "name_vi": "Đậu phụ sốt cà chua",
+    "name_en": "Fried tofu in tomato sauce",
+    "aliases_vi": "dau hu sot ca chua",
+    "portions": [
+      {"id": "p_dau_sot_dia", "label_vi": "Phần", "grams": 180, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 172448, "grams": 100},
+      {"fdcId": 170050, "grams": 60},
+      {"fdcId": 172370, "grams": 10},
+      {"fdcId": 790577, "grams": 7},
+      {"fdcId": 2706457, "grams": 3}
+    ]
+  },
+  {
+    "slug": "dau-phu-ran",
+    "name_vi": "Đậu phụ rán",
+    "name_en": "Pan-fried firm tofu",
+    "aliases_vi": "dau hu chien",
+    "portions": [
+      {"id": "p_dau_ran_bia", "label_vi": "Bìa", "grams": 65, "default": true},
+      {"id": "p_dau_ran_dia", "label_vi": "Đĩa (2 bìa)", "grams": 130}
+    ],
+    "ingredients": [
+      {"fdcId": 172448, "grams": 58},
+      {"fdcId": 172370, "grams": 7}
+    ]
+  },
+  {
+    "slug": "trung-chien",
+    "name_vi": "Trứng rán",
+    "name_en": "Vietnamese fried egg omelette",
+    "aliases_vi": "trung chien hanh",
+    "portions": [
+      {"id": "p_trung_chien_phan", "label_vi": "Phần (2 quả)", "grams": 110, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 323604, "grams": 96},
+      {"fdcId": 172370, "grams": 7},
+      {"fdcId": 790577, "grams": 5},
+      {"fdcId": 2706457, "grams": 2}
+    ]
+  },
+  {
+    "slug": "trung-hap-thit",
+    "name_vi": "Trứng hấp thịt băm",
+    "name_en": "Steamed egg with minced pork",
+    "aliases_vi": "cha trung trung chung thit",
+    "portions": [
+      {"id": "p_trung_hap_phan", "label_vi": "Phần", "grams": 140, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 323604, "grams": 85},
+      {"fdcId": 2514745, "grams": 45},
+      {"fdcId": 790577, "grams": 7},
+      {"fdcId": 2706457, "grams": 3}
+    ]
+  },
+  {
+    "slug": "tom-rim-thit",
+    "name_vi": "Tôm rim thịt",
+    "name_en": "Caramelized shrimp and pork belly",
+    "aliases_vi": "tom rang thit ba chi",
+    "portions": [
+      {"id": "p_tom_rim_phan", "label_vi": "Phần", "grams": 130, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 2684443, "grams": 65},
+      {"fdcId": 167812, "grams": 50},
+      {"fdcId": 172370, "grams": 6},
+      {"fdcId": 746784, "grams": 4},
+      {"fdcId": 2706457, "grams": 3},
+      {"fdcId": 1104647, "grams": 2}
+    ]
+  },
+  {
+    "slug": "muc-xao-thap-cam",
+    "name_vi": "Mực xào rau củ",
+    "name_en": "Stir-fried squid with vegetables",
+    "aliases_vi": "muc xao bong cai ca rot",
+    "portions": [
+      {"id": "p_muc_xao_dia", "label_vi": "Phần", "grams": 200, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 174223, "grams": 90},
+      {"fdcId": 747447, "grams": 50},
+      {"fdcId": 2258586, "grams": 30},
+      {"fdcId": 790577, "grams": 20},
+      {"fdcId": 172370, "grams": 8},
+      {"fdcId": 2706457, "grams": 2}
+    ]
+  },
+  {
+    "slug": "thit-bo-xao-cai-thia",
+    "name_vi": "Thịt bò xào cải thìa",
+    "name_en": "Stir-fried beef with bok choy",
+    "aliases_vi": "bo xao cai chip rau cai",
+    "portions": [
+      {"id": "p_bo_xao_dia", "label_vi": "Phần", "grams": 200, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 2646175, "grams": 85},
+      {"fdcId": 168517, "grams": 100},
+      {"fdcId": 172370, "grams": 8},
+      {"fdcId": 1104647, "grams": 4},
+      {"fdcId": 172473, "grams": 3}
+    ]
+  },
+  {
+    "slug": "ga-rang-gung",
+    "name_vi": "Gà rang gừng",
+    "name_en": "Braised chicken with ginger",
+    "aliases_vi": "dui ga kho gung",
+    "portions": [
+      {"id": "p_ga_rang_phan", "label_vi": "Phần", "grams": 140, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 172385, "grams": 115},
+      {"fdcId": 169231, "grams": 10},
+      {"fdcId": 172370, "grams": 6},
+      {"fdcId": 746784, "grams": 5},
+      {"fdcId": 2706457, "grams": 4}
+    ]
+  },
+  {
+    "slug": "canh-cai-thit-bam",
+    "name_vi": "Canh cải nấu thịt băm",
+    "name_en": "Mustard greens soup with minced pork",
+    "aliases_vi": "canh rau cai xanh thit bam",
+    "portions": [
+      {"id": "p_canh_cai_bat", "label_vi": "Bát", "grams": 250, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 169257, "grams": 100},
+      {"fdcId": 2514745, "grams": 40},
+      {"fdcId": 171609, "grams": 108},
+      {"fdcId": 746775, "grams": 2}
+    ]
+  },
+  {
+    "slug": "canh-chua-ca",
+    "name_vi": "Canh chua cá",
+    "name_en": "Vietnamese sweet and sour fish soup",
+    "aliases_vi": "canh chua ca loc ca ro phi",
+    "portions": [
+      {"id": "p_canh_chua_bat", "label_vi": "Bát", "grams": 300, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 2684442, "grams": 70},
+      {"fdcId": 170050, "grams": 50},
+      {"fdcId": 2346398, "grams": 35},
+      {"fdcId": 169137, "grams": 30},
+      {"fdcId": 171609, "grams": 105},
+      {"fdcId": 746784, "grams": 6},
+      {"fdcId": 2706457, "grams": 4}
+    ]
+  },
+  {
+    "slug": "rau-cai-xao-toi",
+    "name_vi": "Rau cải thìa xào tỏi",
+    "name_en": "Garlic stir-fried bok choy",
+    "aliases_vi": "cai chip xao toi rau xao",
+    "portions": [
+      {"id": "p_rau_xao_dia", "label_vi": "Đĩa", "grams": 160, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 168517, "grams": 145},
+      {"fdcId": 172370, "grams": 8},
+      {"fdcId": 1104647, "grams": 5},
+      {"fdcId": 746775, "grams": 2}
+    ]
+  },
+  {
+    "slug": "goi-cuon-tom-thit",
+    "name_vi": "Gỏi cuốn tôm thịt",
+    "name_en": "Vietnamese fresh spring rolls",
+    "aliases_vi": "nem cuon tom thit",
+    "portions": [
+      {"id": "p_goi_cuon_chiec", "label_vi": "Cuốn", "grams": 85, "default": true},
+      {"id": "p_goi_cuon_dia", "label_vi": "Đĩa (3 cuốn)", "grams": 255}
+    ],
+    "ingredients": [
+      {"fdcId": 168914, "grams": 28},
+      {"fdcId": 2684443, "grams": 20},
+      {"fdcId": 167819, "grams": 18},
+      {"fdcId": 746769, "grams": 12},
+      {"fdcId": 2346406, "grams": 7}
+    ]
+  },
+  {
+    "slug": "ca-phe-sua-da",
+    "name_vi": "Cà phê sữa đá",
+    "name_en": "Vietnamese iced coffee with condensed milk",
+    "aliases_vi": "ca phe sua nau da",
+    "portions": [
+      {"id": "p_ca_phe_sua_ly", "label_vi": "Ly", "grams": 135, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 171881, "grams": 100},
+      {"fdcId": 171275, "grams": 35}
+    ]
+  },
+  {
+    "slug": "sinh-to-bo",
+    "name_vi": "Sinh tố bơ",
+    "name_en": "Vietnamese avocado smoothie",
+    "aliases_vi": "bo dam sua dac",
+    "portions": [
+      {"id": "p_sinh_to_bo_ly", "label_vi": "Ly", "grams": 220, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 171705, "grams": 110},
+      {"fdcId": 746782, "grams": 80},
+      {"fdcId": 171275, "grams": 30}
+    ]
+  },
+  {
+    "slug": "che-dau-xanh",
+    "name_vi": "Chè đậu xanh nước cốt dừa",
+    "name_en": "Mung bean sweet soup with coconut milk",
+    "aliases_vi": "che do xanh cot dua",
+    "portions": [
+      {"id": "p_che_dau_coc", "label_vi": "Cốc / bát", "grams": 220, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 174256, "grams": 45},
+      {"fdcId": 746784, "grams": 25},
+      {"fdcId": 170172, "grams": 40},
+      {"fdcId": 168935, "grams": 110}
+    ]
+  },
+  {
+    "slug": "banh-cuon-thit",
+    "name_vi": "Bánh cuốn nhân thịt",
+    "name_en": "Steamed rice rolls with minced pork",
+    "aliases_vi": "banh cuon nong thit bam moc nhi",
+    "portions": [
+      {"id": "p_banh_cuon_dia", "label_vi": "Đĩa", "grams": 260, "default": true}
+    ],
+    "ingredients": [
+      {"fdcId": 168914, "grams": 180},
+      {"fdcId": 2514745, "grams": 45},
+      {"fdcId": 1999629, "grams": 20},
+      {"fdcId": 2727586, "grams": 8},
+      {"fdcId": 172370, "grams": 7}
+    ]
+  }
+]

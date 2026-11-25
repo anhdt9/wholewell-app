@@ -1,0 +1,77 @@
+[
+  {
+    "name_vi": "Mắm tôm",
+    "reason_vi": "Gia vị lên men đặc thù Việt Nam, không có dữ liệu chính thức trong USDA FoodData Central.",
+    "suggestion_vi": "Nhập theo nhãn chai hoặc bỏ qua lượng gia vị chấm rất nhỏ."
+  },
+  {
+    "name_vi": "Mắm nêm (mắm cá cơm xay)",
+    "reason_vi": "Chưa có mục tương đương chuẩn trong USDA.",
+    "suggestion_vi": "Nhập theo nhãn dinh dưỡng trên chai."
+  },
+  {
+    "name_vi": "Mắm tép chưng thịt",
+    "reason_vi": "Thành phần thay đổi lớn tùy công thức vùng miền và lượng đường/mắm thêm vào.",
+    "suggestion_vi": "Nhập theo nhãn hũ hoặc chọn thịt heo kho gần nhất."
+  },
+  {
+    "name_vi": "Chao (đậu phụ lên men)",
+    "reason_vi": "Chưa có hàm lượng natri và vi chất chuẩn trong USDA.",
+    "suggestion_vi": "Nhập theo nhãn hũ chao."
+  },
+  {
+    "name_vi": "Bánh đúc nóng / bánh đúc lạc",
+    "reason_vi": "Bột gạo nấu nước vôi trong/nước tro không có mã chuẩn tương ứng trong USDA.",
+    "suggestion_vi": "Nhập theo nhãn nếu mua đóng gói hoặc chọn cháo/bánh gạo gần nhất."
+  },
+  {
+    "name_vi": "Bánh gio (bánh tro)",
+    "reason_vi": "Ngâm nước tro thực vật truyền thống chưa có số liệu USDA.",
+    "suggestion_vi": "Chọn bánh gạo nếp không nhân hoặc nhập theo nhãn nếu có."
+  },
+  {
+    "name_vi": "Bánh tráng trộn",
+    "reason_vi": "Nhiều thành phần phụ gia/nước sốt bò, sa tế biến thiên rất mạnh.",
+    "suggestion_vi": "Nhập theo nhãn bao bì nếu mua sẵn."
+  },
+  {
+    "name_vi": "Bánh cốm / cốm làng Vòng",
+    "reason_vi": "Cốm non rang giã không có mã chuẩn trong USDA.",
+    "suggestion_vi": "Nhập theo nhãn hộp hoặc chọn xôi/bánh nếp."
+  },
+  {
+    "name_vi": "Chè sương sa hạt lựu / sương sáo",
+    "reason_vi": "Thạch cây sương sáo và nước đường nấu biến thiên lượng đường bổ sung.",
+    "suggestion_vi": "Nhập theo nhãn cốc đóng sẵn hoặc ước lượng theo chè."
+  },
+  {
+    "name_vi": "Tiết canh",
+    "reason_vi": "Không có dữ liệu chuẩn an toàn và thành phần chuẩn trong USDA.",
+    "suggestion_vi": "Không có trong thư viện tham chiếu."
+  },
+  {
+    "name_vi": "Trứng vịt lộn",
+    "reason_vi": "USDA chỉ có trứng vịt thường, không có trứng ấp phôi.",
+    "suggestion_vi": "Chọn trứng vịt luộc (gần nhất) hoặc nhập thủ công."
+  },
+  {
+    "name_vi": "Nước vối / chè vối",
+    "reason_vi": "Lá vối Việt Nam không có trong USDA.",
+    "suggestion_vi": "Ghi nhận vào mục Nước uống."
+  },
+  {
+    "name_vi": "Rau đay / mồng tơi / lá lốt / rau ngót",
+    "reason_vi": "Một số rau bản địa nhiệt đới chưa có mã riêng trong USDA.",
+    "suggestion_vi": "Chọn rau lá xanh nấu chín tương đương (vd. rau chân vịt/dền)."
+  },
+  {
+    "name_vi": "Sấu ngâm đường / nước sấu",
+    "reason_vi": "Quả sấu và lượng đường ngâm không có trong USDA.",
+    "suggestion_vi": "Nhập theo nhãn chai hoặc nhập theo lượng đường ước tính."
+  },
+  {
+    "name_vi": "Bánh pía / bánh đậu xanh đóng hộp",
+    "reason_vi": "Công thức hãng sản xuất khác nhau rất lớn về dầu, mỡ và đường bổ sung.",
+    "suggestion_vi": "Nhập theo nhãn dinh dưỡng trên bao bì để giữ đúng đường bổ sung."
+  }
+]
