@@ -26,6 +26,18 @@ jobs:
           dart analyze
           dart test
 
+  food-library:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+      - name: Test thư viện món (SQLite FTS5)
+        working-directory: packages/food_library
+        run: |
+          dart pub get
+          dart analyze
+          dart test
+
   journal-db:
     runs-on: ubuntu-latest
     steps:

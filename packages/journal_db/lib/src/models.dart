@@ -279,6 +279,63 @@ class WaterRecord {
   const WaterRecord(this.id, this.at, this.ml);
 }
 
+class CustomFoodLine {
+  final String nutrientId;
+  final String? form;
+  final double labelAmount;
+  final String labelUnit;
+  final IntakeSource source;
+
+  const CustomFoodLine({
+    required this.nutrientId,
+    this.form,
+    required this.labelAmount,
+    required this.labelUnit,
+    required this.source,
+  });
+}
+
+class CustomFoodInput {
+  final String name;
+  final String portionUnit;
+  final double labelBasisQty;
+  final String labelBasisUnit;
+  final List<CustomFoodLine> lines;
+
+  const CustomFoodInput({
+    required this.name,
+    required this.portionUnit,
+    required this.labelBasisQty,
+    required this.labelBasisUnit,
+    required this.lines,
+  });
+}
+
+class CustomFood {
+  final int id;
+  final String name;
+  final String portionUnit;
+  final double labelBasisQty;
+  final String labelBasisUnit;
+  final DateTime createdAt;
+  final bool archived;
+  final List<CustomFoodLine> lines;
+
+  const CustomFood({
+    required this.id,
+    required this.name,
+    required this.portionUnit,
+    required this.labelBasisQty,
+    required this.labelBasisUnit,
+    required this.createdAt,
+    required this.archived,
+    required this.lines,
+  });
+
+  /// Quy ước schemaV1: có dòng `addedSugar` (dù `0`) => đã biết đường bổ sung.
+  bool get addedSugarKnown => lines.any((l) => l.nutrientId == 'addedSugar');
+}
+
 /// Hết dung lượng: "Chưa lưu được. Thử lại". Giao dịch đã hoàn tác.
 class StorageFullException implements Exception {
   const StorageFullException();

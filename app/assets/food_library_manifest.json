@@ -1,0 +1,12 @@
+{
+  "libraryVersion": "2026.11.25-1",
+  "sha256": "4318749a5ee1d1e9e6b593940c6c66176b0154ab220673a2e48d2a7a29156c70",
+  "usdaRelease": "FDC Foundation 2026-10 / SR Legacy 2018-04 / FNDDS 2021-2023",
+  "fpedRelease": "FPED 2021-2023",
+  "builtAt": "2026-11-25",
+  "foodCount": 7551,
+  "portionCount": 18164,
+  "nutrientRowCount": 203700,
+  "rawBytes": 17174528,
+  "compressedApproxBytes": 3685801
+}

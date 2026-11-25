@@ -1,13 +1,16 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:food_library/food_library.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'platform/android_db_key_store.dart';
+import 'platform/local_food_library_store.dart';
 import 'state/app_scope.dart';
 import 'state/app_state.dart';
 import 'ui/data_status_screen.dart';
@@ -18,11 +21,23 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final pack = ReferencePack.fromJsonString(
       await rootBundle.loadString('assets/reference_pack.json'));
+  final manifest = jsonDecode(
+      await rootBundle.loadString('assets/food_library_manifest.json')) as Map<String, dynamic>;
   final AppState state;
   if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
     // Android: filesDir (không vào sao lưu tự động, xem AndroidManifest).
     final dir = await getApplicationSupportDirectory();
-    state = AppState(pack: pack, opener: DbOpener(files: DbFiles(dir), keys: const AndroidDbKeyStore()));
+    final libVersion = manifest['libraryVersion'] as String;
+    final libSha = manifest['sha256'] as String;
+    state = AppState(
+      pack: pack,
+      opener: DbOpener(files: DbFiles(dir), keys: const AndroidDbKeyStore()),
+      openFoodLibrary: () => SqliteFoodLibraryRepository.open(
+        store: FlutterFoodLibraryAssetStore(supportDir: dir),
+        libraryVersion: libVersion,
+        expectedSha256: libSha,
+      ),
+    );
   } else {
     // iOS (Keychain, Application Support) làm khi có bản iOS.
     state = AppState.unsupportedPlatform(pack: pack);

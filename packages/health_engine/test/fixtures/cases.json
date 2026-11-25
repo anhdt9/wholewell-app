@@ -625,7 +625,7 @@
   "source": "fda_unit_conversions",
   "ulSource": "nih_ods_vit_e",
   "ulCrossRefSource": "nasem_vit_e_2000",
-  "note": "Hệ số RDA/IU theo FDA 2019 (21 CFR 101.9/101.36); hệ số UL vitamin E theo NASEM 2000 Bảng 9-1 và NIH ODS (tra 25/11/2026)"
+  "note": "Hệ số RDA/IU theo FDA 2019 Bảng 3 (FDA-2016-D-4484, tr. 19; 21 CFR 101.9/101.36); hệ số UL vitamin E theo NASEM 2000 Bảng 9-1 và NIH ODS (tra 25/11/2026)"
  },
  "lineCases": [
   {
@@ -707,7 +707,7 @@
    }
   },
   {
-   "name": "row5b_vitA_bc_food_iu_missing",
+   "name": "row5b_vitA_bc_food_iu_food",
    "extended": false,
    "input": {
     "nutrientId": "vitA",
@@ -718,8 +718,8 @@
    }
   },
   {
-   "name": "row5b_vitA_bc_food_iu_ext",
-   "extended": true,
+   "name": "row5b_vitA_bc_food_iu_fort",
+   "extended": false,
    "input": {
     "nutrientId": "vitA",
     "source": "fortified",
@@ -751,7 +751,7 @@
    }
   },
   {
-   "name": "row8_vitA_food_iu_unknown_missing",
+   "name": "row8_vitA_food_iu_unknown_food",
    "extended": false,
    "input": {
     "nutrientId": "vitA",
@@ -762,8 +762,8 @@
    }
   },
   {
-   "name": "row8_vitA_food_iu_unknown_ext",
-   "extended": true,
+   "name": "row8_vitA_food_iu_unknown_fort",
+   "extended": false,
    "input": {
     "nutrientId": "vitA",
     "source": "fortified",
@@ -7225,13 +7225,15 @@
     "uncertain": false,
     "amountsNotComputed": null
    },
-   "row5b_vitA_bc_food_iu_missing": {
-    "amounts": {},
+   "row5b_vitA_bc_food_iu_food": {
+    "amounts": {
+     "vitA": 250.0
+    },
     "ulAmounts": null,
     "uncertain": false,
-    "amountsNotComputed": "missingFoodBetaCaroteneFactor"
+    "amountsNotComputed": null
    },
-   "row5b_vitA_bc_food_iu_ext": {
+   "row5b_vitA_bc_food_iu_fort": {
     "amounts": {
      "vitA": 250.0
     },
@@ -7257,15 +7259,17 @@
     "uncertain": true,
     "amountsNotComputed": null
    },
-   "row8_vitA_food_iu_unknown_missing": {
-    "amounts": {},
+   "row8_vitA_food_iu_unknown_food": {
+    "amounts": {
+     "vitA": 150.0
+    },
     "ulAmounts": {
      "retinol": 900.0
     },
     "uncertain": true,
-    "amountsNotComputed": "missingFoodBetaCaroteneFactor"
+    "amountsNotComputed": null
    },
-   "row8_vitA_food_iu_unknown_ext": {
+   "row8_vitA_food_iu_unknown_fort": {
     "amounts": {
      "vitA": 150.0
     },

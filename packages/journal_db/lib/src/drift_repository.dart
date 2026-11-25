@@ -228,10 +228,23 @@ class DriftJournalRepository implements JournalRepository {
         ulAmounts: r['ul_amounts'] == null ? null : _decode(r['ul_amounts']),
       );
 
-  Future<Map<int, List<IntakeLine>>> _linesOn(String day, String column) async {
+  Future<Map<int, List<IntakeLine>>> _linesBetween(String fromDay, String toDay, String column) async {
     final out = <int, List<IntakeLine>>{};
     final rows = await _select(
-        'SELECT * FROM intake_lines WHERE day = ? AND $column IS NOT NULL ORDER BY id', [day]);
+        'SELECT * FROM intake_lines WHERE day >= ? AND day <= ? AND $column IS NOT NULL ORDER BY id',
+        [fromDay, toDay]);
+    for (final r in rows) {
+      (out[r[column] as int] ??= []).add(_line(r));
+    }
+    return out;
+  }
+
+  Future<Map<int, List<IntakeLine>>> _linesForIds(String column, List<int> ids) async {
+    if (ids.isEmpty) return const {};
+    final marks = List.filled(ids.length, '?').join(',');
+    final out = <int, List<IntakeLine>>{};
+    final rows = await _select(
+        'SELECT * FROM intake_lines WHERE $column IN ($marks) ORDER BY id', ids);
     for (final r in rows) {
       (out[r[column] as int] ??= []).add(_line(r));
     }
@@ -262,14 +275,38 @@ class DriftJournalRepository implements JournalRepository {
       _guard(write: true, () => _update('DELETE FROM food_entries WHERE id = ?', [id]));
 
   @override
-  Future<List<FoodEntry>> foodsOn(String day) => _guard(() async {
-        final lines = await _linesOn(day, 'food_entry_id');
+  Future<List<FoodEntry>> foodsOn(String day) => foodsBetween(day, day);
+
+  @override
+  Future<List<FoodEntry>> foodsBetween(String fromDay, String toDay) => _guard(() async {
+        final lines = await _linesBetween(fromDay, toDay, 'food_entry_id');
         return [
-          for (final r in await _select('SELECT * FROM food_entries WHERE day = ? ORDER BY at, id', [day]))
+          for (final r in await _select(
+              'SELECT * FROM food_entries WHERE day >= ? AND day <= ? ORDER BY day, at, id', [fromDay, toDay]))
             _food(r, lines[r['id'] as int] ?? const []),
         ];
       });
 
+  @override
+  Future<List<FoodEntry>> recentFoods({int limit = 20}) => _guard(() async {
+        final rows = await _select(
+            'SELECT * FROM food_entries ORDER BY at DESC, id DESC LIMIT ?', [limit * 8]);
+        final picked = <Map<String, Object?>>[];
+        final seen = <String>{};
+        for (final r in rows) {
+          final ref = r['food_ref'] as String?;
+          final name = r['name'] as String;
+          final key = ref ?? 'label:${name.trim().toLowerCase()}';
+          if (seen.add(key)) {
+            picked.add(r);
+            if (picked.length >= limit) break;
+          }
+        }
+        final lines = await _linesForIds('food_entry_id', [for (final r in picked) r['id'] as int]);
+        return [for (final r in picked) _food(r, lines[r['id'] as int] ?? const [])];
+      });
+
+  @override
   Future<FoodEntry?> foodById(int id) => _guard(() async {
         final rows = await _select('SELECT * FROM food_entries WHERE id = ?', [id]);
         if (rows.isEmpty) return null;
@@ -294,16 +331,27 @@ class DriftJournalRepository implements JournalRepository {
       );
 
   /// Đổi giờ, ngày của món; các dòng chất đổi `day` cùng giao dịch.
+  @override
   Future<void> moveFood(int id, DateTime at) => _guard(write: true, () => db.transaction(() async {
         final (ms, tz, day) = _when(at);
         await _update('UPDATE food_entries SET at = ?, tz_offset = ?, day = ? WHERE id = ?', [ms, tz, day, id]);
         await _update('UPDATE intake_lines SET day = ? WHERE food_entry_id = ?', [day, id]);
       }));
 
-  /// Đổi khẩu phần của món nhập theo nhãn: mọi lượng × mới ÷ cũ (đổi đơn vị là
-  /// tuyến tính, nên bằng tính lại từ số trên nhãn × khẩu phần ÷ gốc nhãn).
-  /// Món USDA, công thức tính lại theo gói đang cài (việc 3): [replaceFoodLines].
-  Future<void> scaleLabelFoodPortion(int id, double newQty) async {
+  @override
+  Future<void> updateFoodMeta(int id, {required DateTime at, required Meal meal}) =>
+      _guard(write: true, () => db.transaction(() async {
+            final (ms, tz, day) = _when(at);
+            await _update(
+              'UPDATE food_entries SET at = ?, tz_offset = ?, day = ?, meal = ? WHERE id = ?',
+              [ms, tz, day, meal.name, id],
+            );
+            await _update('UPDATE intake_lines SET day = ? WHERE food_entry_id = ?', [day, id]);
+          }));
+
+  /// Đổi khẩu phần (và tùy chọn giờ/ngày/bữa) của món nhập theo nhãn trong một giao dịch.
+  @override
+  Future<void> scaleLabelFoodPortion(int id, double newQty, {DateTime? at, Meal? meal}) async {
     if (newQty <= 0) throw ArgumentError.value(newQty, 'newQty');
     return _guard(write: true, () => db.transaction(() async {
           final f = await foodById(id);
@@ -312,25 +360,119 @@ class DriftJournalRepository implements JournalRepository {
             throw StateError('Món không theo nhãn: tính lại theo gói dữ liệu (replaceFoodLines)');
           }
           final factor = newQty / f.portionQty;
-          await _update('UPDATE food_entries SET portion_qty = ? WHERE id = ?', [newQty, id]);
+          final nextAt = at ?? f.at;
+          final (ms, tz, day) = _when(nextAt);
+          await _update(
+            'UPDATE food_entries SET portion_qty = ?, at = ?, tz_offset = ?, day = ?, meal = ? WHERE id = ?',
+            [newQty, ms, tz, day, (meal ?? f.meal).name, id],
+          );
           await _update('DELETE FROM intake_lines WHERE food_entry_id = ?', [id]);
-          await _insertLines([for (final l in f.lines) l.scaled(factor)], foodId: id, day: f.day);
+          await _insertLines([for (final l in f.lines) l.scaled(factor)], foodId: id, day: day);
         }));
   }
 
-  /// Thay khẩu phần và các dòng đã tính lại theo gói đang cài; cập nhật `pack_version`.
+  /// Thay khẩu phần (và tùy chọn đơn vị/giờ/ngày/bữa) và các dòng đã tính lại trong một giao dịch.
+  @override
   Future<void> replaceFoodLines(int id,
-      {required double portionQty, required List<IntakeLine> lines, required String packVersion}) async {
+      {required double portionQty,
+      String? portionUnit,
+      DateTime? at,
+      Meal? meal,
+      required List<IntakeLine> lines,
+      required String packVersion}) async {
+    if (portionQty <= 0) throw ArgumentError.value(portionQty, 'portionQty');
     checkLinesWritable(lines);
     return _guard(write: true, () => db.transaction(() async {
-          final rows = await _select('SELECT day FROM food_entries WHERE id = ?', [id]);
+          final rows = await _select('SELECT at, tz_offset, day, meal, portion_unit FROM food_entries WHERE id = ?', [id]);
           if (rows.isEmpty) throw StateError('Không có món $id');
-          await _update('UPDATE food_entries SET portion_qty = ?, pack_version = ? WHERE id = ?',
-              [portionQty, packVersion, id]);
+          final cur = rows.first;
+          final String day;
+          final int ms;
+          final int tz;
+          if (at != null) {
+            (ms, tz, day) = _when(at);
+          } else {
+            ms = cur['at'] as int;
+            tz = cur['tz_offset'] as int;
+            day = cur['day'] as String;
+          }
+          final nextMeal = meal?.name ?? (cur['meal'] as String);
+          final nextUnit = portionUnit ?? (cur['portion_unit'] as String);
+          await _update(
+            'UPDATE food_entries SET portion_qty = ?, portion_unit = ?, at = ?, tz_offset = ?, day = ?, meal = ?, pack_version = ? WHERE id = ?',
+            [portionQty, nextUnit, ms, tz, day, nextMeal, packVersion, id],
+          );
           await _update('DELETE FROM intake_lines WHERE food_entry_id = ?', [id]);
-          await _insertLines(lines, foodId: id, day: rows.first['day'] as String);
+          await _insertLines(lines, foodId: id, day: day);
         }));
   }
+
+  @override
+  Future<int> saveCustomFood(CustomFoodInput input) => _guard(write: true, () => db.transaction(() async {
+        final id = await _insert(
+          'INSERT INTO custom_foods (name, portion_unit, label_basis_qty, label_basis_unit, created_at) '
+          'VALUES (?, ?, ?, ?, ?)',
+          [input.name, input.portionUnit, input.labelBasisQty, input.labelBasisUnit, _nowMs],
+        );
+        for (final l in input.lines) {
+          if (l.source == IntakeSource.supplement) {
+            throw ArgumentError('custom_food_lines chỉ nhận food hoặc fortified');
+          }
+          await _insert(
+            'INSERT INTO custom_food_lines (custom_food_id, nutrient_id, form, label_amount, label_unit, source) '
+            'VALUES (?, ?, ?, ?, ?, ?)',
+            [id, l.nutrientId, l.form, l.labelAmount, l.labelUnit, l.source.name],
+          );
+        }
+        return id;
+      }));
+
+  @override
+  Future<List<CustomFood>> searchCustomFoods(String query, {int limit = 30}) => _guard(() async {
+        final q = normalizeSearchAscii(query);
+        final rows = await _select(
+            'SELECT * FROM custom_foods WHERE archived = 0 ORDER BY created_at DESC, id DESC');
+        final matched = <Map<String, Object?>>[];
+        for (final r in rows) {
+          final name = r['name'] as String;
+          if (q.isEmpty || normalizeSearchAscii(name).contains(q)) {
+            matched.add(r);
+            if (matched.length >= limit) break;
+          }
+        }
+        if (matched.isEmpty) return const [];
+        final ids = [for (final r in matched) r['id'] as int];
+        final marks = List.filled(ids.length, '?').join(',');
+        final lineRows = await _select(
+            'SELECT * FROM custom_food_lines WHERE custom_food_id IN ($marks) ORDER BY rowid', ids);
+        final byId = <int, List<CustomFoodLine>>{};
+        for (final lr in lineRows) {
+          (byId[lr['custom_food_id'] as int] ??= []).add(CustomFoodLine(
+            nutrientId: lr['nutrient_id'] as String,
+            form: lr['form'] as String?,
+            labelAmount: _d(lr['label_amount']),
+            labelUnit: lr['label_unit'] as String,
+            source: IntakeSource.values.byName(lr['source'] as String),
+          ));
+        }
+        return [
+          for (final r in matched)
+            CustomFood(
+              id: r['id'] as int,
+              name: r['name'] as String,
+              portionUnit: r['portion_unit'] as String,
+              labelBasisQty: _d(r['label_basis_qty']),
+              labelBasisUnit: r['label_basis_unit'] as String,
+              createdAt: _at(r['created_at']),
+              archived: r['archived'] == 1,
+              lines: List.unmodifiable(byId[r['id'] as int] ?? const <CustomFoodLine>[]),
+            ),
+        ];
+      });
+
+  @override
+  Future<void> archiveCustomFood(int id) => _guard(
+      write: true, () => _update('UPDATE custom_foods SET archived = 1 WHERE id = ?', [id]));
 
   /// Số món "chưa rõ đường bổ sung" trong ngày.
   Future<int> unknownAddedSugarCount(String day) => _guard(() async =>
@@ -539,17 +681,21 @@ class DriftJournalRepository implements JournalRepository {
       }));
 
   @override
-  Future<List<DoseEntry>> dosesOn(String day) => _guard(() async {
-        final lines = await _linesOn(day, 'dose_entry_id');
+  Future<List<DoseEntry>> dosesOn(String day) => dosesBetween(day, day);
+
+  @override
+  Future<List<DoseEntry>> dosesBetween(String fromDay, String toDay) => _guard(() async {
+        final lines = await _linesBetween(fromDay, toDay, 'dose_entry_id');
         final deductions = <int, List<BoxDeduction>>{};
         for (final r in await _select(
             'SELECT x.dose_entry_id, x.box_id, x.amount FROM dose_box_deductions x '
-            'JOIN dose_entries d ON d.id = x.dose_entry_id WHERE d.day = ?',
-            [day])) {
+            'JOIN dose_entries d ON d.id = x.dose_entry_id WHERE d.day >= ? AND d.day <= ?',
+            [fromDay, toDay])) {
           (deductions[r['dose_entry_id'] as int] ??= []).add(BoxDeduction(r['box_id'] as int, _d(r['amount'])));
         }
         return [
-          for (final r in await _select('SELECT * FROM dose_entries WHERE day = ? ORDER BY at, id', [day]))
+          for (final r in await _select(
+              'SELECT * FROM dose_entries WHERE day >= ? AND day <= ? ORDER BY day, at, id', [fromDay, toDay]))
             DoseEntry(
               id: r['id'] as int,
               at: _at(r['at']),
@@ -597,8 +743,13 @@ class DriftJournalRepository implements JournalRepository {
       _guard(write: true, () => _update('DELETE FROM workout_entries WHERE id = ?', [id]));
 
   @override
-  Future<List<WorkoutRecord>> workoutsOn(String day) => _guard(() async => [
-        for (final r in await _select('SELECT * FROM workout_entries WHERE day = ? ORDER BY start_at, id', [day]))
+  Future<List<WorkoutRecord>> workoutsOn(String day) => workoutsBetween(day, day);
+
+  @override
+  Future<List<WorkoutRecord>> workoutsBetween(String fromDay, String toDay) => _guard(() async => [
+        for (final r in await _select(
+            'SELECT * FROM workout_entries WHERE day >= ? AND day <= ? ORDER BY day, start_at, id',
+            [fromDay, toDay]))
           WorkoutRecord(
               r['id'] as int,
               _at(r['start_at']),

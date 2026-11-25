@@ -411,6 +411,33 @@ void main() {
       });
     }
 
+    test('gói có vitA_food_betacarotene_IU_to_ug_RAE = 0.05 và xử lý khi thiếu hệ số', () {
+      expect(pack.foodBetaCaroteneIuToUgRae, closeTo(0.05, 1e-12));
+      final missingJson = jsonDecode(jsonEncode(rawPack)) as Map<String, dynamic>;
+      (missingJson['unitConversions'] as Map<String, dynamic>)['vitA_food_betacarotene_IU_to_ug_RAE'] = null;
+      final missingConv = UnitConverter(ReferencePack.fromJson(missingJson));
+      final r5b = missingConv.convertIntakeLine(const IntakeLineInput(
+        nutrientId: 'vitA',
+        source: IntakeSource.food,
+        form: NutrientForm.betaCarotene,
+        amount: 5000,
+        unit: LabelUnit.iu,
+      ));
+      expect(r5b.amounts, isEmpty);
+      expect(r5b.amountsNotComputed, NotComputedReason.missingFoodBetaCaroteneFactor);
+      final r8 = missingConv.convertIntakeLine(const IntakeLineInput(
+        nutrientId: 'vitA',
+        source: IntakeSource.food,
+        form: NutrientForm.unknown,
+        amount: 3000,
+        unit: LabelUnit.iu,
+      ));
+      expect(r8.amounts, isEmpty);
+      expect(r8.ulAmounts, {'retinol': closeTo(900.0, 1e-9)});
+      expect(r8.uncertain, isTrue);
+      expect(r8.amountsNotComputed, NotComputedReason.missingFoodBetaCaroteneFactor);
+    });
+
     test('từ chối lượng âm và secondaryFolicAcidUg âm', () {
       expect(
         () => conv.convertIntakeLine(const IntakeLineInput(

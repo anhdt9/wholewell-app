@@ -15,6 +15,8 @@ dependencies:
     path: ../packages/health_engine
   journal_db:
     path: ../packages/journal_db
+  food_library:
+    path: ../packages/food_library
   path_provider: 2.1.6
 
 dev_dependencies:
@@ -26,6 +28,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/reference_pack.json
+    - assets/food_library.db
+    - assets/food_library_manifest.json
 
 # CSDL mã hóa: dùng SQLite3MultipleCiphers thay SQLite gốc (docs/specs/encrypted-db.md).
 hooks:

@@ -9,9 +9,11 @@ import 'package:wholewell/state/app_state.dart';
 class _SlowRepo extends InMemoryJournalRepository {
   String? slowDay;
   @override
-  Future<List<FoodEntry>> foodsOn(String day) async {
-    if (day == slowDay) await Future<void>.delayed(const Duration(milliseconds: 50));
-    return super.foodsOn(day);
+  Future<List<FoodEntry>> foodsBetween(String fromDay, String toDay) async {
+    if (slowDay != null && slowDay!.compareTo(fromDay) >= 0 && slowDay!.compareTo(toDay) <= 0) {
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
+    return super.foodsBetween(fromDay, toDay);
   }
 }
 
@@ -19,12 +21,12 @@ class _SlowRepo extends InMemoryJournalRepository {
 class _FailingRepo extends InMemoryJournalRepository {
   bool failNext = false;
   @override
-  Future<List<FoodEntry>> foodsOn(String day) async {
+  Future<List<FoodEntry>> foodsBetween(String fromDay, String toDay) async {
     if (failNext) {
       failNext = false;
       throw const JournalStorageException('SqliteException(5)');
     }
-    return super.foodsOn(day);
+    return super.foodsBetween(fromDay, toDay);
   }
 }
 

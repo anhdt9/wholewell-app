@@ -1,147 +1,404 @@
+/// Màn Ghi món: chọn bữa, món gần đây, món đã lưu, tìm kiếm FTS5 và chuyển sang Nhập theo nhãn.
+library;
+
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
-import 'package:health_engine/health_engine.dart';
+import 'package:food_library/food_library.dart';
+import 'package:journal_db/journal_db.dart';
 
 import '../state/app_scope.dart';
+import '../state/diary_controller.dart';
+import 'common/common_widgets.dart';
+import 'common/food_feedback_sheet.dart';
+import 'edit_food_screen.dart';
+import 'food_portion_screen.dart';
+import 'label_food_screen.dart';
 import 'labels.dart';
 
-/// Nhập tay một món: năng lượng, đạm/béo/bột đường, đường bổ sung, vi chất tùy chọn.
-/// Bản sau sẽ thêm tra USDA FoodData Central và chụp nhãn (OCR).
 class AddFoodScreen extends StatefulWidget {
   const AddFoodScreen({super.key});
+
   @override
   State<AddFoodScreen> createState() => _AddFoodScreenState();
 }
 
 class _AddFoodScreenState extends State<AddFoodScreen> {
-  final _form = GlobalKey<FormState>();
-  final _name = TextEditingController();
-  MealSlot _meal = MealSlot.breakfast;
-  bool _fortified = false;
-  final Map<String, TextEditingController> _c = {
-    for (final k in ['energyKcal', 'protein', 'fat', 'carbohydrate', 'addedSugar', 'fiber'])
-      k: TextEditingController(),
-  };
-  final Map<String, TextEditingController> _micro = {};
+  final _searchCtrl = TextEditingController();
+  late Meal _meal = DiaryController.defaultMealFor(DateTime.now());
 
-  static const _labels = {
-    'energyKcal': 'Năng lượng (kcal)',
-    'protein': 'Đạm (g)',
-    'fat': 'Béo (g)',
-    'carbohydrate': 'Bột đường (g)',
-    'addedSugar': 'Đường bổ sung (g)',
-    'fiber': 'Chất xơ (g)',
-  };
+  Timer? _debounce;
+  Timer? _spinnerDelay;
+  bool _loading = false;
+  bool _showSpinner = false;
+
+  List<FoodEntry> _recents = const [];
+  List<CustomFood> _customs = const [];
+  List<FoodSummary> _libraryHits = const [];
+  bool _initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      unawaited(_refreshLists(''));
+    }
+  }
 
   @override
   void dispose() {
-    _name.dispose();
-    for (final c in [..._c.values, ..._micro.values]) {
-      c.dispose();
-    }
+    _debounce?.cancel();
+    _spinnerDelay?.cancel();
+    _searchCtrl.dispose();
     super.dispose();
   }
 
-  double? _num(TextEditingController c) => double.tryParse(c.text.trim().replaceAll(',', '.'));
+  Future<void> _refreshLists(String query) async {
+    final diary = AppScope.of(context).diary;
+    _spinnerDelay?.cancel();
+    _loading = true;
+    _spinnerDelay = Timer(const Duration(milliseconds: 200), () {
+      if (mounted && _loading) setState(() => _showSpinner = true);
+    });
 
-  void _save() {
-    if (!_form.currentState!.validate()) return;
-    final n = <String, double>{};
-    for (final e in [..._c.entries, ..._micro.entries]) {
-      final v = _num(e.value);
-      if (v != null && v > 0) n[e.key] = v;
+    final q = query.trim();
+    if (q.isEmpty) {
+      final res = await Future.wait([
+        diary.recentFoods(limit: 8),
+        diary.searchCustomFoods('', limit: 20),
+      ]);
+      if (!mounted) return;
+      _loading = false;
+      _spinnerDelay?.cancel();
+      setState(() {
+        _showSpinner = false;
+        _recents = res[0] as List<FoodEntry>;
+        _customs = res[1] as List<CustomFood>;
+        _libraryHits = const [];
+      });
+      return;
     }
-    AppScope.of(context).addItem(IntakeItem(
-      label: _name.text.trim(),
-      source: _fortified ? IntakeSource.fortified : IntakeSource.food,
-      meal: _meal,
-      addedSugarKnown: _num(_c['addedSugar']!) != null,
-      nutrients: n,
-    ));
-    Navigator.of(context).pop();
+
+    final res = await Future.wait([
+      diary.searchCustomFoods(q, limit: 20),
+      diary.searchLibrary(q, limit: 30),
+    ]);
+    if (!mounted) return;
+    _loading = false;
+    _spinnerDelay?.cancel();
+    setState(() {
+      _showSpinner = false;
+      _customs = res[0] as List<CustomFood>;
+      _libraryHits = res[1] as List<FoodSummary>;
+    });
   }
 
-  Future<void> _pickMicro() async {
-    final pack = AppScope.of(context).pack;
-    final options = pack.nutrients.values
-        .where((d) => d.group != 'macro' && !_micro.containsKey(d.id))
-        .toList();
-    final picked = await showModalBottomSheet<String>(
-      context: context,
-      builder: (ctx) => ListView(children: [
-        for (final d in options)
-          ListTile(title: Text(d.nameVi), trailing: Text(unitLabel(d.unit)), onTap: () => Navigator.pop(ctx, d.id)),
-      ]),
+  void _onSearchChanged(String v) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 120), () {
+      if (mounted) unawaited(_refreshLists(v));
+    });
+  }
+
+  Future<void> _finishWithFeedback(FoodLogFeedback fb) async {
+    if (!mounted) return;
+    final state = AppScope.of(context);
+    final nav = Navigator.of(context);
+    nav.pop(fb);
+    if (!nav.mounted) return;
+    await presentFoodFeedback(
+      nav.context,
+      feedback: fb,
+      pack: state.pack,
+      onUndo: fb.savedFoodId == null ? null : () => state.diary.deleteFoodEntry(fb.savedFoodId!),
+      onEdit: fb.savedFoodId == null
+          ? null
+          : () async {
+              final repo = state.session.repo;
+              if (repo == null) return;
+              final entry = await repo.foodById(fb.savedFoodId!);
+              if (entry != null && nav.mounted) {
+                final editFb = await nav.push<FoodLogFeedback>(
+                  MaterialPageRoute(builder: (_) => EditFoodScreen(entry: entry)),
+                );
+                if (editFb != null && nav.mounted) {
+                  await presentFoodFeedback(nav.context, feedback: editFb, pack: state.pack);
+                }
+              }
+            },
     );
-    if (picked != null) setState(() => _micro[picked] = TextEditingController());
   }
 
-  String? _validateNum(String? s) {
-    if (s == null || s.trim().isEmpty) return null;
-    final v = double.tryParse(s.trim().replaceAll(',', '.'));
-    if (v == null || v < 0) return 'Nhập số ≥ 0';
-    return null;
+  Future<void> _tapRecent(FoodEntry e) async {
+    final diary = AppScope.of(context).diary;
+    final fb = await diary.logRecentFood(e, meal: _meal);
+    await _finishWithFeedback(fb);
+  }
+
+  Future<void> _openLibraryDetail(FoodSummary s) async {
+    final state = AppScope.of(context);
+    final detail = await state.diary.getLibraryFood(s.id);
+    if (!mounted) return;
+    if (detail == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Chưa đọc được món này. Thử lại')),
+      );
+      return;
+    }
+    final fb = await Navigator.of(context).push<FoodLogFeedback>(
+      MaterialPageRoute(
+        builder: (_) => FoodPortionScreen.library(
+          food: detail,
+          initialMeal: _meal,
+          initialAt: DiaryController.defaultAtFor(state.day, _meal),
+        ),
+      ),
+    );
+    if (fb != null) await _finishWithFeedback(fb);
+  }
+
+  Future<void> _openCustomPortion(CustomFood c) async {
+    final state = AppScope.of(context);
+    final fb = await Navigator.of(context).push<FoodLogFeedback>(
+      MaterialPageRoute(
+        builder: (_) => FoodPortionScreen.custom(
+          custom: c,
+          initialMeal: _meal,
+          initialAt: DiaryController.defaultAtFor(state.day, _meal),
+        ),
+      ),
+    );
+    if (fb != null) await _finishWithFeedback(fb);
+  }
+
+  Future<void> _openLabelScreen() async {
+    final q = _searchCtrl.text.trim();
+    final fb = await Navigator.of(context).push<FoodLogFeedback>(
+      MaterialPageRoute(
+        builder: (_) => LabelFoodScreen(
+          initialMeal: _meal,
+          initialName: q.isEmpty ? null : q,
+        ),
+      ),
+    );
+    if (fb != null) await _finishWithFeedback(fb);
+  }
+
+  Future<void> _confirmArchiveCustom(CustomFood c) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Bỏ lưu “${c.name}” khỏi danh sách?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Bỏ lưu')),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    await AppScope.of(context).diary.archiveCustomFood(c.id);
+    if (mounted) unawaited(_refreshLists(_searchCtrl.text));
   }
 
   @override
   Widget build(BuildContext context) {
-    final pack = AppScope.of(context).pack;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Thêm món ăn'), actions: [
-        TextButton(onPressed: _save, child: const Text('Lưu')),
-      ]),
-      body: Form(
-        key: _form,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            TextFormField(
-              controller: _name,
-              decoration: const InputDecoration(labelText: 'Tên món'),
-              validator: (s) => (s == null || s.trim().isEmpty) ? 'Nhập tên món' : null,
-            ),
-            const SizedBox(height: 12),
-            SegmentedButton<MealSlot>(
-              segments: const [
-                ButtonSegment(value: MealSlot.breakfast, label: Text('Sáng')),
-                ButtonSegment(value: MealSlot.lunch, label: Text('Trưa')),
-                ButtonSegment(value: MealSlot.dinner, label: Text('Tối')),
-                ButtonSegment(value: MealSlot.snack, label: Text('Phụ')),
-              ],
-              selected: {_meal},
-              onSelectionChanged: (s) => setState(() => _meal = s.first),
-            ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Thực phẩm có tăng cường vi chất'),
-              subtitle: const Text('Vd. sữa, ngũ cốc ghi "bổ sung vitamin" trên nhãn'),
-              value: _fortified,
-              onChanged: (v) => setState(() => _fortified = v),
-            ),
-            for (final e in _c.entries)
-              TextFormField(
-                controller: e.value,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(labelText: _labels[e.key]),
-                validator: _validateNum,
-              ),
-            const SizedBox(height: 16),
-            for (final e in _micro.entries)
-              TextFormField(
-                controller: e.value,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(
-                    labelText: '${pack.nutrients[e.key]!.nameVi} (${unitLabel(pack.nutrients[e.key]!.unit)})'),
-                validator: _validateNum,
-              ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: _pickMicro,
-              icon: const Icon(Icons.add),
-              label: const Text('Thêm vitamin hoặc khoáng chất'),
-            ),
-          ],
+    final state = AppScope.of(context);
+    final t = Theme.of(context).textTheme;
+    final isToday = dayKey(state.day) == dayKey(DateTime.now());
+    final title = isToday ? 'Ghi món' : 'Ghi món · ${state.day.day}/${state.day.month}';
+
+    if (state.foodLibraryBroken) {
+      return Scaffold(
+        appBar: AppBar(title: Text(title)),
+        body: ErrorState(
+          message: 'Không đọc được thư viện món ăn. Hãy cài lại WholeWell từ cửa hàng ứng dụng.',
+          actionLabel: 'Nhập theo nhãn',
+          onAction: _openLabelScreen,
         ),
+      );
+    }
+
+    final query = _searchCtrl.text.trim();
+    final isSearching = query.isNotEmpty;
+
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Column(
+              children: [
+                SegmentedButton<Meal>(
+                  segments: const [
+                    ButtonSegment(value: Meal.breakfast, label: Text('Sáng')),
+                    ButtonSegment(value: Meal.lunch, label: Text('Trưa')),
+                    ButtonSegment(value: Meal.dinner, label: Text('Tối')),
+                    ButtonSegment(value: Meal.snack, label: Text('Phụ')),
+                  ],
+                  selected: {_meal},
+                  onSelectionChanged: (s) => setState(() => _meal = s.first),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _searchCtrl,
+                  onChanged: _onSearchChanged,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.search),
+                    hintText: 'Tìm món...',
+                    border: const OutlineInputBorder(),
+                    suffixIcon: _showSpinner
+                        ? const Padding(
+                            padding: EdgeInsets.all(12),
+                            child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                          )
+                        : (isSearching
+                            ? IconButton(
+                                onPressed: () {
+                                  _searchCtrl.clear();
+                                  unawaited(_refreshLists(''));
+                                },
+                                icon: const Icon(Icons.clear),
+                              )
+                            : null),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              children: [
+                if (!isSearching) ...[
+                  if (_recents.isEmpty && _customs.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Text('Gõ tên món để tìm trong thư viện hoặc tự nhập từ nhãn.'),
+                    ),
+                  if (_recents.isNotEmpty) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text('Gần đây', style: t.titleSmall),
+                    ),
+                    for (final r in _recents) _buildRecentTile(r),
+                  ],
+                  if (_customs.isNotEmpty) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12, bottom: 8),
+                      child: Text('Món bạn đã lưu', style: t.titleSmall),
+                    ),
+                    for (final c in _customs) _buildCustomTile(c, showMenu: true),
+                  ],
+                ] else ...[
+                  for (final c in _customs) _buildCustomTile(c, showMenu: false),
+                  for (final s in _libraryHits) _buildSummaryTile(s),
+                  if (_customs.isEmpty && _libraryHits.isEmpty && !_loading)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Text('Không thấy “$query”. Thử tên khác hoặc nhập theo nhãn.'),
+                    ),
+                ],
+                const SizedBox(height: 16),
+                Text('Không thấy món?', style: t.bodySmall),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 48,
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: _openLabelScreen,
+                    child: const Text('Nhập theo nhãn'),
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildRecentTile(FoodEntry r) {
+    final kcal = r.lines.fold<double>(0, (s, l) => s + (l.amounts['energyKcal'] ?? 0));
+    final isRecipe = r.foodRef?.startsWith('recipe:') ?? false;
+    final isCustom = r.foodRef?.startsWith('custom:') ?? r.labelBasisQty != null;
+    return ListTile(
+      minTileHeight: 56,
+      contentPadding: EdgeInsets.zero,
+      title: Wrap(
+        spacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text('${r.name} · ${fmt(r.portionQty)} ${r.portionUnit}'),
+          if (isRecipe) const EstimateChip(),
+          if (isCustom) const EstimateChip(label: 'tự nhập'),
+        ],
+      ),
+      trailing: kcal > 0 ? CalorieText(kcal, suffix: '') : null,
+      onTap: () => _tapRecent(r),
+    );
+  }
+
+  Widget _buildCustomTile(CustomFood c, {required bool showMenu}) {
+    return ListTile(
+      minTileHeight: 56,
+      contentPadding: EdgeInsets.zero,
+      title: Wrap(
+        spacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text('${c.name} (${fmt(c.labelBasisQty)} ${c.labelBasisUnit})'),
+          const EstimateChip(label: 'tự nhập'),
+        ],
+      ),
+      trailing: showMenu
+          ? IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () => showModalBottomSheet<void>(
+                context: context,
+                builder: (ctx) => SafeArea(
+                  child: ListTile(
+                    leading: const Icon(Icons.delete_outline),
+                    title: const Text('Bỏ lưu món này'),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _confirmArchiveCustom(c);
+                    },
+                  ),
+                ),
+              ),
+            )
+          : null,
+      onTap: () => _openCustomPortion(c),
+    );
+  }
+
+  Widget _buildSummaryTile(FoodSummary s) {
+    final portionText = s.defaultPortionLabel != null && s.defaultPortionGrams != null
+        ? '${s.defaultPortionLabel} (${fmt(s.defaultPortionGrams!)} g)'
+        : '100 g';
+    final displayKcal = s.defaultPortionGrams != null
+        ? s.energyKcalPer100g * (s.defaultPortionGrams! / 100.0)
+        : s.energyKcalPer100g;
+
+    return ListTile(
+      minTileHeight: 56,
+      contentPadding: EdgeInsets.zero,
+      title: Wrap(
+        spacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(s.nameVi),
+          if (s.isEstimate) const EstimateChip(),
+        ],
+      ),
+      subtitle: Text(
+        s.nameEn != null && s.nameEn != s.nameVi ? '${s.nameEn} · $portionText' : portionText,
+      ),
+      trailing: displayKcal > 0 ? CalorieText(displayKcal, suffix: '') : null,
+      onTap: () => _openLibraryDetail(s),
     );
   }
 }

@@ -326,6 +326,128 @@ void main() {
       expect(flags.single.nutrientId, 'vitE');
       expect(flags.single.amount, closeTo(1090.91, 1e-6));
     });
+
+    test('updateFoodMeta, foodsBetween, dosesBetween, workoutsBetween, recentFoods và customFoods', () async {
+      final d1 = DateTime(2026, 11, 20, 7, 30);
+      final d2 = DateTime(2026, 11, 22, 12, 0);
+      final d3 = DateTime(2026, 11, 24, 19, 0);
+      final id1 = await repo.addFood(FoodEntryInput(
+        at: d1,
+        meal: Meal.breakfast,
+        name: 'Phở bò',
+        foodRef: 'recipe:pho-bo',
+        portionUnit: 'bát',
+        portionQty: 1,
+        addedSugarKnown: true,
+        packVersion: testPack,
+        lines: [line('energyKcal', 450)],
+      ));
+      await repo.addFood(FoodEntryInput(
+        at: d2,
+        meal: Meal.lunch,
+        name: 'Cơm trắng',
+        foodRef: 'recipe:com-trang',
+        portionUnit: 'bát',
+        portionQty: 1,
+        addedSugarKnown: true,
+        packVersion: testPack,
+        lines: [line('energyKcal', 195)],
+      ));
+      await repo.addFood(FoodEntryInput(
+        at: d3,
+        meal: Meal.dinner,
+        name: 'Phở bò',
+        foodRef: 'recipe:pho-bo',
+        portionUnit: 'bát',
+        portionQty: 1.5,
+        addedSugarKnown: true,
+        packVersion: testPack,
+        lines: [line('energyKcal', 675)],
+      ));
+      await repo.recordDose(DoseInput(
+        at: d2,
+        name: 'Kẽm',
+        kind: DoseKind.oneOff,
+        servings: 1,
+        packVersion: testPack,
+        lines: [line('zinc', 15, source: IntakeSource.supplement)],
+      ));
+      await repo.addWorkout(d2, const WorkoutEntry(activityCode: '17200', minutes: 30));
+
+      await repo.updateFoodMeta(id1, at: DateTime(2026, 11, 21, 12, 15), meal: Meal.lunch);
+      final moved = (await repo.foodById(id1))!;
+      expect(moved.day, '2026-11-21');
+      expect(moved.meal, Meal.lunch);
+
+      final betweenFoods = await repo.foodsBetween('2026-11-21', '2026-11-22');
+      expect(betweenFoods.map((f) => f.name), ['Phở bò', 'Cơm trắng']);
+      expect((await repo.dosesBetween('2026-11-21', '2026-11-22')).single.name, 'Kẽm');
+      expect((await repo.workoutsBetween('2026-11-21', '2026-11-22')).single.workout.minutes, 30);
+
+      final recents = await repo.recentFoods(limit: 5);
+      expect(recents.map((f) => f.name), ['Phở bò', 'Cơm trắng']);
+      expect(recents.first.portionQty, 1.5);
+
+      // Quy ước custom_foods với addedSugar = 0 vs bỏ trống
+      final cidZero = await repo.saveCustomFood(const CustomFoodInput(
+        name: 'Sữa chua không đường',
+        portionUnit: 'ml',
+        labelBasisQty: 100,
+        labelBasisUnit: 'ml',
+        lines: [
+          CustomFoodLine(nutrientId: 'energyKcal', labelAmount: 60, labelUnit: 'kcal', source: IntakeSource.food),
+          CustomFoodLine(nutrientId: 'addedSugar', labelAmount: 0, labelUnit: 'g', source: IntakeSource.food),
+        ],
+      ));
+      final cidUnknown = await repo.saveCustomFood(const CustomFoodInput(
+        name: 'Sữa đậu nành nhà làm',
+        portionUnit: 'ml',
+        labelBasisQty: 200,
+        labelBasisUnit: 'ml',
+        lines: [
+          CustomFoodLine(nutrientId: 'energyKcal', labelAmount: 90, labelUnit: 'kcal', source: IntakeSource.food),
+        ],
+      ));
+      final found = await repo.searchCustomFoods('sua');
+      expect(found.map((c) => c.id), [cidUnknown, cidZero]);
+      expect(found.firstWhere((c) => c.id == cidZero).addedSugarKnown, isTrue);
+      expect(found.firstWhere((c) => c.id == cidUnknown).addedSugarKnown, isFalse);
+
+      await repo.archiveCustomFood(cidUnknown);
+      expect((await repo.searchCustomFoods('sua')).map((c) => c.id), [cidZero]);
+    });
+  });
+
+  test('InMemoryJournalRepository khớp interface mở rộng với DriftJournalRepository', () async {
+    final mem = InMemoryJournalRepository();
+    final t = DateTime(2026, 11, 24, 8, 0);
+    final id = await mem.addFood(FoodEntryInput(
+      at: t,
+      meal: Meal.breakfast,
+      name: 'Sữa hạt',
+      portionUnit: 'ml',
+      portionQty: 200,
+      labelBasisQty: 100,
+      labelBasisUnit: 'ml',
+      addedSugarKnown: false,
+      packVersion: testPack,
+      lines: [line('calcium', 120, source: IntakeSource.fortified)],
+    ));
+    await mem.scaleLabelFoodPortion(id, 300);
+    expect((await mem.foodById(id))!.lines.single.amounts['calcium'], closeTo(180, 1e-9));
+    await mem.updateFoodMeta(id, at: DateTime(2026, 11, 23, 19, 0), meal: Meal.dinner);
+    expect((await mem.foodsBetween('2026-11-23', '2026-11-23')).single.meal, Meal.dinner);
+    final cid = await mem.saveCustomFood(const CustomFoodInput(
+      name: 'Trà xanh đóng chai',
+      portionUnit: 'chai',
+      labelBasisQty: 1,
+      labelBasisUnit: 'chai',
+      lines: [CustomFoodLine(nutrientId: 'addedSugar', labelAmount: 0, labelUnit: 'g', source: IntakeSource.food)],
+    ));
+    expect((await mem.searchCustomFoods('tra xanh')).single.addedSugarKnown, isTrue);
+    await mem.archiveCustomFood(cid);
+    expect(await mem.searchCustomFoods(''), isEmpty);
+    await mem.close();
   });
 
   test('bảng profile chỉ có các cột đã định, không có tên bệnh, tên thuốc', () async {

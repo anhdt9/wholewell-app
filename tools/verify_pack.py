@@ -89,6 +89,8 @@ uc = p["unitConversions"]
 for sk in ("source", "ulSource", "ulCrossRefSource"):
     if uc.get(sk) not in src_ids:
         err(f"unitConversions.{sk} không có trong sources")
+if uc.get("vitA_food_betacarotene_IU_to_ug_RAE") != 0.05:
+    err(f"vitA_food_betacarotene_IU_to_ug_RAE sai: {uc.get('vitA_food_betacarotene_IU_to_ug_RAE')}")
 if uc.get("vitE_ul_natural_IU_to_mg") != 0.67:
     err(f"vitE_ul_natural_IU_to_mg sai: {uc.get('vitE_ul_natural_IU_to_mg')}")
 if abs(uc.get("vitE_ul_synthetic_IU_to_mg", 0) - 1000 / 1100) > 1e-12:
