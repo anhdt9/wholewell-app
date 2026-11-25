@@ -91,7 +91,7 @@ class DiaryScreen extends StatelessWidget {
     final parts = <String>[
       if (!hideCal && it.amount('energyKcal') > 0) '${it.amount('energyKcal').round()} kcal',
       if (it.amount('protein') > 0) 'đạm ${fmt(it.amount('protein'))} g',
-      if (it.mealId != null) 'bữa ${it.mealId}',
+      if (it.meal != null) 'bữa ${mealLabel(it.meal!)}',
     ];
     final micro = it.nutrients.keys
         .where((k) => !const {'energyKcal', 'protein', 'fat', 'carbohydrate', 'addedSugar'}.contains(k))

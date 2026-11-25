@@ -15,7 +15,7 @@ class AddFoodScreen extends StatefulWidget {
 class _AddFoodScreenState extends State<AddFoodScreen> {
   final _form = GlobalKey<FormState>();
   final _name = TextEditingController();
-  String _meal = 'sáng';
+  MealSlot _meal = MealSlot.breakfast;
   bool _fortified = false;
   final Map<String, TextEditingController> _c = {
     for (final k in ['energyKcal', 'protein', 'fat', 'carbohydrate', 'addedSugar', 'fiber'])
@@ -53,7 +53,8 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
     AppScope.of(context).addItem(IntakeItem(
       label: _name.text.trim(),
       source: _fortified ? IntakeSource.fortified : IntakeSource.food,
-      mealId: _meal,
+      meal: _meal,
+      addedSugarKnown: _num(_c['addedSugar']!) != null,
       nutrients: n,
     ));
     Navigator.of(context).pop();
@@ -99,12 +100,12 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
               validator: (s) => (s == null || s.trim().isEmpty) ? 'Nhập tên món' : null,
             ),
             const SizedBox(height: 12),
-            SegmentedButton<String>(
+            SegmentedButton<MealSlot>(
               segments: const [
-                ButtonSegment(value: 'sáng', label: Text('Sáng')),
-                ButtonSegment(value: 'trưa', label: Text('Trưa')),
-                ButtonSegment(value: 'tối', label: Text('Tối')),
-                ButtonSegment(value: 'phụ', label: Text('Phụ')),
+                ButtonSegment(value: MealSlot.breakfast, label: Text('Sáng')),
+                ButtonSegment(value: MealSlot.lunch, label: Text('Trưa')),
+                ButtonSegment(value: MealSlot.dinner, label: Text('Tối')),
+                ButtonSegment(value: MealSlot.snack, label: Text('Phụ')),
               ],
               selected: {_meal},
               onSelectionChanged: (s) => setState(() => _meal = s.first),

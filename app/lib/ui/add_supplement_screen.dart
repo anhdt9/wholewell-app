@@ -1,10 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:health_engine/health_engine.dart';
+import 'package:journal_db/journal_db.dart';
 
 import '../state/app_scope.dart';
 import 'labels.dart';
 
-/// Nhập một liều bổ sung. Hỗ trợ đổi IU cho vitamin D, A (retinol), E.
+/// Nhập một liều bổ sung. Đổi đơn vị qua [UnitConverter.convertIntakeLine] để tính đúng `ulAmounts`.
 class AddSupplementScreen extends StatefulWidget {
   const AddSupplementScreen({super.key});
   @override
@@ -52,44 +53,55 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
     if (picked != null) setState(() => _lines.add(_Line(picked)));
   }
 
+  LabelUnit _stdLabelUnit(String packUnit) => switch (packUnit) {
+        'g' => LabelUnit.g,
+        'mg' => LabelUnit.mg,
+        'ug' => LabelUnit.ug,
+        'ug_RAE' => LabelUnit.ugRae,
+        'ug_DFE' => LabelUnit.ugDfe,
+        'mg_NE' => LabelUnit.mgNe,
+        _ => LabelUnit.mg,
+      };
+
   void _save() {
     final state = AppScope.of(context);
     final conv = UnitConverter(state.pack);
-    final n = <String, double>{};
-    void add(String k, double v) => n[k] = (n[k] ?? 0) + v;
+    final out = <IntakeLine>[];
     for (final l in _lines) {
       final raw = double.tryParse(l.amount.text.trim().replaceAll(',', '.'));
       if (raw == null || raw <= 0) continue;
-      switch (l.nutrientId) {
-        case 'vitD':
-          add('vitD', l.unit == _Unit.iu ? conv.vitDIuToUg(raw) : raw);
-        case 'vitE':
-          add('vitE', l.unit == _Unit.iu ? conv.vitEIuToMg(raw, l.eForm) : raw);
-        case 'vitA':
-          if (l.vitAPreformed) {
-            final ug = l.unit == _Unit.iu ? conv.vitARetinolIuToUgRae(raw) : raw;
-            add('vitA', ug);
-            add('retinol', ug); // UL vitamin A chỉ tính dạng có sẵn
-          } else {
-            // beta-caroten: tính vào mức đủ (RAE) nhưng không tính vào UL vitamin A.
-            add('vitA', l.unit == _Unit.iu ? conv.vitABetaCaroteneSupplementIuToUgRae(raw) : raw);
-          }
-        case 'folicAcid':
-          add('folicAcid', raw);
-          add('folate', conv.folicAcidToDfe(raw));
-        default:
-          add(l.nutrientId, raw);
-      }
+      final def = state.pack.nutrients[l.nutrientId]!;
+      final labelUnit = l.unit == _Unit.iu ? LabelUnit.iu : _stdLabelUnit(def.unit);
+      final form = switch (l.nutrientId) {
+        'vitE' => l.eForm == VitaminEForm.natural ? NutrientForm.natural2r : NutrientForm.synthetic2r,
+        'vitA' => l.vitAPreformed ? NutrientForm.retinol : NutrientForm.betaCarotene,
+        'folicAcid' => NutrientForm.folicAcid,
+        _ => NutrientForm.unknown,
+      };
+      final converted = conv.convertIntakeLine(IntakeLineInput(
+        nutrientId: l.nutrientId,
+        source: IntakeSource.supplement,
+        form: form,
+        amount: raw,
+        unit: labelUnit,
+      ));
+      if (converted.amounts.isEmpty) continue;
+      out.add(IntakeLine(
+        nutrientId: l.nutrientId,
+        source: IntakeSource.supplement,
+        form: form,
+        uncertain: converted.uncertain,
+        labelAmount: raw,
+        labelUnit: labelUnit.name,
+        amounts: converted.amounts,
+        ulAmounts: converted.ulAmounts,
+      ));
     }
-    if (n.isEmpty) {
+    if (out.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nhập ít nhất một chất.')));
       return;
     }
-    state.addItem(IntakeItem(
-      label: _name.text.trim().isEmpty ? 'Bổ sung' : _name.text.trim(),
-      source: IntakeSource.supplement,
-      nutrients: n,
-    ));
+    state.recordDose(_name.text.trim().isEmpty ? 'Bổ sung' : _name.text.trim(), out);
     Navigator.of(context).pop();
   }
 
@@ -131,7 +143,7 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
               else
                 Text(unitLabel(pack.nutrients[l.nutrientId]!.unit)),
             ]),
-            if (l.nutrientId == 'vitE' && l.unit == _Unit.iu)
+            if (l.nutrientId == 'vitE')
               DropdownButton<VitaminEForm>(
                 value: l.eForm,
                 items: const [

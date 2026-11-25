@@ -599,8 +599,14 @@ class DriftJournalRepository implements JournalRepository {
   @override
   Future<List<WorkoutRecord>> workoutsOn(String day) => _guard(() async => [
         for (final r in await _select('SELECT * FROM workout_entries WHERE day = ? ORDER BY start_at, id', [day]))
-          WorkoutRecord(r['id'] as int, _at(r['start_at']), r['day'] as String,
-              WorkoutEntry(activityCode: r['activity_code'] as String, minutes: _d(r['minutes']))),
+          WorkoutRecord(
+              r['id'] as int,
+              _at(r['start_at']),
+              r['day'] as String,
+              WorkoutEntry(
+                  activityCode: r['activity_code'] as String,
+                  minutes: _d(r['minutes']),
+                  day: r['day'] as String)),
       ]);
 
   @override

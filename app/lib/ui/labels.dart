@@ -21,6 +21,13 @@ String stageLabel(LifeStage s) => switch (s) {
       LifeStage.lactating => 'Đang cho con bú',
     };
 
+String mealLabel(MealSlot m) => switch (m) {
+      MealSlot.breakfast => 'sáng',
+      MealSlot.lunch => 'trưa',
+      MealSlot.dinner => 'tối',
+      MealSlot.snack => 'phụ',
+    };
+
 String macroLabel(String m) => switch (m) {
       'protein' => 'Đạm',
       'fat' => 'Béo',
@@ -36,6 +43,10 @@ String reasonLabel(NotComputedReason r) => switch (r) {
         'Chọn cân nặng trước khi mang thai (thiếu cân, bình thường…) để tính mục tiêu calo.',
       NotComputedReason.ageUnsupported => 'App dành cho người từ 18 tuổi.',
       NotComputedReason.unknownActivity => 'Hoạt động không có trong danh sách.',
+      NotComputedReason.missingFoodBetaCaroteneFactor => 'Chưa có hệ số beta-caroten trong thức ăn.',
+      NotComputedReason.missingEsterRatio => 'Chưa có tỷ lệ tocopherol của este vitamin E.',
+      NotComputedReason.missingCompoundRatio => 'Chưa có tỷ lệ nguyên tố của hợp chất.',
+      NotComputedReason.missingNutrientInPack => 'Chất này chưa có trong gói dữ liệu tham chiếu.',
     };
 
 String unitLabel(String u) => switch (u) {

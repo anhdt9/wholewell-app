@@ -81,15 +81,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final state = AppScope.of(context);
     final suggested = state.profile == null ? null : state.suggestedLevel();
+    final minAge = state.pack.minProfileAge;
     final body = Form(
       key: _form,
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           if (widget.firstRun)
-            const Padding(
-              padding: EdgeInsets.only(bottom: 16),
-              child: Text('Dữ liệu chỉ lưu trên máy này. App dành cho người từ 18 tuổi, '
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Text('Dữ liệu chỉ lưu trên máy này. App dành cho người từ $minAge tuổi, '
                   'chỉ để tham khảo, không chẩn đoán hay kê đơn.'),
             ),
           TextFormField(
@@ -98,7 +99,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             decoration: const InputDecoration(labelText: 'Tuổi'),
             validator: (s) {
               final v = int.tryParse((s ?? '').trim());
-              if (v == null || v < 18 || v > 110) return 'Tuổi từ 18 đến 110';
+              if (v == null || v < minAge || v > 110) return 'Tuổi từ $minAge đến 110';
               return null;
             },
           ),

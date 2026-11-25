@@ -32,7 +32,7 @@ void main() {
   final pack = ReferencePack.fromJsonString(File('assets/reference_pack.json').readAsStringSync());
   const profile = Profile(ageYears: 30, sex: Sex.male, heightCm: 170, weightKg: 65);
 
-  test('báo cáo ngày qua AppState, cờ UL trung bình 7 ngày', () async {
+  test('báo cáo ngày qua AppState, cờ UL trung bình ngày có ghi và vận động tăng cơ', () async {
     final s = AppState.withRepository(pack: pack, repo: InMemoryJournalRepository());
     await s.start();
     expect(s.report(), isNull);
@@ -43,10 +43,40 @@ void main() {
       nutrients: {'magnesium': 500},
     ));
     await s.addWorkout(const WorkoutEntry(activityCode: '17200', minutes: 30));
+    await s.addWorkout(const WorkoutEntry(activityCode: '02054', minutes: 20));
     final r = s.report()!;
     expect(r.eerKcal, 2450);
-    expect(r.ulFlags.map((f) => f.nutrientId), contains('magnesium'));
-    expect(r.energyOutWorkoutKcal, closeTo(4.8 * 65 * 0.5, 1e-9));
+    expect(r.loggedDaysCount, 1);
+    expect(r.ulFlags.where((f) => f.nutrientId == 'magnesium').map((f) => f.kind).toSet(),
+        {UlFlagKind.daily, UlFlagKind.sevenDayAverage});
+    expect(r.energyOutWorkoutKcal, closeTo((4.8 * 30 + 3.5 * 20) * 65 / 60, 1e-9));
+    expect(r.activity7Days.strengthDays, 1);
+  });
+
+  test('recordDose qua UnitConverter tính đúng UL vitamin E tổng hợp', () async {
+    final s = AppState.withRepository(pack: pack, repo: InMemoryJournalRepository());
+    await s.start();
+    await s.saveProfile(profile);
+    final conv = UnitConverter(pack).convertIntakeLine(const IntakeLineInput(
+      nutrientId: 'vitE',
+      source: IntakeSource.supplement,
+      form: NutrientForm.synthetic2r,
+      amount: 1200,
+      unit: LabelUnit.iu,
+    ));
+    await s.recordDose('VitE 1200 IU', [
+      IntakeLine(
+        nutrientId: 'vitE',
+        source: IntakeSource.supplement,
+        form: NutrientForm.synthetic2r,
+        labelAmount: 1200,
+        labelUnit: 'iu',
+        amounts: conv.amounts,
+        ulAmounts: conv.ulAmounts,
+      ),
+    ]);
+    final r = s.report()!;
+    expect(r.ulFlags.any((f) => f.nutrientId == 'vitE'), isTrue);
   });
 
   test('ẩn số calo, nhật ký được lưu qua nhật ký và đọc lại khi mở lại', () async {
@@ -58,21 +88,21 @@ void main() {
     await a.addItem(const IntakeItem(
       label: 'Cơm',
       source: IntakeSource.food,
-      mealId: 'trưa',
+      meal: MealSlot.lunch,
       nutrients: {'energyKcal': 200, 'protein': 4},
     ));
     final b = AppState.withRepository(pack: pack, repo: repo);
     await b.start();
     expect(b.hideCalories, isTrue);
     expect(b.profile?.weightKg, 65);
-    expect(b.todayItems.single.mealId, 'trưa');
+    expect(b.todayItems.single.meal, MealSlot.lunch);
     expect(b.todayItems.single.nutrients, {'energyKcal': 200.0, 'protein': 4.0});
   });
 
   test('xóa mục theo vị trí trong danh sách', () async {
     final s = AppState.withRepository(pack: pack, repo: InMemoryJournalRepository());
     await s.start();
-    await s.addItem(const IntakeItem(label: 'A', source: IntakeSource.food, mealId: 'sáng', nutrients: {'protein': 1}));
+    await s.addItem(const IntakeItem(label: 'A', source: IntakeSource.food, meal: MealSlot.breakfast, nutrients: {'protein': 1}));
     await s.addItem(const IntakeItem(label: 'B', source: IntakeSource.supplement, nutrients: {'zinc': 5}));
     expect(s.todayItems.map((i) => i.label), ['A', 'B']);
     await s.removeItem(1);
@@ -100,7 +130,7 @@ void main() {
     final s = AppState.withRepository(pack: pack, repo: repo);
     await s.start();
     final today = s.day;
-    await s.addItem(const IntakeItem(label: 'Hôm nay', source: IntakeSource.food, mealId: 'sáng', nutrients: {'protein': 1}));
+    await s.addItem(const IntakeItem(label: 'Hôm nay', source: IntakeSource.food, meal: MealSlot.breakfast, nutrients: {'protein': 1}));
     final yesterday = today.subtract(const Duration(days: 1));
     repo.slowDay = dayKey(yesterday);
     final a = s.setDay(yesterday);

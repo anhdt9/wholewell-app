@@ -45,7 +45,7 @@ class TodayScreen extends StatelessWidget {
         Text('% so với mức khuyến nghị hằng ngày. "ước tính" là chất chưa có mức khuyến nghị chính thức.',
             style: t.bodySmall),
         const SizedBox(height: 8),
-        for (final n in r.nutrients.where((n) => pack.nutrients[n.nutrientId]!.group != 'macro'))
+        for (final n in r.nutrients.where((n) => n.target != null && pack.nutrients[n.nutrientId]!.group != 'macro'))
           _NutrientRow(status: n, def: pack.nutrients[n.nutrientId]!),
         const SizedBox(height: 24),
         Text(
@@ -150,8 +150,10 @@ class _SugarCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final lines = <String>[
       '${fmt(sugar.addedSugarG)} g, khoảng ${sugar.percentEnergy.round()}% năng lượng.',
-      for (final e in sugar.mealsOverLimit.entries)
-        'Bữa "${e.key}": ${fmt(e.value)} g, vượt ${fmt(maxMeal)} g mỗi bữa.',
+      for (final a in sugar.mealsOverLimit)
+        'Bữa ${mealLabel(a.meal)}: ${fmt(a.grams)} g, vượt ${fmt(maxMeal)} g mỗi bữa.',
+      if (sugar.unknownSugarFoods.isNotEmpty)
+        'Chưa tính đường bổ sung của ${sugar.unknownSugarFoods.length} món (nhãn không ghi riêng).',
     ];
     return Card(
       child: Padding(
@@ -168,14 +170,15 @@ class _NutrientRow extends StatelessWidget {
   const _NutrientRow({required this.status, required this.def});
   @override
   Widget build(BuildContext context) {
-    final pct = status.percentOfTarget;
+    final pct = status.percentOfTarget ?? 0;
+    final target = status.target!;
     return ListTile(
       dense: true,
       contentPadding: EdgeInsets.zero,
-      title: Text(def.nameVi + (status.target.isEstimate ? ' (ước tính)' : '')),
+      title: Text(def.nameVi + (target.isEstimate ? ' (ước tính)' : '')),
       subtitle: LinearProgressIndicator(value: (pct / 100).clamp(0, 1).toDouble()),
       trailing: Text(
-          '${fmt(status.amount)}/${fmt(status.target.value)} ${unitLabel(def.unit)}\n${pct.round()}%',
+          '${fmt(status.totalAmount)}/${fmt(target.value)} ${unitLabel(def.unit)}\n${pct.round()}%',
           textAlign: TextAlign.right),
     );
   }
@@ -208,7 +211,8 @@ class _UlBanner extends StatelessWidget {
               Text(
                 '${pack.nutrients[f.nutrientId]!.nameVi}: ${fmt(f.amount)} / ${fmt(f.ul)} '
                 '${unitLabel(pack.nutrients[f.nutrientId]!.unit)}'
-                '${f.sevenDayAverage ? ' (trung bình 7 ngày)' : ''}, ${_scope(f.scope)}.',
+                '${f.isSevenDayAverage ? ' (trung bình ${f.dayCount} ngày)' : ''}, ${_scope(f.scope)}'
+                ' · Vượt ${fmt(f.excess)} (${f.percentOver.round()}%).',
                 style: TextStyle(color: cs.onErrorContainer),
               ),
             const SizedBox(height: 8),
