@@ -3,16 +3,67 @@ library;
 
 import 'dart:convert';
 
+import 'models.dart';
+
 enum TargetKind { rda, ai, none }
 
 enum UlScope { total, supplement, synthetic }
+
+enum EerType { none, adult, pregnant, lactating }
 
 class SourceRef {
   final String id;
   final String label;
   final String title;
   final String url;
-  const SourceRef(this.id, this.label, this.title, this.url);
+  final String? retrieved;
+  const SourceRef(this.id, this.label, this.title, this.url, [this.retrieved]);
+}
+
+class GroupDef {
+  final String id;
+  final Sex? sex;
+  final LifeStage stage;
+  final int minAge;
+  final int? maxAge;
+  final String amdrKey;
+  final double? proteinPerKg;
+  final EerType eerType;
+
+  const GroupDef({
+    required this.id,
+    required this.sex,
+    required this.stage,
+    required this.minAge,
+    required this.maxAge,
+    required this.amdrKey,
+    required this.proteinPerKg,
+    required this.eerType,
+  });
+
+  factory GroupDef.fromJson(Map<String, dynamic> j) => GroupDef(
+        id: j['id'] as String,
+        sex: switch (j['sex'] as String?) {
+          'male' => Sex.male,
+          'female' => Sex.female,
+          _ => null,
+        },
+        stage: switch (j['stage'] as String) {
+          'pregnant' => LifeStage.pregnant,
+          'lactating' => LifeStage.lactating,
+          _ => LifeStage.none,
+        },
+        minAge: (j['minAge'] as num).toInt(),
+        maxAge: (j['maxAge'] as num?)?.toInt(),
+        amdrKey: j['amdrKey'] as String,
+        proteinPerKg: (j['proteinPerKg'] as num?)?.toDouble(),
+        eerType: switch (j['eerType'] as String) {
+          'adult' => EerType.adult,
+          'pregnant' => EerType.pregnant,
+          'lactating' => EerType.lactating,
+          _ => EerType.none,
+        },
+      );
 }
 
 class NutrientDef {
@@ -60,7 +111,8 @@ class Activity {
   final String code;
   final double met;
   final String nameVi;
-  const Activity(this.code, this.met, this.nameVi);
+  final bool muscleStrengthening;
+  const Activity(this.code, this.met, this.nameVi, this.muscleStrengthening);
 }
 
 class Range {
@@ -69,67 +121,85 @@ class Range {
   bool contains(double v) => v >= min && v <= max;
 }
 
+class VitaminEEsterDef {
+  final double tocopherolRatio;
+  final bool isNatural;
+  const VitaminEEsterDef({required this.tocopherolRatio, required this.isNatural});
+}
+
 class ReferencePack {
   final String version;
-  final List<String> groups;
+  final int minProfileAge;
+  final List<GroupDef> groups;
   final Map<String, SourceRef> sources;
   final Map<String, NutrientDef> nutrients;
-  final double proteinPerKgAdult;
 
-  /// EER: [sex][level] cho người 19+.
   final Map<String, Map<String, EerCoef>> eerAdult;
   final Map<String, EerCoef> eerPregnancy;
-  final int eerMinAge;
   final int firstTrimesterMaxWeek;
   final Map<String, double> pregnancyDeposition;
   final ({double milk, double mobilization}) lactation0to6;
   final ({double milk, double mobilization}) lactation7to12;
 
-  final Map<String, Range> amdrAdult;
-  final Map<String, Range> amdrTeen;
+  final Map<String, Map<String, Range>> amdr;
   final double addedSugarMaxGramsPerMeal;
   final Map<String, double> energyPerGram;
 
   final Map<String, Activity> activities;
   final double moderateMinMet, vigorousMinMet;
+  final Range weeklyModerateMin, weeklyVigorousMin;
+  final int strengthDaysPerWeek;
   final Map<String, double> palSuggestionThresholds;
+
   final Map<String, double> unitConversions;
+  final double? foodBetaCaroteneIuToUgRae;
+  final Map<String, VitaminEEsterDef> vitaminEEsters;
+  final Map<String, Map<String, double>> compounds;
 
   ReferencePack._({
     required this.version,
+    required this.minProfileAge,
     required this.groups,
     required this.sources,
     required this.nutrients,
-    required this.proteinPerKgAdult,
     required this.eerAdult,
     required this.eerPregnancy,
-    required this.eerMinAge,
     required this.firstTrimesterMaxWeek,
     required this.pregnancyDeposition,
     required this.lactation0to6,
     required this.lactation7to12,
-    required this.amdrAdult,
-    required this.amdrTeen,
+    required this.amdr,
     required this.addedSugarMaxGramsPerMeal,
     required this.energyPerGram,
     required this.activities,
     required this.moderateMinMet,
     required this.vigorousMinMet,
+    required this.weeklyModerateMin,
+    required this.weeklyVigorousMin,
+    required this.strengthDaysPerWeek,
     required this.palSuggestionThresholds,
     required this.unitConversions,
+    required this.foodBetaCaroteneIuToUgRae,
+    required this.vitaminEEsters,
+    required this.compounds,
   });
 
   factory ReferencePack.fromJsonString(String s) =>
       ReferencePack.fromJson(jsonDecode(s) as Map<String, dynamic>);
 
   factory ReferencePack.fromJson(Map<String, dynamic> j) {
-    if (j['schema'] != 1) {
+    if (j['schema'] != 2) {
       throw const FormatException('reference_pack: schema không hỗ trợ');
     }
     final sources = <String, SourceRef>{
       for (final s in (j['sources'] as List).cast<Map<String, dynamic>>())
-        s['id'] as String: SourceRef(s['id'] as String, s['label'] as String,
-            s['title'] as String, s['url'] as String),
+        s['id'] as String: SourceRef(
+          s['id'] as String,
+          s['label'] as String,
+          s['title'] as String,
+          s['url'] as String,
+          s['retrieved'] as String?,
+        ),
     };
     final nutrients = <String, NutrientDef>{};
     for (final n in (j['nutrients'] as List).cast<Map<String, dynamic>>()) {
@@ -174,31 +244,50 @@ class ReferencePack {
       return (milk: _d(m['milk']), mobilization: _d(m['mobilization']));
     }
 
+    Range rangeOf(List<dynamic> l) => Range(_d(l[0]), _d(l[1]));
     Map<String, Range> ranges(Map<String, dynamic> m) => {
-          for (final e in m.entries)
-            e.key: Range(_d((e.value as List)[0]), _d((e.value as List)[1])),
+          for (final e in m.entries) e.key: rangeOf(e.value as List),
         };
-    final amdr = j['amdr'] as Map<String, dynamic>;
+    final amdrRaw = j['amdr'] as Map<String, dynamic>;
+    final amdr = <String, Map<String, Range>>{
+      for (final e in amdrRaw.entries)
+        if (e.value is Map<String, dynamic>) e.key: ranges(e.value as Map<String, dynamic>),
+    };
     final sugar = j['addedSugar'] as Map<String, dynamic>;
     final pag = j['pag'] as Map<String, dynamic>;
     final pal = j['palSuggestion'] as Map<String, dynamic>;
     final epg = j['energyPerGram'] as Map<String, dynamic>;
+    final uc = j['unitConversions'] as Map<String, dynamic>;
+
+    final estersRaw = (uc['vitaminEEsters'] as Map<String, dynamic>?) ?? const {};
+    final esters = <String, VitaminEEsterDef>{
+      for (final e in estersRaw.entries)
+        e.key: VitaminEEsterDef(
+          tocopherolRatio: _d((e.value as Map<String, dynamic>)['tocopherolRatio']),
+          isNatural: (e.value as Map<String, dynamic>)['origin'] == 'natural',
+        ),
+    };
+    final compRaw = (uc['compounds'] as Map<String, dynamic>?) ?? const {};
+    final compounds = <String, Map<String, double>>{
+      for (final e in compRaw.entries) e.key: _numMap(e.value),
+    };
 
     return ReferencePack._(
       version: j['version'] as String,
-      groups: (j['groups'] as List).cast<String>(),
+      minProfileAge: (j['minProfileAge'] as num).toInt(),
+      groups: [
+        for (final g in (j['groups'] as List).cast<Map<String, dynamic>>())
+          GroupDef.fromJson(g),
+      ],
       sources: sources,
       nutrients: nutrients,
-      proteinPerKgAdult: _d((j['proteinPerKg'] as Map<String, dynamic>)['adult19']),
       eerAdult: adult,
       eerPregnancy: preg,
-      eerMinAge: (eer['minAge'] as num).toInt(),
       firstTrimesterMaxWeek: (eer['pregnancyFirstTrimesterMaxWeek'] as num).toInt(),
       pregnancyDeposition: _numMap(eer['pregnancyDeposition']),
       lactation0to6: lac('0_6'),
       lactation7to12: lac('7_12'),
-      amdrAdult: ranges(amdr['adult19'] as Map<String, dynamic>),
-      amdrTeen: ranges(amdr['age4_18'] as Map<String, dynamic>),
+      amdr: amdr,
       addedSugarMaxGramsPerMeal: _d(sugar['maxGramsPerMeal']),
       energyPerGram: {
         for (final e in epg.entries)
@@ -206,16 +295,27 @@ class ReferencePack {
       },
       activities: {
         for (final a in (j['activities'] as List).cast<Map<String, dynamic>>())
-          a['code'] as String:
-              Activity(a['code'] as String, _d(a['met']), a['nameVi'] as String),
+          a['code'] as String: Activity(
+            a['code'] as String,
+            _d(a['met']),
+            a['nameVi'] as String,
+            a['muscleStrengthening'] as bool,
+          ),
       },
       moderateMinMet: _d(pag['moderateMinMet']),
       vigorousMinMet: _d(pag['vigorousMinMet']),
+      weeklyModerateMin: rangeOf(pag['weeklyModerateMin'] as List),
+      weeklyVigorousMin: rangeOf(pag['weeklyVigorousMin'] as List),
+      strengthDaysPerWeek: (pag['strengthDaysPerWeek'] as num).toInt(),
       palSuggestionThresholds: _numMap(pal['moderateEquivalentMinPerDay']),
       unitConversions: {
-        for (final e in (j['unitConversions'] as Map<String, dynamic>).entries)
+        for (final e in uc.entries)
           if (e.value is num) e.key: _d(e.value),
       },
+      foodBetaCaroteneIuToUgRae:
+          (uc['vitA_food_betacarotene_IU_to_ug_RAE'] as num?)?.toDouble(),
+      vitaminEEsters: esters,
+      compounds: compounds,
     );
   }
 }

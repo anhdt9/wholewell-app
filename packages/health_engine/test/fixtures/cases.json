@@ -14,12 +14,33 @@
    "weight": 78,
    "level": "active"
   },
+  "man50": {
+   "age": 50,
+   "sex": "male",
+   "height": 168,
+   "weight": 65,
+   "level": "lowActive"
+  },
+  "man70": {
+   "age": 70,
+   "sex": "male",
+   "height": 166,
+   "weight": 62,
+   "level": "inactive"
+  },
   "man72_very": {
    "age": 72,
    "sex": "male",
    "height": 165,
    "weight": 60,
    "level": "veryActive"
+  },
+  "boy18": {
+   "age": 18,
+   "sex": "male",
+   "height": 172,
+   "weight": 60,
+   "level": "inactive"
   },
   "woman25_low": {
    "age": 25,
@@ -102,7 +123,7 @@
  "days": {
   "balanced": [
    {
-    "label": "x",
+    "label": "Phở",
     "source": "food",
     "n": {
      "energyKcal": 550,
@@ -114,10 +135,13 @@
      "iron": 3,
      "calcium": 200
     },
-    "meal": "breakfast"
+    "addedSugarKnown": true,
+    "meal": "breakfast",
+    "at": "2026-11-24T07:30:00",
+    "entryId": "f1"
    },
    {
-    "label": "x",
+    "label": "Cơm",
     "source": "food",
     "n": {
      "energyKcal": 750,
@@ -129,10 +153,13 @@
      "iron": 5,
      "calcium": 300
     },
-    "meal": "lunch"
+    "addedSugarKnown": true,
+    "meal": "lunch",
+    "at": "2026-11-24T12:00:00",
+    "entryId": "f2"
    },
    {
-    "label": "x",
+    "label": "Cá",
     "source": "food",
     "n": {
      "energyKcal": 650,
@@ -144,12 +171,15 @@
      "iron": 4,
      "calcium": 250
     },
-    "meal": "dinner"
+    "addedSugarKnown": true,
+    "meal": "dinner",
+    "at": "2026-11-24T19:00:00",
+    "entryId": "f3"
    }
   ],
   "sweet_fatty": [
    {
-    "label": "x",
+    "label": "Trà sữa",
     "source": "food",
     "n": {
      "energyKcal": 900,
@@ -158,10 +188,13 @@
      "carbohydrate": 95,
      "addedSugar": 40
     },
-    "meal": "snack"
+    "addedSugarKnown": true,
+    "meal": "snack",
+    "at": "2026-11-24T15:00:00",
+    "entryId": "s1"
    },
    {
-    "label": "x",
+    "label": "Cơm sườn",
     "source": "food",
     "n": {
      "energyKcal": 800,
@@ -170,7 +203,10 @@
      "carbohydrate": 80,
      "addedSugar": 8
     },
-    "meal": "lunch"
+    "addedSugarKnown": true,
+    "meal": "lunch",
+    "at": "2026-11-24T12:00:00",
+    "entryId": "l1"
    }
   ],
   "supplements_heavy": [
@@ -187,8 +223,14 @@
      "retinol": 400,
      "vitA": 700,
      "zinc": 9,
-     "vitD": 3
-    }
+     "vitD": 3,
+     "boron": 22,
+     "vanadium": 1.9
+    },
+    "addedSugarKnown": true,
+    "meal": "lunch",
+    "at": "2026-11-24T12:00:00",
+    "entryId": "fh"
    },
    {
     "label": "x",
@@ -199,7 +241,12 @@
      "vitD": 125,
      "zinc": 30,
      "retinol": 3000,
-     "vitA": 3000
+     "vitA": 3000,
+     "vitE": 540
+    },
+    "addedSugarKnown": true,
+    "ulN": {
+     "vitE": 1090.909090909091
     }
    },
    {
@@ -209,7 +256,11 @@
      "niacin": 5,
      "folicAcid": 200,
      "folate": 340
-    }
+    },
+    "addedSugarKnown": true,
+    "meal": "breakfast",
+    "at": "2026-11-24T07:00:00",
+    "entryId": "ff"
    }
   ],
   "fortified_folic": [
@@ -222,7 +273,11 @@
      "fat": 65,
      "carbohydrate": 270,
      "folate": 300
-    }
+    },
+    "addedSugarKnown": true,
+    "meal": "lunch",
+    "at": "2026-11-24T12:00:00",
+    "entryId": "ff1"
    },
    {
     "label": "x",
@@ -230,7 +285,11 @@
     "n": {
      "folicAcid": 600,
      "folate": 1020
-    }
+    },
+    "addedSugarKnown": true,
+    "meal": "breakfast",
+    "at": "2026-11-24T07:00:00",
+    "entryId": "ff2"
    },
    {
     "label": "x",
@@ -238,125 +297,720 @@
     "n": {
      "folicAcid": 500,
      "folate": 850
+    },
+    "addedSugarKnown": true
+   }
+  ],
+  "vitE_boundary": [
+   {
+    "label": "VitE 1100 IU syn",
+    "source": "supplement",
+    "n": {
+     "vitE": 495
+    },
+    "addedSugarKnown": true,
+    "ulN": {
+     "vitE": 1000.0
     }
+   },
+   {
+    "label": "x",
+    "source": "food",
+    "n": {
+     "energyKcal": 1800,
+     "protein": 70,
+     "fat": 60,
+     "carbohydrate": 240,
+     "calcium": 2400
+    },
+    "addedSugarKnown": true,
+    "meal": "lunch",
+    "at": "2026-11-24T12:00:00",
+    "entryId": "vb1"
+   }
+  ],
+  "snack_chain": [
+   {
+    "label": "Bánh 1",
+    "source": "food",
+    "n": {
+     "energyKcal": 150,
+     "addedSugar": 4
+    },
+    "addedSugarKnown": true,
+    "meal": "snack",
+    "at": "2026-11-24T15:00:00",
+    "entryId": "sc1"
+   },
+   {
+    "label": "Kẹo 2",
+    "source": "food",
+    "n": {
+     "energyKcal": 150,
+     "addedSugar": 4
+    },
+    "addedSugarKnown": true,
+    "meal": "snack",
+    "at": "2026-11-24T15:25:00",
+    "entryId": "sc2"
+   },
+   {
+    "label": "Nước 3",
+    "source": "food",
+    "n": {
+     "energyKcal": 150,
+     "addedSugar": 4
+    },
+    "addedSugarKnown": true,
+    "meal": "snack",
+    "at": "2026-11-24T15:50:00",
+    "entryId": "sc3"
+   },
+   {
+    "label": "Sữa 4",
+    "source": "food",
+    "n": {
+     "energyKcal": 200,
+     "addedSugar": 6
+    },
+    "addedSugarKnown": true,
+    "meal": "snack",
+    "at": "2026-11-24T17:00:00",
+    "entryId": "sc4"
+   },
+   {
+    "label": "Chè 5",
+    "source": "food",
+    "n": {
+     "energyKcal": 200,
+     "addedSugar": 6
+    },
+    "addedSugarKnown": true,
+    "meal": "snack",
+    "at": "2026-11-24T17:30:00",
+    "entryId": "sc5"
+   },
+   {
+    "label": "Bánh mì nhãn cũ",
+    "source": "food",
+    "n": {
+     "energyKcal": 250,
+     "protein": 8,
+     "addedSugar": 0
+    },
+    "addedSugarKnown": false,
+    "meal": "breakfast",
+    "at": "2026-11-24T08:00:00",
+    "entryId": "unk1"
+   },
+   {
+    "label": "Bánh mì nhãn cũ",
+    "source": "fortified",
+    "n": {
+     "vitD": 2,
+     "addedSugar": 0
+    },
+    "addedSugarKnown": false,
+    "meal": "breakfast",
+    "at": "2026-11-24T08:00:00",
+    "entryId": "unk1"
+   },
+   {
+    "label": "Snack không giờ 1",
+    "source": "food",
+    "n": {
+     "energyKcal": 100,
+     "addedSugar": 7
+    },
+    "addedSugarKnown": true,
+    "meal": "snack",
+    "entryId": "un1"
+   },
+   {
+    "label": "Snack không giờ 2",
+    "source": "food",
+    "n": {
+     "energyKcal": 100,
+     "addedSugar": 7
+    },
+    "addedSugarKnown": true,
+    "meal": "snack",
+    "entryId": "un2"
    }
   ]
  },
  "workoutSets": {
   "none": [],
   "light": [
-   [
-    "17190",
-    20
-   ],
-   [
-    "17190",
-    20
-   ],
-   [
-    "17190",
-    20
-   ]
+   {
+    "code": "17190",
+    "minutes": 20,
+    "day": "2026-11-18"
+   },
+   {
+    "code": "17190",
+    "minutes": 20,
+    "day": "2026-11-20"
+   },
+   {
+    "code": "17190",
+    "minutes": 20,
+    "day": "2026-11-22"
+   }
   ],
   "moderate": [
-   [
-    "17200",
-    45
-   ],
-   [
-    "17200",
-    45
-   ],
-   [
-    "17200",
-    45
-   ],
-   [
-    "17200",
-    45
-   ],
-   [
-    "17200",
-    45
-   ],
-   [
-    "17200",
-    45
-   ],
-   [
-    "17200",
-    45
-   ]
+   {
+    "code": "17200",
+    "minutes": 45,
+    "day": "2026-11-18"
+   },
+   {
+    "code": "17200",
+    "minutes": 45,
+    "day": "2026-11-19"
+   },
+   {
+    "code": "17200",
+    "minutes": 45,
+    "day": "2026-11-20"
+   },
+   {
+    "code": "17200",
+    "minutes": 45,
+    "day": "2026-11-21"
+   },
+   {
+    "code": "17200",
+    "minutes": 45,
+    "day": "2026-11-22"
+   },
+   {
+    "code": "17200",
+    "minutes": 45,
+    "day": "2026-11-23"
+   },
+   {
+    "code": "17200",
+    "minutes": 45,
+    "day": "2026-11-24"
+   }
   ],
   "mixed": [
-   [
-    "12050",
-    40
-   ],
-   [
-    "12050",
-    40
-   ],
-   [
-    "12050",
-    40
-   ],
-   [
-    "17200",
-    60
-   ],
-   [
-    "17200",
-    60
-   ],
-   [
-    "15030",
-    60
-   ]
+   {
+    "code": "12050",
+    "minutes": 40,
+    "day": "2026-11-18"
+   },
+   {
+    "code": "12050",
+    "minutes": 40,
+    "day": "2026-11-19"
+   },
+   {
+    "code": "12050",
+    "minutes": 40,
+    "day": "2026-11-20"
+   },
+   {
+    "code": "17200",
+    "minutes": 60,
+    "day": "2026-11-21"
+   },
+   {
+    "code": "17200",
+    "minutes": 60,
+    "day": "2026-11-22"
+   },
+   {
+    "code": "15030",
+    "minutes": 60,
+    "day": "2026-11-23"
+   }
   ],
   "athlete": [
-   [
-    "12090",
-    60
-   ],
-   [
-    "12090",
-    60
-   ],
-   [
-    "12090",
-    60
-   ],
-   [
-    "12090",
-    60
-   ],
-   [
-    "12090",
-    60
-   ],
-   [
-    "12090",
-    60
-   ],
-   [
-    "12090",
-    60
-   ],
-   [
-    "02050",
-    60
-   ],
-   [
-    "02050",
-    60
-   ],
-   [
-    "02050",
-    60
-   ]
+   {
+    "code": "12090",
+    "minutes": 60,
+    "day": "2026-11-18"
+   },
+   {
+    "code": "12090",
+    "minutes": 60,
+    "day": "2026-11-19"
+   },
+   {
+    "code": "12090",
+    "minutes": 60,
+    "day": "2026-11-20"
+   },
+   {
+    "code": "12090",
+    "minutes": 60,
+    "day": "2026-11-21"
+   },
+   {
+    "code": "12090",
+    "minutes": 60,
+    "day": "2026-11-22"
+   },
+   {
+    "code": "12090",
+    "minutes": 60,
+    "day": "2026-11-23"
+   },
+   {
+    "code": "12090",
+    "minutes": 60,
+    "day": "2026-11-24"
+   },
+   {
+    "code": "02050",
+    "minutes": 60,
+    "day": "2026-11-18"
+   },
+   {
+    "code": "02054",
+    "minutes": 30,
+    "day": "2026-11-18"
+   },
+   {
+    "code": "02024",
+    "minutes": 15,
+    "day": "2026-11-20"
+   },
+   {
+    "code": "02160",
+    "minutes": 45,
+    "day": "2026-11-21"
+   }
   ]
  },
+ "extendedUnitConversions": {
+  "vitD_IU_to_ug": 0.025,
+  "vitA_retinol_IU_to_ug_RAE": 0.3,
+  "vitA_supplemental_betacarotene_IU_to_ug_RAE": 0.3,
+  "vitA_food_betacarotene_IU_to_ug_RAE": 0.05,
+  "vitE_natural_IU_to_mg": 0.67,
+  "vitE_synthetic_IU_to_mg": 0.45,
+  "vitE_ul_natural_IU_to_mg": 0.67,
+  "vitE_ul_synthetic_IU_to_mg": 0.9090909090909091,
+  "folicAcid_ug_to_ug_DFE": 1.7,
+  "vitaminEEsters": {
+   "d_alpha_tocopheryl_acetate": {
+    "tocopherolRatio": 0.9110169491525424,
+    "origin": "natural"
+   },
+   "dl_alpha_tocopheryl_acetate": {
+    "tocopherolRatio": 0.9110169491525424,
+    "origin": "synthetic"
+   },
+   "d_alpha_tocopheryl_succinate": {
+    "tocopherolRatio": 0.8113207547169812,
+    "origin": "natural"
+   },
+   "dl_alpha_tocopheryl_succinate": {
+    "tocopherolRatio": 0.8113207547169812,
+    "origin": "synthetic"
+   }
+  },
+  "compounds": {
+   "calcium": {
+    "calcium_carbonate": 0.4,
+    "calcium_citrate": 0.21
+   },
+   "copper": {
+    "copper_sulfate": 0.25
+   }
+  },
+  "source": "fda_unit_conversions",
+  "ulSource": "nih_ods_vit_e",
+  "ulCrossRefSource": "nasem_vit_e_2000",
+  "note": "Hệ số RDA/IU theo FDA 2019 (21 CFR 101.9/101.36); hệ số UL vitamin E theo NASEM 2000 Bảng 9-1 và NIH ODS (tra 25/11/2026)"
+ },
+ "lineCases": [
+  {
+   "name": "row1_folic_ug",
+   "extended": false,
+   "input": {
+    "nutrientId": "folicAcid",
+    "source": "supplement",
+    "form": "folic_acid",
+    "amount": 400,
+    "unit": "ug"
+   }
+  },
+  {
+   "name": "row1_folate_folic_mg",
+   "extended": false,
+   "input": {
+    "nutrientId": "folate",
+    "source": "supplement",
+    "form": "folic_acid",
+    "amount": 0.4,
+    "unit": "mg"
+   }
+  },
+  {
+   "name": "row2_dfe_with_folic",
+   "extended": false,
+   "input": {
+    "nutrientId": "folate",
+    "source": "fortified",
+    "form": "folic_acid",
+    "amount": 500,
+    "unit": "ugDfe",
+    "secondaryFolicAcidUg": 200
+   }
+  },
+  {
+   "name": "row2_natural_folate",
+   "extended": false,
+   "input": {
+    "nutrientId": "folate",
+    "source": "food",
+    "form": "natural_folate",
+    "amount": 300,
+    "unit": "ugDfe"
+   }
+  },
+  {
+   "name": "row3_dfe_unknown",
+   "extended": false,
+   "input": {
+    "nutrientId": "folate",
+    "source": "supplement",
+    "form": "unknown",
+    "amount": 680,
+    "unit": "ugDfe"
+   }
+  },
+  {
+   "name": "row4_vitA_retinol_iu",
+   "extended": false,
+   "input": {
+    "nutrientId": "vitA",
+    "source": "supplement",
+    "form": "retinol",
+    "amount": 5000,
+    "unit": "iu"
+   }
+  },
+  {
+   "name": "row5a_vitA_bc_supp_iu",
+   "extended": false,
+   "input": {
+    "nutrientId": "vitA",
+    "source": "supplement",
+    "form": "beta_carotene",
+    "amount": 5000,
+    "unit": "iu"
+   }
+  },
+  {
+   "name": "row5b_vitA_bc_food_iu_missing",
+   "extended": false,
+   "input": {
+    "nutrientId": "vitA",
+    "source": "food",
+    "form": "beta_carotene",
+    "amount": 5000,
+    "unit": "iu"
+   }
+  },
+  {
+   "name": "row5b_vitA_bc_food_iu_ext",
+   "extended": true,
+   "input": {
+    "nutrientId": "vitA",
+    "source": "fortified",
+    "form": "beta_carotene",
+    "amount": 5000,
+    "unit": "iu"
+   }
+  },
+  {
+   "name": "row6_vitA_rae_unknown",
+   "extended": false,
+   "input": {
+    "nutrientId": "vitA",
+    "source": "supplement",
+    "form": "unknown",
+    "amount": 750,
+    "unit": "ugRae"
+   }
+  },
+  {
+   "name": "row7_vitA_supp_iu_unknown",
+   "extended": false,
+   "input": {
+    "nutrientId": "vitA",
+    "source": "supplement",
+    "form": "unknown",
+    "amount": 3000,
+    "unit": "iu"
+   }
+  },
+  {
+   "name": "row8_vitA_food_iu_unknown_missing",
+   "extended": false,
+   "input": {
+    "nutrientId": "vitA",
+    "source": "food",
+    "form": "unknown",
+    "amount": 3000,
+    "unit": "iu"
+   }
+  },
+  {
+   "name": "row8_vitA_food_iu_unknown_ext",
+   "extended": true,
+   "input": {
+    "nutrientId": "vitA",
+    "source": "fortified",
+    "form": "unknown",
+    "amount": 3000,
+    "unit": "iu"
+   }
+  },
+  {
+   "name": "row9_vitE_iu_nat",
+   "extended": false,
+   "input": {
+    "nutrientId": "vitE",
+    "source": "supplement",
+    "form": "natural_2r",
+    "amount": 400,
+    "unit": "iu"
+   }
+  },
+  {
+   "name": "row9_vitE_iu_syn",
+   "extended": false,
+   "input": {
+    "nutrientId": "vitE",
+    "source": "supplement",
+    "form": "synthetic_2r",
+    "amount": 1100,
+    "unit": "iu"
+   }
+  },
+  {
+   "name": "row9_vitE_iu_ester_d",
+   "extended": false,
+   "input": {
+    "nutrientId": "vitE",
+    "source": "supplement",
+    "form": "d_alpha_tocopheryl_acetate",
+    "amount": 400,
+    "unit": "iu"
+   }
+  },
+  {
+   "name": "row9_vitE_iu_ester_dl",
+   "extended": false,
+   "input": {
+    "nutrientId": "vitE",
+    "source": "supplement",
+    "form": "dl_alpha_tocopheryl_succinate",
+    "amount": 400,
+    "unit": "iu"
+   }
+  },
+  {
+   "name": "row10_vitE_iu_unknown",
+   "extended": false,
+   "input": {
+    "nutrientId": "vitE",
+    "source": "supplement",
+    "form": "unknown",
+    "amount": 400,
+    "unit": "iu"
+   }
+  },
+  {
+   "name": "row11_vitE_mg_2r_nat",
+   "extended": false,
+   "input": {
+    "nutrientId": "vitE",
+    "source": "supplement",
+    "form": "natural_2r",
+    "amount": 15,
+    "unit": "mg"
+   }
+  },
+  {
+   "name": "row11_vitE_mg_2r_syn",
+   "extended": false,
+   "input": {
+    "nutrientId": "vitE",
+    "source": "supplement",
+    "form": "synthetic_2r",
+    "amount": 15,
+    "unit": "mg"
+   }
+  },
+  {
+   "name": "row12_vitE_mg_syn_mass",
+   "extended": false,
+   "input": {
+    "nutrientId": "vitE",
+    "source": "supplement",
+    "form": "synthetic_mass",
+    "amount": 30,
+    "unit": "mg"
+   }
+  },
+  {
+   "name": "row13_vitE_mg_ester_missing",
+   "extended": false,
+   "input": {
+    "nutrientId": "vitE",
+    "source": "supplement",
+    "form": "dl_alpha_tocopheryl_acetate",
+    "amount": 30,
+    "unit": "mg"
+   }
+  },
+  {
+   "name": "row13_vitE_mg_ester_d_ext",
+   "extended": true,
+   "input": {
+    "nutrientId": "vitE",
+    "source": "supplement",
+    "form": "d_alpha_tocopheryl_acetate",
+    "amount": 30,
+    "unit": "mg"
+   }
+  },
+  {
+   "name": "row13_vitE_mg_ester_dl_ext",
+   "extended": true,
+   "input": {
+    "nutrientId": "vitE",
+    "source": "supplement",
+    "form": "dl_alpha_tocopheryl_succinate",
+    "amount": 30,
+    "unit": "mg"
+   }
+  },
+  {
+   "name": "row14_vitE_mg_unknown",
+   "extended": false,
+   "input": {
+    "nutrientId": "vitE",
+    "source": "supplement",
+    "form": "unknown",
+    "amount": 15,
+    "unit": "mg"
+   }
+  },
+  {
+   "name": "row15_compound_missing",
+   "extended": false,
+   "input": {
+    "nutrientId": "calcium",
+    "source": "supplement",
+    "form": "calcium_carbonate",
+    "amount": 1.25,
+    "unit": "g",
+    "compoundKind": "compound"
+   }
+  },
+  {
+   "name": "row15_compound_calcium_ext",
+   "extended": true,
+   "input": {
+    "nutrientId": "calcium",
+    "source": "supplement",
+    "form": "calcium_carbonate",
+    "amount": 1.25,
+    "unit": "g",
+    "compoundKind": "compound"
+   }
+  },
+  {
+   "name": "row15_compound_copper_ug_ext",
+   "extended": true,
+   "input": {
+    "nutrientId": "copper",
+    "source": "supplement",
+    "form": "copper_sulfate",
+    "amount": 2,
+    "unit": "mg",
+    "compoundKind": "compound"
+   }
+  },
+  {
+   "name": "row16_compound_unknown_missing",
+   "extended": false,
+   "input": {
+    "nutrientId": "calcium",
+    "source": "supplement",
+    "form": "unknown",
+    "amount": 500,
+    "unit": "mg",
+    "compoundKind": "unknown"
+   }
+  },
+  {
+   "name": "row16_compound_unknown_ext",
+   "extended": true,
+   "input": {
+    "nutrientId": "calcium",
+    "source": "supplement",
+    "form": "unknown",
+    "amount": 500,
+    "unit": "mg",
+    "compoundKind": "unknown"
+   }
+  },
+  {
+   "name": "row17_elemental_with_form",
+   "extended": false,
+   "input": {
+    "nutrientId": "calcium",
+    "source": "supplement",
+    "form": "calcium_carbonate",
+    "amount": 500,
+    "unit": "mg",
+    "compoundKind": "elemental"
+   }
+  },
+  {
+   "name": "row17_vitD_iu",
+   "extended": false,
+   "input": {
+    "nutrientId": "vitD",
+    "source": "supplement",
+    "form": "unknown",
+    "amount": 1000,
+    "unit": "iu"
+   }
+  },
+  {
+   "name": "row17_niacin_mg",
+   "extended": false,
+   "input": {
+    "nutrientId": "niacin",
+    "source": "supplement",
+    "form": "unknown",
+    "amount": 20,
+    "unit": "mg"
+   }
+  },
+  {
+   "name": "row18_unknown_nutrient",
+   "extended": false,
+   "input": {
+    "nutrientId": null,
+    "freeName": "Coenzyme Q10",
+    "source": "supplement",
+    "form": "unknown",
+    "amount": 30,
+    "unit": "mg"
+   }
+  }
+ ],
  "expect": {
   "eer": {
    "man30": {
@@ -367,9 +1021,21 @@
     "kcal": 2899,
     "reason": null
    },
+   "man50": {
+    "kcal": 2405,
+    "reason": null
+   },
+   "man70": {
+    "kcal": 1948,
+    "reason": null
+   },
    "man72_very": {
     "kcal": 2425,
     "reason": null
+   },
+   "boy18": {
+    "kcal": null,
+    "reason": "eerUnderAge19"
    },
    "woman25_low": {
     "kcal": 2075,
@@ -411,7 +1077,10 @@
   "group": {
    "man30": "m19_30",
    "man45_active": "m31_50",
+   "man50": "m31_50",
+   "man70": "m51_70",
    "man72_very": "m71",
+   "boy18": "m14_18",
    "woman25_low": "f19_30",
    "woman55": "f51_70",
    "woman18": "f14_18",
@@ -445,6 +1114,28 @@
     "vitK": 120,
     "magnesium": 420
    },
+   "man50": {
+    "protein": 52.0,
+    "iron": 8,
+    "calcium": 1000,
+    "vitD": 15,
+    "folate": 400,
+    "fiber": 38,
+    "potassium": 3400,
+    "vitK": 120,
+    "magnesium": 420
+   },
+   "man70": {
+    "protein": 49.6,
+    "iron": 8,
+    "calcium": 1000,
+    "vitD": 15,
+    "folate": 400,
+    "fiber": 30,
+    "potassium": 3400,
+    "vitK": 120,
+    "magnesium": 420
+   },
    "man72_very": {
     "protein": 48.0,
     "iron": 8,
@@ -455,6 +1146,17 @@
     "potassium": 3400,
     "vitK": 120,
     "magnesium": 420
+   },
+   "boy18": {
+    "protein": 52,
+    "iron": 11,
+    "calcium": 1300,
+    "vitD": 15,
+    "folate": 400,
+    "fiber": 38,
+    "potassium": 3000,
+    "vitK": 75,
+    "magnesium": 410
    },
    "woman25_low": {
     "protein": 41.6,
@@ -556,1093 +1258,3253 @@
     "magnesium": 320
    }
   },
+  "uls": {
+   "man30": {
+    "calcium": 2500,
+    "phosphorus": 4000,
+    "vitA": 3000,
+    "retinol": 3000,
+    "vitE": 1000,
+    "vanadium": 1.8
+   },
+   "man45_active": {
+    "calcium": 2500,
+    "phosphorus": 4000,
+    "vitA": 3000,
+    "retinol": 3000,
+    "vitE": 1000,
+    "vanadium": 1.8
+   },
+   "man50": {
+    "calcium": 2000,
+    "phosphorus": 4000,
+    "vitA": 3000,
+    "retinol": 3000,
+    "vitE": 1000,
+    "vanadium": 1.8
+   },
+   "man70": {
+    "calcium": 2000,
+    "phosphorus": 3000,
+    "vitA": 3000,
+    "retinol": 3000,
+    "vitE": 1000,
+    "vanadium": 1.8
+   },
+   "man72_very": {
+    "calcium": 2000,
+    "phosphorus": 3000,
+    "vitA": 3000,
+    "retinol": 3000,
+    "vitE": 1000,
+    "vanadium": 1.8
+   },
+   "boy18": {
+    "calcium": 2500,
+    "phosphorus": 4000,
+    "vitA": 2800,
+    "retinol": 2800,
+    "vitE": 800,
+    "vanadium": 1.8
+   },
+   "woman25_low": {
+    "calcium": 2500,
+    "phosphorus": 4000,
+    "vitA": 3000,
+    "retinol": 3000,
+    "vitE": 1000,
+    "vanadium": 1.8
+   },
+   "woman55": {
+    "calcium": 2000,
+    "phosphorus": 4000,
+    "vitA": 3000,
+    "retinol": 3000,
+    "vitE": 1000,
+    "vanadium": 1.8
+   },
+   "woman18": {
+    "calcium": 2500,
+    "phosphorus": 4000,
+    "vitA": 2800,
+    "retinol": 2800,
+    "vitE": 800,
+    "vanadium": 1.8
+   },
+   "preg_t1": {
+    "calcium": 2500,
+    "phosphorus": 3500,
+    "vitA": 3000,
+    "retinol": 3000,
+    "vitE": 1000,
+    "vanadium": null
+   },
+   "preg_t2": {
+    "calcium": 2500,
+    "phosphorus": 3500,
+    "vitA": 3000,
+    "retinol": 3000,
+    "vitE": 1000,
+    "vanadium": null
+   },
+   "preg_t3_obese": {
+    "calcium": 2500,
+    "phosphorus": 3500,
+    "vitA": 3000,
+    "retinol": 3000,
+    "vitE": 1000,
+    "vanadium": null
+   },
+   "preg_nobmi": {
+    "calcium": 2500,
+    "phosphorus": 3500,
+    "vitA": 3000,
+    "retinol": 3000,
+    "vitE": 1000,
+    "vanadium": null
+   },
+   "lact_4m": {
+    "calcium": 2500,
+    "phosphorus": 4000,
+    "vitA": 3000,
+    "retinol": 3000,
+    "vitE": 1000,
+    "vanadium": null
+   },
+   "lact_9m": {
+    "calcium": 2500,
+    "phosphorus": 4000,
+    "vitA": 3000,
+    "retinol": 3000,
+    "vitE": 1000,
+    "vanadium": null
+   }
+  },
   "ulDay": {
    "man30|balanced": [],
    "man30|sweet_fatty": [],
    "man30|supplements_heavy": [
     {
      "id": "niacin",
+     "kind": "daily",
      "amount": 55.0,
-     "ul": 35
+     "ul": 35,
+     "excess": 20.0,
+     "percentOver": 57.14285714285714,
+     "percentOfUl": 157.14285714285714,
+     "scope": "synthetic",
+     "dayCount": null
     },
     {
      "id": "vitD",
+     "kind": "daily",
      "amount": 128.0,
-     "ul": 100
+     "ul": 100,
+     "excess": 28.0,
+     "percentOver": 28.000000000000004,
+     "percentOfUl": 128.0,
+     "scope": "total",
+     "dayCount": null
     },
     {
      "id": "magnesium",
+     "kind": "daily",
      "amount": 400.0,
-     "ul": 350
+     "ul": 350,
+     "excess": 50.0,
+     "percentOver": 14.285714285714285,
+     "percentOfUl": 114.28571428571428,
+     "scope": "supplement",
+     "dayCount": null
     },
     {
      "id": "retinol",
+     "kind": "daily",
      "amount": 3400.0,
-     "ul": 3000
+     "ul": 3000,
+     "excess": 400.0,
+     "percentOver": 13.333333333333334,
+     "percentOfUl": 113.33333333333333,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "boron",
+     "kind": "daily",
+     "amount": 22.0,
+     "ul": 20,
+     "excess": 2.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "vitE",
+     "kind": "daily",
+     "amount": 1090.909090909091,
+     "ul": 1000,
+     "excess": 90.90909090909099,
+     "percentOver": 9.090909090909099,
+     "percentOfUl": 109.09090909090911,
+     "scope": "synthetic",
+     "dayCount": null
+    },
+    {
+     "id": "vanadium",
+     "kind": "daily",
+     "amount": 1.9,
+     "ul": 1.8,
+     "excess": 0.09999999999999987,
+     "percentOver": 5.555555555555548,
+     "percentOfUl": 105.55555555555556,
+     "scope": "total",
+     "dayCount": null
     }
    ],
    "man30|fortified_folic": [
     {
      "id": "folicAcid",
+     "kind": "daily",
      "amount": 1100.0,
-     "ul": 1000
+     "ul": 1000,
+     "excess": 100.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
     }
    ],
+   "man30|vitE_boundary": [],
+   "man30|snack_chain": [],
    "man45_active|balanced": [],
    "man45_active|sweet_fatty": [],
    "man45_active|supplements_heavy": [
     {
      "id": "niacin",
+     "kind": "daily",
      "amount": 55.0,
-     "ul": 35
+     "ul": 35,
+     "excess": 20.0,
+     "percentOver": 57.14285714285714,
+     "percentOfUl": 157.14285714285714,
+     "scope": "synthetic",
+     "dayCount": null
     },
     {
      "id": "vitD",
+     "kind": "daily",
      "amount": 128.0,
-     "ul": 100
+     "ul": 100,
+     "excess": 28.0,
+     "percentOver": 28.000000000000004,
+     "percentOfUl": 128.0,
+     "scope": "total",
+     "dayCount": null
     },
     {
      "id": "magnesium",
+     "kind": "daily",
      "amount": 400.0,
-     "ul": 350
+     "ul": 350,
+     "excess": 50.0,
+     "percentOver": 14.285714285714285,
+     "percentOfUl": 114.28571428571428,
+     "scope": "supplement",
+     "dayCount": null
     },
     {
      "id": "retinol",
+     "kind": "daily",
      "amount": 3400.0,
-     "ul": 3000
+     "ul": 3000,
+     "excess": 400.0,
+     "percentOver": 13.333333333333334,
+     "percentOfUl": 113.33333333333333,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "boron",
+     "kind": "daily",
+     "amount": 22.0,
+     "ul": 20,
+     "excess": 2.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "vitE",
+     "kind": "daily",
+     "amount": 1090.909090909091,
+     "ul": 1000,
+     "excess": 90.90909090909099,
+     "percentOver": 9.090909090909099,
+     "percentOfUl": 109.09090909090911,
+     "scope": "synthetic",
+     "dayCount": null
+    },
+    {
+     "id": "vanadium",
+     "kind": "daily",
+     "amount": 1.9,
+     "ul": 1.8,
+     "excess": 0.09999999999999987,
+     "percentOver": 5.555555555555548,
+     "percentOfUl": 105.55555555555556,
+     "scope": "total",
+     "dayCount": null
     }
    ],
    "man45_active|fortified_folic": [
     {
      "id": "folicAcid",
+     "kind": "daily",
      "amount": 1100.0,
-     "ul": 1000
+     "ul": 1000,
+     "excess": 100.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
     }
    ],
+   "man45_active|vitE_boundary": [],
+   "man45_active|snack_chain": [],
+   "man50|balanced": [],
+   "man50|sweet_fatty": [],
+   "man50|supplements_heavy": [
+    {
+     "id": "niacin",
+     "kind": "daily",
+     "amount": 55.0,
+     "ul": 35,
+     "excess": 20.0,
+     "percentOver": 57.14285714285714,
+     "percentOfUl": 157.14285714285714,
+     "scope": "synthetic",
+     "dayCount": null
+    },
+    {
+     "id": "vitD",
+     "kind": "daily",
+     "amount": 128.0,
+     "ul": 100,
+     "excess": 28.0,
+     "percentOver": 28.000000000000004,
+     "percentOfUl": 128.0,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "magnesium",
+     "kind": "daily",
+     "amount": 400.0,
+     "ul": 350,
+     "excess": 50.0,
+     "percentOver": 14.285714285714285,
+     "percentOfUl": 114.28571428571428,
+     "scope": "supplement",
+     "dayCount": null
+    },
+    {
+     "id": "retinol",
+     "kind": "daily",
+     "amount": 3400.0,
+     "ul": 3000,
+     "excess": 400.0,
+     "percentOver": 13.333333333333334,
+     "percentOfUl": 113.33333333333333,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "boron",
+     "kind": "daily",
+     "amount": 22.0,
+     "ul": 20,
+     "excess": 2.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "vitE",
+     "kind": "daily",
+     "amount": 1090.909090909091,
+     "ul": 1000,
+     "excess": 90.90909090909099,
+     "percentOver": 9.090909090909099,
+     "percentOfUl": 109.09090909090911,
+     "scope": "synthetic",
+     "dayCount": null
+    },
+    {
+     "id": "vanadium",
+     "kind": "daily",
+     "amount": 1.9,
+     "ul": 1.8,
+     "excess": 0.09999999999999987,
+     "percentOver": 5.555555555555548,
+     "percentOfUl": 105.55555555555556,
+     "scope": "total",
+     "dayCount": null
+    }
+   ],
+   "man50|fortified_folic": [
+    {
+     "id": "folicAcid",
+     "kind": "daily",
+     "amount": 1100.0,
+     "ul": 1000,
+     "excess": 100.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
+    }
+   ],
+   "man50|vitE_boundary": [
+    {
+     "id": "calcium",
+     "kind": "daily",
+     "amount": 2400.0,
+     "ul": 2000,
+     "excess": 400.0,
+     "percentOver": 20.0,
+     "percentOfUl": 120.0,
+     "scope": "total",
+     "dayCount": null
+    }
+   ],
+   "man50|snack_chain": [],
+   "man70|balanced": [],
+   "man70|sweet_fatty": [],
+   "man70|supplements_heavy": [
+    {
+     "id": "niacin",
+     "kind": "daily",
+     "amount": 55.0,
+     "ul": 35,
+     "excess": 20.0,
+     "percentOver": 57.14285714285714,
+     "percentOfUl": 157.14285714285714,
+     "scope": "synthetic",
+     "dayCount": null
+    },
+    {
+     "id": "vitD",
+     "kind": "daily",
+     "amount": 128.0,
+     "ul": 100,
+     "excess": 28.0,
+     "percentOver": 28.000000000000004,
+     "percentOfUl": 128.0,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "magnesium",
+     "kind": "daily",
+     "amount": 400.0,
+     "ul": 350,
+     "excess": 50.0,
+     "percentOver": 14.285714285714285,
+     "percentOfUl": 114.28571428571428,
+     "scope": "supplement",
+     "dayCount": null
+    },
+    {
+     "id": "retinol",
+     "kind": "daily",
+     "amount": 3400.0,
+     "ul": 3000,
+     "excess": 400.0,
+     "percentOver": 13.333333333333334,
+     "percentOfUl": 113.33333333333333,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "boron",
+     "kind": "daily",
+     "amount": 22.0,
+     "ul": 20,
+     "excess": 2.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "vitE",
+     "kind": "daily",
+     "amount": 1090.909090909091,
+     "ul": 1000,
+     "excess": 90.90909090909099,
+     "percentOver": 9.090909090909099,
+     "percentOfUl": 109.09090909090911,
+     "scope": "synthetic",
+     "dayCount": null
+    },
+    {
+     "id": "vanadium",
+     "kind": "daily",
+     "amount": 1.9,
+     "ul": 1.8,
+     "excess": 0.09999999999999987,
+     "percentOver": 5.555555555555548,
+     "percentOfUl": 105.55555555555556,
+     "scope": "total",
+     "dayCount": null
+    }
+   ],
+   "man70|fortified_folic": [
+    {
+     "id": "folicAcid",
+     "kind": "daily",
+     "amount": 1100.0,
+     "ul": 1000,
+     "excess": 100.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
+    }
+   ],
+   "man70|vitE_boundary": [
+    {
+     "id": "calcium",
+     "kind": "daily",
+     "amount": 2400.0,
+     "ul": 2000,
+     "excess": 400.0,
+     "percentOver": 20.0,
+     "percentOfUl": 120.0,
+     "scope": "total",
+     "dayCount": null
+    }
+   ],
+   "man70|snack_chain": [],
    "man72_very|balanced": [],
    "man72_very|sweet_fatty": [],
    "man72_very|supplements_heavy": [
     {
      "id": "niacin",
+     "kind": "daily",
      "amount": 55.0,
-     "ul": 35
+     "ul": 35,
+     "excess": 20.0,
+     "percentOver": 57.14285714285714,
+     "percentOfUl": 157.14285714285714,
+     "scope": "synthetic",
+     "dayCount": null
     },
     {
      "id": "vitD",
+     "kind": "daily",
      "amount": 128.0,
-     "ul": 100
+     "ul": 100,
+     "excess": 28.0,
+     "percentOver": 28.000000000000004,
+     "percentOfUl": 128.0,
+     "scope": "total",
+     "dayCount": null
     },
     {
      "id": "magnesium",
+     "kind": "daily",
      "amount": 400.0,
-     "ul": 350
+     "ul": 350,
+     "excess": 50.0,
+     "percentOver": 14.285714285714285,
+     "percentOfUl": 114.28571428571428,
+     "scope": "supplement",
+     "dayCount": null
     },
     {
      "id": "retinol",
+     "kind": "daily",
      "amount": 3400.0,
-     "ul": 3000
+     "ul": 3000,
+     "excess": 400.0,
+     "percentOver": 13.333333333333334,
+     "percentOfUl": 113.33333333333333,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "boron",
+     "kind": "daily",
+     "amount": 22.0,
+     "ul": 20,
+     "excess": 2.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "vitE",
+     "kind": "daily",
+     "amount": 1090.909090909091,
+     "ul": 1000,
+     "excess": 90.90909090909099,
+     "percentOver": 9.090909090909099,
+     "percentOfUl": 109.09090909090911,
+     "scope": "synthetic",
+     "dayCount": null
+    },
+    {
+     "id": "vanadium",
+     "kind": "daily",
+     "amount": 1.9,
+     "ul": 1.8,
+     "excess": 0.09999999999999987,
+     "percentOver": 5.555555555555548,
+     "percentOfUl": 105.55555555555556,
+     "scope": "total",
+     "dayCount": null
     }
    ],
    "man72_very|fortified_folic": [
     {
      "id": "folicAcid",
+     "kind": "daily",
      "amount": 1100.0,
-     "ul": 1000
+     "ul": 1000,
+     "excess": 100.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
     }
    ],
+   "man72_very|vitE_boundary": [
+    {
+     "id": "calcium",
+     "kind": "daily",
+     "amount": 2400.0,
+     "ul": 2000,
+     "excess": 400.0,
+     "percentOver": 20.0,
+     "percentOfUl": 120.0,
+     "scope": "total",
+     "dayCount": null
+    }
+   ],
+   "man72_very|snack_chain": [],
+   "boy18|balanced": [],
+   "boy18|sweet_fatty": [],
+   "boy18|supplements_heavy": [
+    {
+     "id": "niacin",
+     "kind": "daily",
+     "amount": 55.0,
+     "ul": 30,
+     "excess": 25.0,
+     "percentOver": 83.33333333333334,
+     "percentOfUl": 183.33333333333331,
+     "scope": "synthetic",
+     "dayCount": null
+    },
+    {
+     "id": "vitE",
+     "kind": "daily",
+     "amount": 1090.909090909091,
+     "ul": 800,
+     "excess": 290.909090909091,
+     "percentOver": 36.363636363636374,
+     "percentOfUl": 136.36363636363637,
+     "scope": "synthetic",
+     "dayCount": null
+    },
+    {
+     "id": "boron",
+     "kind": "daily",
+     "amount": 22.0,
+     "ul": 17,
+     "excess": 5.0,
+     "percentOver": 29.411764705882355,
+     "percentOfUl": 129.41176470588235,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "vitD",
+     "kind": "daily",
+     "amount": 128.0,
+     "ul": 100,
+     "excess": 28.0,
+     "percentOver": 28.000000000000004,
+     "percentOfUl": 128.0,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "retinol",
+     "kind": "daily",
+     "amount": 3400.0,
+     "ul": 2800,
+     "excess": 600.0,
+     "percentOver": 21.428571428571427,
+     "percentOfUl": 121.42857142857142,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "zinc",
+     "kind": "daily",
+     "amount": 39.0,
+     "ul": 34,
+     "excess": 5.0,
+     "percentOver": 14.705882352941178,
+     "percentOfUl": 114.70588235294117,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "magnesium",
+     "kind": "daily",
+     "amount": 400.0,
+     "ul": 350,
+     "excess": 50.0,
+     "percentOver": 14.285714285714285,
+     "percentOfUl": 114.28571428571428,
+     "scope": "supplement",
+     "dayCount": null
+    },
+    {
+     "id": "vanadium",
+     "kind": "daily",
+     "amount": 1.9,
+     "ul": 1.8,
+     "excess": 0.09999999999999987,
+     "percentOver": 5.555555555555548,
+     "percentOfUl": 105.55555555555556,
+     "scope": "total",
+     "dayCount": null
+    }
+   ],
+   "boy18|fortified_folic": [
+    {
+     "id": "folicAcid",
+     "kind": "daily",
+     "amount": 1100.0,
+     "ul": 800,
+     "excess": 300.0,
+     "percentOver": 37.5,
+     "percentOfUl": 137.5,
+     "scope": "total",
+     "dayCount": null
+    }
+   ],
+   "boy18|vitE_boundary": [
+    {
+     "id": "vitE",
+     "kind": "daily",
+     "amount": 1000.0,
+     "ul": 800,
+     "excess": 200.0,
+     "percentOver": 25.0,
+     "percentOfUl": 125.0,
+     "scope": "synthetic",
+     "dayCount": null
+    }
+   ],
+   "boy18|snack_chain": [],
    "woman25_low|balanced": [],
    "woman25_low|sweet_fatty": [],
    "woman25_low|supplements_heavy": [
     {
      "id": "niacin",
+     "kind": "daily",
      "amount": 55.0,
-     "ul": 35
+     "ul": 35,
+     "excess": 20.0,
+     "percentOver": 57.14285714285714,
+     "percentOfUl": 157.14285714285714,
+     "scope": "synthetic",
+     "dayCount": null
     },
     {
      "id": "vitD",
+     "kind": "daily",
      "amount": 128.0,
-     "ul": 100
+     "ul": 100,
+     "excess": 28.0,
+     "percentOver": 28.000000000000004,
+     "percentOfUl": 128.0,
+     "scope": "total",
+     "dayCount": null
     },
     {
      "id": "magnesium",
+     "kind": "daily",
      "amount": 400.0,
-     "ul": 350
+     "ul": 350,
+     "excess": 50.0,
+     "percentOver": 14.285714285714285,
+     "percentOfUl": 114.28571428571428,
+     "scope": "supplement",
+     "dayCount": null
     },
     {
      "id": "retinol",
+     "kind": "daily",
      "amount": 3400.0,
-     "ul": 3000
+     "ul": 3000,
+     "excess": 400.0,
+     "percentOver": 13.333333333333334,
+     "percentOfUl": 113.33333333333333,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "boron",
+     "kind": "daily",
+     "amount": 22.0,
+     "ul": 20,
+     "excess": 2.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "vitE",
+     "kind": "daily",
+     "amount": 1090.909090909091,
+     "ul": 1000,
+     "excess": 90.90909090909099,
+     "percentOver": 9.090909090909099,
+     "percentOfUl": 109.09090909090911,
+     "scope": "synthetic",
+     "dayCount": null
+    },
+    {
+     "id": "vanadium",
+     "kind": "daily",
+     "amount": 1.9,
+     "ul": 1.8,
+     "excess": 0.09999999999999987,
+     "percentOver": 5.555555555555548,
+     "percentOfUl": 105.55555555555556,
+     "scope": "total",
+     "dayCount": null
     }
    ],
    "woman25_low|fortified_folic": [
     {
      "id": "folicAcid",
+     "kind": "daily",
      "amount": 1100.0,
-     "ul": 1000
+     "ul": 1000,
+     "excess": 100.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
     }
    ],
+   "woman25_low|vitE_boundary": [],
+   "woman25_low|snack_chain": [],
    "woman55|balanced": [],
    "woman55|sweet_fatty": [],
    "woman55|supplements_heavy": [
     {
      "id": "niacin",
+     "kind": "daily",
      "amount": 55.0,
-     "ul": 35
+     "ul": 35,
+     "excess": 20.0,
+     "percentOver": 57.14285714285714,
+     "percentOfUl": 157.14285714285714,
+     "scope": "synthetic",
+     "dayCount": null
     },
     {
      "id": "vitD",
+     "kind": "daily",
      "amount": 128.0,
-     "ul": 100
+     "ul": 100,
+     "excess": 28.0,
+     "percentOver": 28.000000000000004,
+     "percentOfUl": 128.0,
+     "scope": "total",
+     "dayCount": null
     },
     {
      "id": "magnesium",
+     "kind": "daily",
      "amount": 400.0,
-     "ul": 350
+     "ul": 350,
+     "excess": 50.0,
+     "percentOver": 14.285714285714285,
+     "percentOfUl": 114.28571428571428,
+     "scope": "supplement",
+     "dayCount": null
     },
     {
      "id": "retinol",
+     "kind": "daily",
      "amount": 3400.0,
-     "ul": 3000
+     "ul": 3000,
+     "excess": 400.0,
+     "percentOver": 13.333333333333334,
+     "percentOfUl": 113.33333333333333,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "boron",
+     "kind": "daily",
+     "amount": 22.0,
+     "ul": 20,
+     "excess": 2.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "vitE",
+     "kind": "daily",
+     "amount": 1090.909090909091,
+     "ul": 1000,
+     "excess": 90.90909090909099,
+     "percentOver": 9.090909090909099,
+     "percentOfUl": 109.09090909090911,
+     "scope": "synthetic",
+     "dayCount": null
+    },
+    {
+     "id": "vanadium",
+     "kind": "daily",
+     "amount": 1.9,
+     "ul": 1.8,
+     "excess": 0.09999999999999987,
+     "percentOver": 5.555555555555548,
+     "percentOfUl": 105.55555555555556,
+     "scope": "total",
+     "dayCount": null
     }
    ],
    "woman55|fortified_folic": [
     {
      "id": "folicAcid",
+     "kind": "daily",
      "amount": 1100.0,
-     "ul": 1000
+     "ul": 1000,
+     "excess": 100.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
     }
    ],
+   "woman55|vitE_boundary": [
+    {
+     "id": "calcium",
+     "kind": "daily",
+     "amount": 2400.0,
+     "ul": 2000,
+     "excess": 400.0,
+     "percentOver": 20.0,
+     "percentOfUl": 120.0,
+     "scope": "total",
+     "dayCount": null
+    }
+   ],
+   "woman55|snack_chain": [],
    "woman18|balanced": [],
    "woman18|sweet_fatty": [],
    "woman18|supplements_heavy": [
     {
      "id": "niacin",
+     "kind": "daily",
      "amount": 55.0,
-     "ul": 30
+     "ul": 30,
+     "excess": 25.0,
+     "percentOver": 83.33333333333334,
+     "percentOfUl": 183.33333333333331,
+     "scope": "synthetic",
+     "dayCount": null
+    },
+    {
+     "id": "vitE",
+     "kind": "daily",
+     "amount": 1090.909090909091,
+     "ul": 800,
+     "excess": 290.909090909091,
+     "percentOver": 36.363636363636374,
+     "percentOfUl": 136.36363636363637,
+     "scope": "synthetic",
+     "dayCount": null
+    },
+    {
+     "id": "boron",
+     "kind": "daily",
+     "amount": 22.0,
+     "ul": 17,
+     "excess": 5.0,
+     "percentOver": 29.411764705882355,
+     "percentOfUl": 129.41176470588235,
+     "scope": "total",
+     "dayCount": null
     },
     {
      "id": "vitD",
+     "kind": "daily",
      "amount": 128.0,
-     "ul": 100
+     "ul": 100,
+     "excess": 28.0,
+     "percentOver": 28.000000000000004,
+     "percentOfUl": 128.0,
+     "scope": "total",
+     "dayCount": null
     },
     {
      "id": "retinol",
+     "kind": "daily",
      "amount": 3400.0,
-     "ul": 2800
+     "ul": 2800,
+     "excess": 600.0,
+     "percentOver": 21.428571428571427,
+     "percentOfUl": 121.42857142857142,
+     "scope": "total",
+     "dayCount": null
     },
     {
      "id": "zinc",
+     "kind": "daily",
      "amount": 39.0,
-     "ul": 34
+     "ul": 34,
+     "excess": 5.0,
+     "percentOver": 14.705882352941178,
+     "percentOfUl": 114.70588235294117,
+     "scope": "total",
+     "dayCount": null
     },
     {
      "id": "magnesium",
+     "kind": "daily",
      "amount": 400.0,
-     "ul": 350
+     "ul": 350,
+     "excess": 50.0,
+     "percentOver": 14.285714285714285,
+     "percentOfUl": 114.28571428571428,
+     "scope": "supplement",
+     "dayCount": null
+    },
+    {
+     "id": "vanadium",
+     "kind": "daily",
+     "amount": 1.9,
+     "ul": 1.8,
+     "excess": 0.09999999999999987,
+     "percentOver": 5.555555555555548,
+     "percentOfUl": 105.55555555555556,
+     "scope": "total",
+     "dayCount": null
     }
    ],
    "woman18|fortified_folic": [
     {
      "id": "folicAcid",
+     "kind": "daily",
      "amount": 1100.0,
-     "ul": 800
+     "ul": 800,
+     "excess": 300.0,
+     "percentOver": 37.5,
+     "percentOfUl": 137.5,
+     "scope": "total",
+     "dayCount": null
     }
    ],
+   "woman18|vitE_boundary": [
+    {
+     "id": "vitE",
+     "kind": "daily",
+     "amount": 1000.0,
+     "ul": 800,
+     "excess": 200.0,
+     "percentOver": 25.0,
+     "percentOfUl": 125.0,
+     "scope": "synthetic",
+     "dayCount": null
+    }
+   ],
+   "woman18|snack_chain": [],
    "preg_t1|balanced": [],
    "preg_t1|sweet_fatty": [],
    "preg_t1|supplements_heavy": [
     {
      "id": "niacin",
+     "kind": "daily",
      "amount": 55.0,
-     "ul": 35
+     "ul": 35,
+     "excess": 20.0,
+     "percentOver": 57.14285714285714,
+     "percentOfUl": 157.14285714285714,
+     "scope": "synthetic",
+     "dayCount": null
     },
     {
      "id": "vitD",
+     "kind": "daily",
      "amount": 128.0,
-     "ul": 100
+     "ul": 100,
+     "excess": 28.0,
+     "percentOver": 28.000000000000004,
+     "percentOfUl": 128.0,
+     "scope": "total",
+     "dayCount": null
     },
     {
      "id": "magnesium",
+     "kind": "daily",
      "amount": 400.0,
-     "ul": 350
+     "ul": 350,
+     "excess": 50.0,
+     "percentOver": 14.285714285714285,
+     "percentOfUl": 114.28571428571428,
+     "scope": "supplement",
+     "dayCount": null
     },
     {
      "id": "retinol",
+     "kind": "daily",
      "amount": 3400.0,
-     "ul": 3000
+     "ul": 3000,
+     "excess": 400.0,
+     "percentOver": 13.333333333333334,
+     "percentOfUl": 113.33333333333333,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "boron",
+     "kind": "daily",
+     "amount": 22.0,
+     "ul": 20,
+     "excess": 2.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "vitE",
+     "kind": "daily",
+     "amount": 1090.909090909091,
+     "ul": 1000,
+     "excess": 90.90909090909099,
+     "percentOver": 9.090909090909099,
+     "percentOfUl": 109.09090909090911,
+     "scope": "synthetic",
+     "dayCount": null
     }
    ],
    "preg_t1|fortified_folic": [
     {
      "id": "folicAcid",
+     "kind": "daily",
      "amount": 1100.0,
-     "ul": 1000
+     "ul": 1000,
+     "excess": 100.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
     }
    ],
+   "preg_t1|vitE_boundary": [],
+   "preg_t1|snack_chain": [],
    "preg_t2|balanced": [],
    "preg_t2|sweet_fatty": [],
    "preg_t2|supplements_heavy": [
     {
      "id": "niacin",
+     "kind": "daily",
      "amount": 55.0,
-     "ul": 35
+     "ul": 35,
+     "excess": 20.0,
+     "percentOver": 57.14285714285714,
+     "percentOfUl": 157.14285714285714,
+     "scope": "synthetic",
+     "dayCount": null
     },
     {
      "id": "vitD",
+     "kind": "daily",
      "amount": 128.0,
-     "ul": 100
+     "ul": 100,
+     "excess": 28.0,
+     "percentOver": 28.000000000000004,
+     "percentOfUl": 128.0,
+     "scope": "total",
+     "dayCount": null
     },
     {
      "id": "magnesium",
+     "kind": "daily",
      "amount": 400.0,
-     "ul": 350
+     "ul": 350,
+     "excess": 50.0,
+     "percentOver": 14.285714285714285,
+     "percentOfUl": 114.28571428571428,
+     "scope": "supplement",
+     "dayCount": null
     },
     {
      "id": "retinol",
+     "kind": "daily",
      "amount": 3400.0,
-     "ul": 3000
+     "ul": 3000,
+     "excess": 400.0,
+     "percentOver": 13.333333333333334,
+     "percentOfUl": 113.33333333333333,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "boron",
+     "kind": "daily",
+     "amount": 22.0,
+     "ul": 20,
+     "excess": 2.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "vitE",
+     "kind": "daily",
+     "amount": 1090.909090909091,
+     "ul": 1000,
+     "excess": 90.90909090909099,
+     "percentOver": 9.090909090909099,
+     "percentOfUl": 109.09090909090911,
+     "scope": "synthetic",
+     "dayCount": null
     }
    ],
    "preg_t2|fortified_folic": [
     {
      "id": "folicAcid",
+     "kind": "daily",
      "amount": 1100.0,
-     "ul": 1000
+     "ul": 1000,
+     "excess": 100.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
     }
    ],
+   "preg_t2|vitE_boundary": [],
+   "preg_t2|snack_chain": [],
    "preg_t3_obese|balanced": [],
    "preg_t3_obese|sweet_fatty": [],
    "preg_t3_obese|supplements_heavy": [
     {
      "id": "niacin",
+     "kind": "daily",
      "amount": 55.0,
-     "ul": 35
+     "ul": 35,
+     "excess": 20.0,
+     "percentOver": 57.14285714285714,
+     "percentOfUl": 157.14285714285714,
+     "scope": "synthetic",
+     "dayCount": null
     },
     {
      "id": "vitD",
+     "kind": "daily",
      "amount": 128.0,
-     "ul": 100
+     "ul": 100,
+     "excess": 28.0,
+     "percentOver": 28.000000000000004,
+     "percentOfUl": 128.0,
+     "scope": "total",
+     "dayCount": null
     },
     {
      "id": "magnesium",
+     "kind": "daily",
      "amount": 400.0,
-     "ul": 350
+     "ul": 350,
+     "excess": 50.0,
+     "percentOver": 14.285714285714285,
+     "percentOfUl": 114.28571428571428,
+     "scope": "supplement",
+     "dayCount": null
     },
     {
      "id": "retinol",
+     "kind": "daily",
      "amount": 3400.0,
-     "ul": 3000
+     "ul": 3000,
+     "excess": 400.0,
+     "percentOver": 13.333333333333334,
+     "percentOfUl": 113.33333333333333,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "boron",
+     "kind": "daily",
+     "amount": 22.0,
+     "ul": 20,
+     "excess": 2.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "vitE",
+     "kind": "daily",
+     "amount": 1090.909090909091,
+     "ul": 1000,
+     "excess": 90.90909090909099,
+     "percentOver": 9.090909090909099,
+     "percentOfUl": 109.09090909090911,
+     "scope": "synthetic",
+     "dayCount": null
     }
    ],
    "preg_t3_obese|fortified_folic": [
     {
      "id": "folicAcid",
+     "kind": "daily",
      "amount": 1100.0,
-     "ul": 1000
+     "ul": 1000,
+     "excess": 100.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
     }
    ],
+   "preg_t3_obese|vitE_boundary": [],
+   "preg_t3_obese|snack_chain": [],
    "preg_nobmi|balanced": [],
    "preg_nobmi|sweet_fatty": [],
    "preg_nobmi|supplements_heavy": [
     {
      "id": "niacin",
+     "kind": "daily",
      "amount": 55.0,
-     "ul": 35
+     "ul": 35,
+     "excess": 20.0,
+     "percentOver": 57.14285714285714,
+     "percentOfUl": 157.14285714285714,
+     "scope": "synthetic",
+     "dayCount": null
     },
     {
      "id": "vitD",
+     "kind": "daily",
      "amount": 128.0,
-     "ul": 100
+     "ul": 100,
+     "excess": 28.0,
+     "percentOver": 28.000000000000004,
+     "percentOfUl": 128.0,
+     "scope": "total",
+     "dayCount": null
     },
     {
      "id": "magnesium",
+     "kind": "daily",
      "amount": 400.0,
-     "ul": 350
+     "ul": 350,
+     "excess": 50.0,
+     "percentOver": 14.285714285714285,
+     "percentOfUl": 114.28571428571428,
+     "scope": "supplement",
+     "dayCount": null
     },
     {
      "id": "retinol",
+     "kind": "daily",
      "amount": 3400.0,
-     "ul": 3000
+     "ul": 3000,
+     "excess": 400.0,
+     "percentOver": 13.333333333333334,
+     "percentOfUl": 113.33333333333333,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "boron",
+     "kind": "daily",
+     "amount": 22.0,
+     "ul": 20,
+     "excess": 2.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "vitE",
+     "kind": "daily",
+     "amount": 1090.909090909091,
+     "ul": 1000,
+     "excess": 90.90909090909099,
+     "percentOver": 9.090909090909099,
+     "percentOfUl": 109.09090909090911,
+     "scope": "synthetic",
+     "dayCount": null
     }
    ],
    "preg_nobmi|fortified_folic": [
     {
      "id": "folicAcid",
+     "kind": "daily",
      "amount": 1100.0,
-     "ul": 1000
+     "ul": 1000,
+     "excess": 100.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
     }
    ],
+   "preg_nobmi|vitE_boundary": [],
+   "preg_nobmi|snack_chain": [],
    "lact_4m|balanced": [],
    "lact_4m|sweet_fatty": [],
    "lact_4m|supplements_heavy": [
     {
      "id": "niacin",
+     "kind": "daily",
      "amount": 55.0,
-     "ul": 35
+     "ul": 35,
+     "excess": 20.0,
+     "percentOver": 57.14285714285714,
+     "percentOfUl": 157.14285714285714,
+     "scope": "synthetic",
+     "dayCount": null
     },
     {
      "id": "vitD",
+     "kind": "daily",
      "amount": 128.0,
-     "ul": 100
+     "ul": 100,
+     "excess": 28.0,
+     "percentOver": 28.000000000000004,
+     "percentOfUl": 128.0,
+     "scope": "total",
+     "dayCount": null
     },
     {
      "id": "magnesium",
+     "kind": "daily",
      "amount": 400.0,
-     "ul": 350
+     "ul": 350,
+     "excess": 50.0,
+     "percentOver": 14.285714285714285,
+     "percentOfUl": 114.28571428571428,
+     "scope": "supplement",
+     "dayCount": null
     },
     {
      "id": "retinol",
+     "kind": "daily",
      "amount": 3400.0,
-     "ul": 3000
+     "ul": 3000,
+     "excess": 400.0,
+     "percentOver": 13.333333333333334,
+     "percentOfUl": 113.33333333333333,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "boron",
+     "kind": "daily",
+     "amount": 22.0,
+     "ul": 20,
+     "excess": 2.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "vitE",
+     "kind": "daily",
+     "amount": 1090.909090909091,
+     "ul": 1000,
+     "excess": 90.90909090909099,
+     "percentOver": 9.090909090909099,
+     "percentOfUl": 109.09090909090911,
+     "scope": "synthetic",
+     "dayCount": null
     }
    ],
    "lact_4m|fortified_folic": [
     {
      "id": "folicAcid",
+     "kind": "daily",
      "amount": 1100.0,
-     "ul": 1000
+     "ul": 1000,
+     "excess": 100.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
     }
    ],
+   "lact_4m|vitE_boundary": [],
+   "lact_4m|snack_chain": [],
    "lact_9m|balanced": [],
    "lact_9m|sweet_fatty": [],
    "lact_9m|supplements_heavy": [
     {
      "id": "niacin",
+     "kind": "daily",
      "amount": 55.0,
-     "ul": 35
+     "ul": 35,
+     "excess": 20.0,
+     "percentOver": 57.14285714285714,
+     "percentOfUl": 157.14285714285714,
+     "scope": "synthetic",
+     "dayCount": null
     },
     {
      "id": "vitD",
+     "kind": "daily",
      "amount": 128.0,
-     "ul": 100
+     "ul": 100,
+     "excess": 28.0,
+     "percentOver": 28.000000000000004,
+     "percentOfUl": 128.0,
+     "scope": "total",
+     "dayCount": null
     },
     {
      "id": "magnesium",
+     "kind": "daily",
      "amount": 400.0,
-     "ul": 350
+     "ul": 350,
+     "excess": 50.0,
+     "percentOver": 14.285714285714285,
+     "percentOfUl": 114.28571428571428,
+     "scope": "supplement",
+     "dayCount": null
     },
     {
      "id": "retinol",
+     "kind": "daily",
      "amount": 3400.0,
-     "ul": 3000
+     "ul": 3000,
+     "excess": 400.0,
+     "percentOver": 13.333333333333334,
+     "percentOfUl": 113.33333333333333,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "boron",
+     "kind": "daily",
+     "amount": 22.0,
+     "ul": 20,
+     "excess": 2.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
+    },
+    {
+     "id": "vitE",
+     "kind": "daily",
+     "amount": 1090.909090909091,
+     "ul": 1000,
+     "excess": 90.90909090909099,
+     "percentOver": 9.090909090909099,
+     "percentOfUl": 109.09090909090911,
+     "scope": "synthetic",
+     "dayCount": null
     }
    ],
    "lact_9m|fortified_folic": [
     {
      "id": "folicAcid",
+     "kind": "daily",
      "amount": 1100.0,
-     "ul": 1000
+     "ul": 1000,
+     "excess": 100.0,
+     "percentOver": 10.0,
+     "percentOfUl": 110.00000000000001,
+     "scope": "total",
+     "dayCount": null
     }
-   ]
+   ],
+   "lact_9m|vitE_boundary": [],
+   "lact_9m|snack_chain": []
   },
   "macros": {
    "man30|balanced": {
     "protein": {
+     "grams": 90,
      "pct": 18.58544140423335,
      "status": "within"
     },
     "fat": {
+     "grams": 57,
      "pct": 26.484254001032525,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 266,
      "pct": 54.930304594734125,
      "status": "within"
     }
    },
    "man30|sweet_fatty": {
     "protein": {
+     "grams": 45,
      "pct": 10.650887573964498,
      "status": "within"
     },
     "fat": {
+     "grams": 90,
      "pct": 47.928994082840234,
      "status": "above"
     },
     "carbohydrate": {
+     "grams": 175,
      "pct": 41.42011834319527,
      "status": "below"
     }
    },
    "man30|supplements_heavy": {
     "protein": {
+     "grams": 70.0,
      "pct": 15.730337078651685,
      "status": "within"
     },
     "fat": {
+     "grams": 60.0,
      "pct": 30.337078651685395,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 240.0,
      "pct": 53.93258426966292,
      "status": "within"
     }
    },
    "man30|fortified_folic": {
     "protein": {
+     "grams": 80.0,
      "pct": 16.120906801007557,
      "status": "within"
     },
     "fat": {
+     "grams": 65.0,
      "pct": 29.47103274559194,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 270.0,
      "pct": 54.40806045340051,
      "status": "within"
     }
    },
+   "man30|vitE_boundary": {
+    "protein": {
+     "grams": 70.0,
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 60.0,
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 240.0,
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "man30|snack_chain": {
+    "protein": {
+     "grams": 8.0,
+     "pct": 100.0,
+     "status": "above"
+    },
+    "fat": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    },
+    "carbohydrate": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    }
+   },
    "man45_active|balanced": {
     "protein": {
+     "grams": 90,
      "pct": 18.58544140423335,
      "status": "within"
     },
     "fat": {
+     "grams": 57,
      "pct": 26.484254001032525,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 266,
      "pct": 54.930304594734125,
      "status": "within"
     }
    },
    "man45_active|sweet_fatty": {
     "protein": {
+     "grams": 45,
      "pct": 10.650887573964498,
      "status": "within"
     },
     "fat": {
+     "grams": 90,
      "pct": 47.928994082840234,
      "status": "above"
     },
     "carbohydrate": {
+     "grams": 175,
      "pct": 41.42011834319527,
      "status": "below"
     }
    },
    "man45_active|supplements_heavy": {
     "protein": {
+     "grams": 70.0,
      "pct": 15.730337078651685,
      "status": "within"
     },
     "fat": {
+     "grams": 60.0,
      "pct": 30.337078651685395,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 240.0,
      "pct": 53.93258426966292,
      "status": "within"
     }
    },
    "man45_active|fortified_folic": {
     "protein": {
+     "grams": 80.0,
      "pct": 16.120906801007557,
      "status": "within"
     },
     "fat": {
+     "grams": 65.0,
      "pct": 29.47103274559194,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 270.0,
      "pct": 54.40806045340051,
      "status": "within"
     }
    },
-   "man72_very|balanced": {
+   "man45_active|vitE_boundary": {
     "protein": {
+     "grams": 70.0,
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 60.0,
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 240.0,
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "man45_active|snack_chain": {
+    "protein": {
+     "grams": 8.0,
+     "pct": 100.0,
+     "status": "above"
+    },
+    "fat": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    },
+    "carbohydrate": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    }
+   },
+   "man50|balanced": {
+    "protein": {
+     "grams": 90,
      "pct": 18.58544140423335,
      "status": "within"
     },
     "fat": {
+     "grams": 57,
      "pct": 26.484254001032525,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 266,
+     "pct": 54.930304594734125,
+     "status": "within"
+    }
+   },
+   "man50|sweet_fatty": {
+    "protein": {
+     "grams": 45,
+     "pct": 10.650887573964498,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 90,
+     "pct": 47.928994082840234,
+     "status": "above"
+    },
+    "carbohydrate": {
+     "grams": 175,
+     "pct": 41.42011834319527,
+     "status": "below"
+    }
+   },
+   "man50|supplements_heavy": {
+    "protein": {
+     "grams": 70.0,
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 60.0,
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 240.0,
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "man50|fortified_folic": {
+    "protein": {
+     "grams": 80.0,
+     "pct": 16.120906801007557,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 65.0,
+     "pct": 29.47103274559194,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 270.0,
+     "pct": 54.40806045340051,
+     "status": "within"
+    }
+   },
+   "man50|vitE_boundary": {
+    "protein": {
+     "grams": 70.0,
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 60.0,
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 240.0,
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "man50|snack_chain": {
+    "protein": {
+     "grams": 8.0,
+     "pct": 100.0,
+     "status": "above"
+    },
+    "fat": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    },
+    "carbohydrate": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    }
+   },
+   "man70|balanced": {
+    "protein": {
+     "grams": 90,
+     "pct": 18.58544140423335,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 57,
+     "pct": 26.484254001032525,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 266,
+     "pct": 54.930304594734125,
+     "status": "within"
+    }
+   },
+   "man70|sweet_fatty": {
+    "protein": {
+     "grams": 45,
+     "pct": 10.650887573964498,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 90,
+     "pct": 47.928994082840234,
+     "status": "above"
+    },
+    "carbohydrate": {
+     "grams": 175,
+     "pct": 41.42011834319527,
+     "status": "below"
+    }
+   },
+   "man70|supplements_heavy": {
+    "protein": {
+     "grams": 70.0,
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 60.0,
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 240.0,
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "man70|fortified_folic": {
+    "protein": {
+     "grams": 80.0,
+     "pct": 16.120906801007557,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 65.0,
+     "pct": 29.47103274559194,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 270.0,
+     "pct": 54.40806045340051,
+     "status": "within"
+    }
+   },
+   "man70|vitE_boundary": {
+    "protein": {
+     "grams": 70.0,
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 60.0,
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 240.0,
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "man70|snack_chain": {
+    "protein": {
+     "grams": 8.0,
+     "pct": 100.0,
+     "status": "above"
+    },
+    "fat": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    },
+    "carbohydrate": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    }
+   },
+   "man72_very|balanced": {
+    "protein": {
+     "grams": 90,
+     "pct": 18.58544140423335,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 57,
+     "pct": 26.484254001032525,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 266,
      "pct": 54.930304594734125,
      "status": "within"
     }
    },
    "man72_very|sweet_fatty": {
     "protein": {
+     "grams": 45,
      "pct": 10.650887573964498,
      "status": "within"
     },
     "fat": {
+     "grams": 90,
      "pct": 47.928994082840234,
      "status": "above"
     },
     "carbohydrate": {
+     "grams": 175,
      "pct": 41.42011834319527,
      "status": "below"
     }
    },
    "man72_very|supplements_heavy": {
     "protein": {
+     "grams": 70.0,
      "pct": 15.730337078651685,
      "status": "within"
     },
     "fat": {
+     "grams": 60.0,
      "pct": 30.337078651685395,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 240.0,
      "pct": 53.93258426966292,
      "status": "within"
     }
    },
    "man72_very|fortified_folic": {
     "protein": {
+     "grams": 80.0,
      "pct": 16.120906801007557,
      "status": "within"
     },
     "fat": {
+     "grams": 65.0,
      "pct": 29.47103274559194,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 270.0,
      "pct": 54.40806045340051,
      "status": "within"
     }
    },
-   "woman25_low|balanced": {
+   "man72_very|vitE_boundary": {
     "protein": {
+     "grams": 70.0,
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 60.0,
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 240.0,
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "man72_very|snack_chain": {
+    "protein": {
+     "grams": 8.0,
+     "pct": 100.0,
+     "status": "above"
+    },
+    "fat": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    },
+    "carbohydrate": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    }
+   },
+   "boy18|balanced": {
+    "protein": {
+     "grams": 90,
      "pct": 18.58544140423335,
      "status": "within"
     },
     "fat": {
+     "grams": 57,
      "pct": 26.484254001032525,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 266,
+     "pct": 54.930304594734125,
+     "status": "within"
+    }
+   },
+   "boy18|sweet_fatty": {
+    "protein": {
+     "grams": 45,
+     "pct": 10.650887573964498,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 90,
+     "pct": 47.928994082840234,
+     "status": "above"
+    },
+    "carbohydrate": {
+     "grams": 175,
+     "pct": 41.42011834319527,
+     "status": "below"
+    }
+   },
+   "boy18|supplements_heavy": {
+    "protein": {
+     "grams": 70.0,
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 60.0,
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 240.0,
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "boy18|fortified_folic": {
+    "protein": {
+     "grams": 80.0,
+     "pct": 16.120906801007557,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 65.0,
+     "pct": 29.47103274559194,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 270.0,
+     "pct": 54.40806045340051,
+     "status": "within"
+    }
+   },
+   "boy18|vitE_boundary": {
+    "protein": {
+     "grams": 70.0,
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 60.0,
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 240.0,
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "boy18|snack_chain": {
+    "protein": {
+     "grams": 8.0,
+     "pct": 100.0,
+     "status": "above"
+    },
+    "fat": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    },
+    "carbohydrate": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    }
+   },
+   "woman25_low|balanced": {
+    "protein": {
+     "grams": 90,
+     "pct": 18.58544140423335,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 57,
+     "pct": 26.484254001032525,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 266,
      "pct": 54.930304594734125,
      "status": "within"
     }
    },
    "woman25_low|sweet_fatty": {
     "protein": {
+     "grams": 45,
      "pct": 10.650887573964498,
      "status": "within"
     },
     "fat": {
+     "grams": 90,
      "pct": 47.928994082840234,
      "status": "above"
     },
     "carbohydrate": {
+     "grams": 175,
      "pct": 41.42011834319527,
      "status": "below"
     }
    },
    "woman25_low|supplements_heavy": {
     "protein": {
+     "grams": 70.0,
      "pct": 15.730337078651685,
      "status": "within"
     },
     "fat": {
+     "grams": 60.0,
      "pct": 30.337078651685395,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 240.0,
      "pct": 53.93258426966292,
      "status": "within"
     }
    },
    "woman25_low|fortified_folic": {
     "protein": {
+     "grams": 80.0,
      "pct": 16.120906801007557,
      "status": "within"
     },
     "fat": {
+     "grams": 65.0,
      "pct": 29.47103274559194,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 270.0,
      "pct": 54.40806045340051,
      "status": "within"
     }
    },
+   "woman25_low|vitE_boundary": {
+    "protein": {
+     "grams": 70.0,
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 60.0,
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 240.0,
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "woman25_low|snack_chain": {
+    "protein": {
+     "grams": 8.0,
+     "pct": 100.0,
+     "status": "above"
+    },
+    "fat": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    },
+    "carbohydrate": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    }
+   },
    "woman55|balanced": {
     "protein": {
+     "grams": 90,
      "pct": 18.58544140423335,
      "status": "within"
     },
     "fat": {
+     "grams": 57,
      "pct": 26.484254001032525,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 266,
      "pct": 54.930304594734125,
      "status": "within"
     }
    },
    "woman55|sweet_fatty": {
     "protein": {
+     "grams": 45,
      "pct": 10.650887573964498,
      "status": "within"
     },
     "fat": {
+     "grams": 90,
      "pct": 47.928994082840234,
      "status": "above"
     },
     "carbohydrate": {
+     "grams": 175,
      "pct": 41.42011834319527,
      "status": "below"
     }
    },
    "woman55|supplements_heavy": {
     "protein": {
+     "grams": 70.0,
      "pct": 15.730337078651685,
      "status": "within"
     },
     "fat": {
+     "grams": 60.0,
      "pct": 30.337078651685395,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 240.0,
      "pct": 53.93258426966292,
      "status": "within"
     }
    },
    "woman55|fortified_folic": {
     "protein": {
+     "grams": 80.0,
      "pct": 16.120906801007557,
      "status": "within"
     },
     "fat": {
+     "grams": 65.0,
      "pct": 29.47103274559194,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 270.0,
      "pct": 54.40806045340051,
      "status": "within"
     }
    },
+   "woman55|vitE_boundary": {
+    "protein": {
+     "grams": 70.0,
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 60.0,
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 240.0,
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "woman55|snack_chain": {
+    "protein": {
+     "grams": 8.0,
+     "pct": 100.0,
+     "status": "above"
+    },
+    "fat": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    },
+    "carbohydrate": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    }
+   },
    "woman18|balanced": {
     "protein": {
+     "grams": 90,
      "pct": 18.58544140423335,
      "status": "within"
     },
     "fat": {
+     "grams": 57,
      "pct": 26.484254001032525,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 266,
      "pct": 54.930304594734125,
      "status": "within"
     }
    },
    "woman18|sweet_fatty": {
     "protein": {
+     "grams": 45,
      "pct": 10.650887573964498,
      "status": "within"
     },
     "fat": {
+     "grams": 90,
      "pct": 47.928994082840234,
      "status": "above"
     },
     "carbohydrate": {
+     "grams": 175,
      "pct": 41.42011834319527,
      "status": "below"
     }
    },
    "woman18|supplements_heavy": {
     "protein": {
+     "grams": 70.0,
      "pct": 15.730337078651685,
      "status": "within"
     },
     "fat": {
+     "grams": 60.0,
      "pct": 30.337078651685395,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 240.0,
      "pct": 53.93258426966292,
      "status": "within"
     }
    },
    "woman18|fortified_folic": {
     "protein": {
+     "grams": 80.0,
      "pct": 16.120906801007557,
      "status": "within"
     },
     "fat": {
+     "grams": 65.0,
      "pct": 29.47103274559194,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 270.0,
      "pct": 54.40806045340051,
      "status": "within"
     }
    },
+   "woman18|vitE_boundary": {
+    "protein": {
+     "grams": 70.0,
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 60.0,
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 240.0,
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "woman18|snack_chain": {
+    "protein": {
+     "grams": 8.0,
+     "pct": 100.0,
+     "status": "above"
+    },
+    "fat": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    },
+    "carbohydrate": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    }
+   },
    "preg_t1|balanced": {
     "protein": {
+     "grams": 90,
      "pct": 18.58544140423335,
      "status": "within"
     },
     "fat": {
+     "grams": 57,
      "pct": 26.484254001032525,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 266,
      "pct": 54.930304594734125,
      "status": "within"
     }
    },
    "preg_t1|sweet_fatty": {
     "protein": {
+     "grams": 45,
      "pct": 10.650887573964498,
      "status": "within"
     },
     "fat": {
+     "grams": 90,
      "pct": 47.928994082840234,
      "status": "above"
     },
     "carbohydrate": {
+     "grams": 175,
      "pct": 41.42011834319527,
      "status": "below"
     }
    },
    "preg_t1|supplements_heavy": {
     "protein": {
+     "grams": 70.0,
      "pct": 15.730337078651685,
      "status": "within"
     },
     "fat": {
+     "grams": 60.0,
      "pct": 30.337078651685395,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 240.0,
      "pct": 53.93258426966292,
      "status": "within"
     }
    },
    "preg_t1|fortified_folic": {
     "protein": {
+     "grams": 80.0,
      "pct": 16.120906801007557,
      "status": "within"
     },
     "fat": {
+     "grams": 65.0,
      "pct": 29.47103274559194,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 270.0,
      "pct": 54.40806045340051,
      "status": "within"
     }
    },
+   "preg_t1|vitE_boundary": {
+    "protein": {
+     "grams": 70.0,
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 60.0,
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 240.0,
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "preg_t1|snack_chain": {
+    "protein": {
+     "grams": 8.0,
+     "pct": 100.0,
+     "status": "above"
+    },
+    "fat": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    },
+    "carbohydrate": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    }
+   },
    "preg_t2|balanced": {
     "protein": {
+     "grams": 90,
      "pct": 18.58544140423335,
      "status": "within"
     },
     "fat": {
+     "grams": 57,
      "pct": 26.484254001032525,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 266,
      "pct": 54.930304594734125,
      "status": "within"
     }
    },
    "preg_t2|sweet_fatty": {
     "protein": {
+     "grams": 45,
      "pct": 10.650887573964498,
      "status": "within"
     },
     "fat": {
+     "grams": 90,
      "pct": 47.928994082840234,
      "status": "above"
     },
     "carbohydrate": {
+     "grams": 175,
      "pct": 41.42011834319527,
      "status": "below"
     }
    },
    "preg_t2|supplements_heavy": {
     "protein": {
+     "grams": 70.0,
      "pct": 15.730337078651685,
      "status": "within"
     },
     "fat": {
+     "grams": 60.0,
      "pct": 30.337078651685395,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 240.0,
      "pct": 53.93258426966292,
      "status": "within"
     }
    },
    "preg_t2|fortified_folic": {
     "protein": {
+     "grams": 80.0,
      "pct": 16.120906801007557,
      "status": "within"
     },
     "fat": {
+     "grams": 65.0,
      "pct": 29.47103274559194,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 270.0,
      "pct": 54.40806045340051,
      "status": "within"
     }
    },
+   "preg_t2|vitE_boundary": {
+    "protein": {
+     "grams": 70.0,
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 60.0,
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 240.0,
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "preg_t2|snack_chain": {
+    "protein": {
+     "grams": 8.0,
+     "pct": 100.0,
+     "status": "above"
+    },
+    "fat": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    },
+    "carbohydrate": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    }
+   },
    "preg_t3_obese|balanced": {
     "protein": {
+     "grams": 90,
      "pct": 18.58544140423335,
      "status": "within"
     },
     "fat": {
+     "grams": 57,
      "pct": 26.484254001032525,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 266,
      "pct": 54.930304594734125,
      "status": "within"
     }
    },
    "preg_t3_obese|sweet_fatty": {
     "protein": {
+     "grams": 45,
      "pct": 10.650887573964498,
      "status": "within"
     },
     "fat": {
+     "grams": 90,
      "pct": 47.928994082840234,
      "status": "above"
     },
     "carbohydrate": {
+     "grams": 175,
      "pct": 41.42011834319527,
      "status": "below"
     }
    },
    "preg_t3_obese|supplements_heavy": {
     "protein": {
+     "grams": 70.0,
      "pct": 15.730337078651685,
      "status": "within"
     },
     "fat": {
+     "grams": 60.0,
      "pct": 30.337078651685395,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 240.0,
      "pct": 53.93258426966292,
      "status": "within"
     }
    },
    "preg_t3_obese|fortified_folic": {
     "protein": {
+     "grams": 80.0,
      "pct": 16.120906801007557,
      "status": "within"
     },
     "fat": {
+     "grams": 65.0,
      "pct": 29.47103274559194,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 270.0,
      "pct": 54.40806045340051,
      "status": "within"
     }
    },
+   "preg_t3_obese|vitE_boundary": {
+    "protein": {
+     "grams": 70.0,
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 60.0,
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 240.0,
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "preg_t3_obese|snack_chain": {
+    "protein": {
+     "grams": 8.0,
+     "pct": 100.0,
+     "status": "above"
+    },
+    "fat": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    },
+    "carbohydrate": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    }
+   },
    "preg_nobmi|balanced": {
     "protein": {
+     "grams": 90,
      "pct": 18.58544140423335,
      "status": "within"
     },
     "fat": {
+     "grams": 57,
      "pct": 26.484254001032525,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 266,
      "pct": 54.930304594734125,
      "status": "within"
     }
    },
    "preg_nobmi|sweet_fatty": {
     "protein": {
+     "grams": 45,
      "pct": 10.650887573964498,
      "status": "within"
     },
     "fat": {
+     "grams": 90,
      "pct": 47.928994082840234,
      "status": "above"
     },
     "carbohydrate": {
+     "grams": 175,
      "pct": 41.42011834319527,
      "status": "below"
     }
    },
    "preg_nobmi|supplements_heavy": {
     "protein": {
+     "grams": 70.0,
      "pct": 15.730337078651685,
      "status": "within"
     },
     "fat": {
+     "grams": 60.0,
      "pct": 30.337078651685395,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 240.0,
      "pct": 53.93258426966292,
      "status": "within"
     }
    },
    "preg_nobmi|fortified_folic": {
     "protein": {
+     "grams": 80.0,
      "pct": 16.120906801007557,
      "status": "within"
     },
     "fat": {
+     "grams": 65.0,
      "pct": 29.47103274559194,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 270.0,
      "pct": 54.40806045340051,
      "status": "within"
     }
    },
+   "preg_nobmi|vitE_boundary": {
+    "protein": {
+     "grams": 70.0,
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 60.0,
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 240.0,
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "preg_nobmi|snack_chain": {
+    "protein": {
+     "grams": 8.0,
+     "pct": 100.0,
+     "status": "above"
+    },
+    "fat": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    },
+    "carbohydrate": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    }
+   },
    "lact_4m|balanced": {
     "protein": {
+     "grams": 90,
      "pct": 18.58544140423335,
      "status": "within"
     },
     "fat": {
+     "grams": 57,
      "pct": 26.484254001032525,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 266,
      "pct": 54.930304594734125,
      "status": "within"
     }
    },
    "lact_4m|sweet_fatty": {
     "protein": {
+     "grams": 45,
      "pct": 10.650887573964498,
      "status": "within"
     },
     "fat": {
+     "grams": 90,
      "pct": 47.928994082840234,
      "status": "above"
     },
     "carbohydrate": {
+     "grams": 175,
      "pct": 41.42011834319527,
      "status": "below"
     }
    },
    "lact_4m|supplements_heavy": {
     "protein": {
+     "grams": 70.0,
      "pct": 15.730337078651685,
      "status": "within"
     },
     "fat": {
+     "grams": 60.0,
      "pct": 30.337078651685395,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 240.0,
      "pct": 53.93258426966292,
      "status": "within"
     }
    },
    "lact_4m|fortified_folic": {
     "protein": {
+     "grams": 80.0,
      "pct": 16.120906801007557,
      "status": "within"
     },
     "fat": {
+     "grams": 65.0,
      "pct": 29.47103274559194,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 270.0,
      "pct": 54.40806045340051,
      "status": "within"
     }
    },
+   "lact_4m|vitE_boundary": {
+    "protein": {
+     "grams": 70.0,
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 60.0,
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 240.0,
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "lact_4m|snack_chain": {
+    "protein": {
+     "grams": 8.0,
+     "pct": 100.0,
+     "status": "above"
+    },
+    "fat": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    },
+    "carbohydrate": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    }
+   },
    "lact_9m|balanced": {
     "protein": {
+     "grams": 90,
      "pct": 18.58544140423335,
      "status": "within"
     },
     "fat": {
+     "grams": 57,
      "pct": 26.484254001032525,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 266,
      "pct": 54.930304594734125,
      "status": "within"
     }
    },
    "lact_9m|sweet_fatty": {
     "protein": {
+     "grams": 45,
      "pct": 10.650887573964498,
      "status": "within"
     },
     "fat": {
+     "grams": 90,
      "pct": 47.928994082840234,
      "status": "above"
     },
     "carbohydrate": {
+     "grams": 175,
      "pct": 41.42011834319527,
      "status": "below"
     }
    },
    "lact_9m|supplements_heavy": {
     "protein": {
+     "grams": 70.0,
      "pct": 15.730337078651685,
      "status": "within"
     },
     "fat": {
+     "grams": 60.0,
      "pct": 30.337078651685395,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 240.0,
      "pct": 53.93258426966292,
      "status": "within"
     }
    },
    "lact_9m|fortified_folic": {
     "protein": {
+     "grams": 80.0,
      "pct": 16.120906801007557,
      "status": "within"
     },
     "fat": {
+     "grams": 65.0,
      "pct": 29.47103274559194,
      "status": "within"
     },
     "carbohydrate": {
+     "grams": 270.0,
      "pct": 54.40806045340051,
      "status": "within"
+    }
+   },
+   "lact_9m|vitE_boundary": {
+    "protein": {
+     "grams": 70.0,
+     "pct": 15.730337078651685,
+     "status": "within"
+    },
+    "fat": {
+     "grams": 60.0,
+     "pct": 30.337078651685395,
+     "status": "within"
+    },
+    "carbohydrate": {
+     "grams": 240.0,
+     "pct": 53.93258426966292,
+     "status": "within"
+    }
+   },
+   "lact_9m|snack_chain": {
+    "protein": {
+     "grams": 8.0,
+     "pct": 100.0,
+     "status": "above"
+    },
+    "fat": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
+    },
+    "carbohydrate": {
+     "grams": 0.0,
+     "pct": 0.0,
+     "status": "below"
     }
    }
   },
   "sugar": {
    "balanced": {
+    "addedSugarG": 13,
     "pct": 2.666666666666667,
-    "mealsOver": []
+    "mealsOverLimit": [],
+    "unknownSugarFoods": []
    },
    "sweet_fatty": {
+    "addedSugarG": 48,
     "pct": 11.294117647058824,
-    "mealsOver": [
-     "snack"
-    ]
+    "mealsOverLimit": [
+     {
+      "meal": "snack",
+      "grams": 40,
+      "startAt": "2026-11-24T15:00:00",
+      "endAt": "2026-11-24T15:00:00",
+      "labels": [
+       "Trà sữa"
+      ]
+     }
+    ],
+    "unknownSugarFoods": []
    },
    "supplements_heavy": {
+    "addedSugarG": 0.0,
     "pct": 0.0,
-    "mealsOver": []
+    "mealsOverLimit": [],
+    "unknownSugarFoods": []
    },
    "fortified_folic": {
+    "addedSugarG": 0.0,
     "pct": 0.0,
-    "mealsOver": []
+    "mealsOverLimit": [],
+    "unknownSugarFoods": []
+   },
+   "vitE_boundary": {
+    "addedSugarG": 0.0,
+    "pct": 0.0,
+    "mealsOverLimit": [],
+    "unknownSugarFoods": []
+   },
+   "snack_chain": {
+    "addedSugarG": 38,
+    "pct": 11.692307692307692,
+    "mealsOverLimit": [
+     {
+      "meal": "snack",
+      "grams": 12,
+      "startAt": "2026-11-24T15:00:00",
+      "endAt": "2026-11-24T15:50:00",
+      "labels": [
+       "Bánh 1",
+       "Kẹo 2",
+       "Nước 3"
+      ]
+     }
+    ],
+    "unknownSugarFoods": [
+     "Bánh mì nhãn cũ"
+    ]
    }
   },
   "ulAvg": {
-   "man30|1heavy6balanced": []
+   "man30|1heavy6balanced": [],
+   "man30|sparse2of7": [],
+   "man30|both2of7": [
+    {
+     "id": "vitE",
+     "kind": "sevenDayAverage",
+     "amount": 1045.4545454545455,
+     "ul": 1000,
+     "excess": 45.454545454545496,
+     "percentOver": 4.545454545454549,
+     "percentOfUl": 104.54545454545455,
+     "scope": "synthetic",
+     "dayCount": 2
+    }
+   ]
   },
-  "suggest": {
-   "none": "inactive",
-   "light": "inactive",
-   "moderate": "lowActive",
-   "mixed": "active",
-   "athlete": "veryActive"
+  "activity": {
+   "none": {
+    "moderateMinutes": 0.0,
+    "vigorousMinutes": 0.0,
+    "moderateEquivalentMinutes": 0.0,
+    "strengthDays": 0,
+    "suggestedLevel": "inactive"
+   },
+   "light": {
+    "moderateMinutes": 60.0,
+    "vigorousMinutes": 0.0,
+    "moderateEquivalentMinutes": 60.0,
+    "strengthDays": 0,
+    "suggestedLevel": "inactive"
+   },
+   "moderate": {
+    "moderateMinutes": 315.0,
+    "vigorousMinutes": 0.0,
+    "moderateEquivalentMinutes": 315.0,
+    "strengthDays": 0,
+    "suggestedLevel": "lowActive"
+   },
+   "mixed": {
+    "moderateMinutes": 180.0,
+    "vigorousMinutes": 120.0,
+    "moderateEquivalentMinutes": 420.0,
+    "strengthDays": 0,
+    "suggestedLevel": "active"
+   },
+   "athlete": {
+    "moderateMinutes": 75.0,
+    "vigorousMinutes": 480.0,
+    "moderateEquivalentMinutes": 1035.0,
+    "strengthDays": 2,
+    "suggestedLevel": "veryActive"
+   }
   },
   "workoutKcal": {
    "man30": 302.25,
    "man45_active": 362.70000000000005,
+   "man50": 302.25,
+   "man70": 288.3,
    "man72_very": 279.0,
+   "boy18": 279.0,
    "woman25_low": 241.8,
    "woman55": 269.70000000000005,
    "woman18": 223.20000000000002,
@@ -1652,6 +4514,2947 @@
    "preg_nobmi": 269.70000000000005,
    "lact_4m": 260.40000000000003,
    "lact_9m": 260.40000000000003
+  },
+  "dailyReport": {
+   "man30|heavy_sparse": {
+    "energyInKcal": 1800.0,
+    "eerKcal": 2450,
+    "eerNotComputed": null,
+    "energyOutWorkoutKcal": 156.0,
+    "macros": {
+     "protein": {
+      "grams": 70.0,
+      "pct": 15.730337078651685,
+      "status": "within"
+     },
+     "fat": {
+      "grams": 60.0,
+      "pct": 30.337078651685395,
+      "status": "within"
+     },
+     "carbohydrate": {
+      "grams": 240.0,
+      "pct": 53.93258426966292,
+      "status": "within"
+     }
+    },
+    "sugar": {
+     "addedSugarG": 0.0,
+     "pct": 0.0,
+     "mealsOverLimit": [],
+     "unknownSugarFoods": []
+    },
+    "nutrients": [
+     {
+      "id": "vitA",
+      "total": 3700.0,
+      "food": 700.0,
+      "fortified": 0.0,
+      "supplement": 3000.0,
+      "target": 900,
+      "ul": 3000,
+      "ulAmount": 3400.0,
+      "ulScope": "total",
+      "ulNutrientId": "retinol"
+     },
+     {
+      "id": "vitC",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 90,
+      "ul": 2000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "vitC"
+     },
+     {
+      "id": "vitD",
+      "total": 128.0,
+      "food": 3.0,
+      "fortified": 0.0,
+      "supplement": 125.0,
+      "target": 15,
+      "ul": 100,
+      "ulAmount": 128.0,
+      "ulScope": "total",
+      "ulNutrientId": "vitD"
+     },
+     {
+      "id": "vitE",
+      "total": 540.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 540.0,
+      "target": 15,
+      "ul": 1000,
+      "ulAmount": 1090.909090909091,
+      "ulScope": "synthetic",
+      "ulNutrientId": "vitE"
+     },
+     {
+      "id": "vitK",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 120,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "thiamin",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.2,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "riboflavin",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.3,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "niacin",
+      "total": 75.0,
+      "food": 20.0,
+      "fortified": 5.0,
+      "supplement": 50.0,
+      "target": 16,
+      "ul": 35,
+      "ulAmount": 55.0,
+      "ulScope": "synthetic",
+      "ulNutrientId": "niacin"
+     },
+     {
+      "id": "vitB6",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.3,
+      "ul": 100,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "vitB6"
+     },
+     {
+      "id": "folate",
+      "total": 340.0,
+      "food": 0.0,
+      "fortified": 340.0,
+      "supplement": 0.0,
+      "target": 400,
+      "ul": 1000,
+      "ulAmount": 200.0,
+      "ulScope": "total",
+      "ulNutrientId": "folicAcid"
+     },
+     {
+      "id": "vitB12",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 2.4,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "pantothenic",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 5,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "biotin",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 30,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "choline",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 550,
+      "ul": 3500,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "choline"
+     },
+     {
+      "id": "calcium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1000,
+      "ul": 2500,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "calcium"
+     },
+     {
+      "id": "chromium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 35,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "copper",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 900,
+      "ul": 10000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "copper"
+     },
+     {
+      "id": "fluoride",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 4,
+      "ul": 10,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "fluoride"
+     },
+     {
+      "id": "iodine",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 150,
+      "ul": 1100,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "iodine"
+     },
+     {
+      "id": "iron",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 8,
+      "ul": 45,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "iron"
+     },
+     {
+      "id": "magnesium",
+      "total": 700.0,
+      "food": 300.0,
+      "fortified": 0.0,
+      "supplement": 400.0,
+      "target": 400,
+      "ul": 350,
+      "ulAmount": 400.0,
+      "ulScope": "supplement",
+      "ulNutrientId": "magnesium"
+     },
+     {
+      "id": "manganese",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 2.3,
+      "ul": 11,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "manganese"
+     },
+     {
+      "id": "molybdenum",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 45,
+      "ul": 2000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "molybdenum"
+     },
+     {
+      "id": "phosphorus",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 700,
+      "ul": 4000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "phosphorus"
+     },
+     {
+      "id": "selenium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 55,
+      "ul": 400,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "selenium"
+     },
+     {
+      "id": "zinc",
+      "total": 39.0,
+      "food": 9.0,
+      "fortified": 0.0,
+      "supplement": 30.0,
+      "target": 11,
+      "ul": 40,
+      "ulAmount": 39.0,
+      "ulScope": "total",
+      "ulNutrientId": "zinc"
+     },
+     {
+      "id": "potassium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 3400,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "sodium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1500,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "chloride",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 2300,
+      "ul": 3600,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "chloride"
+     },
+     {
+      "id": "boron",
+      "total": 22.0,
+      "food": 22.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": null,
+      "ul": 20,
+      "ulAmount": 22.0,
+      "ulScope": "total",
+      "ulNutrientId": "boron"
+     },
+     {
+      "id": "nickel",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": null,
+      "ul": 1.0,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "nickel"
+     },
+     {
+      "id": "vanadium",
+      "total": 1.9,
+      "food": 1.9,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": null,
+      "ul": 1.8,
+      "ulAmount": 1.9,
+      "ulScope": "total",
+      "ulNutrientId": "vanadium"
+     },
+     {
+      "id": "water",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 3.7,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "carbohydrate",
+      "total": 240.0,
+      "food": 240.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 130,
+      "ul": null,
+      "ulAmount": 240.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "fiber",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 38,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "protein",
+      "total": 70.0,
+      "food": 70.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 52.0,
+      "ul": null,
+      "ulAmount": 70.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "linoleic",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 17,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "ala",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.6,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     }
+    ],
+    "ulFlags": [
+     {
+      "id": "niacin",
+      "kind": "daily",
+      "amount": 55.0,
+      "ul": 35,
+      "excess": 20.0,
+      "percentOver": 57.14285714285714,
+      "percentOfUl": 157.14285714285714,
+      "scope": "synthetic",
+      "dayCount": null
+     },
+     {
+      "id": "vitD",
+      "kind": "daily",
+      "amount": 128.0,
+      "ul": 100,
+      "excess": 28.0,
+      "percentOver": 28.000000000000004,
+      "percentOfUl": 128.0,
+      "scope": "total",
+      "dayCount": null
+     },
+     {
+      "id": "magnesium",
+      "kind": "daily",
+      "amount": 400.0,
+      "ul": 350,
+      "excess": 50.0,
+      "percentOver": 14.285714285714285,
+      "percentOfUl": 114.28571428571428,
+      "scope": "supplement",
+      "dayCount": null
+     },
+     {
+      "id": "retinol",
+      "kind": "daily",
+      "amount": 3400.0,
+      "ul": 3000,
+      "excess": 400.0,
+      "percentOver": 13.333333333333334,
+      "percentOfUl": 113.33333333333333,
+      "scope": "total",
+      "dayCount": null
+     },
+     {
+      "id": "boron",
+      "kind": "daily",
+      "amount": 22.0,
+      "ul": 20,
+      "excess": 2.0,
+      "percentOver": 10.0,
+      "percentOfUl": 110.00000000000001,
+      "scope": "total",
+      "dayCount": null
+     },
+     {
+      "id": "vitE",
+      "kind": "daily",
+      "amount": 1090.909090909091,
+      "ul": 1000,
+      "excess": 90.90909090909099,
+      "percentOver": 9.090909090909099,
+      "percentOfUl": 109.09090909090911,
+      "scope": "synthetic",
+      "dayCount": null
+     },
+     {
+      "id": "vanadium",
+      "kind": "daily",
+      "amount": 1.9,
+      "ul": 1.8,
+      "excess": 0.09999999999999987,
+      "percentOver": 5.555555555555548,
+      "percentOfUl": 105.55555555555556,
+      "scope": "total",
+      "dayCount": null
+     }
+    ],
+    "loggedDaysCount": 2,
+    "activity7Days": {
+     "moderateMinutes": 75.0,
+     "vigorousMinutes": 480.0,
+     "moderateEquivalentMinutes": 1035.0,
+     "strengthDays": 2,
+     "suggestedLevel": "veryActive"
+    }
+   },
+   "man30|heavy_both_flags": {
+    "energyInKcal": 1800.0,
+    "eerKcal": 2450,
+    "eerNotComputed": null,
+    "energyOutWorkoutKcal": 156.0,
+    "macros": {
+     "protein": {
+      "grams": 70.0,
+      "pct": 15.730337078651685,
+      "status": "within"
+     },
+     "fat": {
+      "grams": 60.0,
+      "pct": 30.337078651685395,
+      "status": "within"
+     },
+     "carbohydrate": {
+      "grams": 240.0,
+      "pct": 53.93258426966292,
+      "status": "within"
+     }
+    },
+    "sugar": {
+     "addedSugarG": 0.0,
+     "pct": 0.0,
+     "mealsOverLimit": [],
+     "unknownSugarFoods": []
+    },
+    "nutrients": [
+     {
+      "id": "vitA",
+      "total": 3700.0,
+      "food": 700.0,
+      "fortified": 0.0,
+      "supplement": 3000.0,
+      "target": 900,
+      "ul": 3000,
+      "ulAmount": 3400.0,
+      "ulScope": "total",
+      "ulNutrientId": "retinol"
+     },
+     {
+      "id": "vitC",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 90,
+      "ul": 2000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "vitC"
+     },
+     {
+      "id": "vitD",
+      "total": 128.0,
+      "food": 3.0,
+      "fortified": 0.0,
+      "supplement": 125.0,
+      "target": 15,
+      "ul": 100,
+      "ulAmount": 128.0,
+      "ulScope": "total",
+      "ulNutrientId": "vitD"
+     },
+     {
+      "id": "vitE",
+      "total": 540.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 540.0,
+      "target": 15,
+      "ul": 1000,
+      "ulAmount": 1090.909090909091,
+      "ulScope": "synthetic",
+      "ulNutrientId": "vitE"
+     },
+     {
+      "id": "vitK",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 120,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "thiamin",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.2,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "riboflavin",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.3,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "niacin",
+      "total": 75.0,
+      "food": 20.0,
+      "fortified": 5.0,
+      "supplement": 50.0,
+      "target": 16,
+      "ul": 35,
+      "ulAmount": 55.0,
+      "ulScope": "synthetic",
+      "ulNutrientId": "niacin"
+     },
+     {
+      "id": "vitB6",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.3,
+      "ul": 100,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "vitB6"
+     },
+     {
+      "id": "folate",
+      "total": 340.0,
+      "food": 0.0,
+      "fortified": 340.0,
+      "supplement": 0.0,
+      "target": 400,
+      "ul": 1000,
+      "ulAmount": 200.0,
+      "ulScope": "total",
+      "ulNutrientId": "folicAcid"
+     },
+     {
+      "id": "vitB12",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 2.4,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "pantothenic",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 5,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "biotin",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 30,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "choline",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 550,
+      "ul": 3500,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "choline"
+     },
+     {
+      "id": "calcium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1000,
+      "ul": 2500,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "calcium"
+     },
+     {
+      "id": "chromium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 35,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "copper",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 900,
+      "ul": 10000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "copper"
+     },
+     {
+      "id": "fluoride",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 4,
+      "ul": 10,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "fluoride"
+     },
+     {
+      "id": "iodine",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 150,
+      "ul": 1100,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "iodine"
+     },
+     {
+      "id": "iron",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 8,
+      "ul": 45,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "iron"
+     },
+     {
+      "id": "magnesium",
+      "total": 700.0,
+      "food": 300.0,
+      "fortified": 0.0,
+      "supplement": 400.0,
+      "target": 400,
+      "ul": 350,
+      "ulAmount": 400.0,
+      "ulScope": "supplement",
+      "ulNutrientId": "magnesium"
+     },
+     {
+      "id": "manganese",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 2.3,
+      "ul": 11,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "manganese"
+     },
+     {
+      "id": "molybdenum",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 45,
+      "ul": 2000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "molybdenum"
+     },
+     {
+      "id": "phosphorus",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 700,
+      "ul": 4000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "phosphorus"
+     },
+     {
+      "id": "selenium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 55,
+      "ul": 400,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "selenium"
+     },
+     {
+      "id": "zinc",
+      "total": 39.0,
+      "food": 9.0,
+      "fortified": 0.0,
+      "supplement": 30.0,
+      "target": 11,
+      "ul": 40,
+      "ulAmount": 39.0,
+      "ulScope": "total",
+      "ulNutrientId": "zinc"
+     },
+     {
+      "id": "potassium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 3400,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "sodium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1500,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "chloride",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 2300,
+      "ul": 3600,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "chloride"
+     },
+     {
+      "id": "boron",
+      "total": 22.0,
+      "food": 22.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": null,
+      "ul": 20,
+      "ulAmount": 22.0,
+      "ulScope": "total",
+      "ulNutrientId": "boron"
+     },
+     {
+      "id": "nickel",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": null,
+      "ul": 1.0,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "nickel"
+     },
+     {
+      "id": "vanadium",
+      "total": 1.9,
+      "food": 1.9,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": null,
+      "ul": 1.8,
+      "ulAmount": 1.9,
+      "ulScope": "total",
+      "ulNutrientId": "vanadium"
+     },
+     {
+      "id": "water",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 3.7,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "carbohydrate",
+      "total": 240.0,
+      "food": 240.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 130,
+      "ul": null,
+      "ulAmount": 240.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "fiber",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 38,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "protein",
+      "total": 70.0,
+      "food": 70.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 52.0,
+      "ul": null,
+      "ulAmount": 70.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "linoleic",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 17,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "ala",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.6,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     }
+    ],
+    "ulFlags": [
+     {
+      "id": "niacin",
+      "kind": "daily",
+      "amount": 55.0,
+      "ul": 35,
+      "excess": 20.0,
+      "percentOver": 57.14285714285714,
+      "percentOfUl": 157.14285714285714,
+      "scope": "synthetic",
+      "dayCount": null
+     },
+     {
+      "id": "vitD",
+      "kind": "daily",
+      "amount": 128.0,
+      "ul": 100,
+      "excess": 28.0,
+      "percentOver": 28.000000000000004,
+      "percentOfUl": 128.0,
+      "scope": "total",
+      "dayCount": null
+     },
+     {
+      "id": "magnesium",
+      "kind": "daily",
+      "amount": 400.0,
+      "ul": 350,
+      "excess": 50.0,
+      "percentOver": 14.285714285714285,
+      "percentOfUl": 114.28571428571428,
+      "scope": "supplement",
+      "dayCount": null
+     },
+     {
+      "id": "retinol",
+      "kind": "daily",
+      "amount": 3400.0,
+      "ul": 3000,
+      "excess": 400.0,
+      "percentOver": 13.333333333333334,
+      "percentOfUl": 113.33333333333333,
+      "scope": "total",
+      "dayCount": null
+     },
+     {
+      "id": "boron",
+      "kind": "daily",
+      "amount": 22.0,
+      "ul": 20,
+      "excess": 2.0,
+      "percentOver": 10.0,
+      "percentOfUl": 110.00000000000001,
+      "scope": "total",
+      "dayCount": null
+     },
+     {
+      "id": "vitE",
+      "kind": "daily",
+      "amount": 1090.909090909091,
+      "ul": 1000,
+      "excess": 90.90909090909099,
+      "percentOver": 9.090909090909099,
+      "percentOfUl": 109.09090909090911,
+      "scope": "synthetic",
+      "dayCount": null
+     },
+     {
+      "id": "vanadium",
+      "kind": "daily",
+      "amount": 1.9,
+      "ul": 1.8,
+      "excess": 0.09999999999999987,
+      "percentOver": 5.555555555555548,
+      "percentOfUl": 105.55555555555556,
+      "scope": "total",
+      "dayCount": null
+     },
+     {
+      "id": "vitE",
+      "kind": "sevenDayAverage",
+      "amount": 1045.4545454545455,
+      "ul": 1000,
+      "excess": 45.454545454545496,
+      "percentOver": 4.545454545454549,
+      "percentOfUl": 104.54545454545455,
+      "scope": "synthetic",
+      "dayCount": 2
+     }
+    ],
+    "loggedDaysCount": 2,
+    "activity7Days": {
+     "moderateMinutes": 75.0,
+     "vigorousMinutes": 480.0,
+     "moderateEquivalentMinutes": 1035.0,
+     "strengthDays": 2,
+     "suggestedLevel": "veryActive"
+    }
+   }
+  },
+  "averageReport": {
+   "man30|sparse2of7": {
+    "loggedDaysCount": 2,
+    "averageEnergyInKcal": 1875.0,
+    "eerKcal": 2450,
+    "eerNotComputed": null,
+    "macros": {
+     "protein": {
+      "grams": 80.0,
+      "pct": 17.218186709712132,
+      "status": "within"
+     },
+     "fat": {
+      "grams": 58.5,
+      "pct": 28.329297820823246,
+      "status": "within"
+     },
+     "carbohydrate": {
+      "grams": 253.0,
+      "pct": 54.45251546946462,
+      "status": "within"
+     }
+    },
+    "averageAddedSugarG": 6.5,
+    "addedSugarPercentEnergy": 1.3866666666666667,
+    "nutrients": [
+     {
+      "id": "vitA",
+      "total": 1850.0,
+      "food": 350.0,
+      "fortified": 0.0,
+      "supplement": 1500.0,
+      "target": 900,
+      "ul": 3000,
+      "ulAmount": 1700.0,
+      "ulScope": "total",
+      "ulNutrientId": "retinol"
+     },
+     {
+      "id": "vitC",
+      "total": 47.5,
+      "food": 47.5,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 90,
+      "ul": 2000,
+      "ulAmount": 47.5,
+      "ulScope": "total",
+      "ulNutrientId": "vitC"
+     },
+     {
+      "id": "vitD",
+      "total": 64.0,
+      "food": 1.5,
+      "fortified": 0.0,
+      "supplement": 62.5,
+      "target": 15,
+      "ul": 100,
+      "ulAmount": 64.0,
+      "ulScope": "total",
+      "ulNutrientId": "vitD"
+     },
+     {
+      "id": "vitE",
+      "total": 270.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 270.0,
+      "target": 15,
+      "ul": 1000,
+      "ulAmount": 545.4545454545455,
+      "ulScope": "synthetic",
+      "ulNutrientId": "vitE"
+     },
+     {
+      "id": "vitK",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 120,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "thiamin",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.2,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "riboflavin",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.3,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "niacin",
+      "total": 37.5,
+      "food": 10.0,
+      "fortified": 2.5,
+      "supplement": 25.0,
+      "target": 16,
+      "ul": 35,
+      "ulAmount": 27.5,
+      "ulScope": "synthetic",
+      "ulNutrientId": "niacin"
+     },
+     {
+      "id": "vitB6",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.3,
+      "ul": 100,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "vitB6"
+     },
+     {
+      "id": "folate",
+      "total": 170.0,
+      "food": 0.0,
+      "fortified": 170.0,
+      "supplement": 0.0,
+      "target": 400,
+      "ul": 1000,
+      "ulAmount": 100.0,
+      "ulScope": "total",
+      "ulNutrientId": "folicAcid"
+     },
+     {
+      "id": "vitB12",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 2.4,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "pantothenic",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 5,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "biotin",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 30,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "choline",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 550,
+      "ul": 3500,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "choline"
+     },
+     {
+      "id": "calcium",
+      "total": 375.0,
+      "food": 375.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1000,
+      "ul": 2500,
+      "ulAmount": 375.0,
+      "ulScope": "total",
+      "ulNutrientId": "calcium"
+     },
+     {
+      "id": "chromium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 35,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "copper",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 900,
+      "ul": 10000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "copper"
+     },
+     {
+      "id": "fluoride",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 4,
+      "ul": 10,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "fluoride"
+     },
+     {
+      "id": "iodine",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 150,
+      "ul": 1100,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "iodine"
+     },
+     {
+      "id": "iron",
+      "total": 6.0,
+      "food": 6.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 8,
+      "ul": 45,
+      "ulAmount": 6.0,
+      "ulScope": "total",
+      "ulNutrientId": "iron"
+     },
+     {
+      "id": "magnesium",
+      "total": 350.0,
+      "food": 150.0,
+      "fortified": 0.0,
+      "supplement": 200.0,
+      "target": 400,
+      "ul": 350,
+      "ulAmount": 200.0,
+      "ulScope": "supplement",
+      "ulNutrientId": "magnesium"
+     },
+     {
+      "id": "manganese",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 2.3,
+      "ul": 11,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "manganese"
+     },
+     {
+      "id": "molybdenum",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 45,
+      "ul": 2000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "molybdenum"
+     },
+     {
+      "id": "phosphorus",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 700,
+      "ul": 4000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "phosphorus"
+     },
+     {
+      "id": "selenium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 55,
+      "ul": 400,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "selenium"
+     },
+     {
+      "id": "zinc",
+      "total": 19.5,
+      "food": 4.5,
+      "fortified": 0.0,
+      "supplement": 15.0,
+      "target": 11,
+      "ul": 40,
+      "ulAmount": 19.5,
+      "ulScope": "total",
+      "ulNutrientId": "zinc"
+     },
+     {
+      "id": "potassium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 3400,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "sodium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1500,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "chloride",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 2300,
+      "ul": 3600,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "chloride"
+     },
+     {
+      "id": "boron",
+      "total": 11.0,
+      "food": 11.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": null,
+      "ul": 20,
+      "ulAmount": 11.0,
+      "ulScope": "total",
+      "ulNutrientId": "boron"
+     },
+     {
+      "id": "nickel",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": null,
+      "ul": 1.0,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "nickel"
+     },
+     {
+      "id": "vanadium",
+      "total": 0.95,
+      "food": 0.95,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": null,
+      "ul": 1.8,
+      "ulAmount": 0.95,
+      "ulScope": "total",
+      "ulNutrientId": "vanadium"
+     },
+     {
+      "id": "water",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 3.7,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "carbohydrate",
+      "total": 253.0,
+      "food": 253.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 130,
+      "ul": null,
+      "ulAmount": 253.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "fiber",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 38,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "protein",
+      "total": 80.0,
+      "food": 80.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 52.0,
+      "ul": null,
+      "ulAmount": 80.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "linoleic",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 17,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "ala",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.6,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     }
+    ],
+    "ulFlags": [],
+    "activity7Days": {
+     "moderateMinutes": 75.0,
+     "vigorousMinutes": 480.0,
+     "moderateEquivalentMinutes": 1035.0,
+     "strengthDays": 2,
+     "suggestedLevel": "veryActive"
+    }
+   },
+   "man30|both2of7": {
+    "loggedDaysCount": 2,
+    "averageEnergyInKcal": 1800.0,
+    "eerKcal": 2450,
+    "eerNotComputed": null,
+    "macros": {
+     "protein": {
+      "grams": 70.0,
+      "pct": 15.730337078651685,
+      "status": "within"
+     },
+     "fat": {
+      "grams": 60.0,
+      "pct": 30.337078651685395,
+      "status": "within"
+     },
+     "carbohydrate": {
+      "grams": 240.0,
+      "pct": 53.93258426966292,
+      "status": "within"
+     }
+    },
+    "averageAddedSugarG": 0.0,
+    "addedSugarPercentEnergy": 0.0,
+    "nutrients": [
+     {
+      "id": "vitA",
+      "total": 1850.0,
+      "food": 350.0,
+      "fortified": 0.0,
+      "supplement": 1500.0,
+      "target": 900,
+      "ul": 3000,
+      "ulAmount": 1700.0,
+      "ulScope": "total",
+      "ulNutrientId": "retinol"
+     },
+     {
+      "id": "vitC",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 90,
+      "ul": 2000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "vitC"
+     },
+     {
+      "id": "vitD",
+      "total": 64.0,
+      "food": 1.5,
+      "fortified": 0.0,
+      "supplement": 62.5,
+      "target": 15,
+      "ul": 100,
+      "ulAmount": 64.0,
+      "ulScope": "total",
+      "ulNutrientId": "vitD"
+     },
+     {
+      "id": "vitE",
+      "total": 517.5,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 517.5,
+      "target": 15,
+      "ul": 1000,
+      "ulAmount": 1045.4545454545455,
+      "ulScope": "synthetic",
+      "ulNutrientId": "vitE"
+     },
+     {
+      "id": "vitK",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 120,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "thiamin",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.2,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "riboflavin",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.3,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "niacin",
+      "total": 37.5,
+      "food": 10.0,
+      "fortified": 2.5,
+      "supplement": 25.0,
+      "target": 16,
+      "ul": 35,
+      "ulAmount": 27.5,
+      "ulScope": "synthetic",
+      "ulNutrientId": "niacin"
+     },
+     {
+      "id": "vitB6",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.3,
+      "ul": 100,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "vitB6"
+     },
+     {
+      "id": "folate",
+      "total": 170.0,
+      "food": 0.0,
+      "fortified": 170.0,
+      "supplement": 0.0,
+      "target": 400,
+      "ul": 1000,
+      "ulAmount": 100.0,
+      "ulScope": "total",
+      "ulNutrientId": "folicAcid"
+     },
+     {
+      "id": "vitB12",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 2.4,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "pantothenic",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 5,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "biotin",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 30,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "choline",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 550,
+      "ul": 3500,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "choline"
+     },
+     {
+      "id": "calcium",
+      "total": 1200.0,
+      "food": 1200.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1000,
+      "ul": 2500,
+      "ulAmount": 1200.0,
+      "ulScope": "total",
+      "ulNutrientId": "calcium"
+     },
+     {
+      "id": "chromium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 35,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "copper",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 900,
+      "ul": 10000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "copper"
+     },
+     {
+      "id": "fluoride",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 4,
+      "ul": 10,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "fluoride"
+     },
+     {
+      "id": "iodine",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 150,
+      "ul": 1100,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "iodine"
+     },
+     {
+      "id": "iron",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 8,
+      "ul": 45,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "iron"
+     },
+     {
+      "id": "magnesium",
+      "total": 350.0,
+      "food": 150.0,
+      "fortified": 0.0,
+      "supplement": 200.0,
+      "target": 400,
+      "ul": 350,
+      "ulAmount": 200.0,
+      "ulScope": "supplement",
+      "ulNutrientId": "magnesium"
+     },
+     {
+      "id": "manganese",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 2.3,
+      "ul": 11,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "manganese"
+     },
+     {
+      "id": "molybdenum",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 45,
+      "ul": 2000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "molybdenum"
+     },
+     {
+      "id": "phosphorus",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 700,
+      "ul": 4000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "phosphorus"
+     },
+     {
+      "id": "selenium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 55,
+      "ul": 400,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "selenium"
+     },
+     {
+      "id": "zinc",
+      "total": 19.5,
+      "food": 4.5,
+      "fortified": 0.0,
+      "supplement": 15.0,
+      "target": 11,
+      "ul": 40,
+      "ulAmount": 19.5,
+      "ulScope": "total",
+      "ulNutrientId": "zinc"
+     },
+     {
+      "id": "potassium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 3400,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "sodium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1500,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "chloride",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 2300,
+      "ul": 3600,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "chloride"
+     },
+     {
+      "id": "boron",
+      "total": 11.0,
+      "food": 11.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": null,
+      "ul": 20,
+      "ulAmount": 11.0,
+      "ulScope": "total",
+      "ulNutrientId": "boron"
+     },
+     {
+      "id": "nickel",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": null,
+      "ul": 1.0,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "nickel"
+     },
+     {
+      "id": "vanadium",
+      "total": 0.95,
+      "food": 0.95,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": null,
+      "ul": 1.8,
+      "ulAmount": 0.95,
+      "ulScope": "total",
+      "ulNutrientId": "vanadium"
+     },
+     {
+      "id": "water",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 3.7,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "carbohydrate",
+      "total": 240.0,
+      "food": 240.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 130,
+      "ul": null,
+      "ulAmount": 240.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "fiber",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 38,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "protein",
+      "total": 70.0,
+      "food": 70.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 52.0,
+      "ul": null,
+      "ulAmount": 70.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "linoleic",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 17,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "ala",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.6,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     }
+    ],
+    "ulFlags": [
+     {
+      "id": "vitE",
+      "kind": "sevenDayAverage",
+      "amount": 1045.4545454545455,
+      "ul": 1000,
+      "excess": 45.454545454545496,
+      "percentOver": 4.545454545454549,
+      "percentOfUl": 104.54545454545455,
+      "scope": "synthetic",
+      "dayCount": 2
+     }
+    ],
+    "activity7Days": {
+     "moderateMinutes": 75.0,
+     "vigorousMinutes": 480.0,
+     "moderateEquivalentMinutes": 1035.0,
+     "strengthDays": 2,
+     "suggestedLevel": "veryActive"
+    }
+   },
+   "man30|empty": {
+    "loggedDaysCount": 0,
+    "averageEnergyInKcal": 0.0,
+    "eerKcal": 2450,
+    "eerNotComputed": null,
+    "macros": {
+     "protein": {
+      "grams": 0.0,
+      "pct": 0.0,
+      "status": "below"
+     },
+     "fat": {
+      "grams": 0.0,
+      "pct": 0.0,
+      "status": "below"
+     },
+     "carbohydrate": {
+      "grams": 0.0,
+      "pct": 0.0,
+      "status": "below"
+     }
+    },
+    "averageAddedSugarG": 0.0,
+    "addedSugarPercentEnergy": 0.0,
+    "nutrients": [
+     {
+      "id": "vitA",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 900,
+      "ul": 3000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "retinol"
+     },
+     {
+      "id": "vitC",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 90,
+      "ul": 2000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "vitC"
+     },
+     {
+      "id": "vitD",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 15,
+      "ul": 100,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "vitD"
+     },
+     {
+      "id": "vitE",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 15,
+      "ul": 1000,
+      "ulAmount": 0.0,
+      "ulScope": "synthetic",
+      "ulNutrientId": "vitE"
+     },
+     {
+      "id": "vitK",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 120,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "thiamin",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.2,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "riboflavin",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.3,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "niacin",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 16,
+      "ul": 35,
+      "ulAmount": 0.0,
+      "ulScope": "synthetic",
+      "ulNutrientId": "niacin"
+     },
+     {
+      "id": "vitB6",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.3,
+      "ul": 100,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "vitB6"
+     },
+     {
+      "id": "folate",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 400,
+      "ul": 1000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "folicAcid"
+     },
+     {
+      "id": "vitB12",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 2.4,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "pantothenic",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 5,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "biotin",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 30,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "choline",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 550,
+      "ul": 3500,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "choline"
+     },
+     {
+      "id": "calcium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1000,
+      "ul": 2500,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "calcium"
+     },
+     {
+      "id": "chromium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 35,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "copper",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 900,
+      "ul": 10000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "copper"
+     },
+     {
+      "id": "fluoride",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 4,
+      "ul": 10,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "fluoride"
+     },
+     {
+      "id": "iodine",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 150,
+      "ul": 1100,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "iodine"
+     },
+     {
+      "id": "iron",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 8,
+      "ul": 45,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "iron"
+     },
+     {
+      "id": "magnesium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 400,
+      "ul": 350,
+      "ulAmount": 0.0,
+      "ulScope": "supplement",
+      "ulNutrientId": "magnesium"
+     },
+     {
+      "id": "manganese",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 2.3,
+      "ul": 11,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "manganese"
+     },
+     {
+      "id": "molybdenum",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 45,
+      "ul": 2000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "molybdenum"
+     },
+     {
+      "id": "phosphorus",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 700,
+      "ul": 4000,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "phosphorus"
+     },
+     {
+      "id": "selenium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 55,
+      "ul": 400,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "selenium"
+     },
+     {
+      "id": "zinc",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 11,
+      "ul": 40,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "zinc"
+     },
+     {
+      "id": "potassium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 3400,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "sodium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1500,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "chloride",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 2300,
+      "ul": 3600,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "chloride"
+     },
+     {
+      "id": "boron",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": null,
+      "ul": 20,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "boron"
+     },
+     {
+      "id": "nickel",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": null,
+      "ul": 1.0,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "nickel"
+     },
+     {
+      "id": "vanadium",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": null,
+      "ul": 1.8,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": "vanadium"
+     },
+     {
+      "id": "water",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 3.7,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "carbohydrate",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 130,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "fiber",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 38,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "protein",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 52.0,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "linoleic",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 17,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     },
+     {
+      "id": "ala",
+      "total": 0.0,
+      "food": 0.0,
+      "fortified": 0.0,
+      "supplement": 0.0,
+      "target": 1.6,
+      "ul": null,
+      "ulAmount": 0.0,
+      "ulScope": "total",
+      "ulNutrientId": null
+     }
+    ],
+    "ulFlags": [],
+    "activity7Days": {
+     "moderateMinutes": 0.0,
+     "vigorousMinutes": 0.0,
+     "moderateEquivalentMinutes": 0.0,
+     "strengthDays": 0,
+     "suggestedLevel": "inactive"
+    }
+   }
+  },
+  "convertLine": {
+   "row1_folic_ug": {
+    "amounts": {
+     "folate": 680.0,
+     "folicAcid": 400
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row1_folate_folic_mg": {
+    "amounts": {
+     "folate": 680.0,
+     "folicAcid": 400.0
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row2_dfe_with_folic": {
+    "amounts": {
+     "folate": 500,
+     "folicAcid": 200
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row2_natural_folate": {
+    "amounts": {
+     "folate": 300
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row3_dfe_unknown": {
+    "amounts": {
+     "folate": 680,
+     "folicAcid": 400.0
+    },
+    "ulAmounts": null,
+    "uncertain": true,
+    "amountsNotComputed": null
+   },
+   "row4_vitA_retinol_iu": {
+    "amounts": {
+     "vitA": 1500.0,
+     "retinol": 1500.0
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row5a_vitA_bc_supp_iu": {
+    "amounts": {
+     "vitA": 1500.0
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row5b_vitA_bc_food_iu_missing": {
+    "amounts": {},
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": "missingFoodBetaCaroteneFactor"
+   },
+   "row5b_vitA_bc_food_iu_ext": {
+    "amounts": {
+     "vitA": 250.0
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row6_vitA_rae_unknown": {
+    "amounts": {
+     "vitA": 750,
+     "retinol": 750
+    },
+    "ulAmounts": null,
+    "uncertain": true,
+    "amountsNotComputed": null
+   },
+   "row7_vitA_supp_iu_unknown": {
+    "amounts": {
+     "vitA": 900.0,
+     "retinol": 900.0
+    },
+    "ulAmounts": null,
+    "uncertain": true,
+    "amountsNotComputed": null
+   },
+   "row8_vitA_food_iu_unknown_missing": {
+    "amounts": {},
+    "ulAmounts": {
+     "retinol": 900.0
+    },
+    "uncertain": true,
+    "amountsNotComputed": "missingFoodBetaCaroteneFactor"
+   },
+   "row8_vitA_food_iu_unknown_ext": {
+    "amounts": {
+     "vitA": 150.0
+    },
+    "ulAmounts": {
+     "retinol": 900.0
+    },
+    "uncertain": true,
+    "amountsNotComputed": null
+   },
+   "row9_vitE_iu_nat": {
+    "amounts": {
+     "vitE": 268.0
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row9_vitE_iu_syn": {
+    "amounts": {
+     "vitE": 495.0
+    },
+    "ulAmounts": {
+     "vitE": 1000.0
+    },
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row9_vitE_iu_ester_d": {
+    "amounts": {
+     "vitE": 268.0
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row9_vitE_iu_ester_dl": {
+    "amounts": {
+     "vitE": 180.0
+    },
+    "ulAmounts": {
+     "vitE": 363.6363636363636
+    },
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row10_vitE_iu_unknown": {
+    "amounts": {
+     "vitE": 180.0
+    },
+    "ulAmounts": {
+     "vitE": 363.6363636363636
+    },
+    "uncertain": true,
+    "amountsNotComputed": null
+   },
+   "row11_vitE_mg_2r_nat": {
+    "amounts": {
+     "vitE": 15
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row11_vitE_mg_2r_syn": {
+    "amounts": {
+     "vitE": 15
+    },
+    "ulAmounts": {
+     "vitE": 30.303030303030305
+    },
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row12_vitE_mg_syn_mass": {
+    "amounts": {
+     "vitE": 14.85
+    },
+    "ulAmounts": {
+     "vitE": 30
+    },
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row13_vitE_mg_ester_missing": {
+    "amounts": {},
+    "ulAmounts": {
+     "vitE": 30
+    },
+    "uncertain": false,
+    "amountsNotComputed": "missingEsterRatio"
+   },
+   "row13_vitE_mg_ester_d_ext": {
+    "amounts": {
+     "vitE": 27.33050847457627
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row13_vitE_mg_ester_dl_ext": {
+    "amounts": {
+     "vitE": 12.048113207547171
+    },
+    "ulAmounts": {
+     "vitE": 24.339622641509436
+    },
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row14_vitE_mg_unknown": {
+    "amounts": {
+     "vitE": 7.425
+    },
+    "ulAmounts": {
+     "vitE": 30.303030303030305
+    },
+    "uncertain": true,
+    "amountsNotComputed": null
+   },
+   "row15_compound_missing": {
+    "amounts": {},
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": "missingCompoundRatio"
+   },
+   "row15_compound_calcium_ext": {
+    "amounts": {
+     "calcium": 500.0
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row15_compound_copper_ug_ext": {
+    "amounts": {
+     "copper": 500.0
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row16_compound_unknown_missing": {
+    "amounts": {},
+    "ulAmounts": {
+     "calcium": 500
+    },
+    "uncertain": true,
+    "amountsNotComputed": "missingCompoundRatio"
+   },
+   "row16_compound_unknown_ext": {
+    "amounts": {
+     "calcium": 105.0
+    },
+    "ulAmounts": {
+     "calcium": 500
+    },
+    "uncertain": true,
+    "amountsNotComputed": null
+   },
+   "row17_elemental_with_form": {
+    "amounts": {
+     "calcium": 500
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row17_vitD_iu": {
+    "amounts": {
+     "vitD": 25.0
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row17_niacin_mg": {
+    "amounts": {
+     "niacin": 20
+    },
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": null
+   },
+   "row18_unknown_nutrient": {
+    "amounts": {},
+    "ulAmounts": null,
+    "uncertain": false,
+    "amountsNotComputed": "missingNutrientInPack"
+   }
   }
  }
 }

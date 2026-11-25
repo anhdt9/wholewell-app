@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-"""Kiểm tra gói dữ liệu: cấu trúc + đối chiếu ô mẫu với bảng gốc NASEM.
+"""Kiểm tra gói dữ liệu: cấu trúc + đối chiếu ô mẫu với bảng gốc NASEM, FDA, PAG.
 
-Các ô "GOLDEN" dưới đây được nhập lại độc lập từ bảng gốc (lần nhập thứ hai),
+Các ô "GOLDEN" dưới đây được nhập lại độc lập từ nguồn gốc (lần nhập thứ hai),
 để bắt lỗi gõ nhầm trong build_pack.py.
 Chạy: python3 tools/verify_pack.py  (thoát mã 1 nếu có lỗi)
 """
 import json
 import pathlib
 import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 PACK = pathlib.Path(__file__).resolve().parent.parent / "packages/health_engine/assets/reference_pack.json"
 p = json.loads(PACK.read_text(encoding="utf-8"))
@@ -18,11 +21,48 @@ def err(msg):
     errors.append(msg)
 
 
-N = {n["id"]: n for n in p["nutrients"]}
-groups = p["groups"]
-src_ids = {s["id"] for s in p["sources"]}
+if p.get("schema") != 2:
+    err(f"schema {p.get('schema')} != 2")
+if not (isinstance(p.get("minProfileAge"), int) and p["minProfileAge"] >= 1):
+    err(f"minProfileAge không hợp lệ: {p.get('minProfileAge')}")
 
-# ---- cấu trúc
+N = {n["id"]: n for n in p["nutrients"]}
+groups_meta = p["groups"]
+groups = [g["id"] for g in groups_meta]
+src_ids = {s["id"] for s in p["sources"]}
+amdr_keys = {k for k in p["amdr"] if k != "source"}
+
+# ---- cấu trúc nhóm tuổi
+if len(groups) != len(set(groups)):
+    err("trùng id nhóm")
+by_ss = {}
+for g in groups_meta:
+    if g["sex"] not in ("male", "female", None):
+        err(f"{g['id']}: sex lạ {g['sex']}")
+    if g["stage"] not in ("none", "pregnant", "lactating"):
+        err(f"{g['id']}: stage lạ {g['stage']}")
+    if g["amdrKey"] not in amdr_keys:
+        err(f"{g['id']}: amdrKey {g['amdrKey']} không có trong amdr")
+    if g["eerType"] not in ("none", "adult", "pregnant", "lactating"):
+        err(f"{g['id']}: eerType lạ {g['eerType']}")
+    if g["proteinPerKg"] is not None and not (isinstance(g["proteinPerKg"], (int, float)) and g["proteinPerKg"] > 0):
+        err(f"{g['id']}: proteinPerKg không hợp lệ")
+    if not isinstance(g["minAge"], int) or g["minAge"] < 0:
+        err(f"{g['id']}: minAge không hợp lệ")
+    if g["maxAge"] is not None and (not isinstance(g["maxAge"], int) or g["maxAge"] < g["minAge"]):
+        err(f"{g['id']}: maxAge < minAge")
+    by_ss.setdefault((g["sex"], g["stage"]), []).append(g)
+
+for key, lst in by_ss.items():
+    lst.sort(key=lambda x: x["minAge"])
+    for i in range(len(lst) - 1):
+        cur, nxt = lst[i], lst[i + 1]
+        if cur["maxAge"] is None or nxt["minAge"] != cur["maxAge"] + 1:
+            err(f"nhóm {key}: khoảng tuổi hở hoặc chồng giữa {cur['id']} và {nxt['id']}")
+    if lst[-1]["maxAge"] is not None:
+        err(f"nhóm {key}: nhóm cuối {lst[-1]['id']} phải có maxAge = null")
+
+# ---- cấu trúc chất dinh dưỡng
 if len(N) != len(p["nutrients"]):
     err("trùng id chất")
 for n in p["nutrients"]:
@@ -44,12 +84,37 @@ for n in p["nutrients"]:
     if n["ulScope"] not in ("total", "supplement", "synthetic"):
         err(f"{n['id']}: ulScope lạ")
 
+# ---- quy đổi đơn vị & nguồn
+uc = p["unitConversions"]
+for sk in ("source", "ulSource", "ulCrossRefSource"):
+    if uc.get(sk) not in src_ids:
+        err(f"unitConversions.{sk} không có trong sources")
+if uc.get("vitE_ul_natural_IU_to_mg") != 0.67:
+    err(f"vitE_ul_natural_IU_to_mg sai: {uc.get('vitE_ul_natural_IU_to_mg')}")
+if abs(uc.get("vitE_ul_synthetic_IU_to_mg", 0) - 1000 / 1100) > 1e-12:
+    err(f"vitE_ul_synthetic_IU_to_mg sai: {uc.get('vitE_ul_synthetic_IU_to_mg')}")
+if not isinstance(uc.get("vitaminEEsters"), dict) or not isinstance(uc.get("compounds"), dict):
+    err("vitaminEEsters và compounds phải là dict")
+
+# ---- vận động & PAG
+pag = p["pag"]
+if pag.get("source") not in src_ids:
+    err("pag.source không có trong sources")
+if pag.get("weeklyModerateMin") != [150, 300] or pag.get("weeklyVigorousMin") != [75, 150]:
+    err(f"PAG weekly min sai: {pag}")
+if pag.get("strengthDaysPerWeek") != 2:
+    err(f"PAG strengthDaysPerWeek sai: {pag.get('strengthDaysPerWeek')}")
+
 codes = [a["code"] for a in p["activities"]]
 if len(codes) != len(set(codes)):
     err("trùng mã hoạt động")
 for a in p["activities"]:
     if not (1.0 <= a["met"] <= 25):
         err(f"MET lạ {a}")
+    if not isinstance(a.get("muscleStrengthening"), bool):
+        err(f"hoạt động thiếu muscleStrengthening bool: {a}")
+    if a.get("source") not in src_ids:
+        err(f"hoạt động nguồn lạ: {a}")
 
 # ---- GOLDEN: nhập lại từ bảng NASEM (tóm tắt DRI, 25353 ch.28)
 GOLDEN_TARGET = {
@@ -97,8 +162,8 @@ for nid in ("vitK", "thiamin", "riboflavin", "vitB12", "pantothenic", "biotin", 
     if N[nid]["ul"]:
         err(f"{nid} không có UL theo NASEM nhưng gói lại có")
 for nid in ("vanadium",):
-    if "p19_30" in N[nid]["ul"]:
-        err("vanadi không có UL khi mang thai")
+    if "p19_30" in N[nid]["ul"] or "l19_30" in N[nid]["ul"] or "m14_18" in N[nid]["ul"]:
+        err("vanadi không có UL ở 14-18, mang thai, cho con bú")
 if N["magnesium"]["ulScope"] != "supplement":
     err("UL magie phải chỉ tính nguồn bổ sung")
 for nid in ("niacin", "vitE"):
@@ -121,15 +186,26 @@ if p["amdr"]["adult19"] != {"protein": [10, 35], "fat": [20, 35], "carbohydrate"
     err("AMDR sai")
 if p["addedSugar"] != {"source": "dga_2025_2030", "maxGramsPerMeal": 10}:
     err("giới hạn đường bổ sung sai")
-acts = {a["code"]: a["met"] for a in p["activities"]}
+
+acts = {a["code"]: a for a in p["activities"]}
 for code, met in {"12050": 9.3, "17200": 4.8, "01030": 8.0, "15030": 5.5, "18240": 5.8, "02214": 11.0}.items():
-    if acts.get(code) != met:
+    if acts.get(code, {}).get("met") != met:
         err(f"MET {code} sai")
+
+GOLDEN_STRENGTH = {
+    "02054": True, "02050": True, "02024": True, "02022": True,
+    "02020": True, "02035": True, "02040": True,
+    "02160": False, "02105": False, "02150": False, "02101": False,
+    "12050": False, "17200": False,
+}
+for code, want in GOLDEN_STRENGTH.items():
+    if acts.get(code, {}).get("muscleStrengthening") is not want:
+        err(f"muscleStrengthening {code} sai")
 
 if errors:
     print("LỖI:")
     for x in errors:
         print(" -", x)
     sys.exit(1)
-print(f"OK: {len(N)} chất, {len(groups)} nhóm, {len(acts)} hoạt động; "
-      f"{len(GOLDEN_TARGET)} ô mục tiêu và {len(GOLDEN_UL)} ô UL khớp bảng gốc")
+print(f"OK: schema {p['schema']}, {len(N)} chất, {len(groups)} nhóm, {len(acts)} hoạt động; "
+      f"{len(GOLDEN_TARGET)} ô mục tiêu, {len(GOLDEN_UL)} ô UL và {len(GOLDEN_STRENGTH)} cờ tăng cơ khớp")

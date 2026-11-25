@@ -1,24 +1,169 @@
 {
- "schema": 1,
- "version": "2026.11.24-1",
- "retrieved": "2026-11-22",
+ "schema": 2,
+ "version": "2026.11.25-1",
+ "retrieved": "2026-11-25",
+ "minProfileAge": 18,
  "groups": [
-  "m14_18",
-  "m19_30",
-  "m31_50",
-  "m51_70",
-  "m71",
-  "f14_18",
-  "f19_30",
-  "f31_50",
-  "f51_70",
-  "f71",
-  "p14_18",
-  "p19_30",
-  "p31_50",
-  "l14_18",
-  "l19_30",
-  "l31_50"
+  {
+   "id": "m14_18",
+   "sex": "male",
+   "stage": "none",
+   "minAge": 14,
+   "maxAge": 18,
+   "amdrKey": "age4_18",
+   "proteinPerKg": null,
+   "eerType": "none"
+  },
+  {
+   "id": "m19_30",
+   "sex": "male",
+   "stage": "none",
+   "minAge": 19,
+   "maxAge": 30,
+   "amdrKey": "adult19",
+   "proteinPerKg": 0.8,
+   "eerType": "adult"
+  },
+  {
+   "id": "m31_50",
+   "sex": "male",
+   "stage": "none",
+   "minAge": 31,
+   "maxAge": 50,
+   "amdrKey": "adult19",
+   "proteinPerKg": 0.8,
+   "eerType": "adult"
+  },
+  {
+   "id": "m51_70",
+   "sex": "male",
+   "stage": "none",
+   "minAge": 51,
+   "maxAge": 70,
+   "amdrKey": "adult19",
+   "proteinPerKg": 0.8,
+   "eerType": "adult"
+  },
+  {
+   "id": "m71",
+   "sex": "male",
+   "stage": "none",
+   "minAge": 71,
+   "maxAge": null,
+   "amdrKey": "adult19",
+   "proteinPerKg": 0.8,
+   "eerType": "adult"
+  },
+  {
+   "id": "f14_18",
+   "sex": "female",
+   "stage": "none",
+   "minAge": 14,
+   "maxAge": 18,
+   "amdrKey": "age4_18",
+   "proteinPerKg": null,
+   "eerType": "none"
+  },
+  {
+   "id": "f19_30",
+   "sex": "female",
+   "stage": "none",
+   "minAge": 19,
+   "maxAge": 30,
+   "amdrKey": "adult19",
+   "proteinPerKg": 0.8,
+   "eerType": "adult"
+  },
+  {
+   "id": "f31_50",
+   "sex": "female",
+   "stage": "none",
+   "minAge": 31,
+   "maxAge": 50,
+   "amdrKey": "adult19",
+   "proteinPerKg": 0.8,
+   "eerType": "adult"
+  },
+  {
+   "id": "f51_70",
+   "sex": "female",
+   "stage": "none",
+   "minAge": 51,
+   "maxAge": 70,
+   "amdrKey": "adult19",
+   "proteinPerKg": 0.8,
+   "eerType": "adult"
+  },
+  {
+   "id": "f71",
+   "sex": "female",
+   "stage": "none",
+   "minAge": 71,
+   "maxAge": null,
+   "amdrKey": "adult19",
+   "proteinPerKg": 0.8,
+   "eerType": "adult"
+  },
+  {
+   "id": "p14_18",
+   "sex": "female",
+   "stage": "pregnant",
+   "minAge": 14,
+   "maxAge": 18,
+   "amdrKey": "age4_18",
+   "proteinPerKg": null,
+   "eerType": "none"
+  },
+  {
+   "id": "p19_30",
+   "sex": "female",
+   "stage": "pregnant",
+   "minAge": 19,
+   "maxAge": 30,
+   "amdrKey": "adult19",
+   "proteinPerKg": null,
+   "eerType": "pregnant"
+  },
+  {
+   "id": "p31_50",
+   "sex": "female",
+   "stage": "pregnant",
+   "minAge": 31,
+   "maxAge": null,
+   "amdrKey": "adult19",
+   "proteinPerKg": null,
+   "eerType": "pregnant"
+  },
+  {
+   "id": "l14_18",
+   "sex": "female",
+   "stage": "lactating",
+   "minAge": 14,
+   "maxAge": 18,
+   "amdrKey": "age4_18",
+   "proteinPerKg": null,
+   "eerType": "none"
+  },
+  {
+   "id": "l19_30",
+   "sex": "female",
+   "stage": "lactating",
+   "minAge": 19,
+   "maxAge": 30,
+   "amdrKey": "adult19",
+   "proteinPerKg": null,
+   "eerType": "lactating"
+  },
+  {
+   "id": "l31_50",
+   "sex": "female",
+   "stage": "lactating",
+   "minAge": 31,
+   "maxAge": null,
+   "amdrKey": "adult19",
+   "proteinPerKg": null,
+   "eerType": "lactating"
+  }
  ],
  "sources": [
   {
@@ -26,7 +171,8 @@
    "label": "A",
    "title": "NASEM – bảng tóm tắt DRI (RDA, AI, UL), cập nhật 2019",
    "url": "https://www.nationalacademies.org/read/25353/chapter/28",
-   "via": "https://ods.od.nih.gov/healthinformation/nutrientrecommendations/"
+   "via": "https://ods.od.nih.gov/healthinformation/nutrientrecommendations/",
+   "retrieved": "2026-11-25"
   },
   {
    "id": "nasem_energy_2023",
@@ -41,10 +187,32 @@
    "url": "https://nap.nationalacademies.org/read/10490/chapter/13"
   },
   {
+   "id": "nasem_vit_e_2000",
+   "label": "A",
+   "title": "NASEM – Dietary Reference Intakes for Vitamin C, Vitamin E, Selenium, and Carotenoids (2000), Ch. 6 & Ch. 9",
+   "url": "https://www.nationalacademies.org/read/9810/chapter/8",
+   "retrieved": "2026-11-25"
+  },
+  {
+   "id": "nih_ods_vit_e",
+   "label": "A",
+   "title": "NIH ODS – Vitamin E Fact Sheet for Health Professionals (cập nhật 19/10/2026)",
+   "url": "https://ods.od.nih.gov/factsheets/VitaminE-HealthProfessional/",
+   "retrieved": "2026-11-25"
+  },
+  {
+   "id": "fda_unit_conversions",
+   "label": "A",
+   "title": "FDA – Guidance for Industry: Converting Units of Measure for Folate, Niacin, and Vitamins A, D, and E (2019); 21 CFR 101.9, 101.36",
+   "url": "https://www.fda.gov/media/129863/download",
+   "retrieved": "2026-11-25"
+  },
+  {
    "id": "dga_2025_2030",
    "label": "A",
    "title": "USDA, HHS – Dietary Guidelines for Americans 2025–2030",
-   "url": "https://cdn.realfood.gov/DGA.pdf"
+   "url": "https://cdn.realfood.gov/DGA.pdf",
+   "retrieved": "2026-11-24"
   },
   {
    "id": "compendium_2024",
@@ -55,8 +223,9 @@
   {
    "id": "pag_2",
    "label": "A",
-   "title": "HHS – Physical Activity Guidelines for Americans, bản 2",
-   "url": "https://health.gov/sites/default/files/2019-09/Physical_Activity_Guidelines_2nd_edition.pdf"
+   "title": "HHS – Physical Activity Guidelines for Americans, bản 2 (2018)",
+   "url": "https://odphp.health.gov/sites/default/files/2019-09/Physical_Activity_Guidelines_2nd_edition.pdf",
+   "retrieved": "2026-11-25"
   }
  ],
  "nutrients": [
@@ -1553,14 +1722,8 @@
    "source": "nasem_dri_summary"
   }
  ],
- "proteinPerKg": {
-  "adult19": 0.8,
-  "source": "nasem_dri_summary",
-  "note": "RDA 0,8 g/kg cân nặng/ngày cho người 19+; nhóm khác dùng g/ngày trong bảng"
- },
  "eer": {
   "source": "nasem_energy_2023",
-  "minAge": 19,
   "palRanges19": {
    "inactive": [
     1.0,
@@ -1729,342 +1892,399 @@
    "code": "17152",
    "met": 2.8,
    "nameVi": "Đi bộ chậm (3,2–3,9 km/h)",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "17170",
    "met": 3.0,
    "nameVi": "Đi bộ 4 km/h",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "17190",
    "met": 3.8,
    "nameVi": "Đi bộ vừa (4,5–5,5 km/h)",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "17200",
    "met": 4.8,
    "nameVi": "Đi bộ nhanh (5,6–6,3 km/h)",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "17220",
    "met": 5.5,
    "nameVi": "Đi bộ rất nhanh (6,4–7,1 km/h)",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "17230",
    "met": 7.0,
    "nameVi": "Đi bộ rất nhanh (7,2–7,9 km/h)",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "17160",
    "met": 3.5,
    "nameVi": "Đi dạo",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "17080",
    "met": 6.0,
    "nameVi": "Leo núi, đi bộ đường dài",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "17131",
    "met": 6.8,
    "nameVi": "Leo cầu thang",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "12020",
    "met": 7.5,
    "nameVi": "Chạy bộ nhẹ (tự chọn tốc độ)",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "12028",
    "met": 6.5,
    "nameVi": "Chạy 6,4–6,8 km/h",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "12030",
    "met": 8.5,
    "nameVi": "Chạy 8,0–8,4 km/h",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "12050",
    "met": 9.3,
    "nameVi": "Chạy 9,7–10,1 km/h",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "12060",
    "met": 10.5,
    "nameVi": "Chạy 10,8 km/h",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "12070",
    "met": 11.0,
    "nameVi": "Chạy 11,3 km/h",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "12090",
    "met": 12.0,
    "nameVi": "Chạy 12,9 km/h",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "12110",
    "met": 13.0,
    "nameVi": "Chạy 14,5 km/h",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "12120",
    "met": 14.8,
    "nameVi": "Chạy 16,1 km/h",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "01010",
    "met": 4.0,
    "nameVi": "Đạp xe nhẹ (dưới 16 km/h)",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "01011",
    "met": 6.8,
    "nameVi": "Đạp xe đi làm",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "01020",
    "met": 6.8,
    "nameVi": "Đạp xe 16–19 km/h",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "01030",
    "met": 8.0,
    "nameVi": "Đạp xe 19–22 km/h",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "01040",
    "met": 10.0,
    "nameVi": "Đạp xe 22–25 km/h",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "01214",
    "met": 4.0,
    "nameVi": "Xe đạp tập, nhẹ",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "01220",
    "met": 6.0,
    "nameVi": "Xe đạp tập, vừa",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "01236",
    "met": 10.8,
    "nameVi": "Xe đạp tập, mạnh",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "02054",
    "met": 3.5,
    "nameVi": "Tập tạ nhiều bài, 8–15 lần",
+   "muscleStrengthening": true,
    "source": "compendium_2024"
   },
   {
    "code": "02050",
    "met": 6.0,
    "nameVi": "Tập tạ nặng, thể hình",
+   "muscleStrengthening": true,
    "source": "compendium_2024"
   },
   {
    "code": "02024",
    "met": 2.8,
    "nameVi": "Bài tập thể lực nhẹ (plank, gập bụng)",
+   "muscleStrengthening": true,
    "source": "compendium_2024"
   },
   {
    "code": "02022",
    "met": 3.8,
    "nameVi": "Bài tập thể lực vừa (chống đẩy, lunge)",
+   "muscleStrengthening": true,
    "source": "compendium_2024"
   },
   {
    "code": "02020",
    "met": 7.5,
    "nameVi": "Bài tập thể lực mạnh (burpee, nhảy)",
+   "muscleStrengthening": true,
    "source": "compendium_2024"
   },
   {
    "code": "02150",
    "met": 2.3,
    "nameVi": "Yoga Hatha",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "02160",
    "met": 4.0,
    "nameVi": "Power yoga",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "02105",
    "met": 2.8,
    "nameVi": "Pilates",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "02048",
    "met": 5.0,
    "nameVi": "Máy elliptical, vừa",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "02071",
    "met": 5.0,
    "nameVi": "Máy chèo thuyền, vừa",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "02035",
    "met": 5.0,
    "nameVi": "Circuit training, vừa",
+   "muscleStrengthening": true,
    "source": "compendium_2024"
   },
   {
    "code": "02040",
    "met": 7.5,
    "nameVi": "Circuit training, mạnh",
+   "muscleStrengthening": true,
    "source": "compendium_2024"
   },
   {
    "code": "02210",
    "met": 7.0,
    "nameVi": "HIIT, vừa",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "02214",
    "met": 11.0,
    "nameVi": "HIIT, mạnh",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "02068",
    "met": 11.0,
    "nameVi": "Nhảy dây",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "02101",
    "met": 2.3,
    "nameVi": "Giãn cơ nhẹ",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "15030",
    "met": 5.5,
    "nameVi": "Cầu lông phong trào",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "15020",
    "met": 7.0,
    "nameVi": "Cầu lông thi đấu",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "15610",
    "met": 7.0,
    "nameVi": "Bóng đá phong trào",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "15605",
    "met": 9.5,
    "nameVi": "Bóng đá thi đấu",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "15055",
    "met": 7.5,
    "nameVi": "Bóng rổ",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "15720",
    "met": 3.0,
    "nameVi": "Bóng chuyền phong trào",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "15675",
    "met": 6.8,
    "nameVi": "Quần vợt, vừa",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "15660",
    "met": 4.0,
    "nameVi": "Bóng bàn",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "15670",
    "met": 3.3,
    "nameVi": "Thái cực quyền, khí công",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "18240",
    "met": 5.8,
    "nameVi": "Bơi sải chậm",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "18230",
    "met": 9.8,
    "nameVi": "Bơi sải nhanh",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "18310",
    "met": 6.0,
    "nameVi": "Bơi thư giãn",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "18265",
    "met": 5.3,
    "nameVi": "Bơi ếch",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "18255",
    "met": 4.8,
    "nameVi": "Bơi ngửa",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   },
   {
    "code": "18355",
    "met": 5.5,
    "nameVi": "Thể dục dưới nước",
+   "muscleStrengthening": false,
    "source": "compendium_2024"
   }
  ],
@@ -2095,10 +2315,17 @@
   "vitD_IU_to_ug": 0.025,
   "vitA_retinol_IU_to_ug_RAE": 0.3,
   "vitA_supplemental_betacarotene_IU_to_ug_RAE": 0.3,
+  "vitA_food_betacarotene_IU_to_ug_RAE": null,
   "vitE_natural_IU_to_mg": 0.67,
   "vitE_synthetic_IU_to_mg": 0.45,
+  "vitE_ul_natural_IU_to_mg": 0.67,
+  "vitE_ul_synthetic_IU_to_mg": 0.9090909090909091,
   "folicAcid_ug_to_ug_DFE": 1.7,
-  "source": "nasem_dri_summary",
-  "note": "hệ số đổi IU theo NIH ODS (fact sheet vitamin A, D, E)"
+  "vitaminEEsters": {},
+  "compounds": {},
+  "source": "fda_unit_conversions",
+  "ulSource": "nih_ods_vit_e",
+  "ulCrossRefSource": "nasem_vit_e_2000",
+  "note": "Hệ số RDA/IU theo FDA 2019 (21 CFR 101.9/101.36); hệ số UL vitamin E theo NASEM 2000 Bảng 9-1 và NIH ODS (tra 25/11/2026)"
  }
 }

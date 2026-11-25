@@ -1,6 +1,7 @@
-/// Năng lượng: EER (NASEM 2023), calo vận động theo MET, phút vận động.
+/// Năng lượng: EER (NASEM 2023), calo vận động theo MET, phút vận động và tập tăng cơ.
 library;
 
+import 'dri.dart';
 import 'models.dart';
 import 'reference_pack.dart';
 
@@ -23,39 +24,41 @@ double _tee(EerCoef c, Profile p, {int gestWeek = 0}) =>
 
 /// Mục tiêu calo mỗi ngày (kcal, làm tròn số nguyên). Mức giữ cân.
 ///
-/// Ném [NotComputed] khi chưa đủ dữ liệu hoặc ngoài phạm vi đã kiểm chứng
-/// (dưới 19 tuổi; mang thai quý 2–3 thiếu tuần thai hoặc BMI trước mang thai).
+/// Ném [NotComputed] khi nhóm tuổi trong gói chưa hỗ trợ EER hoặc thiếu tuần thai/BMI.
 int eerKcal(ReferencePack pack, Profile p) {
-  if (p.ageYears < pack.eerMinAge) {
+  final group = driGroupDefFor(pack, p);
+  if (group.eerType == EerType.none) {
     throw const NotComputed(NotComputedReason.eerUnderAge19);
   }
   final level = _levelKey(p.activityLevel);
   final sexKey = p.sex == Sex.male ? 'male' : 'female';
   final double kcal;
-  if (p.stage == LifeStage.pregnant) {
-    final week = p.gestationWeek;
-    if (week == null) throw const NotComputed(NotComputedReason.missingGestationWeek);
-    if (week <= pack.firstTrimesterMaxWeek) {
-      // Quý 1: dùng phương trình nữ không mang thai, bỏ qua năng lượng tích lũy.
-      kcal = _tee(pack.eerAdult['female']![level]!, p);
-    } else {
-      final bmi = p.prePregnancyBmi;
-      if (bmi == null) throw const NotComputed(NotComputedReason.missingPrePregnancyBmi);
-      kcal = _tee(pack.eerPregnancy[level]!, p, gestWeek: week) +
-          pack.pregnancyDeposition[_bmiKey(bmi)]!;
-    }
-  } else if (p.stage == LifeStage.lactating) {
-    final base = _tee(pack.eerAdult['female']![level]!, p);
-    final m = p.monthsPostpartum ?? 0;
-    if (m <= 6) {
-      kcal = base + pack.lactation0to6.milk - pack.lactation0to6.mobilization;
-    } else if (m <= 12) {
-      kcal = base + pack.lactation7to12.milk - pack.lactation7to12.mobilization;
-    } else {
-      kcal = base;
-    }
-  } else {
-    kcal = _tee(pack.eerAdult[sexKey]![level]!, p);
+  switch (group.eerType) {
+    case EerType.none:
+      throw const NotComputed(NotComputedReason.eerUnderAge19);
+    case EerType.pregnant:
+      final week = p.gestationWeek;
+      if (week == null) throw const NotComputed(NotComputedReason.missingGestationWeek);
+      if (week <= pack.firstTrimesterMaxWeek) {
+        kcal = _tee(pack.eerAdult['female']![level]!, p);
+      } else {
+        final bmi = p.prePregnancyBmi;
+        if (bmi == null) throw const NotComputed(NotComputedReason.missingPrePregnancyBmi);
+        kcal = _tee(pack.eerPregnancy[level]!, p, gestWeek: week) +
+            pack.pregnancyDeposition[_bmiKey(bmi)]!;
+      }
+    case EerType.lactating:
+      final base = _tee(pack.eerAdult['female']![level]!, p);
+      final m = p.monthsPostpartum ?? 0;
+      if (m <= 6) {
+        kcal = base + pack.lactation0to6.milk - pack.lactation0to6.mobilization;
+      } else if (m <= 12) {
+        kcal = base + pack.lactation7to12.milk - pack.lactation7to12.mobilization;
+      } else {
+        kcal = base;
+      }
+    case EerType.adult:
+      kcal = _tee(pack.eerAdult[sexKey]![level]!, p);
   }
   return kcal.round();
 }
@@ -76,10 +79,32 @@ class ActivityMinutes {
   double get moderateEquivalent => moderate + 2 * vigorous;
 }
 
-/// Phút vận động vừa (3–5,9 MET) và mạnh (từ 6 MET).
-ActivityMinutes activityMinutes(ReferencePack pack, Iterable<WorkoutEntry> ws) {
+class ActivitySummary {
+  final double moderateMinutes;
+  final double vigorousMinutes;
+  final double moderateEquivalentMinutes;
+  final int strengthDays;
+  final Range weeklyModerateMinRange;
+  final int strengthDaysTarget;
+  final ActivityLevel suggestedLevel;
+
+  const ActivitySummary({
+    required this.moderateMinutes,
+    required this.vigorousMinutes,
+    required this.moderateEquivalentMinutes,
+    required this.strengthDays,
+    required this.weeklyModerateMinRange,
+    required this.strengthDaysTarget,
+    required this.suggestedLevel,
+  });
+}
+
+/// Tổng hợp vận động theo Physical Activity Guidelines (phút vừa, mạnh, tương đương vừa, số ngày tập tăng cơ).
+ActivitySummary activitySummary(ReferencePack pack, Iterable<WorkoutEntry> workouts, {int days = 7}) {
   var mod = 0.0, vig = 0.0;
-  for (final w in ws) {
+  final strengthDayKeys = <String>{};
+  var anonIndex = 0;
+  for (final w in workouts) {
     final a = pack.activities[w.activityCode];
     if (a == null) continue;
     if (a.met >= pack.vigorousMinMet) {
@@ -87,19 +112,42 @@ ActivityMinutes activityMinutes(ReferencePack pack, Iterable<WorkoutEntry> ws) {
     } else if (a.met >= pack.moderateMinMet) {
       mod += w.minutes;
     }
+    if (a.muscleStrengthening) {
+      strengthDayKeys.add(w.day ?? '__anon_${anonIndex++}');
+    }
   }
-  return ActivityMinutes(mod, vig);
+  final eq = mod + 2 * vig;
+  final perDay = eq / days;
+  final t = pack.palSuggestionThresholds;
+  final ActivityLevel suggested;
+  if (perDay >= t['veryActive']!) {
+    suggested = ActivityLevel.veryActive;
+  } else if (perDay >= t['active']!) {
+    suggested = ActivityLevel.active;
+  } else if (perDay >= t['lowActive']!) {
+    suggested = ActivityLevel.lowActive;
+  } else {
+    suggested = ActivityLevel.inactive;
+  }
+  return ActivitySummary(
+    moderateMinutes: mod,
+    vigorousMinutes: vig,
+    moderateEquivalentMinutes: eq,
+    strengthDays: strengthDayKeys.length,
+    weeklyModerateMinRange: pack.weeklyModerateMin,
+    strengthDaysTarget: pack.strengthDaysPerWeek,
+    suggestedLevel: suggested,
+  );
+}
+
+/// Phút vận động vừa (3–5,9 MET) và mạnh (từ 6 MET).
+ActivityMinutes activityMinutes(ReferencePack pack, Iterable<WorkoutEntry> ws) {
+  final s = activitySummary(pack, ws);
+  return ActivityMinutes(s.moderateMinutes, s.vigorousMinutes);
 }
 
 /// Gợi ý mức vận động cho EER từ buổi tập trong [days] ngày gần nhất.
 ///
 /// Đây là quy tắc của app (không phải chuẩn NASEM); người dùng tự xác nhận.
-ActivityLevel suggestActivityLevel(ReferencePack pack, Iterable<WorkoutEntry> lastDays,
-    {int days = 7}) {
-  final perDay = activityMinutes(pack, lastDays).moderateEquivalent / days;
-  final t = pack.palSuggestionThresholds;
-  if (perDay >= t['veryActive']!) return ActivityLevel.veryActive;
-  if (perDay >= t['active']!) return ActivityLevel.active;
-  if (perDay >= t['lowActive']!) return ActivityLevel.lowActive;
-  return ActivityLevel.inactive;
-}
+ActivityLevel suggestActivityLevel(ReferencePack pack, Iterable<WorkoutEntry> lastDays, {int days = 7}) =>
+    activitySummary(pack, lastDays, days: days).suggestedLevel;
