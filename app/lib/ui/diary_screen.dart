@@ -1,25 +1,33 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
 import '../state/diary_controller.dart';
-import 'add_food_screen.dart';
-import 'add_supplement_screen.dart';
-import 'add_workout_screen.dart';
 import 'common/common_widgets.dart';
 import 'common/food_feedback_sheet.dart';
 import 'edit_food_screen.dart';
 import 'labels.dart';
+import 'water_log_screen.dart';
 
-class DiaryScreen extends StatelessWidget {
+enum _DiaryFilter { all, food, supplement, water, workout }
+
+class DiaryScreen extends StatefulWidget {
   const DiaryScreen({super.key});
+
+  @override
+  State<DiaryScreen> createState() => _DiaryScreenState();
+}
+
+class _DiaryScreenState extends State<DiaryScreen> {
+  _DiaryFilter _filter = _DiaryFilter.all;
 
   @override
   Widget build(BuildContext context) {
     final state = AppScope.of(context);
     final foods = state.diary.todayFoods;
     final doses = state.diary.todayDoses;
+    final waters = state.todayWaters;
     final ws = state.todayWorkouts;
     final t = Theme.of(context).textTheme;
 
@@ -35,10 +43,35 @@ class DiaryScreen extends StatelessWidget {
       }
     }
 
-    return Scaffold(
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
+    final showFood = _filter == _DiaryFilter.all || _filter == _DiaryFilter.food;
+    final showSupplement = _filter == _DiaryFilter.all || _filter == _DiaryFilter.supplement;
+    final showWater = _filter == _DiaryFilter.all || _filter == _DiaryFilter.water;
+    final showWorkout = _filter == _DiaryFilter.all || _filter == _DiaryFilter.workout;
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final item in const [
+              (_DiaryFilter.all, 'Tất cả'),
+              (_DiaryFilter.food, 'Món ăn'),
+              (_DiaryFilter.supplement, 'Bổ sung'),
+              (_DiaryFilter.water, 'Nước'),
+              (_DiaryFilter.workout, 'Buổi tập'),
+            ])
+              ChoiceChip(
+                label: Text(item.$2),
+                selected: _filter == item.$1,
+                materialTapTargetSize: MaterialTapTargetSize.padded,
+                onSelected: (_) => setState(() => _filter = item.$1),
+              ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (showFood) ...[
           Text('Món ăn', style: t.titleMedium),
           if (foods.isEmpty)
             const Padding(padding: EdgeInsets.all(8), child: Text('Chưa có món nào.')),
@@ -55,6 +88,8 @@ class DiaryScreen extends StatelessWidget {
               onTap: () => editFood(f),
             ),
           const SizedBox(height: 16),
+        ],
+        if (showSupplement) ...[
           Text('Bổ sung', style: t.titleMedium),
           if (doses.isEmpty)
             const Padding(padding: EdgeInsets.all(8), child: Text('Chưa có.')),
@@ -70,6 +105,32 @@ class DiaryScreen extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 16),
+        ],
+        if (showWater) ...[
+          Text(
+            waters.isEmpty
+                ? 'Nước'
+                : 'Nước  ${fmtWaterMl(state.diary.todayWaterTotalMl)} ml (${waters.length} lần)',
+            style: t.titleMedium,
+          ),
+          if (waters.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(
+                _filter == _DiaryFilter.water ? 'Chưa ghi nước trong ngày này.' : 'Chưa ghi nước.',
+              ),
+            ),
+          for (final w in waters)
+            EntryTile(
+              leadingIcon: Icons.water_drop_outlined,
+              title: '${fmtWaterMl(w.ml)} ml',
+              subtitle: 'Nước uống',
+              timeText: fmtTime24(w.at),
+              onTap: () => open(WaterLogScreen(editing: w)),
+            ),
+          const SizedBox(height: 16),
+        ],
+        if (showWorkout) ...[
           Text('Buổi tập', style: t.titleMedium),
           if (ws.isEmpty) const Padding(padding: EdgeInsets.all(8), child: Text('Chưa có.')),
           for (var i = 0; i < ws.length; i++)
@@ -80,39 +141,14 @@ class DiaryScreen extends StatelessWidget {
                 leading: const Icon(Icons.directions_run),
                 title: Text(state.pack.activities[ws[i].activityCode]?.nameVi ?? ws[i].activityCode),
                 subtitle: Text('${fmt(ws[i].minutes)} phút'
-                    '${state.hideCalories ? '' : ' · ${workoutKcal(state.pack, state.profile!, ws[i]).round()} kcal'}'),
+                    '${state.hideCalories || state.profile == null ? '' : ' · ${workoutKcal(state.pack, state.profile!, ws[i]).round()} kcal'}'),
               ),
             ),
-          const SizedBox(height: 80),
-          Text('Chạm món ăn để sửa; vuốt sang bên để xóa bổ sung hoặc buổi tập.', style: t.bodySmall),
+          const SizedBox(height: 16),
         ],
-      ),
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          FloatingActionButton.extended(
-            heroTag: 'food',
-            icon: const Icon(Icons.restaurant),
-            label: const Text('Món ăn'),
-            onPressed: () => open(const AddFoodScreen()),
-          ),
-          const SizedBox(height: 8),
-          FloatingActionButton.extended(
-            heroTag: 'supp',
-            icon: const Icon(Icons.medication),
-            label: const Text('Bổ sung'),
-            onPressed: () => open(const AddSupplementScreen()),
-          ),
-          const SizedBox(height: 8),
-          FloatingActionButton.extended(
-            heroTag: 'workout',
-            icon: const Icon(Icons.directions_run),
-            label: const Text('Buổi tập'),
-            onPressed: () => open(const AddWorkoutScreen()),
-          ),
-        ],
-      ),
+        Text('Chạm món ăn hoặc lần uống nước để sửa; vuốt sang bên để xóa bổ sung hoặc buổi tập.',
+            style: t.bodySmall),
+      ],
     );
   }
 

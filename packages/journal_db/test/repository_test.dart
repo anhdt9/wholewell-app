@@ -458,4 +458,104 @@ void main() {
       'weight_kg', 'activity_level', 'updated_at',
     });
   });
+
+  group('việc 4: đồng ý, thận trọng, tự tăng tuổi và nước', () {
+    test('nâng cấp khung-tam-0: giữ nguyên món ăn, ghi consent mới và caution', () async {
+      final dir = tempDir();
+      final o = testOpener(dir, FakeSecureKeyStore());
+      final repo = switch (await o.createNew(
+        const ConsentInput(contentVersion: 'khung-tam-0', ageYears: 35, caution: false),
+      )) {
+        Opened(:final repository) => repository,
+        _ => fail('tạo CSDL thất bại'),
+      };
+      await repo.saveProfile(_profile);
+      await repo.saveHideCalories(true);
+      await repo.saveOnboardingStep(OnboardingStep.done);
+      await repo.addFood(food('Bánh mì', testNow(), [line('energyKcal', 300)]));
+
+      expect((await repo.latestHealthConsent())?.contentVersion, 'khung-tam-0');
+      await repo.upgradeHealthConsent(
+        contentVersion: mvpConsentVersion,
+        ageYears: 36,
+        caution: true,
+      );
+
+      final latest = await repo.latestHealthConsent();
+      expect(latest?.contentVersion, mvpConsentVersion);
+      final cp = await repo.loadConsentProfile();
+      expect(cp?.ageYears, 36);
+      expect(cp?.caution, isTrue);
+      expect(await repo.foodsOn(dayKey(testNow())), hasLength(1));
+      expect(await _count(repo, "SELECT count(*) FROM consents WHERE withdrawn_at IS NULL"), 1);
+      await repo.close();
+    });
+
+    test('saveProfileWithCaution cập nhật caution và giữ đúng cột bảo mật', () async {
+      final repo = await createdRepo(testOpener(tempDir(), FakeSecureKeyStore()));
+      await repo.saveProfileWithCaution(_profile, caution: true);
+      expect((await repo.loadConsentProfile())?.caution, isTrue);
+      await repo.saveProfileWithCaution(_profile, caution: false);
+      expect((await repo.loadConsentProfile())?.caution, isFalse);
+      await repo.close();
+    });
+
+    test('tự tăng tuổi computeAgeBump và bumpAgeIfDue qua 0, 11, 12, 25 tháng và 29/02', () async {
+      expect(computeAgeBump(30, '2025-11-25', DateTime(2025, 11, 25)), isNull);
+      expect(computeAgeBump(30, '2025-11-25', DateTime(2026, 10, 25)), isNull);
+      expect(computeAgeBump(30, '2025-11-25', DateTime(2026, 11, 24)), isNull);
+      expect(
+        computeAgeBump(30, '2025-11-25', DateTime(2026, 11, 25)),
+        (newAgeYears: 31, newEnteredOn: '2026-11-25'),
+      );
+      expect(
+        computeAgeBump(30, '2024-10-01', DateTime(2026, 11, 25)),
+        (newAgeYears: 32, newEnteredOn: '2026-10-01'),
+      );
+      expect(computeAgeBump(30, '2024-02-29', DateTime(2025, 2, 27)), isNull);
+      expect(
+        computeAgeBump(30, '2024-02-29', DateTime(2025, 2, 28)),
+        (newAgeYears: 31, newEnteredOn: '2025-02-28'),
+      );
+
+      final dir = tempDir();
+      final repo = DriftJournalRepository(
+        (await createdRepo(testOpener(dir, FakeSecureKeyStore()))).db,
+        now: () => DateTime(2024, 10, 1),
+      );
+      await repo.db.customUpdate(
+        "UPDATE profile SET age_years = 30, age_entered_on = '2024-10-01' WHERE id = 1",
+      );
+      expect(await repo.bumpAgeIfDue(DateTime(2025, 9, 30)), isNull);
+      expect(await repo.loadAgeBumpedNotice(), isNull);
+      expect(await repo.bumpAgeIfDue(DateTime(2026, 11, 25)), 32);
+      expect(await repo.loadAgeBumpedNotice(), 32);
+      expect((await repo.loadConsentProfile())?.ageEnteredOn, '2026-10-01');
+      await repo.clearAgeBumpedNotice();
+      expect(await repo.loadAgeBumpedNotice(), isNull);
+      await repo.close();
+    });
+
+    test('nước uống: thêm, sửa, xóa, waterBetween, lastWaterMl trên cả Drift và InMemory', () async {
+      final driftRepo = await createdRepo(testOpener(tempDir(), FakeSecureKeyStore()));
+      final memRepo = InMemoryJournalRepository(initialConsentVersion: null);
+      expect(await memRepo.latestHealthConsent(), isNull);
+
+      for (final repo in <JournalRepository>[driftRepo, memRepo]) {
+        expect(await repo.lastWaterMl(), isNull);
+        final d1 = DateTime(2026, 11, 24, 9, 0);
+        final d2 = DateTime(2026, 11, 25, 14, 5);
+        final id1 = await repo.addWater(d1, 150);
+        final id2 = await repo.addWater(d2, 350);
+        expect(await repo.lastWaterMl(), 350);
+        await repo.updateWater(id2, at: DateTime(2026, 11, 25, 14, 30), ml: 500);
+        expect(await repo.lastWaterMl(), 500);
+        expect((await repo.waterOn('2026-11-25')).single.ml, 500);
+        expect(await repo.waterBetween('2026-11-24', '2026-11-25'), hasLength(2));
+        await repo.deleteWater(id1);
+        expect(await repo.waterOn('2026-11-24'), isEmpty);
+        await repo.close();
+      }
+    });
+  });
 }

@@ -1,7 +1,58 @@
 /// Kiểu dữ liệu đọc, ghi của nhật ký.
 library;
 
+import 'dart:math' show min;
+
 import 'package:health_engine/health_engine.dart';
+
+/// Phiên bản đồng ý chính thức của MVP (khác `'khung-tam-0'` của khung tạm).
+const mvpConsentVersion = 'mvp-1';
+
+/// Khóa `ui_state` lưu tuổi mới khi hệ thống vừa tự cộng thêm 12 tháng.
+const ageBumpedNoticeKey = 'age_bumped_notice';
+
+/// Trạng thái đồng ý `health_data` đang hiệu lực (`withdrawn_at IS NULL`).
+class HealthConsentStatus {
+  final String contentVersion;
+  final DateTime grantedAt;
+  const HealthConsentStatus(this.contentVersion, this.grantedAt);
+}
+
+/// Tuổi, ngày nhập tuổi và câu trả lời chế độ thận trọng trong bảng `profile`.
+typedef ConsentProfileState = ({
+  int ageYears,
+  String ageEnteredOn,
+  bool caution,
+  String cautionAnsweredOn,
+});
+
+/// Kết quả tính tự tăng tuổi theo chu kỳ 12 tháng dương lịch kể từ `age_entered_on`.
+({int newAgeYears, String newEnteredOn})? computeAgeBump(
+    int currentAge, String enteredOn, DateTime now) {
+  final parts = enteredOn.split('-');
+  if (parts.length != 3) return null;
+  final baseYear = int.tryParse(parts[0]);
+  final baseMonth = int.tryParse(parts[1]);
+  final baseDay = int.tryParse(parts[2]);
+  if (baseYear == null || baseMonth == null || baseDay == null) return null;
+
+  final localNow = now.toLocal();
+  final today = DateTime(localNow.year, localNow.month, localNow.day);
+
+  DateTime anniversary(int addYears) {
+    final ty = baseYear + addYears;
+    final maxDay = DateTime(ty, baseMonth + 1, 0).day;
+    return DateTime(ty, baseMonth, min(baseDay, maxDay));
+  }
+
+  var cycles = 0;
+  while (currentAge + cycles < 120 && !anniversary(cycles + 1).isAfter(today)) {
+    cycles++;
+  }
+  if (cycles == 0) return null;
+  final nextAnchor = anniversary(cycles);
+  return (newAgeYears: currentAge + cycles, newEnteredOn: dayKey(nextAnchor));
+}
 
 enum OnboardingStep { bodyProfile, calorieDisplay, done }
 

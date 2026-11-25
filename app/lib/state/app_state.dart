@@ -6,7 +6,8 @@ import 'package:journal_db/journal_db.dart';
 import 'db_session_controller.dart';
 import 'diary_controller.dart';
 
-export 'db_session_controller.dart' show DataStatus, DbSessionController, khungTamConsentVersion;
+export 'db_session_controller.dart'
+    show DataStatus, DbSessionController, SessionStage, khungTamConsentVersion;
 export 'diary_controller.dart' show DayJournalData, DiaryController, FoodLogFeedback;
 export 'label_food_builder.dart';
 
@@ -52,8 +53,12 @@ class AppState extends ChangeNotifier {
   }
 
   DataStatus get status => session.status;
+  SessionStage get stage => session.stage;
   Profile? get profile => diary.profile;
   bool get hideCalories => diary.hideCalories;
+  bool get caution => diary.caution;
+  double get lastWaterMl => diary.lastWaterMl;
+  int? get ageBumpedNotice => diary.ageBumpedNotice;
   DateTime get day => diary.day;
   bool get saveFailed => diary.saveFailed;
   bool get readFailed => diary.readFailed;
@@ -62,15 +67,84 @@ class AppState extends ChangeNotifier {
 
   List<IntakeItem> get todayItems => diary.todayItems;
   List<WorkoutEntry> get todayWorkouts => diary.todayWorkoutEntries;
+  List<WaterRecord> get todayWaters => diary.todayWaters;
 
   void clearSaveFailed() => diary.clearSaveFailed();
   void clearReadFailed() => diary.clearReadFailed();
 
   Future<void> start() => session.start(onReady: () async {
         diary.attachRepository(session.repo);
+        if (session.stage == SessionStage.ready) {
+          await diary.checkAgeBumpOnReady();
+        }
         await _ensureFoodLibrary();
         await diary.reload();
       });
+
+  /// Kiểm tra tự tăng tuổi khi app quay lại tiền cảnh ở trạng thái đã sẵn sàng.
+  Future<void> onAppResume() async {
+    if (status == DataStatus.waitingForUnlock || status == DataStatus.lowStorage) {
+      await start();
+      return;
+    }
+    if (status == DataStatus.ready && stage == SessionStage.ready) {
+      await diary.checkAgeBumpOnReady();
+    }
+  }
+
+  /// Hoàn tất bước Đồng ý lần đầu (chỉ tạo khóa & CSDL sau khi người dùng đồng ý).
+  Future<bool> completeFirstConsent({required int ageYears, required bool caution}) async {
+    try {
+      final created = await session.ensureCreatedForConsent(
+        ConsentInput(contentVersion: mvpConsentVersion, ageYears: ageYears, caution: caution),
+        onAlreadyExists: start,
+      );
+      if (!created) return false;
+      diary.attachRepository(session.repo);
+      await _ensureFoodLibrary();
+      await diary.reload();
+      return true;
+    } on StorageFullException {
+      return false;
+    } on JournalStorageException {
+      return false;
+    }
+  }
+
+  /// Hoàn tất nâng cấp từ `khung-tam-0`.
+  Future<bool> completeUpgradeConsent({required int ageYears, required bool caution}) async {
+    try {
+      final ok = await session.upgradeHealthConsent(ageYears: ageYears, caution: caution);
+      if (!ok) return false;
+      if (session.stage == SessionStage.ready) {
+        await diary.checkAgeBumpOnReady();
+      }
+      await _ensureFoodLibrary();
+      await diary.reload();
+      return true;
+    } on StorageFullException {
+      return false;
+    } on JournalStorageException {
+      return false;
+    }
+  }
+
+  Future<int?> consentAgeYears() async => (await session.repo?.loadConsentProfile())?.ageYears;
+
+  Future<bool> saveOnboardingBodyProfile(Profile p) async {
+    final ok = await diary.saveBodyProfileForOnboarding(p);
+    if (!ok) return false;
+    session.setStage(SessionStage.onboardingCalorieDisplay);
+    return true;
+  }
+
+  Future<bool> completeCalorieDisplayOnboarding(bool hideCalories) async {
+    final ok = await diary.completeCalorieDisplayOnboarding(hideCalories);
+    if (!ok) return false;
+    session.setStage(SessionStage.ready);
+    await diary.checkAgeBumpOnReady();
+    return true;
+  }
 
   Future<void> _ensureFoodLibrary() async {
     if (diary.foodLibrary != null || diary.foodLibraryBroken || _openFoodLibrary == null) return;
@@ -89,18 +163,21 @@ class AppState extends ChangeNotifier {
         diary.clear();
       });
 
+  Future<void> withdrawConsentAndReset() => startOver();
+
   Future<void> reload() => diary.reload();
 
+  /// Lưu hồ sơ tương thích các test cũ dùng [InMemoryJournalRepository].
   Future<void> saveProfile(Profile p) async {
-    final created = await session.ensureCreatedForConsent(
-      ConsentInput(contentVersion: khungTamConsentVersion, ageYears: p.ageYears, caution: false),
-      onAlreadyExists: start,
-    );
-    if (!created) return;
+    if (session.repo == null) return;
     diary.attachRepository(session.repo);
     await _ensureFoodLibrary();
     await diary.saveProfileAndDone(p);
+    session.setStage(SessionStage.ready);
   }
+
+  Future<bool> saveProfileFromSettings(Profile p, {required bool caution}) =>
+      diary.saveProfileFromSettings(p, caution: caution);
 
   Future<void> setHideCalories(bool v) => diary.setHideCalories(v);
   Future<void> setDay(DateTime d) => diary.setDay(d);

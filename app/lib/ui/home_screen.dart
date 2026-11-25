@@ -1,8 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
+import 'common/log_sheet.dart';
 import 'diary_screen.dart';
-import 'profile_screen.dart';
+import 'me_screen.dart';
 import 'today_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -18,10 +19,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final state = AppScope.of(context);
     final d = state.day;
-    final pages = [const TodayScreen(), const DiaryScreen(), const ProfileScreen()];
+    const pages = [TodayScreen(), DiaryScreen(), MeScreen()];
     return Scaffold(
       appBar: AppBar(
-        title: Text(['Tổng kết', 'Nhật ký', 'Hồ sơ'][_tab]),
+        title: Text(['Hôm nay', 'Nhật ký', 'Tôi'][_tab]),
         actions: [
           if (_tab < 2)
             TextButton.icon(
@@ -40,13 +41,21 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: pages[_tab],
+      floatingActionButton: _tab < 2
+          ? FloatingActionButton.extended(
+              heroTag: 'log_sheet',
+              icon: const Icon(Icons.add),
+              label: const Text('Ghi'),
+              onPressed: () => showLogSheet(context),
+            )
+          : null,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,
         onDestinationSelected: (i) => setState(() => _tab = i),
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.insights), label: 'Tổng kết'),
+          NavigationDestination(icon: Icon(Icons.insights), label: 'Hôm nay'),
           NavigationDestination(icon: Icon(Icons.restaurant), label: 'Nhật ký'),
-          NavigationDestination(icon: Icon(Icons.person), label: 'Hồ sơ'),
+          NavigationDestination(icon: Icon(Icons.person), label: 'Tôi'),
         ],
       ),
     );

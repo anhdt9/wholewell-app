@@ -35,12 +35,48 @@ String macroLabel(String m) => switch (m) {
       _ => m,
     };
 
-String reasonLabel(NotComputedReason r) => switch (r) {
-      NotComputedReason.eerUnderAge19 =>
-        'Chưa có mục tiêu calo cho người dưới 19 tuổi (phương trình chưa kiểm chứng xong).',
-      NotComputedReason.missingGestationWeek => 'Nhập tuần thai để tính mục tiêu calo.',
-      NotComputedReason.missingPrePregnancyBmi =>
-        'Chọn cân nặng trước khi mang thai (thiếu cân, bình thường…) để tính mục tiêu calo.',
+const cautionBannerMessage =
+    'Các mức trong app dành cho người khỏe mạnh. Với tình trạng của bạn, mức phù hợp có thể khác; hãy hỏi bác sĩ.';
+
+/// Bộ nhãn đổi đồng bộ giữa chế độ thường và chế độ thận trọng (`docs/design/eligibility-caution-water.md`).
+class CautionLabels {
+  final bool caution;
+  const CautionLabels({required this.caution});
+
+  String get calorieGoalLabel => caution ? 'Mức calo tham chiếu' : 'Mục tiêu calo';
+
+  String get calorieGoalExplainer => caution
+      ? 'Mức calo tham chiếu là mức giữ cân, đã tính mức vận động trong hồ sơ.'
+      : 'Mục tiêu là mức giữ cân, đã tính mức vận động trong hồ sơ.';
+
+  String get macroShareSubtitle =>
+      caution ? 'So với khoảng tham chiếu (% năng lượng)' : 'So với khoảng khuyến nghị (% năng lượng)';
+
+  String get nutrientsSubtitle => caution
+      ? '% so với mức tham chiếu hằng ngày. "ước tính" là chất chưa có mức tham chiếu chính thức.'
+      : '% so với mức khuyến nghị hằng ngày. "ước tính" là chất chưa có mức khuyến nghị chính thức.';
+
+  String get underTargetFilter => caution ? 'Dưới mức tham chiếu' : 'Dưới mức khuyến nghị';
+
+  String get under19NoCalorieGoal =>
+      caution ? 'Chưa có mức calo tham chiếu cho người 18 tuổi.' : 'Chưa có mục tiêu calo cho người 18 tuổi.';
+
+  String recommendedGrams(String grams) =>
+      caution ? 'mức tham chiếu $grams' : 'mức khuyến nghị $grams';
+
+  String percentTarget(int pct, [String? amount]) {
+    final base = caution ? '$pct% mức tham chiếu' : '$pct% mức khuyến nghị';
+    return amount == null ? base : '$base $amount';
+  }
+}
+
+String reasonLabel(NotComputedReason r, {bool caution = false}) => switch (r) {
+      NotComputedReason.eerUnderAge19 => CautionLabels(caution: caution).under19NoCalorieGoal,
+      NotComputedReason.missingGestationWeek =>
+        caution ? 'Nhập tuần thai để tính mức calo tham chiếu.' : 'Nhập tuần thai để tính mục tiêu calo.',
+      NotComputedReason.missingPrePregnancyBmi => caution
+          ? 'Chọn cân nặng trước khi mang thai (thiếu cân, bình thường…) để tính mức calo tham chiếu.'
+          : 'Chọn cân nặng trước khi mang thai (thiếu cân, bình thường…) để tính mục tiêu calo.',
       NotComputedReason.ageUnsupported => 'App dành cho người từ 18 tuổi.',
       NotComputedReason.unknownActivity => 'Hoạt động không có trong danh sách.',
       NotComputedReason.missingFoodBetaCaroteneFactor => 'Chưa có hệ số beta-caroten trong thức ăn.',
@@ -61,4 +97,19 @@ String fmt(double v) {
   if (v >= 100) return v.round().toString();
   if (v >= 10) return v.toStringAsFixed(1).replaceAll('.0', '').replaceAll('.', ',');
   return v.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '').replaceAll('.', ',');
+}
+
+/// Định dạng lượng nước `ml` theo chuẩn số Việt Nam (dấu chấm hàng nghìn, vd. `1.250`).
+String fmtWaterMl(double ml) {
+  if ((ml - ml.roundToDouble()).abs() < 0.05) {
+    final s = ml.round().toString();
+    final buf = StringBuffer();
+    for (var i = 0; i < s.length; i++) {
+      final posFromRight = s.length - i;
+      if (i > 0 && posFromRight % 3 == 0 && s[i - 1] != '-') buf.write('.');
+      buf.write(s[i]);
+    }
+    return buf.toString();
+  }
+  return ml.toStringAsFixed(1).replaceAll('.', ',');
 }

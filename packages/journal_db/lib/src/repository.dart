@@ -14,9 +14,19 @@ abstract interface class JournalRepository {
   /// Phát sau mỗi lần ghi.
   Stream<void> get changes;
 
+  Future<HealthConsentStatus?> latestHealthConsent();
+  Future<ConsentProfileState?> loadConsentProfile();
+  Future<void> upgradeHealthConsent({
+    required String contentVersion,
+    required int ageYears,
+    required bool caution,
+  });
+
   /// null khi chưa xong Hồ sơ cơ thể (giới tính, chiều cao, cân nặng còn trống).
   Future<Profile?> loadProfile();
   Future<void> saveProfile(Profile p);
+  Future<void> saveProfileWithCaution(Profile p, {required bool caution});
+  Future<int?> bumpAgeIfDue(DateTime now);
 
   /// null: chưa chọn (màn Hiển thị calo không chọn sẵn).
   Future<bool?> loadHideCalories();
@@ -24,6 +34,19 @@ abstract interface class JournalRepository {
 
   Future<OnboardingStep> loadOnboardingStep();
   Future<void> saveOnboardingStep(OnboardingStep s);
+
+  Future<String?> getUiState(String key);
+  Future<void> setUiState(String key, String value);
+  Future<void> deleteUiState(String key);
+  Future<int?> loadAgeBumpedNotice();
+  Future<void> clearAgeBumpedNotice();
+
+  Future<int> addWater(DateTime at, double ml);
+  Future<void> updateWater(int id, {required DateTime at, required double ml});
+  Future<void> deleteWater(int id);
+  Future<List<WaterRecord>> waterOn(String day);
+  Future<List<WaterRecord>> waterBetween(String fromDay, String toDay);
+  Future<double?> lastWaterMl();
 
   Future<int> addFood(FoodEntryInput e);
   Future<void> deleteFood(int id);
@@ -64,14 +87,36 @@ abstract interface class JournalRepository {
 /// Bản bộ nhớ (test giao diện). Không có kho: lần uống không trừ hộp nào.
 class InMemoryJournalRepository implements JournalRepository {
   final _changes = StreamController<void>.broadcast();
+  HealthConsentStatus? _consent;
+  int _ageYears;
+  String _ageEnteredOn;
+  bool _caution;
+  String _cautionAnsweredOn;
   Profile? _profile;
   bool? _hide;
   OnboardingStep _step = OnboardingStep.bodyProfile;
+  final _uiState = <String, String>{};
   final _foods = <FoodEntry>[];
   final _customFoods = <CustomFood>[];
   final _doses = <DoseEntry>[];
   final _workouts = <WorkoutRecord>[];
+  final _waters = <WaterRecord>[];
   int _nextId = 1;
+
+  /// Mặc định khởi tạo sẵn đồng ý [mvpConsentVersion] để tương thích các test giao diện/state cũ.
+  InMemoryJournalRepository({
+    String? initialConsentVersion = mvpConsentVersion,
+    bool initialCaution = false,
+    int initialAgeYears = 30,
+    String? initialAgeEnteredOn,
+    String? initialCautionAnsweredOn,
+  })  : _consent = initialConsentVersion == null
+            ? null
+            : HealthConsentStatus(initialConsentVersion, DateTime.now()),
+        _ageYears = initialAgeYears,
+        _ageEnteredOn = initialAgeEnteredOn ?? dayKey(DateTime.now()),
+        _caution = initialCaution,
+        _cautionAnsweredOn = initialCautionAnsweredOn ?? dayKey(DateTime.now());
 
   void _changed() => _changes.add(null);
 
@@ -79,11 +124,95 @@ class InMemoryJournalRepository implements JournalRepository {
   Stream<void> get changes => _changes.stream;
 
   @override
+  Future<HealthConsentStatus?> latestHealthConsent() async => _consent;
+
+  @override
+  Future<ConsentProfileState?> loadConsentProfile() async => (
+        ageYears: _ageYears,
+        ageEnteredOn: _ageEnteredOn,
+        caution: _caution,
+        cautionAnsweredOn: _cautionAnsweredOn,
+      );
+
+  @override
+  Future<void> upgradeHealthConsent({
+    required String contentVersion,
+    required int ageYears,
+    required bool caution,
+  }) async {
+    final today = dayKey(DateTime.now());
+    _consent = HealthConsentStatus(contentVersion, DateTime.now());
+    if (_ageYears != ageYears) {
+      _ageYears = ageYears;
+      _ageEnteredOn = today;
+    }
+    _caution = caution;
+    _cautionAnsweredOn = today;
+    if (_profile != null) {
+      final p = _profile!;
+      _profile = Profile(
+        ageYears: ageYears,
+        sex: p.sex,
+        heightCm: p.heightCm,
+        weightKg: p.weightKg,
+        stage: p.stage,
+        gestationWeek: p.gestationWeek,
+        prePregnancyBmi: p.prePregnancyBmi,
+        monthsPostpartum: p.monthsPostpartum,
+        activityLevel: p.activityLevel,
+      );
+    }
+    _changed();
+  }
+
+  @override
   Future<Profile?> loadProfile() async => _profile;
   @override
   Future<void> saveProfile(Profile p) async {
+    if (_ageYears != p.ageYears) {
+      _ageYears = p.ageYears;
+      _ageEnteredOn = dayKey(DateTime.now());
+    }
     _profile = p;
     _changed();
+  }
+
+  @override
+  Future<void> saveProfileWithCaution(Profile p, {required bool caution}) async {
+    final today = dayKey(DateTime.now());
+    if (_ageYears != p.ageYears) {
+      _ageYears = p.ageYears;
+      _ageEnteredOn = today;
+    }
+    _caution = caution;
+    _cautionAnsweredOn = today;
+    _profile = p;
+    _changed();
+  }
+
+  @override
+  Future<int?> bumpAgeIfDue(DateTime now) async {
+    final bump = computeAgeBump(_ageYears, _ageEnteredOn, now);
+    if (bump == null) return null;
+    _ageYears = bump.newAgeYears;
+    _ageEnteredOn = bump.newEnteredOn;
+    if (_profile != null) {
+      final p = _profile!;
+      _profile = Profile(
+        ageYears: bump.newAgeYears,
+        sex: p.sex,
+        heightCm: p.heightCm,
+        weightKg: p.weightKg,
+        stage: p.stage,
+        gestationWeek: p.gestationWeek,
+        prePregnancyBmi: p.prePregnancyBmi,
+        monthsPostpartum: p.monthsPostpartum,
+        activityLevel: p.activityLevel,
+      );
+    }
+    _uiState[ageBumpedNoticeKey] = '${bump.newAgeYears}';
+    _changed();
+    return bump.newAgeYears;
   }
 
   @override
@@ -100,6 +229,76 @@ class InMemoryJournalRepository implements JournalRepository {
   Future<void> saveOnboardingStep(OnboardingStep s) async {
     _step = s;
     _changed();
+  }
+
+  @override
+  Future<String?> getUiState(String key) async => _uiState[key];
+  @override
+  Future<void> setUiState(String key, String value) async {
+    _uiState[key] = value;
+    _changed();
+  }
+
+  @override
+  Future<void> deleteUiState(String key) async {
+    _uiState.remove(key);
+    _changed();
+  }
+
+  @override
+  Future<int?> loadAgeBumpedNotice() async => int.tryParse(_uiState[ageBumpedNoticeKey] ?? '');
+  @override
+  Future<void> clearAgeBumpedNotice() => deleteUiState(ageBumpedNoticeKey);
+
+  @override
+  Future<int> addWater(DateTime at, double ml) async {
+    final id = _nextId++;
+    _waters.add(WaterRecord(id, at, ml));
+    _changed();
+    return id;
+  }
+
+  @override
+  Future<void> updateWater(int id, {required DateTime at, required double ml}) async {
+    final idx = _waters.indexWhere((w) => w.id == id);
+    if (idx >= 0) _waters[idx] = WaterRecord(id, at, ml);
+    _changed();
+  }
+
+  @override
+  Future<void> deleteWater(int id) async {
+    _waters.removeWhere((w) => w.id == id);
+    _changed();
+  }
+
+  @override
+  Future<List<WaterRecord>> waterOn(String day) async => [
+        for (final w in _waters)
+          if (dayKey(w.at) == day) w,
+      ]..sort((a, b) {
+          final c = a.at.compareTo(b.at);
+          return c != 0 ? c : a.id.compareTo(b.id);
+        });
+
+  @override
+  Future<List<WaterRecord>> waterBetween(String fromDay, String toDay) async => [
+        for (final w in _waters)
+          if (dayKey(w.at).compareTo(fromDay) >= 0 && dayKey(w.at).compareTo(toDay) <= 0) w,
+      ]..sort((a, b) {
+          final d = dayKey(a.at).compareTo(dayKey(b.at));
+          if (d != 0) return d;
+          final c = a.at.compareTo(b.at);
+          return c != 0 ? c : a.id.compareTo(b.id);
+        });
+
+  @override
+  Future<double?> lastWaterMl() async {
+    if (_waters.isEmpty) return null;
+    final sorted = [..._waters]..sort((a, b) {
+        final c = b.at.compareTo(a.at);
+        return c != 0 ? c : b.id.compareTo(a.id);
+      });
+    return sorted.first.ml;
   }
 
   @override
