@@ -16,6 +16,7 @@ class ProductInfoScreen extends StatefulWidget {
   final String? initialBarcode;
   final String? initialName;
   final double? initialBoxRemaining;
+  final double? initialUnitsPerServing;
   final CountUnit? initialCountUnit;
 
   const ProductInfoScreen({
@@ -25,6 +26,7 @@ class ProductInfoScreen extends StatefulWidget {
     this.initialBarcode,
     this.initialName,
     this.initialBoxRemaining,
+    this.initialUnitsPerServing,
     this.initialCountUnit,
   });
 
@@ -50,7 +52,11 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
     final p = widget.editingProduct;
     _name = TextEditingController(text: p?.name ?? widget.initialName ?? '');
     _barcode = TextEditingController(text: p?.barcode ?? widget.initialBarcode ?? '');
-    _unitsPerServing = TextEditingController(text: p == null ? '1' : fmt(p.unitsPerServing));
+    _unitsPerServing = TextEditingController(
+      text: p != null
+          ? fmt(p.unitsPerServing)
+          : (widget.initialUnitsPerServing != null ? fmt(widget.initialUnitsPerServing!) : '1'),
+    );
     _countUnit = p?.countUnit ?? widget.initialCountUnit ?? CountUnit.tablet;
     if (p == null && widget.initialBoxRemaining != null) {
       _boxRemaining.text = fmt(widget.initialBoxRemaining!);

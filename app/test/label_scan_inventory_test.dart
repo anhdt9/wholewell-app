@@ -77,6 +77,24 @@ void main() {
       expect(pkg.ingredients.single.compoundKind, CompoundKind.elemental);
     });
 
+    test('parsePackage fuzzy matching sửa lỗi OCR sai ký tự chất, dạng và đơn vị', () {
+      final pkg = SupplementLabelParser.parsePackage(const [
+        'Serving Size: 2 Capsules',
+        'Caleium carbonat 1250 mq',
+        'Cholecalciferol 1000 1U',
+        'Zine 500 meg',
+      ]);
+      expect(pkg.suggestedUnitsPerServing, 2);
+      expect(pkg.ingredients, hasLength(3));
+      expect(pkg.ingredients[0].nutrientId, 'calcium');
+      expect(pkg.ingredients[0].form, 'calcium_carbonate');
+      expect(pkg.ingredients[0].unit, LabelUnit.mg);
+      expect(pkg.ingredients[1].nutrientId, 'vitD');
+      expect(pkg.ingredients[1].unit, LabelUnit.iu);
+      expect(pkg.ingredients[2].nutrientId, 'zinc');
+      expect(pkg.ingredients[2].unit, LabelUnit.ug);
+    });
+
     test('parseExpiryMmYyyy kiểm hợp lệ tháng 01..12 và chuyển sang YYYY-MM', () {
       expect(parseExpiryMmYyyy('').ok, isTrue);
       expect(parseExpiryMmYyyy('').yyyyMm, isNull);
@@ -119,7 +137,7 @@ void main() {
         (tester) async {
       final ocr = FakeOcrEngine(
         nextCaptureResult: const OcrImagePickResult(permissionDenied: true),
-        nextGalleryResult: const OcrImagePickResult(path: '/fake/label.jpg'),
+        nextGalleryResult: const OcrImagePickResult(paths: ['/fake/label.jpg']),
         nextOcrResult: const OcrLabelResult(lines: [
           'Vitamin D3 25 mg',
           'Calcium carbonate 1250 mg',

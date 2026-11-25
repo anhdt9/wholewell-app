@@ -182,14 +182,14 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
       });
       return;
     }
-    if (picked.path == null) {
+    if (picked.paths.isEmpty) {
       setState(() => _busy = false);
       return;
     }
     setState(() {
       _busy = false;
-      _imagePaths.add(picked.path!);
-      _statusMsg = 'Đã thêm ảnh ${_imagePaths.length}. Có thể chụp thêm mặt khác (tên, bảng thành phần) rồi bấm Đọc thông tin.';
+      _imagePaths.addAll(picked.paths);
+      _statusMsg = 'Đã thêm ${picked.paths.length} ảnh (tổng ${_imagePaths.length}). Có thể chụp thêm mặt khác rồi bấm Đọc thông tin.';
     });
   }
 
@@ -229,6 +229,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
                   initialBarcode: _barcode,
                   initialName: pkg?.suggestedProductName,
                   initialBoxRemaining: pkg?.suggestedBoxRemaining,
+                  initialUnitsPerServing: pkg?.suggestedUnitsPerServing,
                   initialCountUnit: pkg?.suggestedCountUnit,
                 ),
               ),

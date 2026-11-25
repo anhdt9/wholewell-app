@@ -4,13 +4,16 @@ library;
 import 'dart:math' as math;
 
 import 'package:flutter/services.dart';
+import 'package:google_mlkit_document_scanner/google_mlkit_document_scanner.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
 
 class OcrImagePickResult {
-  final String? path;
+  final List<String> paths;
   final bool permissionDenied;
-  const OcrImagePickResult({this.path, this.permissionDenied = false});
+  const OcrImagePickResult({this.paths = const [], this.permissionDenied = false});
+
+  String? get path => paths.isEmpty ? null : paths.first;
 }
 
 class OcrLabelResult {
@@ -33,23 +36,49 @@ abstract interface class BarcodeScanner {
   Future<String?> scanBarcode();
 }
 
-/// Cài đặt thật dùng `image_picker` + `google_mlkit_text_recognition` (chạy hoàn toàn trên máy).
+/// Cài đặt thật dùng `google_mlkit_document_scanner` (làm phẳng nhãn cong) + `image_picker` + `google_mlkit_text_recognition`.
 class MlKitOcrEngine implements OcrEngine {
   final ImagePicker _picker;
   TextRecognizer? _recognizer;
+  DocumentScanner? _scanner;
 
   MlKitOcrEngine({ImagePicker? picker}) : _picker = picker ?? ImagePicker();
 
   @override
-  Future<OcrImagePickResult> captureLabelImage() => _pick(ImageSource.camera);
+  Future<OcrImagePickResult> captureLabelImage() async {
+    try {
+      _scanner ??= DocumentScanner(
+        options: DocumentScannerOptions(
+          documentFormats: const {DocumentFormat.jpeg},
+          mode: ScannerMode.full,
+          pageLimit: 4,
+          isGalleryImport: true,
+        ),
+      );
+      final result = await _scanner!.scanDocument();
+      final images = result.images ?? const <String>[];
+      if (images.isNotEmpty) {
+        return OcrImagePickResult(paths: images);
+      }
+      return const OcrImagePickResult();
+    } on PlatformException catch (e) {
+      if (e.code == 'camera_access_denied') {
+        return const OcrImagePickResult(permissionDenied: true);
+      }
+      // Fallback sang ImagePicker nếu máy không hỗ trợ DocumentScanner.
+      return _pick(ImageSource.camera);
+    } on Object {
+      return _pick(ImageSource.camera);
+    }
+  }
 
   @override
   Future<OcrImagePickResult> pickLabelImageFromGallery() => _pick(ImageSource.gallery);
 
   Future<OcrImagePickResult> _pick(ImageSource source) async {
     try {
-      final file = await _picker.pickImage(source: source, imageQuality: 90);
-      return OcrImagePickResult(path: file?.path);
+      final file = await _picker.pickImage(source: source, imageQuality: 95);
+      return OcrImagePickResult(paths: file == null ? const [] : [file.path]);
     } on PlatformException catch (e) {
       if (e.code == 'camera_access_denied' || e.code == 'photo_access_denied') {
         return const OcrImagePickResult(permissionDenied: true);
@@ -130,6 +159,8 @@ class MlKitOcrEngine implements OcrEngine {
   Future<void> dispose() async {
     await _recognizer?.close();
     _recognizer = null;
+    await _scanner?.close();
+    _scanner = null;
   }
 }
 
@@ -141,8 +172,8 @@ class FakeOcrEngine implements OcrEngine {
   final Map<String, OcrLabelResult> resultsByPath;
 
   FakeOcrEngine({
-    this.nextCaptureResult = const OcrImagePickResult(path: '/fake/camera.jpg'),
-    this.nextGalleryResult = const OcrImagePickResult(path: '/fake/gallery.jpg'),
+    this.nextCaptureResult = const OcrImagePickResult(paths: ['/fake/camera.jpg']),
+    this.nextGalleryResult = const OcrImagePickResult(paths: ['/fake/gallery.jpg']),
     this.nextOcrResult = const OcrLabelResult(),
     this.resultsByPath = const {},
   });
