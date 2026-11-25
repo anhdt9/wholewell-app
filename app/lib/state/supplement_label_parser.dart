@@ -48,7 +48,7 @@ class ParsedLabelPackage {
 class SupplementLabelParser {
   // Bắt số + đơn vị, kể cả một số lỗi nhận nhầm ký tự phổ biến của OCR (mq/m9 -> mg, meg/ucg -> ug, 1u/lu -> iu).
   static final _amountUnitRe = RegExp(
-    r'(\d+(?:[.,]\d+)?)\s*(mcg\s*dfe|µg\s*dfe|ug\s*dfe|mcg\s*rae|µg\s*rae|ug\s*rae|mg\s*ne|mcg|µg|ug|meg|ucg|pcg|u9|mg|mq|m9|iu|ui|1u|lu|g)\b',
+    r'(\d+(?:[.,]\d+)?)\s*(mcg\s*dfe|µg\s*dfe|ug\s*dfe|mcg\s*rae|µg\s*rae|ug\s*rae|mg\s*ne|mcg|µg|ug|meg|ucg|pcg|u9|mg|mq|m9|iu|ui|1u|lu|g)(?![a-zA-ZÀ-ỹ])',
     caseSensitive: false,
   );
 
@@ -177,6 +177,7 @@ class SupplementLabelParser {
   }
 
   static String? _matchNutrientId(String lower) {
+    if (lower.contains('dfe') || lower.contains('methylfolate')) return 'folate';
     for (final (nid, keys) in _nutrientPatterns) {
       if (keys.any(lower.contains)) return nid;
     }

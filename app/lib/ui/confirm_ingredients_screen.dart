@@ -447,6 +447,35 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
     super.dispose();
   }
 
+  List<LabelUnit> _allowedUnitsFor(String? nid, bool isFree) {
+    if (isFree || nid == null) {
+      return const [LabelUnit.mg, LabelUnit.ug, LabelUnit.iu, LabelUnit.g];
+    }
+    return switch (nid) {
+      'folate' => const [LabelUnit.ugDfe, LabelUnit.ug],
+      'folicAcid' => const [LabelUnit.ug, LabelUnit.mg],
+      'vitA' => const [LabelUnit.ugRae, LabelUnit.ug, LabelUnit.iu],
+      'niacin' => const [LabelUnit.mgNe, LabelUnit.mg],
+      'vitD' => const [LabelUnit.ug, LabelUnit.iu, LabelUnit.mg],
+      'vitE' => const [LabelUnit.mg, LabelUnit.iu],
+      _ => switch (widget.pack.nutrients[nid]?.unit) {
+          'g' => const [LabelUnit.g, LabelUnit.mg],
+          'ug' => const [LabelUnit.ug, LabelUnit.mg],
+          _ => const [LabelUnit.mg, LabelUnit.ug, LabelUnit.g],
+        },
+    };
+  }
+
+  String _unitDisplay(LabelUnit u) => switch (u) {
+        LabelUnit.mg => 'mg',
+        LabelUnit.ug => 'µg',
+        LabelUnit.iu => 'IU',
+        LabelUnit.g => 'g',
+        LabelUnit.ugDfe => 'µg DFE',
+        LabelUnit.ugRae => 'µg RAE',
+        LabelUnit.mgNe => 'mg NE',
+      };
+
   @override
   Widget build(BuildContext context) {
     final nutrients = widget.pack.nutrients.values
@@ -454,6 +483,10 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
         .toList();
     final compounds = _nutrientId == null ? null : widget.pack.compounds[_nutrientId!];
     final compoundMeta = _nutrientId == null ? null : widget.pack.compoundMeta[_nutrientId!];
+    final allowedUnits = _allowedUnitsFor(_nutrientId, _isFree);
+    if (!allowedUnits.contains(_unit)) {
+      _unit = allowedUnits.first;
+    }
 
     return Padding(
       padding: EdgeInsets.fromLTRB(16, 8, 16, MediaQuery.of(context).viewInsets.bottom + 20),
@@ -487,6 +520,8 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                     _nutrientId = v;
                     _form = NutrientForm.unknown;
                     _isCompound = false;
+                    final allowed = _allowedUnitsFor(_nutrientId, false);
+                    if (!allowed.contains(_unit)) _unit = allowed.first;
                   }
                 });
               },
@@ -511,14 +546,9 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                 const SizedBox(width: 12),
                 DropdownButton<LabelUnit>(
                   value: _unit,
-                  items: const [
-                    DropdownMenuItem(value: LabelUnit.mg, child: Text('mg')),
-                    DropdownMenuItem(value: LabelUnit.ug, child: Text('µg')),
-                    DropdownMenuItem(value: LabelUnit.iu, child: Text('IU')),
-                    DropdownMenuItem(value: LabelUnit.g, child: Text('g')),
-                    DropdownMenuItem(value: LabelUnit.ugDfe, child: Text('µg DFE')),
-                    DropdownMenuItem(value: LabelUnit.ugRae, child: Text('µg RAE')),
-                    DropdownMenuItem(value: LabelUnit.mgNe, child: Text('mg NE')),
+                  items: [
+                    for (final u in allowedUnits)
+                      DropdownMenuItem(value: u, child: Text(_unitDisplay(u))),
                   ],
                   onChanged: (u) {
                     if (u != null) setState(() => _unit = u);

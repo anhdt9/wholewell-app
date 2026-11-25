@@ -98,9 +98,12 @@ void main() {
         'Khẩu phần: 2 viên',
         'Mỗi lần uống 1 gói',
         'Vitamin C 500 mg',
+        'Folate (as Folic Acid) 667 mcg DFE',
       ]);
       expect(viPkg.suggestedUnitsPerServing, 2);
       expect(viPkg.suggestedBoxRemaining, isNull);
+      expect(viPkg.ingredients[1].nutrientId, 'folate');
+      expect(viPkg.ingredients[1].unit, LabelUnit.ugDfe);
     });
 
     test('parseExpiryMmYyyy kiểm hợp lệ tháng 01..12 và chuyển sang YYYY-MM', () {
@@ -373,10 +376,10 @@ void main() {
       expect(find.text('Xác nhận thành phần'), findsOneWidget);
       expect(find.textContaining('chưa phù hợp với chất này'), findsOneWidget);
 
-      // Sửa Folate từ mg sang µg -> cảnh báo biến mất.
+      // Sửa Folate: sheet tự lọc sang đơn vị hợp lệ (µg DFE / µg), chọn µg -> cảnh báo biến mất.
       await tester.tap(find.text('Sửa').first);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('mg').last);
+      await tester.tap(find.text('µg DFE').last);
       await tester.pumpAndSettle();
       await tester.tap(find.text('µg').last);
       await tester.pumpAndSettle();
