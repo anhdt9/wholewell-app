@@ -114,6 +114,7 @@ class GoogleAuthAccount {
   const GoogleAuthAccount({required this.id, required this.email});
 }
 
+/// Kết quả kiểm tra hoặc đăng nhập Google.
 sealed class GoogleAuthOutcome {
   const GoogleAuthOutcome();
 }
@@ -129,90 +130,191 @@ final class GoogleAuthCancelled extends GoogleAuthOutcome {
 
 final class GoogleAuthFailed extends GoogleAuthOutcome {
   final String reason;
-  const GoogleAuthFailed(this.reason);
+  final bool isNetworkError;
+  const GoogleAuthFailed(this.reason, {this.isNetworkError = false});
 }
 
-/// Interface đăng nhập Google cho Google Drive `appDataFolder` (sẽ cài thật ở Phần 7b).
+/// Interface đăng nhập Google cho Google Drive `appDataFolder`.
 abstract interface class GoogleAuth {
   Future<GoogleAuthAccount?> currentUser();
   Future<GoogleAuthOutcome> signIn();
+
+  /// Thử khôi phục phiên im lặng khi mở app (dùng cho `DrivePendingDeleteStore`).
+  /// Trả `null` nếu chưa đăng nhập / đã thu hồi quyền; ném lỗi nếu lỗi mạng tạm thời.
+  Future<GoogleAuthAccount?> signInSilently();
   Future<void> signOut();
+
+  /// Thu hồi quyền đã cấp cho ứng dụng và đăng xuất.
+  Future<void> disconnect();
+
+  /// Lấy header `Authorization` cho scope `drive.appdata`.
+  Future<Map<String, String>?> authHeaders({bool interactive = false});
 }
 
 class FakeGoogleAuth implements GoogleAuth {
   GoogleAuthAccount? _user;
   bool cancelled = false;
   String? failReason;
+  bool failNetworkOnSignIn = false;
+  bool failNetworkOnSilent = false;
+  bool silentRevoked = false;
+  bool failOnDisconnect = false;
+  int signInCalls = 0;
+  int signOutCalls = 0;
+  int disconnectCalls = 0;
+  Map<String, String>? fakeHeaders = const {'Authorization': 'Bearer fake-token'};
+
+  FakeGoogleAuth({GoogleAuthAccount? initialUser}) : _user = initialUser;
 
   @override
   Future<GoogleAuthAccount?> currentUser() async => _user;
 
   @override
   Future<GoogleAuthOutcome> signIn() async {
+    signInCalls++;
     if (cancelled) return const GoogleAuthCancelled();
+    if (failNetworkOnSignIn) {
+      return const GoogleAuthFailed('network', isNetworkError: true);
+    }
     if (failReason != null) return GoogleAuthFailed(failReason!);
-    _user = const GoogleAuthAccount(id: 'fake-user', email: 'test@example.com');
+    _user ??= const GoogleAuthAccount(id: 'fake-user', email: 'test@example.com');
+    silentRevoked = false;
     return GoogleAuthSignedIn(_user!);
   }
 
   @override
+  Future<GoogleAuthAccount?> signInSilently() async {
+    if (failNetworkOnSilent) throw const SocketException('offline');
+    if (silentRevoked) {
+      _user = null;
+      return null;
+    }
+    return _user;
+  }
+
+  @override
   Future<void> signOut() async {
+    signOutCalls++;
     _user = null;
+  }
+
+  @override
+  Future<void> disconnect() async {
+    disconnectCalls++;
+    if (failOnDisconnect) throw const SocketException('offline');
+    _user = null;
+  }
+
+  @override
+  Future<Map<String, String>?> authHeaders({bool interactive = false}) async {
+    if (_user == null) return null;
+    return fakeHeaders;
   }
 }
 
 class CloudBackupInfo {
   final String id;
+  final String name;
   final DateTime modifiedAt;
   final int sizeBytes;
 
   const CloudBackupInfo({
     required this.id,
+    this.name = 'wholewell.wwbackup',
     required this.modifiedAt,
     required this.sizeBytes,
   });
 }
 
-/// Interface sao lưu đám mây (cài thật ở Phần 7b).
+/// Interface sao lưu đám mây (`appDataFolder`).
 abstract interface class BackupProvider {
+  Future<List<CloudBackupInfo>> listBackups();
   Future<CloudBackupInfo?> latestBackup();
   Future<CloudBackupInfo> upload(Uint8List encryptedBackupBytes);
   Future<Uint8List> download(String id);
   Future<void> deleteAll();
 }
 
+class _FakeBackupRecord {
+  final CloudBackupInfo info;
+  final Uint8List bytes;
+  const _FakeBackupRecord(this.info, this.bytes);
+}
+
 class FakeBackupProvider implements BackupProvider {
-  Uint8List? _stored;
-  CloudBackupInfo? _info;
+  static const int maxRetainedBackups = 3;
+
+  final List<_FakeBackupRecord> _records = [];
+  int _seq = 1;
+  Object? errorOnList;
   Object? errorOnUpload;
+  Object? errorOnDownload;
   Object? errorOnDelete;
+  int deleteAllCalls = 0;
+
+  void seedBackup({
+    required Uint8List bytes,
+    DateTime? modifiedAt,
+    String? id,
+    String? name,
+  }) {
+    final idx = _seq++;
+    final info = CloudBackupInfo(
+      id: id ?? 'fake-cloud-$idx',
+      name: name ?? 'wholewell-backup-$idx.wwbackup',
+      modifiedAt: modifiedAt ?? DateTime.now(),
+      sizeBytes: bytes.length,
+    );
+    _records.insert(0, _FakeBackupRecord(info, Uint8List.fromList(bytes)));
+    _records.sort((a, b) => b.info.modifiedAt.compareTo(a.info.modifiedAt));
+  }
 
   @override
-  Future<CloudBackupInfo?> latestBackup() async => _info;
+  Future<List<CloudBackupInfo>> listBackups() async {
+    if (errorOnList != null) throw errorOnList!;
+    return [for (final r in _records) r.info];
+  }
+
+  @override
+  Future<CloudBackupInfo?> latestBackup() async {
+    final list = await listBackups();
+    return list.isEmpty ? null : list.first;
+  }
 
   @override
   Future<CloudBackupInfo> upload(Uint8List encryptedBackupBytes) async {
     if (errorOnUpload != null) throw errorOnUpload!;
-    _stored = Uint8List.fromList(encryptedBackupBytes);
-    _info = CloudBackupInfo(
-      id: 'fake-cloud-1',
-      modifiedAt: DateTime.now(),
-      sizeBytes: _stored!.length,
+    final copy = Uint8List.fromList(encryptedBackupBytes);
+    final idx = _seq++;
+    final info = CloudBackupInfo(
+      id: 'fake-cloud-$idx',
+      name: 'wholewell-backup-$idx.wwbackup',
+      modifiedAt: DateTime.now().add(Duration(milliseconds: idx)),
+      sizeBytes: copy.length,
     );
-    return _info!;
+    _records.insert(0, _FakeBackupRecord(info, copy));
+    if (_records.length > maxRetainedBackups) {
+      _records.removeRange(maxRetainedBackups, _records.length);
+    }
+    return info;
   }
 
   @override
   Future<Uint8List> download(String id) async {
-    if (_stored == null) throw StateError('No cloud backup');
-    return Uint8List.fromList(_stored!);
+    if (errorOnDownload != null) throw errorOnDownload!;
+    final rec = _records.cast<_FakeBackupRecord?>().firstWhere(
+          (r) => r?.info.id == id,
+          orElse: () => null,
+        );
+    if (rec == null) throw StateError('No cloud backup with id $id');
+    return Uint8List.fromList(rec.bytes);
   }
 
   @override
   Future<void> deleteAll() async {
+    deleteAllCalls++;
     if (errorOnDelete != null) throw errorOnDelete!;
-    _stored = null;
-    _info = null;
+    _records.clear();
   }
 }
 

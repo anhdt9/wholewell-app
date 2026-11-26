@@ -41,6 +41,10 @@ abstract interface class JournalRepository {
   Future<void> grantNotificationConsent(String contentVersion);
   Future<void> withdrawNotificationConsent();
 
+  Future<HealthConsentStatus?> latestDriveConsent();
+  Future<void> grantDriveConsent(String contentVersion);
+  Future<void> withdrawDriveConsent();
+
   Future<OnboardingStep> loadOnboardingStep();
   Future<void> saveOnboardingStep(OnboardingStep s);
 
@@ -149,6 +153,7 @@ class InMemoryJournalRepository implements JournalRepository {
   bool? _hide;
   DayTimesSettings _dayTimesSettings = const DayTimesSettings();
   HealthConsentStatus? _notificationConsent;
+  HealthConsentStatus? _driveConsent;
   OnboardingStep _step = OnboardingStep.bodyProfile;
   final _uiState = <String, String>{};
   final _foods = <FoodEntry>[];
@@ -310,6 +315,21 @@ class InMemoryJournalRepository implements JournalRepository {
   @override
   Future<void> withdrawNotificationConsent() async {
     _notificationConsent = null;
+    _changed();
+  }
+
+  @override
+  Future<HealthConsentStatus?> latestDriveConsent() async => _driveConsent;
+
+  @override
+  Future<void> grantDriveConsent(String contentVersion) async {
+    _driveConsent = HealthConsentStatus(contentVersion, DateTime.now());
+    _changed();
+  }
+
+  @override
+  Future<void> withdrawDriveConsent() async {
+    _driveConsent = null;
     _changed();
   }
 

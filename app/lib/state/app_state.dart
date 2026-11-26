@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show SocketException;
 
 import 'package:dsld_library/dsld_library.dart';
 import 'package:flutter/foundation.dart';
@@ -33,11 +34,17 @@ class AppState extends ChangeNotifier {
   final BarcodeScanner? barcodeScanner;
   final NotificationScheduler notificationScheduler;
   final BackupFileProvider backupFileProvider;
+  final GoogleAuth googleAuth;
+  final BackupProvider driveBackupProvider;
+  final DrivePendingDeleteStore drivePendingDeleteStore;
   final Future<FoodLibraryRepository> Function()? _openFoodLibrary;
   final Future<DsldLibraryRepository> Function()? _openDsldLibrary;
   DsldLibraryRepository? _dsldLibrary;
   bool _dsldLibraryBroken = false;
   bool _dsldLibraryPreparing = false;
+  GoogleAuthAccount? _driveAccount;
+  bool _drivePendingDeleteActive = false;
+  bool _drivePendingDeleteNeedsReauth = false;
 
   AppState({
     required this.pack,
@@ -50,12 +57,18 @@ class AppState extends ChangeNotifier {
     this.barcodeScanner,
     NotificationScheduler? notificationScheduler,
     BackupFileProvider? backupFileProvider,
+    GoogleAuth? googleAuth,
+    BackupProvider? driveBackupProvider,
+    DrivePendingDeleteStore? drivePendingDeleteStore,
   })  : _openFoodLibrary = openFoodLibrary,
         _openDsldLibrary = openDsldLibrary,
         _dsldLibrary = dsldLibrary,
         ocrEngine = ocrEngine ?? MlKitOcrEngine(),
         notificationScheduler = notificationScheduler ?? FakeNotificationScheduler(),
         backupFileProvider = backupFileProvider ?? const AndroidBackupFileProvider(),
+        googleAuth = googleAuth ?? FakeGoogleAuth(),
+        driveBackupProvider = driveBackupProvider ?? FakeBackupProvider(),
+        drivePendingDeleteStore = drivePendingDeleteStore ?? InMemoryDrivePendingDeleteStore(),
         session = DbSessionController(opener: opener),
         diary = DiaryController(pack: pack, foodLibrary: foodLibrary) {
     session.addListener(notifyListeners);
@@ -72,12 +85,18 @@ class AppState extends ChangeNotifier {
     this.barcodeScanner,
     NotificationScheduler? notificationScheduler,
     BackupFileProvider? backupFileProvider,
+    GoogleAuth? googleAuth,
+    BackupProvider? driveBackupProvider,
+    DrivePendingDeleteStore? drivePendingDeleteStore,
   })  : _openFoodLibrary = null,
         _openDsldLibrary = null,
         _dsldLibrary = dsldLibrary,
         ocrEngine = ocrEngine ?? FakeOcrEngine(),
         notificationScheduler = notificationScheduler ?? FakeNotificationScheduler(),
         backupFileProvider = backupFileProvider ?? FakeBackupFileProvider(),
+        googleAuth = googleAuth ?? FakeGoogleAuth(),
+        driveBackupProvider = driveBackupProvider ?? FakeBackupProvider(),
+        drivePendingDeleteStore = drivePendingDeleteStore ?? InMemoryDrivePendingDeleteStore(),
         session = DbSessionController(repo: repo, initialStatus: DataStatus.ready),
         diary = DiaryController(pack: pack, repo: repo, foodLibrary: foodLibrary) {
     session.addListener(notifyListeners);
@@ -93,6 +112,9 @@ class AppState extends ChangeNotifier {
         barcodeScanner = null,
         notificationScheduler = FakeNotificationScheduler(),
         backupFileProvider = FakeBackupFileProvider(),
+        googleAuth = FakeGoogleAuth(),
+        driveBackupProvider = FakeBackupProvider(),
+        drivePendingDeleteStore = InMemoryDrivePendingDeleteStore(),
         session = DbSessionController(initialStatus: DataStatus.unsupportedPlatform),
         diary = DiaryController(pack: pack) {
     session.addListener(notifyListeners);
@@ -124,18 +146,21 @@ class AppState extends ChangeNotifier {
   void clearSaveFailed() => diary.clearSaveFailed();
   void clearReadFailed() => diary.clearReadFailed();
 
-  Future<void> start() => session.start(onReady: () async {
-        diary.attachRepository(session.repo);
-        if (session.stage == SessionStage.ready) {
-          await diary.checkAgeBumpOnReady();
-        }
-        await _ensureFoodLibrary();
-        unawaited(_ensureDsldLibrary());
-        await diary.reload();
-        unawaited(syncNotifications());
-      });
+  Future<void> start() async {
+    await session.start(onReady: () async {
+      diary.attachRepository(session.repo);
+      if (session.stage == SessionStage.ready) {
+        await diary.checkAgeBumpOnReady();
+      }
+      await _ensureFoodLibrary();
+      unawaited(_ensureDsldLibrary());
+      await diary.reload();
+      unawaited(syncNotifications());
+    });
+    await _checkDriveStateAndPendingDelete();
+  }
 
-  /// Kiểm tra tự tăng tuổi khi app quay lại tiền cảnh ở trạng thái đã sẵn sàng.
+  /// Kiểm tra tự tăng tuổi và cờ chờ xóa Drive khi app quay lại tiền cảnh.
   Future<void> onAppResume() async {
     if (status == DataStatus.waitingForUnlock || status == DataStatus.lowStorage) {
       await start();
@@ -144,6 +169,7 @@ class AppState extends ChangeNotifier {
     if (status == DataStatus.ready && stage == SessionStage.ready) {
       await diary.checkAgeBumpOnReady();
     }
+    await _checkDriveStateAndPendingDelete();
   }
 
   /// Hoàn tất bước Đồng ý lần đầu (chỉ tạo khóa & CSDL sau khi người dùng đồng ý).
@@ -222,7 +248,16 @@ class AppState extends ChangeNotifier {
     });
   }
 
-  Future<void> withdrawConsentAndReset() => startOver();
+  /// Xóa toàn bộ dữ liệu trên máy (luôn xóa ngay), tùy chọn xóa cả bản trên Google Drive nếu đã bật.
+  /// Trả `false` nếu bản trên Drive chưa xóa được và đã lưu cờ chờ xóa để thử lại sau.
+  Future<bool> withdrawConsentAndReset({bool deleteDriveBackup = false}) async {
+    var remoteCleared = true;
+    if (deleteDriveBackup) {
+      remoteCleared = await _deleteDriveBackupsOnReset();
+    }
+    await startOver();
+    return remoteCleared;
+  }
 
   Future<void> reload() => diary.reload();
 
@@ -306,6 +341,197 @@ class AppState extends ChangeNotifier {
   bool get canRestoreFromFile => session.hasOpener;
   DateTime? get lastFileBackupAt => diary.lastFileBackupAt;
   HealthConsentStatus? get healthConsent => diary.healthConsent;
+  HealthConsentStatus? get driveConsent => diary.driveConsent;
+  bool get driveEnabled => diary.driveConsent != null;
+  DateTime? get lastDriveBackupAt => diary.lastDriveBackupAt;
+  GoogleAuthAccount? get driveAccount => _driveAccount;
+  bool get drivePendingDeleteActive => _drivePendingDeleteActive;
+  bool get drivePendingDeleteNeedsReauth => _drivePendingDeleteNeedsReauth;
+
+  Future<void> _checkDriveStateAndPendingDelete() async {
+    final pending = await drivePendingDeleteStore.hasPendingDelete();
+    _drivePendingDeleteActive = pending;
+    if (pending) {
+      await _attemptSilentPendingDelete();
+      notifyListeners();
+      return;
+    }
+    _drivePendingDeleteNeedsReauth = false;
+    if (diary.driveConsent != null) {
+      try {
+        _driveAccount = await googleAuth.signInSilently() ?? await googleAuth.currentUser();
+      } on Object {
+        _driveAccount ??= await googleAuth.currentUser();
+      }
+    } else {
+      _driveAccount = await googleAuth.currentUser();
+    }
+    notifyListeners();
+  }
+
+  Future<bool> _attemptSilentPendingDelete() async {
+    try {
+      final acc = await googleAuth.signInSilently();
+      if (acc == null) {
+        _driveAccount = null;
+        _drivePendingDeleteNeedsReauth = true;
+        return false;
+      }
+      _driveAccount = acc;
+      await driveBackupProvider.deleteAll();
+      await googleAuth.disconnect();
+      await drivePendingDeleteStore.clearPendingDelete();
+      _driveAccount = null;
+      _drivePendingDeleteActive = false;
+      _drivePendingDeleteNeedsReauth = false;
+      return true;
+    } on SocketException {
+      _drivePendingDeleteNeedsReauth = false;
+      return false;
+    } on Object {
+      // Lỗi mạng/tạm thời khác: giữ cờ pending để thử lại; không khẳng định hết phiên nếu chỉ lỗi I/O.
+      _drivePendingDeleteNeedsReauth = false;
+      return false;
+    }
+  }
+
+  Future<bool> _deleteDriveBackupsOnReset() async {
+    try {
+      var acc = _driveAccount ?? await googleAuth.currentUser();
+      acc ??= await googleAuth.signInSilently();
+      if (acc == null) {
+        await drivePendingDeleteStore.markPendingDelete();
+        _drivePendingDeleteActive = true;
+        _drivePendingDeleteNeedsReauth = true;
+        _driveAccount = null;
+        return false;
+      }
+      await driveBackupProvider.deleteAll();
+      try {
+        await googleAuth.disconnect();
+      } on Object {
+        // Nếu xóa dữ liệu Drive xong nhưng thu hồi token lỗi tạm, bỏ qua.
+      }
+      await drivePendingDeleteStore.clearPendingDelete();
+      _driveAccount = null;
+      _drivePendingDeleteActive = false;
+      _drivePendingDeleteNeedsReauth = false;
+      return true;
+    } on Object {
+      await drivePendingDeleteStore.markPendingDelete();
+      _drivePendingDeleteActive = true;
+      _drivePendingDeleteNeedsReauth = false;
+      return false;
+    }
+  }
+
+  Future<bool> grantDriveConsent(String contentVersion) =>
+      diary.grantDriveConsent(contentVersion);
+
+  Future<GoogleAuthOutcome> signInGoogleDrive() async {
+    final res = await googleAuth.signIn();
+    if (res is GoogleAuthSignedIn) {
+      _driveAccount = res.account;
+      notifyListeners();
+    }
+    return res;
+  }
+
+  Future<GoogleAuthOutcome> switchGoogleDriveAccount() async {
+    try {
+      await googleAuth.signOut();
+    } on Object {
+      // Tiếp tục thử đăng nhập lại.
+    }
+    _driveAccount = null;
+    notifyListeners();
+    return signInGoogleDrive();
+  }
+
+  Future<CloudBackupInfo> createDriveBackup({
+    required String secret,
+    int memoryKiB = BackupCodec.defaultMemoryKiB,
+    int iterations = BackupCodec.defaultIterations,
+    int parallelism = BackupCodec.defaultParallelism,
+  }) async {
+    final headers = await googleAuth.authHeaders(interactive: false);
+    if (headers == null) {
+      final auth = await signInGoogleDrive();
+      if (auth is! GoogleAuthSignedIn) {
+        throw StateError('Chưa đăng nhập Google Drive.');
+      }
+    }
+    final bytes = await session.exportBackup(
+      secret: secret,
+      memoryKiB: memoryKiB,
+      iterations: iterations,
+      parallelism: parallelism,
+    );
+    final info = await driveBackupProvider.upload(bytes);
+    await diary.recordDriveBackupAt(info.modifiedAt);
+    return info;
+  }
+
+  Future<List<CloudBackupInfo>> listDriveBackups() => driveBackupProvider.listBackups();
+
+  Future<RestoreOutcome> restoreFromGoogleDrive({
+    required String backupId,
+    required String secret,
+  }) async {
+    final bytes = await driveBackupProvider.download(backupId);
+    final outcome = await restoreEncryptedBackupFile(backupBytes: bytes, secret: secret);
+    if (outcome is RestoreSucceeded) {
+      unawaited(_checkDriveStateAndPendingDelete());
+    }
+    return outcome;
+  }
+
+  /// Tắt sao lưu Google Drive trên máy (tùy chọn xóa các bản sao lưu trên Drive).
+  /// Trả `false` nếu người dùng chọn xóa Drive nhưng mạng lỗi và đã ghi cờ chờ xóa.
+  Future<bool> disconnectGoogleDrive({required bool deleteRemoteBackups}) async {
+    var remoteCleared = true;
+    if (deleteRemoteBackups) {
+      remoteCleared = await _deleteDriveBackupsOnReset();
+    } else {
+      try {
+        await googleAuth.disconnect();
+      } on Object {
+        // Bỏ qua nếu đang offline.
+      }
+      _driveAccount = null;
+    }
+    await diary.withdrawDriveConsent();
+    notifyListeners();
+    return remoteCleared;
+  }
+
+  /// Xử lý cờ chờ xóa Drive (đăng nhập lại để xóa hoặc người dùng tự xóa/bỏ qua).
+  Future<bool> resolvePendingDriveDelete({required bool interactiveSignIn}) async {
+    if (!interactiveSignIn) {
+      await drivePendingDeleteStore.clearPendingDelete();
+      _drivePendingDeleteActive = false;
+      _drivePendingDeleteNeedsReauth = false;
+      notifyListeners();
+      return true;
+    }
+    final auth = await googleAuth.signIn();
+    if (auth is! GoogleAuthSignedIn) {
+      return false;
+    }
+    try {
+      await driveBackupProvider.deleteAll();
+      await googleAuth.disconnect();
+      await drivePendingDeleteStore.clearPendingDelete();
+      _driveAccount = null;
+      _drivePendingDeleteActive = false;
+      _drivePendingDeleteNeedsReauth = false;
+      notifyListeners();
+      return true;
+    } on Object {
+      notifyListeners();
+      return false;
+    }
+  }
 
   Future<String?> createEncryptedBackupFile({
     required String secret,

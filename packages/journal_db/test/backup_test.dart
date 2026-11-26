@@ -397,5 +397,41 @@ void main() {
       final dayTimes = await repo.loadDayTimesSettings();
       expect(dayTimes.showTipCard, isTrue);
     });
+
+    test('drive consent: latestDriveConsent, grantDriveConsent, withdrawDriveConsent trên cả Drift và InMemory và bảo toàn khi khôi phục', () async {
+      for (final isMem in [false, true]) {
+        late final JournalRepository repo;
+        if (isMem) {
+          repo = InMemoryJournalRepository();
+          addTearDown(repo.close);
+        } else {
+          final opener = testOpener(tempDir(), FakeSecureKeyStore());
+          repo = await createdRepo(opener);
+        }
+        expect(await repo.latestDriveConsent(), isNull);
+        await repo.grantDriveConsent('drive-v1');
+        final c = await repo.latestDriveConsent();
+        expect(c?.contentVersion, 'drive-v1');
+        await repo.withdrawDriveConsent();
+        expect(await repo.latestDriveConsent(), isNull);
+      }
+
+      // Khôi phục bản sao lưu mang theo trạng thái drive consent.
+      final srcOpener = testOpener(tempDir(), FakeSecureKeyStore());
+      final srcRepo = await createdRepo(srcOpener);
+      await srcRepo.grantDriveConsent(mvpConsentVersion);
+      final bytes = await srcOpener.exportBackup(
+        openRepository: srcRepo,
+        secret: 'drive-consent-1',
+        memoryKiB: 256,
+        iterations: 1,
+      );
+      final dstOpener = testOpener(tempDir(), FakeSecureKeyStore());
+      final res = await dstOpener.restoreFromBackup(backupBytes: bytes, secret: 'drive-consent-1');
+      expect(res, isA<RestoreSucceeded>());
+      final dstRepo = ((res as RestoreSucceeded).openOutcome as Opened).repository;
+      addTearDown(dstRepo.close);
+      expect((await dstRepo.latestDriveConsent())?.contentVersion, mvpConsentVersion);
+    });
   });
 }

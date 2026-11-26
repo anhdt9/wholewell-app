@@ -6,6 +6,7 @@ import '../state/app_scope.dart';
 import '../state/diary_controller.dart';
 import 'common/common_widgets.dart';
 import 'day_times_screen.dart';
+import 'drive_backup_screens.dart';
 import 'labels.dart';
 import 'profile_screen.dart';
 import 'schedule_dose_helper.dart';
@@ -47,6 +48,10 @@ class TodayScreen extends StatelessWidget {
         ],
         if (state.caution) ...[
           const SafetyNote(message: cautionBannerMessage),
+          const SizedBox(height: 12),
+        ],
+        if (state.drivePendingDeleteActive) ...[
+          const PendingDriveDeleteCard(),
           const SizedBox(height: 12),
         ],
         if (activeNotices.isNotEmpty) ...[

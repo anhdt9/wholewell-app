@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show File;
 
 import 'package:dsld_library/dsld_library.dart';
 import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform, kIsWeb;
@@ -11,6 +12,7 @@ import 'package:journal_db/journal_db.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'platform/android_db_key_store.dart';
+import 'platform/google_drive_backup.dart';
 import 'platform/local_dsld_library_store.dart';
 import 'platform/local_food_library_store.dart';
 import 'state/app_scope.dart';
@@ -35,6 +37,10 @@ Future<void> main() async {
     final libSha = manifest['sha256'] as String;
     final dsldVersion = dsldManifest['libraryVersion'] as String;
     final dsldSha = dsldManifest['dbSha256'] as String;
+    final googleAuth = GoogleSignInAuth();
+    final pendingDeleteStore = FileDrivePendingDeleteStore(
+      File('${dir.path}/drive_pending_delete.json'),
+    );
     state = AppState(
       pack: pack,
       opener: DbOpener(files: DbFiles(dir), keys: const AndroidDbKeyStore()),
@@ -49,6 +55,9 @@ Future<void> main() async {
         expectedSha256: dsldSha,
       ),
       notificationScheduler: AndroidNotificationScheduler(),
+      googleAuth: googleAuth,
+      driveBackupProvider: GoogleDriveBackupProvider(auth: googleAuth),
+      drivePendingDeleteStore: pendingDeleteStore,
     );
   } else {
     // iOS (Keychain, Application Support) làm khi có bản iOS.

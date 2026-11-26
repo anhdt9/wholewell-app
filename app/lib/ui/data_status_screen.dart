@@ -2,7 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
 import '../state/app_state.dart';
-import 'backup_restore_screen.dart';
+import 'drive_backup_screens.dart';
 
 /// Màn chặn khi CSDL chưa mở được (thiết kế tổng thể, mục Trạng thái, dòng "Toàn app").
 class DataStatusScreen extends StatelessWidget {
@@ -14,11 +14,7 @@ class DataStatusScreen extends StatelessWidget {
     final state = AppScope.of(context);
     final restore = FilledButton.tonal(
       onPressed: state.canRestoreFromFile
-          ? () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const RestoreBackupScreen(hasExistingData: false),
-                ),
-              )
+          ? () => showRestoreSourcePicker(context, hasExistingData: false)
           : null,
       child: const Text('Khôi phục từ bản sao lưu'),
     );
