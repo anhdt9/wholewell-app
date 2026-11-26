@@ -27,6 +27,10 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Tạm chỉ đóng gói ABI arm64-v8a (Galaxy S24 Ultra) để build nhanh và nhẹ; gỡ khi hỗ trợ đa thiết bị.
+        ndk {
+            abiFilters += listOf("arm64-v8a")
+        }
     }
 
     buildTypes {

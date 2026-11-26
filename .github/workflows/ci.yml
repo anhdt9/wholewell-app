@@ -91,10 +91,10 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache: gradle
-      - name: Build Android (debug)
+      - name: Build Android (debug, arm64-v8a cho S24 Ultra)
         if: github.ref == 'refs/heads/main'
         working-directory: app
-        run: flutter build apk --debug
+        run: flutter build apk --debug --target-platform android-arm64
       - name: Lưu APK debug để cài thử (chỉ thử nội bộ)
         if: github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
