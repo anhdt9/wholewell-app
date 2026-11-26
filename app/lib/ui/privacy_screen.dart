@@ -40,9 +40,19 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
       },
     );
     if (ok != true || !mounted) return;
+    await _resetAndReturnToRoot();
+  }
+
+  Future<void> _resetAndReturnToRoot() async {
     final state = AppScope.of(context);
-    Navigator.of(context).popUntil((r) => r.isFirst);
-    await state.withdrawConsentAndReset();
+    final nav = Navigator.of(context);
+    setState(() => _busy = true);
+    try {
+      await state.withdrawConsentAndReset();
+      if (mounted) nav.popUntil((r) => r.isFirst);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   Future<void> _exportData() async {
@@ -88,9 +98,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
       message: 'Mọi dữ liệu trên máy này sẽ bị xóa và không lấy lại được, trừ khi bạn có bản sao lưu.',
     );
     if (!ok || !mounted) return;
-    final state = AppScope.of(context);
-    Navigator.of(context).popUntil((r) => r.isFirst);
-    await state.withdrawConsentAndReset();
+    await _resetAndReturnToRoot();
   }
 
   @override
