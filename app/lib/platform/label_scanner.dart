@@ -36,6 +36,7 @@ abstract interface class OcrEngine {
 /// Interface nền tảng cho quét mã vạch (dùng bản giả trong test/desktop).
 abstract interface class BarcodeScanner {
   Future<String?> scanBarcode();
+  Future<String?> scanBarcodeFromImage(String imagePath);
 }
 
 /// Cài đặt thật dùng `google_mlkit_document_scanner` (làm phẳng nhãn cong) + `image_picker` + `google_mlkit_text_recognition`.
@@ -243,8 +244,12 @@ class FakeOcrEngine implements OcrEngine {
 
 class FakeBarcodeScanner implements BarcodeScanner {
   String? nextBarcode;
-  FakeBarcodeScanner({this.nextBarcode});
+  String? nextBarcodeFromImage;
+  FakeBarcodeScanner({this.nextBarcode, this.nextBarcodeFromImage});
 
   @override
   Future<String?> scanBarcode() async => nextBarcode;
+
+  @override
+  Future<String?> scanBarcodeFromImage(String imagePath) async => nextBarcodeFromImage;
 }

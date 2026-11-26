@@ -1,0 +1,22 @@
+name: dsld_library
+description: Thư viện thực phẩm bổ sung NIH DSLD SQLite chỉ đọc kèm FTS5 cho WholeWell. Thuần Dart, không Flutter.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  crypto: ^3.0.6
+  path: 1.9.1
+  sqlite3: 3.9.1
+
+dev_dependencies:
+  lints: ^4.0.0
+  test: ^1.25.0
+
+# Đồng bộ hook sqlite3mc với journal_db, food_library và app.
+hooks:
+  user_defines:
+    sqlite3:
+      source: sqlite3mc

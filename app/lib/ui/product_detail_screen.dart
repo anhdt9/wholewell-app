@@ -1,6 +1,7 @@
 /// Màn Thông tin sản phẩm, Chi tiết sản phẩm và Quản lý hộp (kho, hạn dùng).
 library;
 
+import 'package:dsld_library/dsld_library.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
@@ -228,6 +229,7 @@ class ProductDetailScreen extends StatefulWidget {
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   ProductDetail? _detail;
   ProductSummary? _summary;
+  DsldProductDetail? _dsldMatch;
   bool _loading = true;
 
   @override
@@ -237,14 +239,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Future<void> _load() async {
-    final diary = AppScope.of(context).diary;
+    final state = AppScope.of(context);
+    final diary = state.diary;
     final detail = await diary.getProductDetail(widget.productId);
     final summaries = await diary.listProducts(includeArchived: true);
     final summary = summaries.where((s) => s.product.id == widget.productId).firstOrNull;
+    DsldProductDetail? dsldMatch;
+    final bc = detail?.product.barcode;
+    if (bc != null && bc.isNotEmpty && state.dsldLibrary != null) {
+      dsldMatch = (await state.dsldLibrary!.findByBarcode(bc)).firstOrNull;
+    }
     if (!mounted) return;
     setState(() {
       _detail = detail;
       _summary = summary;
+      _dsldMatch = dsldMatch;
       _loading = false;
     });
   }
@@ -382,6 +391,38 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
             ),
           const SizedBox(height: 16),
+          if (_dsldMatch != null &&
+              (_dsldMatch!.suggestedUse.isNotEmpty || _dsldMatch!.otherIngredients.isNotEmpty)) ...[
+            if (_dsldMatch!.suggestedUse.isNotEmpty)
+              ExpansionTile(
+                tilePadding: EdgeInsets.zero,
+                title: const Text('Cách dùng trên nhãn'),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(_dsldMatch!.suggestedUse),
+                    ),
+                  ),
+                ],
+              ),
+            if (_dsldMatch!.otherIngredients.isNotEmpty)
+              ExpansionTile(
+                tilePadding: EdgeInsets.zero,
+                title: const Text('Thành phần khác (theo nhãn)'),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(_dsldMatch!.otherIngredients),
+                    ),
+                  ),
+                ],
+              ),
+            const SizedBox(height: 8),
+          ],
           OutlinedButton(
             onPressed: _editIngredients,
             child: const Text('Sửa thành phần'),
