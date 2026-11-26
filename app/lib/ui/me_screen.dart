@@ -2,13 +2,14 @@ import 'package:health_engine/health_engine.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
-import 'common/common_widgets.dart';
+import 'backup_restore_screen.dart';
 import 'day_times_screen.dart';
 import 'notification_settings_screen.dart';
+import 'privacy_screen.dart';
 import 'profile_screen.dart';
 import 'sources_screen.dart';
 
-/// Tab Tôi: Hồ sơ, Hiển thị (Ẩn số calo), Xóa toàn bộ dữ liệu.
+/// Tab Tôi: Hồ sơ, Hiển thị, Giờ trong ngày, Nhắc giờ, Sao lưu và khôi phục, Quyền riêng tư, Nguồn số liệu.
 class MeScreen extends StatelessWidget {
   const MeScreen({super.key});
 
@@ -16,11 +17,14 @@ class MeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = AppScope.of(context);
     final p = state.profile;
-    final cs = Theme.of(context).colorScheme;
     final profileSummary = p == null
         ? 'Chưa có thông tin'
         : '${p.sex == Sex.female ? 'Nữ' : 'Nam'} · ${p.ageYears} tuổi · '
             '${p.heightCm.round()} cm · ${p.weightKg.round()} kg';
+    final lastBackup = state.lastFileBackupAt;
+    final backupSummary = lastBackup == null
+        ? 'Chưa sao lưu qua tệp'
+        : 'Lần gần nhất: ${fmtBackupDateTime(lastBackup)}';
 
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -71,24 +75,31 @@ class MeScreen extends StatelessWidget {
         ),
         ListTile(
           minTileHeight: 56,
+          leading: const Icon(Icons.backup_outlined),
+          title: const Text('Sao lưu và khôi phục'),
+          subtitle: Text(backupSummary),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const BackupRestoreScreen()),
+          ),
+        ),
+        ListTile(
+          minTileHeight: 56,
+          leading: const Icon(Icons.lock_outline),
+          title: const Text('Quyền riêng tư'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const PrivacyScreen()),
+          ),
+        ),
+        ListTile(
+          minTileHeight: 56,
           leading: const Icon(Icons.menu_book_outlined),
           title: const Text('Nguồn số liệu'),
           trailing: const Icon(Icons.chevron_right),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(builder: (_) => const SourcesScreen()),
           ),
-        ),
-        const Divider(height: 24),
-        ListTile(
-          minTileHeight: 56,
-          leading: Icon(Icons.delete_outline, color: cs.error),
-          title: Text('Xóa toàn bộ dữ liệu', style: TextStyle(color: cs.error)),
-          onTap: () async {
-            final ok = await showWipeConfirmDialog(context);
-            if (ok && context.mounted) {
-              await AppScope.of(context).withdrawConsentAndReset();
-            }
-          },
         ),
       ],
     );

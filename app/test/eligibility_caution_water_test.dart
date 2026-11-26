@@ -46,9 +46,9 @@ void main() {
       await tester.pumpWidget(WholeWellApp(state: state));
       await tester.pumpAndSettle();
 
-      // Chào mừng: không có nút Khôi phục từ bản sao lưu.
+      // Chào mừng: có nút Bắt đầu và Khôi phục từ bản sao lưu.
       expect(find.text('WholeWell'), findsOneWidget);
-      expect(find.text('Khôi phục từ bản sao lưu'), findsNothing);
+      expect(find.text('Khôi phục từ bản sao lưu'), findsOneWidget);
       await tester.tap(find.text('Bắt đầu'));
       await tester.pumpAndSettle();
 

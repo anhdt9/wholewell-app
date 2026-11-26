@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
 import '../state/app_state.dart';
+import 'backup_restore_screen.dart';
 import 'body_metrics_fields.dart';
 import 'common/common_widgets.dart';
 
@@ -98,6 +99,13 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       case _PreDbStep.welcome:
         return _WelcomeView(
           onStart: () => setState(() => _step = _PreDbStep.eligibility),
+          onRestore: AppScope.of(context).canRestoreFromFile
+              ? () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const RestoreBackupScreen(hasExistingData: false),
+                    ),
+                  )
+              : null,
         );
       case _PreDbStep.eligibility:
         final age = _parsedAge();
@@ -508,7 +516,8 @@ class _OnboardingCalorieDisplayScreenState extends State<OnboardingCalorieDispla
 
 class _WelcomeView extends StatelessWidget {
   final VoidCallback onStart;
-  const _WelcomeView({required this.onStart});
+  final VoidCallback? onRestore;
+  const _WelcomeView({required this.onStart, this.onRestore});
 
   @override
   Widget build(BuildContext context) {
@@ -516,6 +525,8 @@ class _WelcomeView extends StatelessWidget {
     return StepScaffold(
       primaryLabel: 'Bắt đầu',
       onPrimary: onStart,
+      secondaryLabel: onRestore == null ? null : 'Khôi phục từ bản sao lưu',
+      onSecondary: onRestore,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

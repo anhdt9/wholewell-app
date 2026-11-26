@@ -1,6 +1,7 @@
 /// CSDL mã hóa trên máy của WholeWell (đặc tả docs/specs/encrypted-db.md).
 library;
 
+export 'src/backup_codec.dart';
 export 'src/connection.dart'
     show DbOpenException, DbOpenStage, dbCipher, dbLogStatements, looksLikePlainSqlite;
 export 'src/db_files.dart';

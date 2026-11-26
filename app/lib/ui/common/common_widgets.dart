@@ -406,7 +406,8 @@ class StepScaffold extends StatelessWidget {
 Future<bool> showWipeConfirmDialog(
   BuildContext context, {
   String title = 'Xóa toàn bộ dữ liệu?',
-  String message = 'Mọi dữ liệu trên máy này sẽ bị xóa và không lấy lại được.',
+  String message =
+      'Mọi dữ liệu trên máy này sẽ bị xóa và không lấy lại được, trừ khi bạn có bản sao lưu.',
   String actionLabel = 'Xóa toàn bộ',
 }) async {
   var typed = '';

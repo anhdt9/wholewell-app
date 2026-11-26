@@ -153,6 +153,54 @@ class DbSessionController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<Uint8List> exportBackup({
+    required String secret,
+    int memoryKiB = BackupCodec.defaultMemoryKiB,
+    int iterations = BackupCodec.defaultIterations,
+    int parallelism = BackupCodec.defaultParallelism,
+  }) async {
+    final o = _opener;
+    final r = _repo;
+    if (o == null || r is! DriftJournalRepository) {
+      throw StateError('Chỉ sao lưu qua tệp khi CSDL mã hóa đang mở.');
+    }
+    return o.exportBackup(
+      openRepository: r,
+      secret: secret,
+      memoryKiB: memoryKiB,
+      iterations: iterations,
+      parallelism: parallelism,
+    );
+  }
+
+  Future<RestoreOutcome> restoreFromBackup({
+    required Uint8List backupBytes,
+    required String secret,
+    required Future<void> Function() onRestored,
+  }) async {
+    final o = _opener;
+    if (o == null) {
+      throw StateError('Chưa có kho lưu trữ CSDL trên thiết bị.');
+    }
+    final outcome = await o.restoreFromBackup(
+      backupBytes: backupBytes,
+      secret: secret,
+      openRepository: _repo,
+    );
+    if (outcome is RestoreSucceeded) {
+      _repo = null;
+      _apply(outcome.openOutcome);
+      if (_status == DataStatus.ready) {
+        await _syncStageFromRepo();
+        await onRestored();
+      } else if (_status == DataStatus.welcome) {
+        _stage = SessionStage.welcome;
+      }
+      notifyListeners();
+    }
+    return outcome;
+  }
+
   Future<void> startOver({required VoidCallback onCleared}) async {
     final o = _opener;
     final r = _repo;

@@ -7,6 +7,7 @@ import 'package:health_engine/health_engine.dart';
 
 import 'intake.dart';
 import 'models.dart';
+import 'schema.dart';
 
 /// Phần lưu trữ mà trạng thái app dùng. Kho, lịch uống chỉ có ở bản CSDL
 /// ([DriftJournalRepository]); bản bộ nhớ dùng để test giao diện.
@@ -131,6 +132,9 @@ abstract interface class JournalRepository {
   Future<List<WorkoutRecord>> workoutsBetween(String fromDay, String toDay);
 
   Future<void> close();
+
+  /// Xuất toàn bộ dữ liệu người dùng dạng JSON đọc được (dùng cho Quyền riêng tư → Xuất dữ liệu).
+  Future<Map<String, Object?>> exportReadableJson();
 }
 
 /// Bản bộ nhớ (test giao diện). Không có kho: lần uống không trừ hộp nào.
@@ -1120,4 +1124,43 @@ class InMemoryJournalRepository implements JournalRepository {
 
   @override
   Future<void> close() async => _changes.close();
+
+  @override
+  Future<Map<String, Object?>> exportReadableJson() async => {
+        'app': 'WholeWell',
+        'schemaVersion': currentSchemaVersion,
+        'exportedAt': DateTime.now().toUtc().toIso8601String(),
+        'consent': _consent == null
+            ? null
+            : {
+                'contentVersion': _consent!.contentVersion,
+                'grantedAt': _consent!.grantedAt.toUtc().toIso8601String(),
+              },
+        'profile': _profile == null
+            ? null
+            : {
+                'ageYears': _ageYears,
+                'caution': _caution,
+                'sex': _profile!.sex.name,
+                'heightCm': _profile!.heightCm,
+                'weightKg': _profile!.weightKg,
+                'activityLevel': _profile!.activityLevel.name,
+              },
+        'settings': {
+          'hideCalories': _hide,
+          'wake': _dayTimesSettings.wake,
+          'breakfast': _dayTimesSettings.breakfast,
+          'lunch': _dayTimesSettings.lunch,
+          'dinner': _dayTimesSettings.dinner,
+          'sleep': _dayTimesSettings.sleep,
+          'dayTimesConfirmed': _dayTimesSettings.dayTimesConfirmed,
+          'showTipCard': _dayTimesSettings.showTipCard,
+        },
+        'foodsCount': _foods.length,
+        'dosesCount': _doses.length,
+        'watersCount': _waters.length,
+        'workoutsCount': _workouts.length,
+        'productsCount': _products.length,
+        'schedulesCount': _schedules.length,
+      };
 }

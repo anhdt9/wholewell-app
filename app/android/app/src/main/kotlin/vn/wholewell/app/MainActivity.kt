@@ -10,6 +10,7 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
     private var genAiExtractor: LabelGenAiExtractor? = null
     private var reminderScheduler: ReminderScheduler? = null
+    private var backupFileChannel: BackupFileChannel? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -24,6 +25,10 @@ class MainActivity : FlutterActivity() {
         reminderScheduler = scheduler
         notifChannel.setMethodCallHandler(scheduler)
         scheduler.handleLaunchIntent(intent, deliverOverChannel = false)
+        val backupChannel = BackupFileChannel(this)
+        backupFileChannel = backupChannel
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, BackupFileChannel.CHANNEL)
+            .setMethodCallHandler(backupChannel)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "vn.wholewell.app/settings")
             .setMethodCallHandler { call, result ->
                 if (call.method == "openAppSettings") {
@@ -54,10 +59,18 @@ class MainActivity : FlutterActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
+    @Suppress("DEPRECATION")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (backupFileChannel?.onActivityResult(requestCode, resultCode, data) == true) return
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
     override fun onDestroy() {
         genAiExtractor?.dispose()
         genAiExtractor = null
         reminderScheduler = null
+        backupFileChannel?.dispose()
+        backupFileChannel = null
         super.onDestroy()
     }
 }
