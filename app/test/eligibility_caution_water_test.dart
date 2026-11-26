@@ -75,7 +75,7 @@ void main() {
 
       // Màn Đồng ý 2/4: bấm Không đồng ý -> vẫn chưa có CSDL.
       expect(find.text('2/4'), findsOneWidget);
-      expect(find.textContaining('xóa ở tab Tôi'), findsOneWidget);
+      expect(find.textContaining('xóa ở Tôi → Quyền riêng tư'), findsOneWidget);
       await tester.tap(find.text('Không đồng ý'));
       await tester.pumpAndSettle();
       expect(find.textContaining('App cần đồng ý này để tính toán'), findsOneWidget);
