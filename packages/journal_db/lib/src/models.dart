@@ -482,6 +482,53 @@ class Occurrence {
   const Occurrence(this.scheduleId, this.day, this.status, this.doseEntryId);
 }
 
+/// Thay đổi lịch: dòng mới và ngày bắt đầu có hiệu lực.
+class ScheduleChange {
+  final int newScheduleId;
+  final String effectiveFrom;
+  const ScheduleChange(this.newScheduleId, this.effectiveFrom);
+}
+
+/// Cài đặt giờ trong ngày và công tắc thẻ "Bạn có biết" trong bảng `settings`.
+class DayTimesSettings {
+  final int wake;
+  final int breakfast;
+  final int lunch;
+  final int dinner;
+  final int sleep;
+  final bool dayTimesConfirmed;
+  final bool showTipCard;
+
+  const DayTimesSettings({
+    this.wake = 360,
+    this.breakfast = 420,
+    this.lunch = 720,
+    this.dinner = 1140,
+    this.sleep = 1350,
+    this.dayTimesConfirmed = false,
+    this.showTipCard = true,
+  });
+
+  DayTimesSettings copyWith({
+    int? wake,
+    int? breakfast,
+    int? lunch,
+    int? dinner,
+    int? sleep,
+    bool? dayTimesConfirmed,
+    bool? showTipCard,
+  }) =>
+      DayTimesSettings(
+        wake: wake ?? this.wake,
+        breakfast: breakfast ?? this.breakfast,
+        lunch: lunch ?? this.lunch,
+        dinner: dinner ?? this.dinner,
+        sleep: sleep ?? this.sleep,
+        dayTimesConfirmed: dayTimesConfirmed ?? this.dayTimesConfirmed,
+        showTipCard: showTipCard ?? this.showTipCard,
+      );
+}
+
 class WorkoutRecord {
   final int id;
   final DateTime startAt;

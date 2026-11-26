@@ -60,13 +60,6 @@ Map<String, double> _decode(Object? json) => {
         e.key: (e.value as num).toDouble(),
     };
 
-/// Thay đổi lịch: dòng mới và ngày bắt đầu có hiệu lực.
-class ScheduleChange {
-  final int newScheduleId;
-  final String effectiveFrom;
-  const ScheduleChange(this.newScheduleId, this.effectiveFrom);
-}
-
 class DriftJournalRepository implements JournalRepository {
   final JournalDatabase db;
   final DateTime Function() _now;
@@ -272,6 +265,75 @@ class DriftJournalRepository implements JournalRepository {
   @override
   Future<void> saveHideCalories(bool v) =>
       _guard(write: true, () => _update('UPDATE settings SET hide_calories = ? WHERE id = 1', [v]));
+
+  @override
+  Future<DayTimesSettings> loadDayTimesSettings() => _guard(() async {
+        final r = (await _select(
+          'SELECT wake, breakfast, lunch, dinner, sleep, day_times_confirmed, show_tip_card '
+          'FROM settings WHERE id = 1',
+        ))
+            .first;
+        return DayTimesSettings(
+          wake: r['wake'] as int,
+          breakfast: r['breakfast'] as int,
+          lunch: r['lunch'] as int,
+          dinner: r['dinner'] as int,
+          sleep: r['sleep'] as int,
+          dayTimesConfirmed: r['day_times_confirmed'] == 1,
+          showTipCard: r['show_tip_card'] == 1,
+        );
+      });
+
+  @override
+  Future<void> saveDayTimesSettings(DayTimesSettings s) => _guard(
+        write: true,
+        () => _update(
+          'UPDATE settings SET wake = ?, breakfast = ?, lunch = ?, dinner = ?, sleep = ?, '
+          'day_times_confirmed = ?, show_tip_card = ? WHERE id = 1',
+          [s.wake, s.breakfast, s.lunch, s.dinner, s.sleep, s.dayTimesConfirmed, s.showTipCard],
+        ),
+      );
+
+  @override
+  Future<void> saveShowTipCard(bool show) =>
+      _guard(write: true, () => _update('UPDATE settings SET show_tip_card = ? WHERE id = 1', [show]));
+
+  @override
+  Future<HealthConsentStatus?> latestNotificationConsent() => _guard(() async {
+        final rows = await _select(
+          "SELECT content_version, granted_at FROM consents "
+          "WHERE kind = 'notifications' AND withdrawn_at IS NULL "
+          "ORDER BY granted_at DESC, id DESC LIMIT 1",
+        );
+        if (rows.isEmpty) return null;
+        final r = rows.first;
+        return HealthConsentStatus(r['content_version'] as String, _at(r['granted_at']));
+      });
+
+  @override
+  Future<void> grantNotificationConsent(String contentVersion) => _guard(
+        write: true,
+        () => db.transaction(() async {
+          final nowMs = _nowMs;
+          await _update(
+            "UPDATE consents SET withdrawn_at = ? WHERE kind = 'notifications' AND withdrawn_at IS NULL",
+            [nowMs],
+          );
+          await _insert(
+            "INSERT INTO consents (kind, content_version, granted_at) VALUES ('notifications', ?, ?)",
+            [contentVersion, nowMs],
+          );
+        }),
+      );
+
+  @override
+  Future<void> withdrawNotificationConsent() => _guard(
+        write: true,
+        () => _update(
+          "UPDATE consents SET withdrawn_at = ? WHERE kind = 'notifications' AND withdrawn_at IS NULL",
+          [_nowMs],
+        ),
+      );
 
   @override
   Future<OnboardingStep> loadOnboardingStep() => _guard(() async =>
@@ -772,6 +834,7 @@ class DriftJournalRepository implements JournalRepository {
         }),
       );
 
+  @override
   Future<int> addSchedule(int productId, int timeOfDay, double servings, {required String validFrom}) =>
       _guard(
           write: true,
@@ -781,6 +844,7 @@ class DriftJournalRepository implements JournalRepository {
 
   /// Sửa lịch: đóng dòng cũ, mở dòng mới. Có hiệu lực từ [today] nếu hôm nay chưa
   /// đánh dấu lần nào của lịch cũ; nếu đã đánh dấu thì từ ngày mai.
+  @override
   Future<ScheduleChange> updateSchedule(int id,
           {int? timeOfDay, double? servings, required String today}) =>
       _guard(write: true, () => db.transaction(() async {
@@ -801,7 +865,27 @@ class DriftJournalRepository implements JournalRepository {
             return ScheduleChange(newId, from);
           }));
 
+  /// Kết thúc lịch (không xóa dòng cũ để giữ lịch sử). Có hiệu lực từ [today]
+  /// nếu hôm nay chưa đánh dấu; ngược lại từ ngày mai.
+  @override
+  Future<void> endSchedule(int id, {required String today}) => _guard(
+      write: true,
+      () => db.transaction(() async {
+            final rows = await _select('SELECT * FROM schedules WHERE id = ?', [id]);
+            if (rows.isEmpty) throw StateError('Không có lịch $id');
+            final old = rows.first;
+            if (old['valid_to'] != null) return;
+            final marked =
+                (await _select('SELECT 1 FROM dose_occurrences WHERE schedule_id = ? AND day = ?', [id, today]))
+                    .isNotEmpty;
+            var to = marked ? nextDay(today) : today;
+            final oldFrom = old['valid_from'] as String;
+            if (to.compareTo(oldFrom) < 0) to = oldFrom;
+            await _update('UPDATE schedules SET valid_to = ? WHERE id = ?', [to, id]);
+          }));
+
   /// Các dòng lịch có hiệu lực trong [day] (khoảng [valid_from, valid_to)).
+  @override
   Future<List<Schedule>> schedulesOn(String day) => _guard(() async => [
         for (final r in await _select(
             'SELECT * FROM schedules WHERE valid_from <= ? AND (valid_to IS NULL OR valid_to > ?) '
@@ -811,6 +895,7 @@ class DriftJournalRepository implements JournalRepository {
               r['valid_from'] as String, r['valid_to'] as String?),
       ]);
 
+  @override
   Future<List<Occurrence>> occurrencesOn(String day) => _guard(() async => [
         for (final r in await _select('SELECT * FROM dose_occurrences WHERE day = ?', [day]))
           Occurrence(r['schedule_id'] as int, r['day'] as String, OccurrenceStatus.values.byName(r['status'] as String),
@@ -818,6 +903,7 @@ class DriftJournalRepository implements JournalRepository {
       ]);
 
   /// [Bỏ qua] một lần theo lịch.
+  @override
   Future<void> skipOccurrence(OccurrenceRef o) => _guard(write: true, () => db.transaction(() async {
         final rows = await _select(
             'SELECT status FROM dose_occurrences WHERE schedule_id = ? AND day = ?', [o.scheduleId, o.day]);
@@ -832,6 +918,7 @@ class DriftJournalRepository implements JournalRepository {
       }));
 
   /// Bỏ đánh dấu, về "Chưa đánh dấu". Lần đã uống thì xóa lần uống và trả kho.
+  @override
   Future<void> clearOccurrence(OccurrenceRef o) => _guard(write: true, () => db.transaction(() async {
         final rows = await _select(
             'SELECT dose_entry_id FROM dose_occurrences WHERE schedule_id = ? AND day = ?', [o.scheduleId, o.day]);
@@ -843,6 +930,29 @@ class DriftJournalRepository implements JournalRepository {
           await _update('DELETE FROM dose_occurrences WHERE schedule_id = ? AND day = ?', [o.scheduleId, o.day]);
         }
       }));
+
+  @override
+  Future<void> relinkDoseOccurrence(int doseId, OccurrenceRef? newOccurrence) => _guard(
+      write: true,
+      () => db.transaction(() async {
+            await _update('DELETE FROM dose_occurrences WHERE dose_entry_id = ?', [doseId]);
+            if (newOccurrence != null) {
+              final rows = await _select(
+                'SELECT status FROM dose_occurrences WHERE schedule_id = ? AND day = ?',
+                [newOccurrence.scheduleId, newOccurrence.day],
+              );
+              if (rows.isNotEmpty && rows.first['status'] == 'taken') {
+                throw StateError('Lần này đã đánh dấu đã uống');
+              }
+              await _insert(
+                'INSERT INTO dose_occurrences (schedule_id, day, status, dose_entry_id, updated_at) '
+                "VALUES (?, ?, 'taken', ?, ?) "
+                "ON CONFLICT (schedule_id, day) DO UPDATE SET status = 'taken', "
+                'dose_entry_id = excluded.dose_entry_id, updated_at = excluded.updated_at',
+                [newOccurrence.scheduleId, newOccurrence.day, doseId, _nowMs],
+              );
+            }
+          }));
 
   // ---------------------------------------------------------------- lần uống
 
