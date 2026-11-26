@@ -25,9 +25,13 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
   Future<void> _save(Activity selected, double minutes) async {
     if (_saving) return;
     setState(() => _saving = true);
-    await AppScope.of(context).addWorkout(WorkoutEntry(activityCode: selected.code, minutes: minutes));
-    if (!mounted) return;
-    Navigator.of(context).pop();
+    try {
+      await AppScope.of(context).addWorkout(WorkoutEntry(activityCode: selected.code, minutes: minutes));
+      if (!mounted) return;
+      Navigator.of(context).pop();
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   @override

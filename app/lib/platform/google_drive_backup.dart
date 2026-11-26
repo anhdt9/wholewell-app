@@ -62,16 +62,16 @@ class GoogleSignInAuth implements GoogleAuth {
   @override
   Future<GoogleAuthAccount?> signInSilently() async {
     await _ensureInitialized();
-    final cached = _account;
-    if (cached != null) {
-      final authz = await cached.authorizationClient.authorizationForScopes(
-        const [driveAppDataScope],
-      );
-      if (authz != null) {
-        return _toAccount(cached);
-      }
-    }
     try {
+      final cached = _account;
+      if (cached != null) {
+        final authz = await cached.authorizationClient.authorizationForScopes(
+          const [driveAppDataScope],
+        );
+        if (authz != null) {
+          return _toAccount(cached);
+        }
+      }
       final attempt = GoogleSignIn.instance.attemptLightweightAuthentication(
         reportAllExceptions: true,
       );

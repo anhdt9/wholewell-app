@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -17,6 +18,16 @@ class _SlowWorkoutRepo extends InMemoryJournalRepository {
   Future<int> addWorkout(DateTime startAt, WorkoutEntry w) async {
     await Future<void>.delayed(const Duration(milliseconds: 80));
     return super.addWorkout(startAt, w);
+  }
+}
+
+class _ThrowingWorkoutAppState extends AppState {
+  _ThrowingWorkoutAppState({required super.pack, required super.repo}) : super.withRepository();
+
+  @override
+  Future<void> addWorkout(WorkoutEntry w) async {
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    throw StateError('simulated storage failure');
   }
 }
 
@@ -114,6 +125,42 @@ void main() {
 
       expect(state.todayWorkouts.length, 1);
       expect(state.todayWorkouts.single.minutes, 45);
+    });
+
+    testWidgets('AddWorkoutScreen nhả _saving trong finally nếu addWorkout ném ngoại lệ',
+        (tester) async {
+      final state = _ThrowingWorkoutAppState(pack: pack, repo: InMemoryJournalRepository());
+      await state.start();
+      await state.completeFirstConsent(ageYears: 28, caution: false);
+      await state.saveOnboardingBodyProfile(const Profile(
+        ageYears: 28,
+        sex: Sex.male,
+        heightCm: 172,
+        weightKg: 68,
+        activityLevel: ActivityLevel.active,
+      ));
+      await state.completeCalorieDisplayOnboarding(false);
+      addTearDown(state.dispose);
+
+      await tester.pumpWidget(_wrapWithState(state, const AddWorkoutScreen()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(RadioListTile<String>).first);
+      await tester.pumpAndSettle();
+
+      Object? caught;
+      await runZonedGuarded(() async {
+        await tester.tap(find.text('Lưu'));
+        await tester.pump();
+        // Khi đang chờ addWorkout, nút Lưu tạm thời khóa.
+        expect(tester.widget<TextButton>(find.widgetWithText(TextButton, 'Lưu')).onPressed, isNull);
+        await tester.pump(const Duration(milliseconds: 50));
+      }, (e, _) => caught = e);
+      expect(caught, isA<StateError>());
+      await tester.pump();
+
+      // Nhờ try/finally, màn vẫn ở lại và nút Lưu được mở khóa lại.
+      expect(tester.widget<TextButton>(find.widgetWithText(TextButton, 'Lưu')).onPressed, isNotNull);
     });
 
     testWidgets('FoodPortionScreen xóa trống hoặc nhập 0/NaN sẽ khóa nút Lưu thay vì lưu số cũ',
