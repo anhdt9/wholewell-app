@@ -37,7 +37,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/reference_pack.json
-    - assets/privacy_policy.md
     - assets/food_library.db
     - assets/food_library_manifest.json
     - assets/dsld_library.db.gz

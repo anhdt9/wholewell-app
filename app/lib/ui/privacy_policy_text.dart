@@ -1,4 +1,5 @@
-# Chính sách quyền riêng tư — WholeWell
+/// Toàn văn Chính sách quyền riêng tư nhúng tĩnh trong app (khớp 100% với docs/privacy-policy.md).
+const String kPrivacyPolicyMarkdown = r'''# Chính sách quyền riêng tư — WholeWell
 
 Cập nhật lần cuối: 26/11/2026  
 Nhà phát triển: Đặng Thế Anh  
@@ -53,3 +54,4 @@ Nếu có câu hỏi hoặc yêu cầu liên quan đến quyền riêng tư và 
 
 - **Nhà phát triển:** Đặng Thế Anh
 - **Email:** wholewell.apps@gmail.com
+''';
