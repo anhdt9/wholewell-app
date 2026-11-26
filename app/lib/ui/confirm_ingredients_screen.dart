@@ -73,6 +73,7 @@ class ConfirmIngredientsScreen extends StatefulWidget {
   final List<String> rawOcrLines;
   final String? scannedBarcode;
   final int? editingProductId;
+  final bool fromDsld;
   final Future<void> Function(BuildContext ctx, List<IngredientDraft> drafts) onConfirmed;
 
   const ConfirmIngredientsScreen({
@@ -81,6 +82,7 @@ class ConfirmIngredientsScreen extends StatefulWidget {
     this.rawOcrLines = const [],
     this.scannedBarcode,
     this.editingProductId,
+    this.fromDsld = false,
     required this.onConfirmed,
   });
 
@@ -114,6 +116,27 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
       return true;
     } on ArgumentError {
       return false;
+    }
+  }
+
+  bool get _allUnitCompatible {
+    if (_lines.isEmpty) return false;
+    final pack = AppScope.of(context).pack;
+    return _lines.every(
+      (l) => (l.labelAmount ?? 0) > 0 && _isUnitCompatible(l, pack),
+    );
+  }
+
+  Future<void> _confirmAllAndSubmit() async {
+    setState(() {
+      for (final l in _lines) {
+        if ((l.labelAmount ?? 0) > 0 && _isUnitCompatible(l, AppScope.of(context).pack)) {
+          l.confirmed = true;
+        }
+      }
+    });
+    if (_allConfirmed && !_saving) {
+      await _submit();
     }
   }
 
@@ -267,9 +290,19 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
           Text(
             widget.editingProductId != null
                 ? 'Thay đổi thành phần chỉ áp dụng cho lần uống mới.'
-                : 'Kiểm tra và đánh dấu xác nhận từng dòng trước khi lưu.',
+                : widget.fromDsld
+                    ? 'Điền sẵn từ thư viện nhãn Mỹ (NIH DSLD). Kiểm tra lại trước khi lưu.'
+                    : 'Kiểm tra và đánh dấu xác nhận từng dòng trước khi lưu.',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
+          if (widget.fromDsld && _lines.isNotEmpty && !_allConfirmed && _allUnitCompatible) ...[
+            const SizedBox(height: 12),
+            FilledButton.tonalIcon(
+              onPressed: _saving ? null : _confirmAllAndSubmit,
+              icon: const Icon(Icons.done_all),
+              label: Text('Xác nhận tất cả (${_lines.length})'),
+            ),
+          ],
           const SizedBox(height: 12),
           if (_lines.isEmpty)
             const Padding(

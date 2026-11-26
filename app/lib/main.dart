@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dsld_library/dsld_library.dart';
 import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -10,6 +11,7 @@ import 'package:journal_db/journal_db.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'platform/android_db_key_store.dart';
+import 'platform/local_dsld_library_store.dart';
 import 'platform/local_food_library_store.dart';
 import 'state/app_scope.dart';
 import 'state/app_state.dart';
@@ -23,12 +25,16 @@ Future<void> main() async {
       await rootBundle.loadString('assets/reference_pack.json'));
   final manifest = jsonDecode(
       await rootBundle.loadString('assets/food_library_manifest.json')) as Map<String, dynamic>;
+  final dsldManifest = jsonDecode(
+      await rootBundle.loadString('assets/dsld_library_manifest.json')) as Map<String, dynamic>;
   final AppState state;
   if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
     // Android: filesDir (không vào sao lưu tự động, xem AndroidManifest).
     final dir = await getApplicationSupportDirectory();
     final libVersion = manifest['libraryVersion'] as String;
     final libSha = manifest['sha256'] as String;
+    final dsldVersion = dsldManifest['libraryVersion'] as String;
+    final dsldSha = dsldManifest['dbSha256'] as String;
     state = AppState(
       pack: pack,
       opener: DbOpener(files: DbFiles(dir), keys: const AndroidDbKeyStore()),
@@ -36,6 +42,11 @@ Future<void> main() async {
         store: FlutterFoodLibraryAssetStore(supportDir: dir),
         libraryVersion: libVersion,
         expectedSha256: libSha,
+      ),
+      openDsldLibrary: () => SqliteDsldLibraryRepository.open(
+        store: FlutterDsldLibraryAssetStore(supportDir: dir),
+        libraryVersion: dsldVersion,
+        expectedSha256: dsldSha,
       ),
     );
   } else {

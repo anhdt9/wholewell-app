@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:dsld_library/dsld_library.dart';
 import 'package:flutter/foundation.dart';
 import 'package:food_library/food_library.dart';
 import 'package:health_engine/health_engine.dart';
@@ -24,15 +27,23 @@ class AppState extends ChangeNotifier {
   final OcrEngine ocrEngine;
   final BarcodeScanner? barcodeScanner;
   final Future<FoodLibraryRepository> Function()? _openFoodLibrary;
+  final Future<DsldLibraryRepository> Function()? _openDsldLibrary;
+  DsldLibraryRepository? _dsldLibrary;
+  bool _dsldLibraryBroken = false;
+  bool _dsldLibraryPreparing = false;
 
   AppState({
     required this.pack,
     required DbOpener opener,
     Future<FoodLibraryRepository> Function()? openFoodLibrary,
     FoodLibraryRepository? foodLibrary,
+    Future<DsldLibraryRepository> Function()? openDsldLibrary,
+    DsldLibraryRepository? dsldLibrary,
     OcrEngine? ocrEngine,
     this.barcodeScanner,
   })  : _openFoodLibrary = openFoodLibrary,
+        _openDsldLibrary = openDsldLibrary,
+        _dsldLibrary = dsldLibrary,
         ocrEngine = ocrEngine ?? MlKitOcrEngine(),
         session = DbSessionController(opener: opener),
         diary = DiaryController(pack: pack, foodLibrary: foodLibrary) {
@@ -45,9 +56,12 @@ class AppState extends ChangeNotifier {
     required this.pack,
     required JournalRepository repo,
     FoodLibraryRepository? foodLibrary,
+    DsldLibraryRepository? dsldLibrary,
     OcrEngine? ocrEngine,
     this.barcodeScanner,
   })  : _openFoodLibrary = null,
+        _openDsldLibrary = null,
+        _dsldLibrary = dsldLibrary,
         ocrEngine = ocrEngine ?? FakeOcrEngine(),
         session = DbSessionController(repo: repo, initialStatus: DataStatus.ready),
         diary = DiaryController(pack: pack, repo: repo, foodLibrary: foodLibrary) {
@@ -58,6 +72,8 @@ class AppState extends ChangeNotifier {
   /// Nền tảng chưa có kho khóa: không mở, không ghi gì.
   AppState.unsupportedPlatform({required this.pack})
       : _openFoodLibrary = null,
+        _openDsldLibrary = null,
+        _dsldLibrary = null,
         ocrEngine = FakeOcrEngine(),
         barcodeScanner = null,
         session = DbSessionController(initialStatus: DataStatus.unsupportedPlatform),
@@ -78,6 +94,9 @@ class AppState extends ChangeNotifier {
   bool get readFailed => diary.readFailed;
   bool get foodLibraryBroken => diary.foodLibraryBroken;
   FoodLibraryRepository? get foodLibrary => diary.foodLibrary;
+  DsldLibraryRepository? get dsldLibrary => _dsldLibrary;
+  bool get dsldLibraryBroken => _dsldLibraryBroken;
+  bool get dsldLibraryPreparing => _dsldLibraryPreparing;
 
   List<IntakeItem> get todayItems => diary.todayItems;
   List<WorkoutEntry> get todayWorkouts => diary.todayWorkoutEntries;
@@ -92,6 +111,7 @@ class AppState extends ChangeNotifier {
           await diary.checkAgeBumpOnReady();
         }
         await _ensureFoodLibrary();
+        unawaited(_ensureDsldLibrary());
         await diary.reload();
       });
 
@@ -116,6 +136,7 @@ class AppState extends ChangeNotifier {
       if (!created) return false;
       diary.attachRepository(session.repo);
       await _ensureFoodLibrary();
+      unawaited(_ensureDsldLibrary());
       await diary.reload();
       return true;
     } on StorageFullException {
@@ -134,6 +155,7 @@ class AppState extends ChangeNotifier {
         await diary.checkAgeBumpOnReady();
       }
       await _ensureFoodLibrary();
+      unawaited(_ensureDsldLibrary());
       await diary.reload();
       return true;
     } on StorageFullException {
@@ -204,8 +226,30 @@ class AppState extends ChangeNotifier {
   DailyReport? report() => diary.report();
   ActivityLevel suggestedLevel() => diary.suggestedLevel();
 
+  Future<void> _ensureDsldLibrary() async {
+    if (_dsldLibrary != null || _dsldLibraryBroken || _dsldLibraryPreparing || _openDsldLibrary == null) {
+      return;
+    }
+    _dsldLibraryPreparing = true;
+    notifyListeners();
+    try {
+      _dsldLibrary = await _openDsldLibrary();
+      _dsldLibraryBroken = false;
+    } on DsldLibraryIntegrityException {
+      _dsldLibrary = null;
+      _dsldLibraryBroken = true;
+    } on Object {
+      _dsldLibrary = null;
+      _dsldLibraryBroken = true;
+    } finally {
+      _dsldLibraryPreparing = false;
+      notifyListeners();
+    }
+  }
+
   @override
   void dispose() {
+    _dsldLibrary?.close();
     session.removeListener(notifyListeners);
     diary.removeListener(notifyListeners);
     session.dispose();

@@ -17,6 +17,8 @@ dependencies:
     path: ../packages/journal_db
   food_library:
     path: ../packages/food_library
+  dsld_library:
+    path: ../packages/dsld_library
   path_provider: 2.1.6
   google_mlkit_text_recognition: ^1.0.3
   image_picker: ^1.2.4
@@ -34,6 +36,8 @@ flutter:
     - assets/reference_pack.json
     - assets/food_library.db
     - assets/food_library_manifest.json
+    - assets/dsld_library.db.gz
+    - assets/dsld_library_manifest.json
 
 # CSDL mã hóa: dùng SQLite3MultipleCiphers thay SQLite gốc (docs/specs/encrypted-db.md).
 hooks:

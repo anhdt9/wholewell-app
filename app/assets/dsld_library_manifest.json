@@ -1,0 +1,11 @@
+{
+  "libraryVersion": "2026.01.16-1",
+  "dsldRelease": "NIH DSLD Bulk CSV 2026-01-16 (On Market + Valid Barcode)",
+  "builtAt": "2026-11-26",
+  "productCount": 94612,
+  "factCount": 819817,
+  "dbSha256": "ef92b79f57988aa39c6650a2e47ef9dbc47a841ff41e76412c0ef734eac68cd4",
+  "gzSha256": "591e63cb77b0a6664a4efe61968a7dfb26f0622f46467b246be47d507beae9f5",
+  "dbBytes": 112914432,
+  "gzBytes": 23755658
+}
