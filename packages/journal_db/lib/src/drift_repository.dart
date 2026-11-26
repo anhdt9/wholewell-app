@@ -161,10 +161,13 @@ class DriftJournalRepository implements JournalRepository {
   @override
   Future<Profile?> loadProfile() => _guard(() async {
     final rows = await _select('SELECT * FROM profile WHERE id = 1');
-    if (rows.isEmpty) return null;
-    final r = rows.first;
-    if (r['sex'] == null || r['height_cm'] == null || r['weight_kg'] == null)
+    if (rows.isEmpty) {
       return null;
+    }
+    final r = rows.first;
+    if (r['sex'] == null || r['height_cm'] == null || r['weight_kg'] == null) {
+      return null;
+    }
     final level = r['activity_level'] as String?;
     return Profile(
       ageYears: r['age_years'] as int,
@@ -184,7 +187,9 @@ class DriftJournalRepository implements JournalRepository {
       "WHERE kind = 'health_data' AND withdrawn_at IS NULL "
       "ORDER BY granted_at DESC, id DESC LIMIT 1",
     );
-    if (rows.isEmpty) return null;
+    if (rows.isEmpty) {
+      return null;
+    }
     final r = rows.first;
     return HealthConsentStatus(
       r['content_version'] as String,
@@ -198,7 +203,9 @@ class DriftJournalRepository implements JournalRepository {
     final rows = await _select(
       'SELECT age_years, age_entered_on, caution, caution_answered_on FROM profile WHERE id = 1',
     );
-    if (rows.isEmpty) return null;
+    if (rows.isEmpty) {
+      return null;
+    }
     final r = rows.first;
     return (
       ageYears: r['age_years'] as int,
@@ -287,8 +294,9 @@ class DriftJournalRepository implements JournalRepository {
           _nowMs,
         ],
       );
-      if (n != 1)
+      if (n != 1) {
         throw StateError('Chưa có hồ sơ: hồ sơ được tạo ở bước Đồng ý');
+      }
     }),
   );
 
@@ -299,7 +307,9 @@ class DriftJournalRepository implements JournalRepository {
       final rows = await _select(
         'SELECT age_years, age_entered_on FROM profile WHERE id = 1',
       );
-      if (rows.isEmpty) return null;
+      if (rows.isEmpty) {
+      return null;
+    }
       final r = rows.first;
       final bump = computeAgeBump(
         r['age_years'] as int,
@@ -375,14 +385,16 @@ class DriftJournalRepository implements JournalRepository {
     () => _update('UPDATE settings SET show_tip_card = ? WHERE id = 1', [show]),
   );
 
-  @override
-  Future<HealthConsentStatus?> latestNotificationConsent() => _guard(() async {
+  Future<HealthConsentStatus?> _latestConsent(String kind) => _guard(() async {
     final rows = await _select(
-      "SELECT content_version, granted_at FROM consents "
-      "WHERE kind = 'notifications' AND withdrawn_at IS NULL "
-      "ORDER BY granted_at DESC, id DESC LIMIT 1",
+      'SELECT content_version, granted_at FROM consents '
+      'WHERE kind = ? AND withdrawn_at IS NULL '
+      'ORDER BY granted_at DESC, id DESC LIMIT 1',
+      [kind],
     );
-    if (rows.isEmpty) return null;
+    if (rows.isEmpty) {
+      return null;
+    }
     final r = rows.first;
     return HealthConsentStatus(
       r['content_version'] as String,
@@ -390,30 +402,47 @@ class DriftJournalRepository implements JournalRepository {
     );
   });
 
-  @override
-  Future<void> grantNotificationConsent(String contentVersion) => _guard(
+  Future<void> _grantConsent(String kind, String contentVersion) => _guard(
     write: true,
     () => db.transaction(() async {
       final nowMs = _nowMs;
       await _update(
-        "UPDATE consents SET withdrawn_at = ? WHERE kind = 'notifications' AND withdrawn_at IS NULL",
-        [nowMs],
+        'UPDATE consents SET withdrawn_at = ? WHERE kind = ? AND withdrawn_at IS NULL',
+        [nowMs, kind],
       );
       await _insert(
-        "INSERT INTO consents (kind, content_version, granted_at) VALUES ('notifications', ?, ?)",
-        [contentVersion, nowMs],
+        'INSERT INTO consents (kind, content_version, granted_at) VALUES (?, ?, ?)',
+        [kind, contentVersion, nowMs],
       );
     }),
   );
 
-  @override
-  Future<void> withdrawNotificationConsent() => _guard(
+  Future<void> _withdrawConsent(String kind) => _guard(
     write: true,
     () => _update(
-      "UPDATE consents SET withdrawn_at = ? WHERE kind = 'notifications' AND withdrawn_at IS NULL",
-      [_nowMs],
+      'UPDATE consents SET withdrawn_at = ? WHERE kind = ? AND withdrawn_at IS NULL',
+      [_nowMs, kind],
     ),
   );
+
+  @override
+  Future<HealthConsentStatus?> latestNotificationConsent() => _latestConsent('notifications');
+
+  @override
+  Future<void> grantNotificationConsent(String contentVersion) =>
+      _grantConsent('notifications', contentVersion);
+
+  @override
+  Future<void> withdrawNotificationConsent() => _withdrawConsent('notifications');
+
+  @override
+  Future<HealthConsentStatus?> latestDriveConsent() => _latestConsent('drive');
+
+  @override
+  Future<void> grantDriveConsent(String contentVersion) => _grantConsent('drive', contentVersion);
+
+  @override
+  Future<void> withdrawDriveConsent() => _withdrawConsent('drive');
 
   @override
   Future<OnboardingStep> loadOnboardingStep() => _guard(
@@ -626,7 +655,9 @@ class DriftJournalRepository implements JournalRepository {
   @override
   Future<FoodEntry?> foodById(int id) => _guard(() async {
     final rows = await _select('SELECT * FROM food_entries WHERE id = ?', [id]);
-    if (rows.isEmpty) return null;
+    if (rows.isEmpty) {
+      return null;
+    }
     final ls = await _select(
       'SELECT * FROM intake_lines WHERE food_entry_id = ? ORDER BY id',
       [id],
@@ -1423,8 +1454,9 @@ class DriftJournalRepository implements JournalRepository {
   @override
   Future<DoseResult> updateDose(UpdateDoseInput input) async {
     checkLinesWritable(input.lines);
-    if (input.servings <= 0)
+    if (input.servings <= 0) {
       throw ArgumentError.value(input.servings, 'servings');
+    }
     return _guard(
       write: true,
       () => db.transaction<DoseResult>(() async {
