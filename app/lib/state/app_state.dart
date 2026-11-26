@@ -46,7 +46,6 @@ class AppState extends ChangeNotifier {
   bool _drivePendingDeleteActive = false;
   bool _drivePendingDeleteNeedsReauth = false;
   bool _checkingDriveState = false;
-  bool _silentSignInAttempted = false;
 
   AppState({
     required this.pack,
@@ -364,19 +363,7 @@ class AppState extends ChangeNotifier {
         return;
       }
       _drivePendingDeleteNeedsReauth = false;
-      var acc = _driveAccount ?? await googleAuth.currentUser();
-      if (acc == null &&
-          diary.driveConsent != null &&
-          !fromResume &&
-          !_silentSignInAttempted) {
-        _silentSignInAttempted = true;
-        try {
-          acc = await googleAuth.signInSilently();
-        } on Object {
-          acc = null;
-        }
-      }
-      _driveAccount = acc;
+      _driveAccount = _driveAccount ?? await googleAuth.currentUser();
       notifyListeners();
     } finally {
       _checkingDriveState = false;
@@ -446,7 +433,6 @@ class AppState extends ChangeNotifier {
     final res = await googleAuth.signIn();
     if (res is GoogleAuthSignedIn) {
       _driveAccount = res.account;
-      _silentSignInAttempted = false;
       notifyListeners();
     }
     return res;

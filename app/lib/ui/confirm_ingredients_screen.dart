@@ -655,7 +655,7 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
             FilledButton(
               onPressed: () {
                 final amt = double.tryParse(_amountCtrl.text.trim().replaceAll(',', '.'));
-                if (amt == null || amt <= 0) return;
+                if (amt == null || !amt.isFinite || amt <= 0) return;
                 if (!_isFree && _nutrientId == null) return;
                 if (_isFree && _freeName.text.trim().isEmpty) return;
                 if (!_isFree) {

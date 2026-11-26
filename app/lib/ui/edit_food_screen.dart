@@ -259,7 +259,9 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                         ),
                         onChanged: (raw) {
                           final v = double.tryParse(raw.trim().replaceAll(',', '.'));
-                          if (v != null && v > 0) setState(() => _qty = v);
+                          setState(() {
+                            _qty = (v != null && v.isFinite && v > 0) ? v : 0;
+                          });
                         },
                       ),
                     ),

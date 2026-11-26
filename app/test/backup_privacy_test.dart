@@ -811,5 +811,54 @@ void main() {
       await tester.runAsync(state.onAppResume);
       expect(googleAuth.signInSilentlyCalls, 1);
     });
+
+    testWidgets('start() không bật CredentialManager (signInSilentlyCalls == 0) khi pending == false',
+        (tester) async {
+      final dir = await makeTempDir('ww_drive_cold_no_prompt_');
+      final keys = FakeSecureKeyStore();
+      final googleAuth = FakeGoogleAuth();
+      final firstOpener = makeOpener(dir, keys);
+      await tester.runAsync(() async {
+        final res = await firstOpener.createNew(
+          const ConsentInput(contentVersion: mvpConsentVersion, ageYears: 28, caution: false),
+        );
+        final repo = (res as Opened).repository;
+        await repo.saveProfile(const Profile(
+          ageYears: 28,
+          sex: Sex.male,
+          heightCm: 172,
+          weightKg: 68,
+          activityLevel: ActivityLevel.active,
+        ));
+        await repo.saveHideCalories(false);
+        await repo.saveOnboardingStep(OnboardingStep.done);
+        await repo.grantDriveConsent(mvpConsentVersion);
+        await repo.close();
+      });
+
+      final state = await tester.runAsync(() async {
+        final s = AppState(
+          pack: pack,
+          opener: makeOpener(dir, keys),
+          googleAuth: googleAuth,
+          driveBackupProvider: FakeBackupProvider(),
+          drivePendingDeleteStore: FileDrivePendingDeleteStore(
+            File('${dir.path}/drive_pending_delete.json'),
+          ),
+        );
+        await s.start();
+        return s;
+      });
+      final appState = state!;
+      addTearDown(() async {
+        await appState.session.repo?.close();
+        appState.dispose();
+      });
+
+      expect(appState.status, DataStatus.ready);
+      expect(appState.stage, SessionStage.ready);
+      expect(appState.driveEnabled, isTrue);
+      expect(googleAuth.signInSilentlyCalls, 0);
+    });
   });
 }

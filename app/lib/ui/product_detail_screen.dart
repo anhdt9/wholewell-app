@@ -84,7 +84,7 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
       return;
     }
     final ups = double.tryParse(_unitsPerServing.text.trim().replaceAll(',', '.'));
-    if (ups == null || ups <= 0) {
+    if (ups == null || !ups.isFinite || ups <= 0) {
       setState(() => _error = 'Số đơn vị mỗi khẩu phần phải lớn hơn 0.');
       return;
     }
@@ -93,7 +93,7 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
     String? boxExp;
     if (!_isEdit && _boxRemaining.text.trim().isNotEmpty) {
       boxRem = double.tryParse(_boxRemaining.text.trim().replaceAll(',', '.'));
-      if (boxRem == null || boxRem < 0) {
+      if (boxRem == null || !boxRem.isFinite || boxRem < 0) {
         setState(() => _error = 'Số còn lại không được âm.');
         return;
       }
@@ -599,7 +599,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
             FilledButton(
               onPressed: () async {
                 final rem = double.tryParse(remCtrl.text.trim().replaceAll(',', '.'));
-                if (rem == null || rem < 0) {
+                if (rem == null || !rem.isFinite || rem < 0) {
                   setLocal(() => err = 'Số còn lại không được âm.');
                   return;
                 }
