@@ -3,9 +3,9 @@ import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
 import '../state/app_state.dart';
-import 'backup_restore_screen.dart';
 import 'body_metrics_fields.dart';
 import 'common/common_widgets.dart';
+import 'drive_backup_screens.dart';
 
 enum _PreDbStep { welcome, eligibility, notEligible, consent }
 
@@ -100,11 +100,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         return _WelcomeView(
           onStart: () => setState(() => _step = _PreDbStep.eligibility),
           onRestore: AppScope.of(context).canRestoreFromFile
-              ? () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const RestoreBackupScreen(hasExistingData: false),
-                    ),
-                  )
+              ? () => showRestoreSourcePicker(context, hasExistingData: false)
               : null,
         );
       case _PreDbStep.eligibility:
@@ -522,6 +518,7 @@ class _WelcomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
+    final state = AppScope.of(context);
     return StepScaffold(
       primaryLabel: 'Bắt đầu',
       onPrimary: onStart,
@@ -542,6 +539,10 @@ class _WelcomeView extends StatelessWidget {
           const Text('• Dữ liệu chỉ nằm trên máy này, không gửi đi đâu'),
           const SizedBox(height: 8),
           const Text('• Không cần mạng'),
+          if (state.drivePendingDeleteActive) ...[
+            const SizedBox(height: 20),
+            const PendingDriveDeleteCard(),
+          ],
         ],
       ),
     );

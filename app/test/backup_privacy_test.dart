@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:wholewell/main.dart';
 import 'package:wholewell/state/app_state.dart';
 import 'package:wholewell/ui/data_status_screen.dart';
+import 'package:wholewell/ui/drive_backup_screens.dart';
 import 'package:wholewell/ui/today_screen.dart';
 
 Future<void> _drainUntil(WidgetTester tester, bool Function() ready) async {
@@ -213,6 +214,8 @@ void main() {
       expect(find.text('Khôi phục từ bản sao lưu'), findsOneWidget);
       await tester.tap(find.text('Khôi phục từ bản sao lưu'));
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Từ tệp trên máy (.wwbackup)'));
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Chọn tệp sao lưu'));
       await tester.pumpAndSettle();
@@ -290,6 +293,8 @@ void main() {
 
       expect(find.byType(DataStatusScreen), findsOneWidget);
       await tester.tap(find.text('Khôi phục từ bản sao lưu'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Từ tệp trên máy (.wwbackup)'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Chọn tệp sao lưu'));
       await tester.pumpAndSettle();
@@ -406,6 +411,279 @@ void main() {
       expect(state.status, DataStatus.welcome);
       expect(keys.key, isNull);
       expect(find.text('Bắt đầu'), findsOneWidget);
+    });
+  });
+
+  group('Phần 7b: Sao lưu Google Drive (appDataFolder)', () {
+    testWidgets('Kết nối Drive (đồng ý riêng), tải tối đa 3 bản và ngắt kết nối', (tester) async {
+      final dir = await makeTempDir('ww_drive_up_');
+      final keys = FakeSecureKeyStore();
+      final files = FakeBackupFileProvider();
+      final googleAuth = FakeGoogleAuth();
+      final driveProvider = FakeBackupProvider();
+      final pendingStore = FileDrivePendingDeleteStore(
+        File('${dir.path}/drive_pending_delete.json'),
+      );
+
+      final opener = makeOpener(dir, keys);
+      final seeded = await tester.runAsync(() async {
+        final res = await opener.createNew(
+          const ConsentInput(contentVersion: mvpConsentVersion, ageYears: 27, caution: false),
+        );
+        final repo = (res as Opened).repository;
+        await repo.saveProfile(
+          const Profile(
+            ageYears: 27,
+            sex: Sex.male,
+            heightCm: 172,
+            weightKg: 66,
+            activityLevel: ActivityLevel.active,
+          ),
+        );
+        await repo.saveHideCalories(false);
+        await repo.saveOnboardingStep(OnboardingStep.done);
+        await repo.addWater(DateTime.now(), 400);
+        await repo.close();
+        final s = AppState(
+          pack: pack,
+          opener: makeOpener(dir, keys),
+          backupFileProvider: files,
+          googleAuth: googleAuth,
+          driveBackupProvider: driveProvider,
+          drivePendingDeleteStore: pendingStore,
+        );
+        await s.start();
+        return s;
+      });
+      final state = seeded!;
+      addTearDown(() async {
+        await state.session.repo?.close();
+        state.dispose();
+      });
+
+      await tester.pumpWidget(WholeWellApp(state: state));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Tôi'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sao lưu và khôi phục'));
+      await tester.pumpAndSettle();
+
+      // Chưa bật Drive -> thấy Kết nối Google Drive.
+      await tester.tap(find.text('Kết nối Google Drive'));
+      await tester.pumpAndSettle();
+
+      // Màn đồng ý riêng: ô không đánh sẵn.
+      final cb = find.byType(CheckboxListTile);
+      expect(tester.widget<CheckboxListTile>(cb).value, isFalse);
+      final nextBtn = find.widgetWithText(FilledButton, 'Tiếp tục với Google');
+      expect(tester.widget<FilledButton>(nextBtn).onPressed, isNull);
+
+      await tester.tap(cb);
+      await tester.pumpAndSettle();
+      await tester.tap(nextBtn);
+      await tester.pumpAndSettle();
+
+      // Đã vào màn Sao lưu lên Google Drive.
+      expect(find.textContaining('test@example.com'), findsOneWidget);
+      await tester.tap(find.text('Tự đặt mật khẩu'));
+      await tester.pumpAndSettle();
+      final pwFields = find.byType(TextField);
+      await tester.enterText(pwFields.at(0), 'drive-secret-1');
+      await tester.enterText(pwFields.at(1), 'drive-secret-1');
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Tải bản sao lưu lên'));
+      await _drainUntil(tester, () => state.lastDriveBackupAt != null);
+
+      expect(state.driveEnabled, isTrue);
+      expect(state.lastDriveBackupAt, isNotNull);
+      expect((await driveProvider.listBackups()).length, 1);
+
+      // Tải thêm 3 lần nữa -> tối đa chỉ giữ 3 bản gần nhất trên Drive.
+      await tester.runAsync(() async {
+        for (var i = 0; i < 3; i++) {
+          await state.createDriveBackup(
+            secret: 'drive-secret-$i',
+            memoryKiB: 256,
+            iterations: 1,
+          );
+        }
+      });
+      expect((await driveProvider.listBackups()).length, 3);
+
+      // Ngắt kết nối Google Drive (giữ bản trên Drive).
+      await tester.tap(find.text('Ngắt kết nối Google Drive'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Ngắt kết nối'));
+      await tester.pumpAndSettle();
+      expect(state.driveEnabled, isFalse);
+      expect((await driveProvider.listBackups()).length, 3);
+    });
+
+    testWidgets('Khôi phục từ Google Drive ở Chào mừng: không hỏi màn đồng ý, mang theo drive consent',
+        (tester) async {
+      // Tạo bản sao lưu có sẵn consents.kind = 'drive' đưa lên FakeBackupProvider.
+      final srcDir = await makeTempDir('ww_drive_src_');
+      final srcKeys = FakeSecureKeyStore();
+      final srcOpener = makeOpener(srcDir, srcKeys);
+      final driveProvider = FakeBackupProvider();
+      await tester.runAsync(() async {
+        final r = (await srcOpener.createNew(
+          const ConsentInput(contentVersion: mvpConsentVersion, ageYears: 31, caution: false),
+        )) as Opened;
+        await r.repository.saveProfile(
+          const Profile(
+            ageYears: 31,
+            sex: Sex.female,
+            heightCm: 158,
+            weightKg: 50,
+            activityLevel: ActivityLevel.inactive,
+          ),
+        );
+        await r.repository.saveHideCalories(false);
+        await r.repository.saveOnboardingStep(OnboardingStep.done);
+        await r.repository.grantDriveConsent(mvpConsentVersion);
+        await r.repository.addWater(DateTime.now(), 600);
+        final bytes = await srcOpener.exportBackup(
+          openRepository: r.repository,
+          secret: 'cloud-restore-1',
+          memoryKiB: 256,
+          iterations: 1,
+        );
+        driveProvider.seedBackup(bytes: bytes);
+        await r.repository.close();
+      });
+
+      final dstDir = await makeTempDir('ww_drive_dst_');
+      final dstAuth = FakeGoogleAuth();
+      final dstState = AppState(
+        pack: pack,
+        opener: makeOpener(dstDir, FakeSecureKeyStore()),
+        googleAuth: dstAuth,
+        driveBackupProvider: driveProvider,
+      );
+      await tester.runAsync(dstState.start);
+      addTearDown(() async {
+        await dstState.session.repo?.close();
+        dstState.dispose();
+      });
+
+      await tester.pumpWidget(WholeWellApp(state: dstState));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Khôi phục từ bản sao lưu'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Từ Google Drive'));
+      await tester.pumpAndSettle();
+
+      // Không hỏi màn đồng ý bật Drive; yêu cầu đăng nhập để chọn bản.
+      expect(find.text('Tôi hiểu và đồng ý bật sao lưu qua Google Drive.'), findsNothing);
+      await tester.tap(find.text('Đăng nhập Google'));
+      await tester.pumpAndSettle();
+      expect(find.text('Chọn bản sao lưu'), findsOneWidget);
+
+      await tester.enterText(find.byType(TextField), 'cloud-restore-1');
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Khôi phục'));
+      await _drainUntil(tester, () => dstState.status == DataStatus.ready);
+
+      expect(dstState.status, DataStatus.ready);
+      expect(dstState.todayWaters.single.ml, 600);
+      expect(dstState.driveEnabled, isTrue);
+      expect(find.byType(TodayScreen), findsOneWidget);
+    });
+
+    testWidgets('Rút đồng ý & Xóa toàn bộ khi bật Drive: mất mạng giữ pending_delete ngoài CSDL rồi tự xóa khi có mạng / hết phiên',
+        (tester) async {
+      final dir = await makeTempDir('ww_drive_del_');
+      final keys = FakeSecureKeyStore();
+      final pendingFile = File('${dir.path}/drive_pending_delete.json');
+      final pendingStore = FileDrivePendingDeleteStore(pendingFile);
+      final googleAuth = FakeGoogleAuth(
+        initialUser: const GoogleAuthAccount(id: 'u1', email: 'user@gmail.com'),
+      );
+      final driveProvider = FakeBackupProvider()
+        ..seedBackup(bytes: Uint8List.fromList([1, 2, 3]))
+        ..errorOnDelete = const SocketException('offline');
+
+      final state = await tester.runAsync(() async {
+        final opener = makeOpener(dir, keys);
+        final res = (await opener.createNew(
+          const ConsentInput(contentVersion: mvpConsentVersion, ageYears: 28, caution: false),
+        )) as Opened;
+        await res.repository.saveProfile(
+          const Profile(
+            ageYears: 28,
+            sex: Sex.male,
+            heightCm: 170,
+            weightKg: 65,
+            activityLevel: ActivityLevel.active,
+          ),
+        );
+        await res.repository.saveHideCalories(false);
+        await res.repository.saveOnboardingStep(OnboardingStep.done);
+        await res.repository.grantDriveConsent(mvpConsentVersion);
+        await res.repository.close();
+
+        final s = AppState(
+          pack: pack,
+          opener: makeOpener(dir, keys),
+          googleAuth: googleAuth,
+          driveBackupProvider: driveProvider,
+          drivePendingDeleteStore: pendingStore,
+        );
+        await s.start();
+        return s;
+      });
+      final appState = state!;
+      addTearDown(() async {
+        await appState.session.repo?.close();
+        appState.dispose();
+      });
+
+      await tester.pumpWidget(WholeWellApp(state: appState));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Tôi'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Quyền riêng tư'));
+      await tester.pumpAndSettle();
+
+      // Kiểm tra hộp thoại Xóa toàn bộ: ô Xóa cả bản Drive KHÔNG đánh sẵn.
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Xóa toàn bộ dữ liệu'));
+      await tester.pumpAndSettle();
+      expect(tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value, isFalse);
+      await tester.tap(find.text('Hủy'));
+      await tester.pumpAndSettle();
+
+      // Kiểm tra hộp thoại Rút đồng ý: ô Xóa cả bản Drive ĐÁNH SẴN.
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Rút đồng ý'));
+      await tester.pumpAndSettle();
+      expect(tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value, isTrue);
+      expect(find.text('Tệp sao lưu bạn đã xuất ra ngoài thì app không xóa được.'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Rút đồng ý'));
+      await _drainUntil(tester, () => appState.status == DataStatus.welcome);
+
+      // Dữ liệu trên máy xóa ngay dù mất mạng, nhưng drive_pending_delete.json vẫn còn ngoài CSDL.
+      expect(appState.status, DataStatus.welcome);
+      expect(keys.key, isNull);
+      expect(pendingFile.existsSync(), isTrue);
+      expect(appState.drivePendingDeleteActive, isTrue);
+      expect(find.byType(PendingDriveDeleteCard), findsOneWidget);
+
+      // Mô phỏng hết phiên / thu hồi quyền ngoài Google Account -> hiện Đăng nhập để xóa.
+      driveProvider.errorOnDelete = null;
+      googleAuth.silentRevoked = true;
+      await tester.runAsync(appState.onAppResume);
+      await tester.pumpAndSettle();
+      expect(appState.drivePendingDeleteNeedsReauth, isTrue);
+      expect(find.text('Chưa xóa được bản trên Google Drive do hết phiên đăng nhập.'), findsOneWidget);
+
+      // Bấm Đăng nhập để xóa -> xóa sạch trên Drive, xóa cờ và thu hồi quyền.
+      await tester.tap(find.text('Đăng nhập để xóa'));
+      await _drainUntil(tester, () => !appState.drivePendingDeleteActive);
+      expect(pendingFile.existsSync(), isFalse);
+      expect(await driveProvider.listBackups(), isEmpty);
+      expect(googleAuth.disconnectCalls, 1);
     });
   });
 }

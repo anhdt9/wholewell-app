@@ -98,7 +98,9 @@ class DiaryController extends ChangeNotifier {
   String? _dismissedScheduleNoticeSig;
   String? _hiddenTipDay;
   DateTime? _lastFileBackupAt;
+  DateTime? _lastDriveBackupAt;
   HealthConsentStatus? _healthConsent;
+  HealthConsentStatus? _driveConsent;
   DateTime _day = _dateOnly(DateTime.now());
   DayJournalData _data = DayJournalData.empty;
   bool _saveFailed = false;
@@ -133,7 +135,9 @@ class DiaryController extends ChangeNotifier {
   String? get dismissedScheduleNoticeSig => _dismissedScheduleNoticeSig;
   bool get tipHiddenToday => _hiddenTipDay == dayKey(_day);
   DateTime? get lastFileBackupAt => _lastFileBackupAt;
+  DateTime? get lastDriveBackupAt => _lastDriveBackupAt;
   HealthConsentStatus? get healthConsent => _healthConsent;
+  HealthConsentStatus? get driveConsent => _driveConsent;
   DateTime get day => _day;
   bool get isViewingToday => dayKey(_day) == dayKey(DateTime.now());
   bool get saveFailed => _saveFailed;
@@ -178,7 +182,9 @@ class DiaryController extends ChangeNotifier {
     _dismissedScheduleNoticeSig = null;
     _hiddenTipDay = null;
     _lastFileBackupAt = null;
+    _lastDriveBackupAt = null;
     _healthConsent = null;
+    _driveConsent = null;
     _data = DayJournalData.empty;
     notifyListeners();
   }
@@ -261,6 +267,8 @@ class DiaryController extends ChangeNotifier {
         repo.getUiState('hidden_tip_day'),
         repo.getUiState('last_file_backup_at'),
         repo.latestHealthConsent(),
+        repo.getUiState('last_drive_backup_at'),
+        repo.latestDriveConsent(),
       ]);
       if (gen != _loadGen) return;
       final products = results[15] as List<ProductSummary>;
@@ -296,6 +304,12 @@ class DiaryController extends ChangeNotifier {
           ? null
           : DateTime.fromMillisecondsSinceEpoch(lastBackupMs, isUtc: true).toLocal();
       _healthConsent = results[19] as HealthConsentStatus?;
+      final lastDriveRaw = results[20] as String?;
+      final lastDriveMs = lastDriveRaw == null ? null : int.tryParse(lastDriveRaw);
+      _lastDriveBackupAt = lastDriveMs == null
+          ? null
+          : DateTime.fromMillisecondsSinceEpoch(lastDriveMs, isUtc: true).toLocal();
+      _driveConsent = results[21] as HealthConsentStatus?;
       _readFailed = false;
     } on JournalStorageException {
       if (gen == _loadGen) _readFailed = true;
@@ -1431,6 +1445,35 @@ class DiaryController extends ChangeNotifier {
       // Bỏ qua nếu đầy bộ nhớ.
     }
   }
+
+  Future<void> recordDriveBackupAt(DateTime at) async {
+    _lastDriveBackupAt = at.toLocal();
+    notifyListeners();
+    final repo = _repo;
+    if (repo == null) return;
+    try {
+      await repo.setUiState('last_drive_backup_at', at.toUtc().millisecondsSinceEpoch.toString());
+    } on JournalStorageException {
+      // Bỏ qua nếu không lưu được dấu thời gian.
+    } on StorageFullException {
+      // Bỏ qua nếu đầy bộ nhớ.
+    }
+  }
+
+  Future<bool> grantDriveConsent(String contentVersion) async =>
+      (await _write((repo) async {
+        await repo.grantDriveConsent(contentVersion);
+        return true;
+      })) ??
+      false;
+
+  Future<bool> withdrawDriveConsent() async =>
+      (await _write((repo) async {
+        await repo.withdrawDriveConsent();
+        await repo.deleteUiState('last_drive_backup_at');
+        return true;
+      })) ??
+      false;
 
   static Meal _mealFromSlot(MealSlot? s) => switch (s) {
         MealSlot.breakfast => Meal.breakfast,

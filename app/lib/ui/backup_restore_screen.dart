@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../platform/backup_provider.dart';
 import '../state/app_scope.dart';
+import 'drive_backup_screens.dart';
 
 String fmtBackupDateTime(DateTime t) {
   final l = t.toLocal();
@@ -11,9 +12,82 @@ String fmtBackupDateTime(DateTime t) {
   return '${p(l.day)}/${p(l.month)}/${l.year} ${p(l.hour)}:${p(l.minute)}';
 }
 
+String restoreOutcomeMessage(RestoreOutcome res) => switch (res) {
+      RestoreSucceeded() => 'Đã khôi phục dữ liệu.',
+      RestoreWrongSecret() || RestoreCorrupted() => 'Mã khôi phục không đúng hoặc tệp đã bị hỏng.',
+      RestoreNeedsUpdate() =>
+        'Tệp sao lưu được tạo bởi phiên bản WholeWell mới hơn. Hãy cập nhật app trước khi khôi phục.',
+      RestoreFailed() => 'Chưa khôi phục được dữ liệu. Thử lại.',
+    };
+
 /// Màn Sao lưu và khôi phục (`Tôi -> Sao lưu và khôi phục`).
-class BackupRestoreScreen extends StatelessWidget {
+class BackupRestoreScreen extends StatefulWidget {
   const BackupRestoreScreen({super.key});
+
+  @override
+  State<BackupRestoreScreen> createState() => _BackupRestoreScreenState();
+}
+
+class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
+  bool _busy = false;
+
+  Future<void> _disconnectDrive() async {
+    var deleteRemote = false;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          final cs = Theme.of(ctx).colorScheme;
+          return AlertDialog(
+            title: const Text('Ngắt kết nối Google Drive?'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Tài khoản Google sẽ được ngắt khỏi WholeWell trên máy này.'),
+                const SizedBox(height: 8),
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  value: deleteRemote,
+                  onChanged: (v) => setDialogState(() => deleteRemote = v ?? false),
+                  title: const Text('Xóa cả bản sao lưu trên Google Drive'),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Hủy')),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: cs.error,
+                  foregroundColor: cs.onError,
+                ),
+                onPressed: () => Navigator.of(ctx).pop(true),
+                child: const Text('Ngắt kết nối'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _busy = true);
+    try {
+      final cleared = await AppScope.of(context).disconnectGoogleDrive(
+        deleteRemoteBackups: deleteRemote,
+      );
+      if (!mounted) return;
+      final msg = !deleteRemote || cleared
+          ? 'Đã ngắt kết nối Google Drive.'
+          : 'Chưa xóa được bản trên Google Drive. App sẽ thử lại khi có mạng.';
+      ScaffoldMessenger.maybeOf(context)
+        ?..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(msg)));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,11 +99,26 @@ class BackupRestoreScreen extends StatelessWidget {
         ? 'Chưa sao lưu qua tệp'
         : 'Lần gần nhất: ${fmtBackupDateTime(last)}';
 
+    final lastDrive = state.lastDriveBackupAt;
+    final driveEmail = state.driveAccount?.email;
+    final driveStatus = state.driveEnabled
+        ? [
+            if (driveEmail != null) 'Tài khoản: $driveEmail',
+            lastDrive == null
+                ? 'Chưa sao lưu lên Drive'
+                : 'Lần gần nhất: ${fmtBackupDateTime(lastDrive)}',
+          ].join(' · ')
+        : 'Dữ liệu gửi lên thư mục ẩn (appDataFolder) trên Google Drive ở dạng đã mã hóa.';
+
     return Scaffold(
       appBar: AppBar(title: const Text('Sao lưu và khôi phục')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          if (state.drivePendingDeleteActive) ...[
+            const PendingDriveDeleteCard(),
+            const SizedBox(height: 16),
+          ],
           Text('Tệp mã hóa trên máy', style: t.titleMedium),
           const SizedBox(height: 6),
           Text(
@@ -41,7 +130,7 @@ class BackupRestoreScreen extends StatelessWidget {
           const SizedBox(height: 16),
           FilledButton(
             style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-            onPressed: state.canBackupToFile
+            onPressed: state.canBackupToFile && !_busy
                 ? () => Navigator.of(context).push(
                       MaterialPageRoute<void>(builder: (_) => const CreateBackupScreen()),
                     )
@@ -51,7 +140,7 @@ class BackupRestoreScreen extends StatelessWidget {
           const SizedBox(height: 10),
           OutlinedButton(
             style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-            onPressed: state.canRestoreFromFile
+            onPressed: state.canRestoreFromFile && !_busy
                 ? () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (_) => const RestoreBackupScreen(hasExistingData: true),
@@ -64,35 +153,84 @@ class BackupRestoreScreen extends StatelessWidget {
           Text('Google Drive (tùy chọn)', style: t.titleMedium),
           const SizedBox(height: 6),
           Text(
-            'Chưa bật · Sẽ hỗ trợ sau khi hoàn tất cấu hình Google Cloud.',
+            driveStatus,
             style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
           ),
+          const SizedBox(height: 16),
+          if (!state.driveEnabled)
+            FilledButton.tonal(
+              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+              onPressed: state.canBackupToFile && !_busy
+                  ? () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(builder: (_) => const DriveConsentScreen()),
+                      )
+                  : null,
+              child: const Text('Kết nối Google Drive'),
+            )
+          else
+            FilledButton.tonal(
+              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+              onPressed: state.canBackupToFile && !_busy
+                  ? () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(builder: (_) => const CreateDriveBackupScreen()),
+                      )
+                  : null,
+              child: const Text('Sao lưu lên Drive'),
+            ),
+          const SizedBox(height: 10),
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+            onPressed: state.canRestoreFromFile && !_busy
+                ? () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const RestoreDriveBackupScreen(hasExistingData: true),
+                      ),
+                    )
+                : null,
+            child: const Text('Khôi phục từ Drive'),
+          ),
+          if (state.driveEnabled) ...[
+            const SizedBox(height: 6),
+            TextButton(
+              style: TextButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+                foregroundColor: cs.error,
+              ),
+              onPressed: _busy ? null : _disconnectDrive,
+              child: const Text('Ngắt kết nối Google Drive'),
+            ),
+          ],
         ],
       ),
     );
   }
 }
 
-enum _BackupSecretMode { recoveryKey, customPassword }
+enum BackupSecretMode { recoveryKey, customPassword }
 
-/// Màn Tạo tệp sao lưu mã hóa (`.wwbackup`).
-class CreateBackupScreen extends StatefulWidget {
-  final int memoryKiB;
-  final int iterations;
+/// Phần chọn mã khôi phục 24 ký tự hoặc mật khẩu tự đặt dùng chung cho sao lưu tệp và Drive.
+class BackupSecretSection extends StatefulWidget {
+  final String noticeText;
+  final String primaryLabel;
+  final String busyLabel;
+  final Future<void> Function(String secret) onSubmit;
 
-  const CreateBackupScreen({
+  const BackupSecretSection({
     super.key,
-    this.memoryKiB = BackupCodec.defaultMemoryKiB,
-    this.iterations = BackupCodec.defaultIterations,
+    this.noticeText =
+        'Khóa bản sao lưu chỉ bạn giữ. Quên mã hoặc mật khẩu sẽ không mở lại được tệp.',
+    required this.primaryLabel,
+    required this.busyLabel,
+    required this.onSubmit,
   });
 
   @override
-  State<CreateBackupScreen> createState() => _CreateBackupScreenState();
+  State<BackupSecretSection> createState() => _BackupSecretSectionState();
 }
 
-class _CreateBackupScreenState extends State<CreateBackupScreen> {
-  _BackupSecretMode _mode = _BackupSecretMode.recoveryKey;
-  late String _recoveryKey;
+class _BackupSecretSectionState extends State<BackupSecretSection> {
+  BackupSecretMode _mode = BackupSecretMode.recoveryKey;
+  late final String _recoveryKey;
   bool _confirmedSaved = false;
   final _passCtl = TextEditingController();
   final _confirmCtl = TextEditingController();
@@ -114,7 +252,7 @@ class _CreateBackupScreenState extends State<CreateBackupScreen> {
   }
 
   String? get _passwordError {
-    if (_mode != _BackupSecretMode.customPassword) return null;
+    if (_mode != BackupSecretMode.customPassword) return null;
     final p = _passCtl.text;
     final c = _confirmCtl.text;
     if (p.isEmpty && c.isEmpty) return null;
@@ -126,15 +264,15 @@ class _CreateBackupScreenState extends State<CreateBackupScreen> {
   bool get _canSubmit {
     if (_busy) return false;
     switch (_mode) {
-      case _BackupSecretMode.recoveryKey:
+      case BackupSecretMode.recoveryKey:
         return _confirmedSaved;
-      case _BackupSecretMode.customPassword:
+      case BackupSecretMode.customPassword:
         return _passCtl.text.length >= 8 && _passCtl.text == _confirmCtl.text;
     }
   }
 
   String get _activeSecret =>
-      _mode == _BackupSecretMode.recoveryKey ? _recoveryKey : _passCtl.text;
+      _mode == BackupSecretMode.recoveryKey ? _recoveryKey : _passCtl.text;
 
   Future<void> _copyKey() async {
     await Clipboard.setData(ClipboardData(text: _recoveryKey));
@@ -144,36 +282,32 @@ class _CreateBackupScreenState extends State<CreateBackupScreen> {
       ..showSnackBar(const SnackBar(content: Text('Đã sao chép mã khôi phục.')));
   }
 
-  Future<void> _createAndSave() async {
+  Future<void> _handleSubmit() async {
     setState(() {
       _busy = true;
       _errorText = null;
     });
-    final state = AppScope.of(context);
     try {
-      final savedName = await state.createEncryptedBackupFile(
-        secret: _activeSecret,
-        memoryKiB: widget.memoryKiB,
-        iterations: widget.iterations,
-      );
-      if (!mounted) return;
-      if (savedName == null) {
+      await widget.onSubmit(_activeSecret);
+    } on String catch (msg) {
+      if (mounted) {
         setState(() {
           _busy = false;
-          _errorText = 'Chưa lưu được tệp sao lưu.';
+          _errorText = msg;
         });
-        return;
       }
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(content: Text('Đã lưu bản sao lưu mã hóa.')));
-      Navigator.of(context).pop();
-    } on Object {
-      if (!mounted) return;
-      setState(() {
-        _busy = false;
-        _errorText = 'Chưa lưu được tệp sao lưu.';
-      });
+      return;
+    } on Object catch (e) {
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _errorText = e.toString();
+        });
+      }
+      return;
+    }
+    if (mounted) {
+      setState(() => _busy = false);
     }
   }
 
@@ -183,128 +317,167 @@ class _CreateBackupScreenState extends State<CreateBackupScreen> {
     final t = Theme.of(context).textTheme;
     final pwErr = _passwordError;
 
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(widget.noticeText),
+        ),
+        const SizedBox(height: 16),
+        Text('Cách bảo vệ', style: t.titleSmall),
+        const SizedBox(height: 8),
+        BackupRadioRow(
+          label: 'Mã khôi phục 24 ký tự',
+          selected: _mode == BackupSecretMode.recoveryKey,
+          enabled: !_busy,
+          onTap: () => setState(() {
+            _mode = BackupSecretMode.recoveryKey;
+            _errorText = null;
+          }),
+        ),
+        BackupRadioRow(
+          label: 'Tự đặt mật khẩu',
+          selected: _mode == BackupSecretMode.customPassword,
+          enabled: !_busy,
+          onTap: () => setState(() {
+            _mode = BackupSecretMode.customPassword;
+            _errorText = null;
+          }),
+        ),
+        const SizedBox(height: 16),
+        if (_mode == BackupSecretMode.recoveryKey) ...[
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              border: Border.all(color: cs.outlineVariant),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SelectableText(
+                  _recoveryKey,
+                  style: t.titleMedium?.copyWith(fontFamily: 'monospace', letterSpacing: 1.1),
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: _busy ? null : _copyKey,
+                    icon: const Icon(Icons.copy, size: 18),
+                    label: const Text('Sao chép'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+            value: _confirmedSaved,
+            onChanged: _busy ? null : (v) => setState(() => _confirmedSaved = v ?? false),
+            title: const Text('Tôi đã lưu mã này ở nơi an toàn.'),
+          ),
+        ] else ...[
+          TextField(
+            controller: _passCtl,
+            enabled: !_busy,
+            obscureText: _obscurePass,
+            decoration: InputDecoration(
+              labelText: 'Mật khẩu (tối thiểu 8 ký tự)',
+              border: const OutlineInputBorder(),
+              suffixIcon: IconButton(
+                tooltip: _obscurePass ? 'Hiện' : 'Ẩn',
+                onPressed: () => setState(() => _obscurePass = !_obscurePass),
+                icon: Icon(_obscurePass ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+              ),
+            ),
+            onChanged: (_) => setState(() => _errorText = null),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _confirmCtl,
+            enabled: !_busy,
+            obscureText: _obscurePass,
+            decoration: InputDecoration(
+              labelText: 'Nhập lại mật khẩu',
+              border: const OutlineInputBorder(),
+              errorText: pwErr,
+            ),
+            onChanged: (_) => setState(() => _errorText = null),
+          ),
+        ],
+        if (_errorText != null) ...[
+          const SizedBox(height: 12),
+          Text(_errorText!, style: TextStyle(color: cs.error)),
+        ],
+        const SizedBox(height: 20),
+        FilledButton(
+          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+          onPressed: _canSubmit ? _handleSubmit : null,
+          child: _busy
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(widget.busyLabel),
+                  ],
+                )
+              : Text(widget.primaryLabel),
+        ),
+      ],
+    );
+  }
+}
+
+/// Màn Tạo tệp sao lưu mã hóa (`.wwbackup`).
+class CreateBackupScreen extends StatelessWidget {
+  final int memoryKiB;
+  final int iterations;
+
+  const CreateBackupScreen({
+    super.key,
+    this.memoryKiB = BackupCodec.defaultMemoryKiB,
+    this.iterations = BackupCodec.defaultIterations,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Tạo tệp sao lưu mã hóa')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: cs.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Text(
-              'Khóa bản sao lưu chỉ bạn giữ. Quên mã hoặc mật khẩu sẽ không mở lại được tệp.',
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text('Cách bảo vệ', style: t.titleSmall),
-          const SizedBox(height: 8),
-          _ModeChoiceTile(
-            label: 'Mã khôi phục 24 ký tự',
-            selected: _mode == _BackupSecretMode.recoveryKey,
-            enabled: !_busy,
-            onTap: () => setState(() {
-              _mode = _BackupSecretMode.recoveryKey;
-              _errorText = null;
-            }),
-          ),
-          _ModeChoiceTile(
-            label: 'Tự đặt mật khẩu',
-            selected: _mode == _BackupSecretMode.customPassword,
-            enabled: !_busy,
-            onTap: () => setState(() {
-              _mode = _BackupSecretMode.customPassword;
-              _errorText = null;
-            }),
-          ),
-          const SizedBox(height: 16),
-          if (_mode == _BackupSecretMode.recoveryKey) ...[
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                border: Border.all(color: cs.outlineVariant),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SelectableText(
-                    _recoveryKey,
-                    style: t.titleMedium?.copyWith(fontFamily: 'monospace', letterSpacing: 1.1),
-                  ),
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton.icon(
-                      onPressed: _busy ? null : _copyKey,
-                      icon: const Icon(Icons.copy, size: 18),
-                      label: const Text('Sao chép'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            CheckboxListTile(
-              contentPadding: EdgeInsets.zero,
-              controlAffinity: ListTileControlAffinity.leading,
-              value: _confirmedSaved,
-              onChanged: _busy ? null : (v) => setState(() => _confirmedSaved = v ?? false),
-              title: const Text('Tôi đã lưu mã này ở nơi an toàn.'),
-            ),
-          ] else ...[
-            TextField(
-              controller: _passCtl,
-              enabled: !_busy,
-              obscureText: _obscurePass,
-              decoration: InputDecoration(
-                labelText: 'Mật khẩu (tối thiểu 8 ký tự)',
-                border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  tooltip: _obscurePass ? 'Hiện' : 'Ẩn',
-                  onPressed: () => setState(() => _obscurePass = !_obscurePass),
-                  icon: Icon(_obscurePass ? Icons.visibility_outlined : Icons.visibility_off_outlined),
-                ),
-              ),
-              onChanged: (_) => setState(() => _errorText = null),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _confirmCtl,
-              enabled: !_busy,
-              obscureText: _obscurePass,
-              decoration: InputDecoration(
-                labelText: 'Nhập lại mật khẩu',
-                border: const OutlineInputBorder(),
-                errorText: pwErr,
-              ),
-              onChanged: (_) => setState(() => _errorText = null),
-            ),
-          ],
-          if (_errorText != null) ...[
-            const SizedBox(height: 12),
-            Text(_errorText!, style: TextStyle(color: cs.error)),
-          ],
-          const SizedBox(height: 20),
-          FilledButton(
-            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-            onPressed: _canSubmit ? _createAndSave : null,
-            child: _busy
-                ? const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                      SizedBox(width: 12),
-                      Text('Đang mã hóa bản sao lưu...'),
-                    ],
-                  )
-                : const Text('Chọn nơi lưu tệp'),
+          BackupSecretSection(
+            primaryLabel: 'Chọn nơi lưu tệp',
+            busyLabel: 'Đang mã hóa bản sao lưu...',
+            onSubmit: (secret) async {
+              final state = AppScope.of(context);
+              final savedName = await state.createEncryptedBackupFile(
+                secret: secret,
+                memoryKiB: memoryKiB,
+                iterations: iterations,
+              );
+              if (savedName == null) {
+                throw 'Chưa lưu được tệp sao lưu.';
+              }
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(const SnackBar(content: Text('Đã lưu bản sao lưu mã hóa.')));
+              Navigator.of(context).pop();
+            },
           ),
         ],
       ),
@@ -312,13 +485,14 @@ class _CreateBackupScreenState extends State<CreateBackupScreen> {
   }
 }
 
-class _ModeChoiceTile extends StatelessWidget {
+class BackupRadioRow extends StatelessWidget {
   final String label;
   final bool selected;
   final bool enabled;
   final VoidCallback onTap;
 
-  const _ModeChoiceTile({
+  const BackupRadioRow({
+    super.key,
     required this.label,
     required this.selected,
     required this.enabled,
@@ -430,21 +604,10 @@ class _RestoreBackupScreenState extends State<RestoreBackupScreen> {
             ?..hideCurrentSnackBar()
             ..showSnackBar(const SnackBar(content: Text('Đã khôi phục dữ liệu.')));
           Navigator.of(context).popUntil((r) => r.isFirst);
-        case RestoreWrongSecret() || RestoreCorrupted():
+        case RestoreWrongSecret() || RestoreCorrupted() || RestoreNeedsUpdate() || RestoreFailed():
           setState(() {
             _busy = false;
-            _errorText = 'Mã khôi phục không đúng hoặc tệp đã bị hỏng.';
-          });
-        case RestoreNeedsUpdate():
-          setState(() {
-            _busy = false;
-            _errorText =
-                'Tệp sao lưu được tạo bởi phiên bản WholeWell mới hơn. Hãy cập nhật app trước khi khôi phục.';
-          });
-        case RestoreFailed():
-          setState(() {
-            _busy = false;
-            _errorText = 'Chưa khôi phục được dữ liệu. Thử lại.';
+            _errorText = restoreOutcomeMessage(res);
           });
       }
     } on Object {
