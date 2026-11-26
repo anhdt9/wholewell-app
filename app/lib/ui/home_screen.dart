@@ -1,10 +1,15 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
+import '../state/app_state.dart';
 import 'common/log_sheet.dart';
 import 'diary_screen.dart';
 import 'me_screen.dart';
+import 'schedule_dose_helper.dart';
 import 'supplements_screen.dart';
+import 'today_doses_screen.dart';
 import 'today_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -15,6 +20,55 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _tab = 0;
+  StreamSubscription<NotificationAction>? _notifSub;
+  bool _checkedPending = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final state = AppScope.of(context);
+    _notifSub ??= state.notificationScheduler.onNotificationAction.listen(_handleNotifAction);
+    if (!_checkedPending && state.diary.profile != null) {
+      _checkedPending = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final pending = await state.notificationScheduler.takePendingNotificationAction();
+        if (pending != null && mounted) {
+          await _handleNotifAction(pending);
+        }
+      });
+    }
+  }
+
+  Future<void> _handleNotifAction(NotificationAction action) async {
+    if (!mounted) return;
+    switch (action.kind) {
+      case NotificationActionKind.markTaken:
+        final tod = action.timeOfDayMinutes;
+        if (tod != null) {
+          await showReminderQuickConfirmSheet(
+            context,
+            timeOfDayMinutes: tod,
+            scheduleIds: action.scheduleIds,
+          );
+        } else {
+          await Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen()),
+          );
+        }
+      case NotificationActionKind.openTodayDoses:
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen()),
+        );
+      case NotificationActionKind.openUlAlerts:
+        setState(() => _tab = 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _notifSub?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

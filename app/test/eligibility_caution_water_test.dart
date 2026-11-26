@@ -161,7 +161,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Hiển thị'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(find.widgetWithText(SwitchListTile, 'Ẩn số calo'));
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.arrow_back));
       await tester.pumpAndSettle();

@@ -8,7 +8,10 @@ import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
 import 'add_supplement_screen.dart';
+import 'common/common_widgets.dart';
 import 'confirm_ingredients_screen.dart';
+import 'day_times_screen.dart';
+import 'edit_schedule_screen.dart';
 import 'labels.dart';
 
 class ProductInfoScreen extends StatefulWidget {
@@ -427,6 +430,65 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             onPressed: _editIngredients,
             child: const Text('Sửa thành phần'),
           ),
+          const SizedBox(height: 12),
+          Builder(builder: (ctx) {
+            final diary = state.diary;
+            final prodSchedules = [
+              for (final s in diary.todaySchedules)
+                if (s.productId == p.id) s,
+            ];
+            final prodNotices = [
+              for (final n in diary.scheduleNotices())
+                if (n.severity == 'notice' && n.productIds.contains(p.id)) n,
+            ];
+            Future<void> openSchedule([Schedule? existing]) async {
+              final nav = Navigator.of(context);
+              if (!diary.dayTimesSettings.dayTimesConfirmed) {
+                final confirmed = await nav.push<bool>(
+                  MaterialPageRoute<bool>(
+                    builder: (_) => const DayTimesScreen(onboardingFlow: true),
+                  ),
+                );
+                if (confirmed != true || !mounted) return;
+              }
+              await nav.push(
+                MaterialPageRoute<void>(
+                  builder: (_) => EditScheduleScreen(product: p, existingSchedule: existing),
+                ),
+              );
+              await _load();
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (prodSchedules.isEmpty)
+                  const ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text('Lịch uống'),
+                    subtitle: Text('Chưa có lịch uống'),
+                  )
+                else
+                  for (final s in prodSchedules)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        'Lịch: mỗi ngày ${fmt(s.servings * p.unitsPerServing)} $unit lúc ${formatMinutesHhMm(s.timeOfDay)}',
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => openSchedule(s),
+                    ),
+                for (final n in prodNotices) ...[
+                  SafetyNote(message: n.messageVi),
+                  const SizedBox(height: 8),
+                ],
+                OutlinedButton(
+                  onPressed: () => openSchedule(),
+                  child: Text(prodSchedules.isEmpty ? 'Đặt lịch' : 'Thêm lịch'),
+                ),
+              ],
+            );
+          }),
           const SizedBox(height: 8),
           FilledButton(
             onPressed: () async {

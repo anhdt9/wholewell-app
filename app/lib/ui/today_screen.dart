@@ -1,10 +1,16 @@
 import 'package:health_engine/health_engine.dart';
+import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
+import '../state/diary_controller.dart';
 import 'common/common_widgets.dart';
+import 'day_times_screen.dart';
 import 'labels.dart';
 import 'profile_screen.dart';
+import 'schedule_dose_helper.dart';
+import 'sources_screen.dart';
+import 'today_doses_screen.dart';
 import 'water_log_screen.dart';
 
 /// Tổng kết ngày: cảnh báo UL, dòng thận trọng, nhắc tuổi, calo, đường, vi chất, nước.
@@ -17,20 +23,38 @@ class TodayScreen extends StatelessWidget {
     final r = state.report();
     if (r == null) return const SizedBox.shrink();
     final pack = state.pack;
+    final diary = state.diary;
     final t = Theme.of(context).textTheme;
     final hasFood = state.todayItems.isNotEmpty;
     final cl = CautionLabels(caution: state.caution);
     final bumpedAge = state.ageBumpedNotice;
+    final isToday = diary.isViewingToday;
+
+    final scheduleFlags = isToday ? diary.scheduledUlFlags() : const <UlFlag>[];
+    final combinedFlags = <UlFlag>[...r.ulFlags, ...scheduleFlags];
+    final activeNotices = isToday
+        ? [for (final n in diary.scheduleNotices()) if (n.severity == 'notice') n]
+        : const <ScheduleNotice>[];
+    final noticeSig = diary.scheduleNoticeSignature(activeNotices);
+    final tipRule = diary.todayTipRule(hasUlWarnings: combinedFlags.isNotEmpty);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
       children: [
-        if (r.ulFlags.isNotEmpty) ...[
-          _UlBanner(flags: r.ulFlags, pack: pack),
+        if (combinedFlags.isNotEmpty) ...[
+          _UlBanner(flags: combinedFlags, pack: pack),
           const SizedBox(height: 12),
         ],
         if (state.caution) ...[
           const SafetyNote(message: cautionBannerMessage),
+          const SizedBox(height: 12),
+        ],
+        if (activeNotices.isNotEmpty) ...[
+          CollapsibleScheduleNote(
+            messages: [for (final n in activeNotices) n.messageVi],
+            collapsed: noticeSig == diary.dismissedScheduleNoticeSig,
+            onAcknowledge: () => diary.dismissScheduleNotices(noticeSig),
+          ),
           const SizedBox(height: 12),
         ],
         if (bumpedAge != null) ...[
@@ -45,6 +69,10 @@ class TodayScreen extends StatelessWidget {
             },
             onDismiss: () => state.diary.dismissAgeBumpedNotice(),
           ),
+          const SizedBox(height: 12),
+        ],
+        if (isToday && diary.todaySchedules.isNotEmpty) ...[
+          _NextDoseCard(diary: diary),
           const SizedBox(height: 12),
         ],
         if (!state.hideCalories) ...[
@@ -93,12 +121,120 @@ class TodayScreen extends StatelessWidget {
           },
         ),
         const SizedBox(height: 24),
+        if (tipRule != null) ...[
+          TipCard(
+            text: tipRule.tipVi,
+            onViewSource: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => SourcesScreen(highlightRuleId: tipRule.id)),
+            ),
+            onHide: () => diary.hideTipCardForToday(),
+          ),
+          const SizedBox(height: 16),
+        ],
         Text(
           'Số liệu chỉ để tham khảo, không thay cho chẩn đoán hay tư vấn của bác sĩ. '
           'Nguồn: NASEM (qua NIH ODS), Dietary Guidelines 2025–2030, 2024 Adult Compendium.',
           style: t.bodySmall,
         ),
       ],
+    );
+  }
+}
+
+class _NextDoseCard extends StatelessWidget {
+  final DiaryController diary;
+  const _NextDoseCard({required this.diary});
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final todayStr = dayKey(diary.day);
+    final occMap = {for (final o in diary.todayOccurrences) o.scheduleId: o};
+    final prodMap = {for (final s in diary.allProducts) s.product.id: s.product};
+    final pending = [
+      for (final s in diary.todaySchedules)
+        if (!occMap.containsKey(s.id)) s,
+    ];
+    final cs = Theme.of(context).colorScheme;
+    final t = Theme.of(context).textTheme;
+
+    if (pending.isEmpty) {
+      return Card(
+        child: ListTile(
+          title: const Text('Lần uống hôm nay'),
+          subtitle: const Text('Đã hoàn tất các lần uống theo lịch hôm nay.'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen()),
+          ),
+        ),
+      );
+    }
+
+    final firstTime = pending.first.timeOfDay;
+    final slotItems = [for (final s in pending) if (s.timeOfDay == firstTime) s];
+    final first = slotItems.first;
+    final phase = classifySchedulePhase(
+      schedule: first,
+      scheduleDay: todayStr,
+      now: now,
+    );
+    final names = [
+      for (final s in slotItems) prodMap[s.productId]?.name ?? 'Sản phẩm #${s.productId}',
+    ].join(', ');
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Lần uống ${formatMinutesHhMm(firstTime)}',
+                  style: t.titleSmall,
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen()),
+                ),
+                child: const Text('Xem ›'),
+              ),
+            ],
+          ),
+          Text(names, style: t.bodyMedium),
+          const SizedBox(height: 8),
+          if (phase == ScheduleWindowPhase.inWindow)
+            FilledButton.tonal(
+              onPressed: () async {
+                for (final s in slotItems) {
+                  if (!context.mounted) break;
+                  await markScheduledDoseTaken(
+                    context,
+                    schedule: s,
+                    scheduleDay: todayStr,
+                    at: now,
+                  );
+                }
+              },
+              child: Text(slotItems.length > 1 ? 'Đã uống cả ${slotItems.length}' : 'Đã uống'),
+            )
+          else
+            OutlinedButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen()),
+              ),
+              child: Text(phase == ScheduleWindowPhase.early ? 'Uống sớm?' : 'Đánh dấu'),
+            ),
+        ],
+      ),
     );
   }
 }

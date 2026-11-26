@@ -3,7 +3,10 @@ import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
 import 'common/common_widgets.dart';
+import 'day_times_screen.dart';
+import 'notification_settings_screen.dart';
 import 'profile_screen.dart';
+import 'sources_screen.dart';
 
 /// Tab Tôi: Hồ sơ, Hiển thị (Ẩn số calo), Xóa toàn bộ dữ liệu.
 class MeScreen extends StatelessWidget {
@@ -42,6 +45,39 @@ class MeScreen extends StatelessWidget {
             MaterialPageRoute<void>(builder: (_) => const DisplaySettingsScreen()),
           ),
         ),
+        ListTile(
+          minTileHeight: 56,
+          leading: const Icon(Icons.schedule_outlined),
+          title: const Text('Giờ trong ngày'),
+          subtitle: Text(
+            'Sáng ${formatMinutesHhMm(state.dayTimesSettings.breakfast)} · '
+            'Trưa ${formatMinutesHhMm(state.dayTimesSettings.lunch)} · '
+            'Tối ${formatMinutesHhMm(state.dayTimesSettings.dinner)}',
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const DayTimesScreen()),
+          ),
+        ),
+        ListTile(
+          minTileHeight: 56,
+          leading: const Icon(Icons.notifications_outlined),
+          title: const Text('Nhắc giờ'),
+          subtitle: Text(state.notificationsEnabled ? 'Đang bật' : 'Chưa bật'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const NotificationSettingsScreen()),
+          ),
+        ),
+        ListTile(
+          minTileHeight: 56,
+          leading: const Icon(Icons.menu_book_outlined),
+          title: const Text('Nguồn số liệu'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const SourcesScreen()),
+          ),
+        ),
         const Divider(height: 24),
         ListTile(
           minTileHeight: 56,
@@ -76,6 +112,12 @@ class DisplaySettingsScreen extends StatelessWidget {
             subtitle: const Text('App vẫn tính, chỉ không hiện con số.'),
             value: state.hideCalories,
             onChanged: (v) => state.setHideCalories(v),
+          ),
+          SwitchListTile(
+            title: const Text('Hiện thẻ "Bạn có biết"'),
+            subtitle: const Text('Mỗi ngày một câu từ quy tắc lịch dùng sản phẩm trong kho.'),
+            value: state.dayTimesSettings.showTipCard,
+            onChanged: (v) => state.diary.saveShowTipCard(v),
           ),
         ],
       ),

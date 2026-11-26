@@ -48,6 +48,7 @@ Future<void> main() async {
         libraryVersion: dsldVersion,
         expectedSha256: dsldSha,
       ),
+      notificationScheduler: AndroidNotificationScheduler(),
     );
   } else {
     // iOS (Keychain, Application Support) làm khi có bản iOS.
