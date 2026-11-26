@@ -22,8 +22,23 @@ class DbFiles {
   /// Bản sao nguyên byte trước khi di chuyển từ phiên bản [fromVersion].
   File preMigrationCopy(int fromVersion) => File('${db.path}.pre-v$fromVersion');
 
+  /// Tệp tạm phục vụ sao lưu (sẽ xóa ngay sau khi mã hóa hoặc khi mở lại sau crash).
+  File get backupTmp => File('${db.path}.backup-tmp');
+
+  /// Tệp tạm phục vụ khôi phục (sẽ xóa ngay sau khi thay thế hoặc khi mở lại sau crash).
+  File get restoreTmp => File('${db.path}.restore-tmp');
+
   /// Dấu "đang xóa" (ngoài CSDL, không chứa dữ liệu sức khỏe).
   File get wipeMarker => File(p.join(dir.path, 'wholewell.wiping'));
+
+  List<File> backupRestoreTempFiles() => [
+        backupTmp,
+        File('${backupTmp.path}-wal'),
+        File('${backupTmp.path}-shm'),
+        restoreTmp,
+        File('${restoreTmp.path}-wal'),
+        File('${restoreTmp.path}-shm'),
+      ];
 
   List<File> preMigrationCopies() {
     if (!dir.existsSync()) return const [];
@@ -34,7 +49,7 @@ class DbFiles {
     ];
   }
 
-  /// Mọi tệp thuộc CSDL (kể cả `-wal`, `-shm`, bản sao, tệp đang tạo).
+  /// Mọi tệp thuộc CSDL (kể cả `-wal`, `-shm`, bản sao, tệp đang tạo, tệp tạm sao lưu/khôi phục).
   List<File> allDataFiles() => [
         db,
         wal,
@@ -42,6 +57,7 @@ class DbFiles {
         creating,
         File('${creating.path}-wal'),
         File('${creating.path}-shm'),
+        ...backupRestoreTempFiles(),
         ...preMigrationCopies(),
       ];
 

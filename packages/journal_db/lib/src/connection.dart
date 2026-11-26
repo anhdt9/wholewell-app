@@ -153,3 +153,59 @@ bool looksLikePlainSqlite(File file) {
     raf.closeSync();
   }
 }
+
+/// Giải mã nguyên tệp SQLite3MultipleCiphers tạm thành SQLite thuần để đóng gói sao lưu.
+void decryptFileInPlace(File file, Uint8List key) {
+  final db = sqlite3.open(file.path, mode: OpenMode.readWrite);
+  try {
+    setUpConnection(db, key);
+    db.execute("PRAGMA rekey = ''");
+    db.execute('PRAGMA wal_checkpoint(TRUNCATE)');
+  } finally {
+    db.close();
+  }
+}
+
+/// Kiểm toàn vẹn tệp SQLite thuần sau giải mã sao lưu và trả về `schema_version`.
+int verifyPlainBackupFile(File file) {
+  final db = sqlite3.open(file.path, mode: OpenMode.readOnly);
+  try {
+    final ic = db.select('PRAGMA integrity_check').first.values.first;
+    if (ic != 'ok') {
+      throw const DbOpenException(DbOpenStage.wrongKeyOrCorrupt);
+    }
+    final rows = db.select('SELECT schema_version FROM meta WHERE id = 1');
+    if (rows.isEmpty) {
+      throw const DbOpenException(DbOpenStage.wrongKeyOrCorrupt);
+    }
+    db.select('SELECT count(*) FROM consents');
+    return rows.first.values.first as int;
+  } finally {
+    db.close();
+  }
+}
+
+/// Mã hóa tệp SQLite thuần tại chỗ bằng khóa Keystore và kiểm lại bản mã hóa.
+void encryptPlainFileInPlace(File file, Uint8List key) {
+  final db = sqlite3.open(file.path, mode: OpenMode.readWrite);
+  try {
+    db.execute("PRAGMA cipher = '$dbCipher'");
+    db.execute('PRAGMA legacy = 0');
+    final sql = 'PRAGMA rekey = "raw:${_hex(key)}"';
+    (debugKeyExecutor ?? (d, s) => d.execute(s))(db, sql);
+    db.execute('PRAGMA wal_checkpoint(TRUNCATE)');
+  } on DbOpenException {
+    rethrow;
+  } on Object {
+    throw const DbOpenException(DbOpenStage.key);
+  } finally {
+    db.close();
+  }
+  final checkDb = sqlite3.open(file.path, mode: OpenMode.readWrite);
+  try {
+    setUpConnection(checkDb, key);
+    verifyFileEncrypted(checkDb, file);
+  } finally {
+    checkDb.close();
+  }
+}

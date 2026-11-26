@@ -11,6 +11,7 @@ import 'dart:typed_data';
 
 import 'package:sqlite3/sqlite3.dart';
 
+import 'backup_codec.dart';
 import 'connection.dart';
 import 'db_files.dart';
 import 'drift_repository.dart';
@@ -70,6 +71,33 @@ class DbAlreadyExistsException implements Exception {
   const DbAlreadyExistsException();
   @override
   String toString() => 'DbAlreadyExistsException';
+}
+
+/// Kết quả khôi phục từ tệp sao lưu `.wwbackup`.
+sealed class RestoreOutcome {
+  const RestoreOutcome();
+}
+
+final class RestoreSucceeded extends RestoreOutcome {
+  final OpenOutcome openOutcome;
+  const RestoreSucceeded(this.openOutcome);
+}
+
+final class RestoreWrongSecret extends RestoreOutcome {
+  const RestoreWrongSecret();
+}
+
+final class RestoreCorrupted extends RestoreOutcome {
+  const RestoreCorrupted();
+}
+
+final class RestoreNeedsUpdate extends RestoreOutcome {
+  const RestoreNeedsUpdate();
+}
+
+final class RestoreFailed extends RestoreOutcome {
+  final OpenOutcome reason;
+  const RestoreFailed(this.reason);
 }
 
 /// Di chuyển lược đồ từ phiên bản n lên n + 1, chạy trong giao dịch.
@@ -142,6 +170,7 @@ class DbOpener {
       return const Welcome();
     }
     _deleteCreatingFiles();
+    _deleteBackupRestoreTempFiles();
     final restored = _restorePreMigrationCopy();
     if (restored != null) return restored;
 
@@ -282,6 +311,133 @@ class DbOpener {
   void _deleteCreatingFiles() {
     for (final f in [files.creating, File('${files.creating.path}-wal'), File('${files.creating.path}-shm')]) {
       DbFiles.deleteIfExists(f);
+    }
+  }
+
+  void _deleteBackupRestoreTempFiles() {
+    for (final f in files.backupRestoreTempFiles()) {
+      DbFiles.deleteIfExists(f);
+    }
+  }
+
+  /// Tạo bản sao lưu `.wwbackup` đã mã hóa Argon2id + ChaCha20-Poly1305.
+  Future<Uint8List> exportBackup({
+    required DriftJournalRepository openRepository,
+    required String secret,
+    int memoryKiB = BackupCodec.defaultMemoryKiB,
+    int iterations = BackupCodec.defaultIterations,
+    int parallelism = BackupCodec.defaultParallelism,
+  }) async {
+    final keyRes = await _readKey();
+    if (keyRes is! KeyPresent) {
+      throw const DbOpenException(DbOpenStage.key);
+    }
+    _deleteBackupRestoreTempFiles();
+    Uint8List? plainBytes;
+    try {
+      await openRepository.copyTruncatedDbTo(files.backupTmp);
+      decryptFileInPlace(files.backupTmp, keyRes.key);
+      plainBytes = files.backupTmp.readAsBytesSync();
+      final dbVer = verifyPlainBackupFile(files.backupTmp);
+      _deleteBackupRestoreTempFiles();
+      return await BackupCodec.encryptSnapshot(
+        plainSqliteBytes: plainBytes,
+        schemaVersion: dbVer,
+        secret: secret,
+        memoryKiB: memoryKiB,
+        iterations: iterations,
+        parallelism: parallelism,
+      );
+    } finally {
+      if (plainBytes != null) {
+        plainBytes.fillRange(0, plainBytes.length, 0);
+      }
+      _deleteBackupRestoreTempFiles();
+    }
+  }
+
+  /// Khôi phục CSDL từ byte `.wwbackup` với 2 nhánh xử lý khóa Keystore an toàn:
+  /// - [openRepository] != null (từ `Tôi`): dùng lại chính khóa hiện tại, không gọi `createDbKey()`.
+  /// - [openRepository] == null (`Chào mừng` / `KeyLost` / `KeyStuck` / `CannotOpen`):
+  ///   chỉ dọn `wipeMarker` + tạo khóa mới sau khi giải mã và `integrity_check` đạt.
+  Future<RestoreOutcome> restoreFromBackup({
+    required Uint8List backupBytes,
+    required String secret,
+    JournalRepository? openRepository,
+  }) async {
+    files.dir.createSync(recursive: true);
+    _deleteBackupRestoreTempFiles();
+
+    late final DecryptedBackupSnapshot dec;
+    try {
+      dec = await BackupCodec.decryptSnapshot(backupBytes: backupBytes, secret: secret);
+    } on BackupWrongSecretException {
+      return const RestoreWrongSecret();
+    } on BackupCorruptedException {
+      return const RestoreCorrupted();
+    }
+
+    if (dec.schemaVersion > schemaVersion) {
+      dec.plainSqliteBytes.fillRange(0, dec.plainSqliteBytes.length, 0);
+      return const RestoreNeedsUpdate();
+    }
+
+    try {
+      files.restoreTmp.writeAsBytesSync(dec.plainSqliteBytes, flush: true);
+      dec.plainSqliteBytes.fillRange(0, dec.plainSqliteBytes.length, 0);
+      final foundVer = verifyPlainBackupFile(files.restoreTmp);
+      if (foundVer > schemaVersion) {
+        return const RestoreNeedsUpdate();
+      }
+    } on DbOpenException {
+      return const RestoreCorrupted();
+    } on SqliteException {
+      return const RestoreCorrupted();
+    } on FileSystemException catch (e) {
+      return RestoreFailed(_isDiskFull(e) ? const LowStorage() : const CannotOpen());
+    }
+
+    try {
+      Uint8List targetKey;
+      if (openRepository != null) {
+        // Nhánh A: Máy đang mở khóa -> giữ nguyên khóa hiện tại để tránh KeyAlreadyExistsException.
+        final cur = await _readKey();
+        if (cur is OpenOutcome) return RestoreFailed(cur);
+        if (cur is! KeyPresent) return const RestoreFailed(KeyStuck());
+        targetKey = cur.key;
+        encryptPlainFileInPlace(files.restoreTmp, targetKey);
+        await openRepository.close();
+      } else {
+        // Nhánh B: Chào mừng / KeyLost / KeyStuck / CannotOpen -> chỉ xóa khóa/cờ cũ sau khi bản tạm đã hợp lệ.
+        try {
+          await keys.deleteDbKey();
+        } on Object {
+          // Bỏ qua nếu chưa có khóa.
+        }
+        try {
+          targetKey = await keys.createDbKey();
+        } on KeyAlreadyExistsException {
+          await keys.deleteDbKey();
+          targetKey = await keys.createDbKey();
+        }
+        encryptPlainFileInPlace(files.restoreTmp, targetKey);
+        DbFiles.deleteIfExists(files.wipeMarker);
+      }
+
+      for (final f in [files.db, files.wal, files.shm, ...files.preMigrationCopies()]) {
+        DbFiles.deleteIfExists(f);
+      }
+      files.restoreTmp.renameSync(files.db.path);
+      _deleteBackupRestoreTempFiles();
+      return RestoreSucceeded(await open());
+    } on DbOpenException catch (e) {
+      return RestoreFailed(e.stage == DbOpenStage.cipher ? const InstallBroken() : const CannotOpen());
+    } on FileSystemException catch (e) {
+      return RestoreFailed(_isDiskFull(e) ? const LowStorage() : const CannotOpen());
+    } on Object {
+      return const RestoreFailed(KeyStuck());
+    } finally {
+      _deleteBackupRestoreTempFiles();
     }
   }
 
