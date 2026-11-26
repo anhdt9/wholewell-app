@@ -160,6 +160,7 @@ class FakeGoogleAuth implements GoogleAuth {
   bool silentRevoked = false;
   bool failOnDisconnect = false;
   int signInCalls = 0;
+  int signInSilentlyCalls = 0;
   int signOutCalls = 0;
   int disconnectCalls = 0;
   Map<String, String>? fakeHeaders = const {'Authorization': 'Bearer fake-token'};
@@ -184,6 +185,7 @@ class FakeGoogleAuth implements GoogleAuth {
 
   @override
   Future<GoogleAuthAccount?> signInSilently() async {
+    signInSilentlyCalls++;
     if (failNetworkOnSilent) throw const SocketException('offline');
     if (silentRevoked) {
       _user = null;

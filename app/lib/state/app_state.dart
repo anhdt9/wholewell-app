@@ -45,6 +45,7 @@ class AppState extends ChangeNotifier {
   GoogleAuthAccount? _driveAccount;
   bool _drivePendingDeleteActive = false;
   bool _drivePendingDeleteNeedsReauth = false;
+  bool _checkingDriveState = false;
 
   AppState({
     required this.pack,
@@ -169,7 +170,7 @@ class AppState extends ChangeNotifier {
     if (status == DataStatus.ready && stage == SessionStage.ready) {
       await diary.checkAgeBumpOnReady();
     }
-    await _checkDriveStateAndPendingDelete();
+    await _checkDriveStateAndPendingDelete(fromResume: true);
   }
 
   /// Hoàn tất bước Đồng ý lần đầu (chỉ tạo khóa & CSDL sau khi người dùng đồng ý).
@@ -348,25 +349,25 @@ class AppState extends ChangeNotifier {
   bool get drivePendingDeleteActive => _drivePendingDeleteActive;
   bool get drivePendingDeleteNeedsReauth => _drivePendingDeleteNeedsReauth;
 
-  Future<void> _checkDriveStateAndPendingDelete() async {
-    final pending = await drivePendingDeleteStore.hasPendingDelete();
-    _drivePendingDeleteActive = pending;
-    if (pending) {
-      await _attemptSilentPendingDelete();
-      notifyListeners();
-      return;
-    }
-    _drivePendingDeleteNeedsReauth = false;
-    if (diary.driveConsent != null) {
-      try {
-        _driveAccount = await googleAuth.signInSilently() ?? await googleAuth.currentUser();
-      } on Object {
-        _driveAccount ??= await googleAuth.currentUser();
+  Future<void> _checkDriveStateAndPendingDelete({bool fromResume = false}) async {
+    if (_checkingDriveState) return;
+    _checkingDriveState = true;
+    try {
+      final pending = await drivePendingDeleteStore.hasPendingDelete();
+      _drivePendingDeleteActive = pending;
+      if (pending) {
+        if (!(fromResume && _drivePendingDeleteNeedsReauth)) {
+          await _attemptSilentPendingDelete();
+        }
+        notifyListeners();
+        return;
       }
-    } else {
-      _driveAccount = await googleAuth.currentUser();
+      _drivePendingDeleteNeedsReauth = false;
+      _driveAccount = _driveAccount ?? await googleAuth.currentUser();
+      notifyListeners();
+    } finally {
+      _checkingDriveState = false;
     }
-    notifyListeners();
   }
 
   Future<bool> _attemptSilentPendingDelete() async {

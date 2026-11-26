@@ -165,7 +165,7 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
     final out = <IntakeLine>[];
     for (final l in _lines) {
       final raw = double.tryParse(l.amount.text.trim().replaceAll(',', '.'));
-      if (raw == null || raw <= 0) continue;
+      if (raw == null || !raw.isFinite || raw <= 0) continue;
       final def = pack.nutrients[l.nutrientId]!;
       final labelUnit = l.unit == _Unit.iu ? LabelUnit.iu : _stdLabelUnit(def.unit);
       final form = switch (l.nutrientId) {
@@ -210,7 +210,7 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
 
     if (_selectedProduct != null) {
       final parsedServings = double.tryParse(_servingsCtrl.text.trim().replaceAll(',', '.'));
-      if (parsedServings == null || parsedServings <= 0) {
+      if (parsedServings == null || !parsedServings.isFinite || parsedServings <= 0) {
         ScaffoldMessenger.maybeOf(context)?.showSnackBar(
           const SnackBar(content: Text('Nhập số khẩu phần lớn hơn 0.')),
         );

@@ -14,11 +14,24 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
   String? _code;
   final _minutes = TextEditingController(text: '30');
   String _query = '';
+  bool _saving = false;
 
   @override
   void dispose() {
     _minutes.dispose();
     super.dispose();
+  }
+
+  Future<void> _save(Activity selected, double minutes) async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    try {
+      await AppScope.of(context).addWorkout(WorkoutEntry(activityCode: selected.code, minutes: minutes));
+      if (!mounted) return;
+      Navigator.of(context).pop();
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   @override
@@ -27,7 +40,8 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
     final acts = state.pack.activities.values
         .where((a) => a.nameVi.toLowerCase().contains(_query.toLowerCase()))
         .toList();
-    final minutes = double.tryParse(_minutes.text.replaceAll(',', '.')) ?? 0;
+    final rawMinutes = double.tryParse(_minutes.text.trim().replaceAll(',', '.'));
+    final minutes = (rawMinutes != null && rawMinutes.isFinite) ? rawMinutes : 0.0;
     final selected = _code == null ? null : state.pack.activities[_code!];
     final kcal = selected == null
         ? null
@@ -36,12 +50,9 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Thêm buổi tập'), actions: [
         TextButton(
-          onPressed: selected == null || minutes <= 0
+          onPressed: _saving || selected == null || minutes <= 0
               ? null
-              : () {
-                  state.addWorkout(WorkoutEntry(activityCode: selected.code, minutes: minutes));
-                  Navigator.of(context).pop();
-                },
+              : () => _save(selected, minutes),
           child: const Text('Lưu'),
         ),
       ]),

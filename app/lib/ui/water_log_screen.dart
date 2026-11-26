@@ -69,7 +69,7 @@ class _WaterLogScreenState extends State<WaterLogScreen> {
 
   Future<void> _save() async {
     final ml = _parsedMl();
-    if (ml == null || ml <= 0 || ml > 5000) {
+    if (ml == null || !ml.isFinite || ml <= 0 || ml > 5000) {
       setState(() => _errorText = 'Nhập lượng nước từ 1 đến 5.000 ml.');
       return;
     }

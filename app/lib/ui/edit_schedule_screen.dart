@@ -55,7 +55,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
 
   double? get _parsedServings {
     final v = double.tryParse(_servingsCtrl.text.trim().replaceAll(',', '.'));
-    if (v == null || v <= 0) return null;
+    if (v == null || !v.isFinite || v <= 0) return null;
     return v;
   }
 

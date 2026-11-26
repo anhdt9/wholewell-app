@@ -737,5 +737,128 @@ void main() {
       expect(googleAuth.signInCalls, beforeCalls + 1);
       expect((await driveProvider.listBackups()).length, 1);
     });
+
+    testWidgets('restoreFromGoogleDrive không gọi lại signInSilently; onAppResume không lặp vô hạn khi needsReauth',
+        (tester) async {
+      final srcDir = await makeTempDir('ww_drive_norepeat_src_');
+      final keys = FakeSecureKeyStore();
+      final srcOpener = makeOpener(srcDir, keys);
+      final bytes = await tester.runAsync(() async {
+        final srcRes = await srcOpener.createNew(
+          const ConsentInput(contentVersion: mvpConsentVersion, ageYears: 29, caution: false),
+        );
+        final srcRepo = (srcRes as Opened).repository;
+        await srcRepo.saveProfile(const Profile(
+          ageYears: 29,
+          sex: Sex.female,
+          heightCm: 160,
+          weightKg: 54,
+          activityLevel: ActivityLevel.active,
+        ));
+        await srcRepo.saveOnboardingStep(OnboardingStep.done);
+        await srcRepo.grantDriveConsent(mvpConsentVersion);
+        final exported = await srcOpener.exportBackup(
+          openRepository: srcRepo,
+          secret: 'no-loop-secret',
+          memoryKiB: 256,
+          iterations: 1,
+          parallelism: 1,
+        );
+        await srcRepo.close();
+        return exported;
+      });
+      final backupBytes = bytes!;
+
+      final dstDir = await makeTempDir('ww_drive_norepeat_dst_');
+      final googleAuth = FakeGoogleAuth(
+        initialUser: const GoogleAuthAccount(id: 'u1', email: 'test@example.com'),
+      );
+      final driveProvider = FakeBackupProvider()..seedBackup(bytes: backupBytes);
+      final pendingStore = FileDrivePendingDeleteStore(
+        File('${dstDir.path}/drive_pending_delete.json'),
+      );
+      final dstState = await tester.runAsync(() async {
+        final s = AppState(
+          pack: pack,
+          opener: makeOpener(dstDir, FakeSecureKeyStore()),
+          googleAuth: googleAuth,
+          driveBackupProvider: driveProvider,
+          drivePendingDeleteStore: pendingStore,
+        );
+        await s.start();
+        return s;
+      });
+      final state = dstState!;
+      addTearDown(() async {
+        await state.session.repo?.close();
+        state.dispose();
+      });
+
+      final backups = await driveProvider.listBackups();
+      final outcome = await tester.runAsync(
+        () => state.restoreFromGoogleDrive(backupId: backups.single.id, secret: 'no-loop-secret'),
+      );
+      expect(outcome, isA<RestoreSucceeded>());
+      expect(googleAuth.signInSilentlyCalls, 0);
+
+      // Khi cần reauth (pending delete + signInSilently trả null), onAppResume thứ 2 không lặp lại signInSilently.
+      await tester.runAsync(() => pendingStore.markPendingDelete());
+      googleAuth.silentRevoked = true;
+      await tester.runAsync(state.onAppResume);
+      expect(googleAuth.signInSilentlyCalls, 1);
+      expect(state.drivePendingDeleteNeedsReauth, isTrue);
+
+      await tester.runAsync(state.onAppResume);
+      expect(googleAuth.signInSilentlyCalls, 1);
+    });
+
+    testWidgets('start() không bật CredentialManager (signInSilentlyCalls == 0) khi pending == false',
+        (tester) async {
+      final dir = await makeTempDir('ww_drive_cold_no_prompt_');
+      final keys = FakeSecureKeyStore();
+      final googleAuth = FakeGoogleAuth();
+      final firstOpener = makeOpener(dir, keys);
+      await tester.runAsync(() async {
+        final res = await firstOpener.createNew(
+          const ConsentInput(contentVersion: mvpConsentVersion, ageYears: 28, caution: false),
+        );
+        final repo = (res as Opened).repository;
+        await repo.saveProfile(const Profile(
+          ageYears: 28,
+          sex: Sex.male,
+          heightCm: 172,
+          weightKg: 68,
+          activityLevel: ActivityLevel.active,
+        ));
+        await repo.saveHideCalories(false);
+        await repo.saveOnboardingStep(OnboardingStep.done);
+        await repo.grantDriveConsent(mvpConsentVersion);
+        await repo.close();
+      });
+
+      final state = await tester.runAsync(() async {
+        final s = AppState(
+          pack: pack,
+          opener: makeOpener(dir, keys),
+          googleAuth: googleAuth,
+          driveBackupProvider: FakeBackupProvider(),
+          drivePendingDeleteStore: FileDrivePendingDeleteStore(
+            File('${dir.path}/drive_pending_delete.json'),
+          ),
+        );
+        await s.start();
+        return s;
+      });
+      final appState = state!;
+      addTearDown(() async {
+        await appState.session.repo?.close();
+        appState.dispose();
+      });
+
+      expect(appState.status, DataStatus.ready);
+      expect(appState.stage, SessionStage.ready);
+      expect(appState.driveEnabled, isTrue);
+      expect(googleAuth.signInSilentlyCalls, 0);
+    });
   });
 }

@@ -142,9 +142,9 @@ class _FoodPortionScreenState extends State<FoodPortionScreen> {
 
   void _onQtyTextChanged(String raw) {
     final parsed = double.tryParse(raw.trim().replaceAll(',', '.'));
-    if (parsed != null && parsed > 0) {
-      setState(() => _qty = parsed);
-    }
+    setState(() {
+      _qty = (parsed != null && parsed.isFinite && parsed > 0) ? parsed : 0;
+    });
   }
 
   Future<void> _save() async {

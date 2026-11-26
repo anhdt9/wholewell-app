@@ -16,7 +16,7 @@ class BodyMeasureValidation {
   static BodyMeasureValidation validateHeight(String raw) {
     final t = raw.trim().replaceAll(',', '.');
     final v = double.tryParse(t);
-    if (v == null || v <= 0 || v > 300) {
+    if (v == null || !v.isFinite || v <= 0 || v > 300) {
       return const BodyMeasureValidation(blockingError: 'Nhập chiều cao hợp lệ (1–300 cm).');
     }
     if (v < 120 || v > 220) {
@@ -28,7 +28,7 @@ class BodyMeasureValidation {
   static BodyMeasureValidation validateWeight(String raw) {
     final t = raw.trim().replaceAll(',', '.');
     final v = double.tryParse(t);
-    if (v == null || v <= 0 || v > 300) {
+    if (v == null || !v.isFinite || v <= 0 || v > 300) {
       return const BodyMeasureValidation(blockingError: 'Nhập cân nặng hợp lệ (1–300 kg).');
     }
     if (v < 30 || v > 250) {

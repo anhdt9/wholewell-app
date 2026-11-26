@@ -108,19 +108,20 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
   double? _parseOpt(TextEditingController c) {
     final s = c.text.trim().replaceAll(',', '.');
     if (s.isEmpty) return null;
-    return double.tryParse(s);
+    final v = double.tryParse(s);
+    return (v != null && v.isFinite) ? v : null;
   }
 
   String? _validateNonNeg(String? s) {
     if (s == null || s.trim().isEmpty) return null;
     final v = double.tryParse(s.trim().replaceAll(',', '.'));
-    if (v == null || v < 0) return 'Nhập số ≥ 0';
+    if (v == null || !v.isFinite || v < 0) return 'Nhập số ≥ 0';
     return null;
   }
 
   String? _validatePos(String? s) {
     final v = double.tryParse((s ?? '').trim().replaceAll(',', '.'));
-    if (v == null || v <= 0) return 'Nhập số > 0';
+    if (v == null || !v.isFinite || v <= 0) return 'Nhập số > 0';
     return null;
   }
 
