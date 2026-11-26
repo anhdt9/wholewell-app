@@ -2,7 +2,13 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   data-and-engine:
@@ -69,6 +75,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
       - name: Test app
         working-directory: app
         run: |
@@ -83,10 +90,13 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+          cache: gradle
       - name: Build Android (debug)
+        if: github.ref == 'refs/heads/main'
         working-directory: app
         run: flutter build apk --debug
       - name: Lưu APK debug để cài thử (chỉ thử nội bộ)
+        if: github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: wholewell-debug-apk
