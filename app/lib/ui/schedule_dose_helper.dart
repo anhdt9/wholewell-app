@@ -134,21 +134,21 @@ Future<void> showReminderQuickConfirmSheet(
   final todayKey = dayKey(now);
   final prevKey = dayKey(now.subtract(const Duration(days: 1)));
 
-  final occToday = {for (final o in diary.todayOccurrences) o.scheduleId: o};
-  final occPrev = {for (final o in diary.yesterdayOccurrences) o.scheduleId: o};
+  final occToday = {for (final o in diary.actualTodayOccurrences) o.scheduleId: o};
+  final occPrev = {for (final o in diary.actualYesterdayOccurrences) o.scheduleId: o};
 
   // Ưu tiên lịch ngày hôm nay; nếu không thấy trong hôm nay hoặc hôm qua có lịch qua nửa đêm chưa đánh dấu thì dùng hôm qua.
   final items = <({Schedule schedule, String day, Product? product})>[];
   final prodMap = {for (final s in diary.allProducts) s.product.id: s.product};
 
-  for (final s in diary.todaySchedules) {
+  for (final s in diary.actualTodaySchedules) {
     final matchesId = scheduleIds.isEmpty || scheduleIds.contains(s.id);
     if (s.timeOfDay == timeOfDayMinutes && matchesId && !occToday.containsKey(s.id)) {
       items.add((schedule: s, day: todayKey, product: prodMap[s.productId]));
     }
   }
   if (items.isEmpty) {
-    for (final s in diary.yesterdaySchedules) {
+    for (final s in diary.actualYesterdaySchedules) {
       final matchesId = scheduleIds.isEmpty || scheduleIds.contains(s.id);
       if (s.timeOfDay == timeOfDayMinutes && matchesId && !occPrev.containsKey(s.id)) {
         items.add((schedule: s, day: prevKey, product: prodMap[s.productId]));

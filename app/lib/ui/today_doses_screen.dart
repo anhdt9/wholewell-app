@@ -19,13 +19,13 @@ class TodayDosesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = AppScope.of(context);
     final diary = state.diary;
-    final schedules = diary.todaySchedules;
-    final occMap = {for (final o in diary.todayOccurrences) o.scheduleId: o};
-    final doseMap = {for (final d in diary.todayDoses) d.id: d};
+    final schedules = diary.actualTodaySchedules;
+    final occMap = {for (final o in diary.actualTodayOccurrences) o.scheduleId: o};
+    final doseMap = {for (final d in diary.actualTodayDoses) d.id: d};
     final prodMap = {for (final s in diary.allProducts) s.product.id: s.product};
-    final notices = diary.scheduleNotices();
+    final notices = diary.scheduleNotices(overrideSchedules: schedules);
     final now = nowOverride ?? DateTime.now();
-    final todayStr = dayKey(diary.day);
+    final todayStr = dayKey(now);
 
     final byTime = <int, List<Schedule>>{};
     for (final s in schedules) {
@@ -157,9 +157,9 @@ class _ScheduleOccurrenceTile extends StatelessWidget {
                   );
                   if (picked == null || !context.mounted) return;
                   final at = DateTime(
-                    diary.day.year,
-                    diary.day.month,
-                    diary.day.day,
+                    now.year,
+                    now.month,
+                    now.day,
                     picked.hour,
                     picked.minute,
                   );

@@ -294,7 +294,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       ),
     );
     if (ok == true && mounted) {
-      await AppScope.of(context).diary.archiveProduct(widget.productId);
+      final state = AppScope.of(context);
+      await state.diary.archiveProduct(widget.productId);
+      await state.syncNotifications();
       if (mounted) Navigator.pop(context);
     }
   }
@@ -434,11 +436,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           Builder(builder: (ctx) {
             final diary = state.diary;
             final prodSchedules = [
-              for (final s in diary.todaySchedules)
+              for (final s in diary.actualTodaySchedules)
                 if (s.productId == p.id) s,
             ];
             final prodNotices = [
-              for (final n in diary.scheduleNotices())
+              for (final n in diary.scheduleNotices(overrideSchedules: diary.actualTodaySchedules))
                 if (n.severity == 'notice' && n.productIds.contains(p.id)) n,
             ];
             Future<void> openSchedule([Schedule? existing]) async {

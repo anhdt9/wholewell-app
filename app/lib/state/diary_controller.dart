@@ -87,9 +87,12 @@ class DiaryController extends ChangeNotifier {
   DayTimesSettings _dayTimesSettings = const DayTimesSettings();
   bool _notificationsEnabled = false;
   List<Schedule> _todaySchedules = const [];
-  List<Schedule> _yesterdaySchedules = const [];
   List<Occurrence> _todayOccurrences = const [];
-  List<Occurrence> _yesterdayOccurrences = const [];
+  List<Schedule> _actualTodaySchedules = const [];
+  List<Schedule> _actualYesterdaySchedules = const [];
+  List<Occurrence> _actualTodayOccurrences = const [];
+  List<Occurrence> _actualYesterdayOccurrences = const [];
+  List<DoseEntry> _actualTodayDoses = const [];
   List<ProductSummary> _allProducts = const [];
   Map<int, List<ProductIngredient>> _ingredientsByProduct = const {};
   String? _dismissedScheduleNoticeSig;
@@ -117,9 +120,12 @@ class DiaryController extends ChangeNotifier {
   DayTimesSettings get dayTimesSettings => _dayTimesSettings;
   bool get notificationsEnabled => _notificationsEnabled;
   List<Schedule> get todaySchedules => _todaySchedules;
-  List<Schedule> get yesterdaySchedules => _yesterdaySchedules;
   List<Occurrence> get todayOccurrences => _todayOccurrences;
-  List<Occurrence> get yesterdayOccurrences => _yesterdayOccurrences;
+  List<Schedule> get actualTodaySchedules => _actualTodaySchedules;
+  List<Schedule> get actualYesterdaySchedules => _actualYesterdaySchedules;
+  List<Occurrence> get actualTodayOccurrences => _actualTodayOccurrences;
+  List<Occurrence> get actualYesterdayOccurrences => _actualYesterdayOccurrences;
+  List<DoseEntry> get actualTodayDoses => _actualTodayDoses;
   List<ProductSummary> get allProducts => _allProducts;
   Map<int, List<ProductIngredient>> get ingredientsByProduct => _ingredientsByProduct;
   String? get dismissedScheduleNoticeSig => _dismissedScheduleNoticeSig;
@@ -157,9 +163,12 @@ class DiaryController extends ChangeNotifier {
     _dayTimesSettings = const DayTimesSettings();
     _notificationsEnabled = false;
     _todaySchedules = const [];
-    _yesterdaySchedules = const [];
     _todayOccurrences = const [];
-    _yesterdayOccurrences = const [];
+    _actualTodaySchedules = const [];
+    _actualYesterdaySchedules = const [];
+    _actualTodayOccurrences = const [];
+    _actualYesterdayOccurrences = const [];
+    _actualTodayDoses = const [];
     _allProducts = const [];
     _ingredientsByProduct = const {};
     _dismissedScheduleNoticeSig = null;
@@ -221,7 +230,9 @@ class DiaryController extends ChangeNotifier {
     final gen = ++_loadGen;
     final day = _day;
     final toDay = dayKey(day);
-    final yesterdayKey = dayKey(day.subtract(const Duration(days: 1)));
+    final now = DateTime.now();
+    final realTodayKey = dayKey(now);
+    final realYesterdayKey = dayKey(now.subtract(const Duration(days: 1)));
     try {
       final results = await Future.wait([
         repo.loadProfile(),
@@ -233,15 +244,18 @@ class DiaryController extends ChangeNotifier {
         repo.loadDayTimesSettings(),
         repo.latestNotificationConsent(),
         repo.schedulesOn(toDay),
-        repo.schedulesOn(yesterdayKey),
         repo.occurrencesOn(toDay),
-        repo.occurrencesOn(yesterdayKey),
+        repo.schedulesOn(realTodayKey),
+        repo.schedulesOn(realYesterdayKey),
+        repo.occurrencesOn(realTodayKey),
+        repo.occurrencesOn(realYesterdayKey),
+        repo.dosesOn(realTodayKey),
         repo.listProducts(),
         repo.getUiState('dismissed_schedule_notice_sig'),
         repo.getUiState('hidden_tip_day'),
       ]);
       if (gen != _loadGen) return;
-      final products = results[12] as List<ProductSummary>;
+      final products = results[15] as List<ProductSummary>;
       final details = await Future.wait([
         for (final p in products) repo.productDetail(p.product.id),
       ]);
@@ -256,15 +270,18 @@ class DiaryController extends ChangeNotifier {
       _dayTimesSettings = results[6] as DayTimesSettings;
       _notificationsEnabled = results[7] != null;
       _todaySchedules = results[8] as List<Schedule>;
-      _yesterdaySchedules = results[9] as List<Schedule>;
-      _todayOccurrences = results[10] as List<Occurrence>;
-      _yesterdayOccurrences = results[11] as List<Occurrence>;
+      _todayOccurrences = results[9] as List<Occurrence>;
+      _actualTodaySchedules = results[10] as List<Schedule>;
+      _actualYesterdaySchedules = results[11] as List<Schedule>;
+      _actualTodayOccurrences = results[12] as List<Occurrence>;
+      _actualYesterdayOccurrences = results[13] as List<Occurrence>;
+      _actualTodayDoses = results[14] as List<DoseEntry>;
       _allProducts = products;
       _ingredientsByProduct = {
         for (final d in details) d.product.id: d.ingredients,
       };
-      _dismissedScheduleNoticeSig = results[13] as String?;
-      _hiddenTipDay = results[14] as String?;
+      _dismissedScheduleNoticeSig = results[16] as String?;
+      _hiddenTipDay = results[17] as String?;
       _readFailed = false;
     } on JournalStorageException {
       if (gen == _loadGen) _readFailed = true;
@@ -1373,7 +1390,7 @@ class DiaryController extends ChangeNotifier {
 
   List<ScheduledReminderSlot> buildReminderSlots() {
     final byTime = <int, List<int>>{};
-    for (final s in _todaySchedules) {
+    for (final s in _actualTodaySchedules) {
       (byTime[s.timeOfDay] ??= []).add(s.id);
     }
     final times = byTime.keys.toList()..sort();

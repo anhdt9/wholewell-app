@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:wholewell/main.dart';
 import 'package:wholewell/state/app_state.dart';
 
@@ -259,5 +260,75 @@ void main() {
     expect(find.textContaining('Magie vượt giới hạn an toàn'), findsAtLeastNWidgets(1));
     expect(scheduler.ulAlertCount, 1);
     expect(scheduler.canceledWindows, [480]);
+  });
+
+  testWidgets('startOver, archiveProduct xóa/đồng bộ lịch nhắc và xem ngày hôm qua vẫn ghi đúng hôm nay',
+      (tester) async {
+    final scheduler = FakeNotificationScheduler();
+    final state = await _makeReadyState(pack: pack, scheduler: scheduler);
+    await state.diary.grantNotificationConsent('notif-1');
+    await state.diary.saveDayTimesSettings(const DayTimesSettings(dayTimesConfirmed: true));
+
+    final pid = await state.diary.createProductWithIngredientsAndBox(
+      name: 'Kẽm 15',
+      countUnit: CountUnit.tablet,
+      unitsPerServing: 1,
+      ingredients: const [
+        IngredientDraft(
+          nutrientId: 'zinc',
+          form: 'unknown',
+          amountPerServing: 15,
+          unit: 'mg',
+          labelAmount: 15,
+          labelUnit: 'mg',
+          origin: IngredientOrigin.manual,
+          confirmed: true,
+        ),
+      ],
+      initialBoxRemaining: 10,
+    );
+    await state.diary.addSchedule(pid!, 480, 1, validFrom: dayKey(DateTime.now()));
+    await state.syncNotifications();
+    expect(scheduler.syncedSlots, hasLength(1));
+
+    // Lỗi 3: chuyển ngày đang xem về hôm qua, mở Bổ sung -> Lần uống hôm nay vẫn thấy lịch của hôm nay.
+    await state.setDay(DateTime.now().subtract(const Duration(days: 1)));
+    expect(state.diary.actualTodaySchedules, hasLength(1));
+
+    await tester.pumpWidget(WholeWellApp(state: state));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Bổ sung'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Lần uống hôm nay'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Kẽm 15'), findsOneWidget);
+
+    // Lỗi 2: lưu trữ sản phẩm đồng bộ lại scheduler -> syncedSlots rỗng.
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kẽm 15'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.more_vert));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Lưu trữ sản phẩm'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Lưu trữ'));
+    await tester.pumpAndSettle();
+    expect(scheduler.syncedSlots, isEmpty);
+
+    // Lỗi 1: thêm lại lịch và gọi startOver() / withdrawConsentAndReset() -> xóa hết lịch nhắc Android.
+    final pid2 = await state.diary.createProductWithIngredientsAndBox(
+      name: 'Vitamin C',
+      countUnit: CountUnit.tablet,
+      unitsPerServing: 1,
+      ingredients: const [],
+    );
+    await state.diary.addSchedule(pid2!, 720, 1, validFrom: dayKey(DateTime.now()));
+    await state.syncNotifications();
+    expect(scheduler.syncedSlots, hasLength(1));
+
+    await state.withdrawConsentAndReset();
+    expect(scheduler.syncedSlots, isEmpty);
   });
 }

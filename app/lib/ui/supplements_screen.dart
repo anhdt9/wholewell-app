@@ -80,11 +80,14 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
     }
 
     final diary = AppScope.of(context).diary;
-    final schedules = diary.todaySchedules;
-    final occMap = {for (final o in diary.todayOccurrences) o.scheduleId: o};
+    final schedules = diary.actualTodaySchedules;
+    final occMap = {for (final o in diary.actualTodayOccurrences) o.scheduleId: o};
     final prodMap = {for (final s in _items) s.product.id: s.product};
-    final schedFlags = diary.scheduledUlFlags();
-    final schedNotices = [for (final n in diary.scheduleNotices()) if (n.severity == 'notice') n];
+    final schedFlags = diary.scheduledUlFlags(overrideSchedules: schedules);
+    final schedNotices = [
+      for (final n in diary.scheduleNotices(overrideSchedules: schedules))
+        if (n.severity == 'notice') n,
+    ];
 
     return Scaffold(
       body: ListView(

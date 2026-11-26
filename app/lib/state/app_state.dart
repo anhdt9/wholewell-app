@@ -205,10 +205,13 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<void> startOver() => session.startOver(onCleared: () {
-        diary.attachRepository(null);
-        diary.clear();
-      });
+  Future<void> startOver() async {
+    await notificationScheduler.syncSchedules(const []);
+    await session.startOver(onCleared: () {
+      diary.attachRepository(null);
+      diary.clear();
+    });
+  }
 
   Future<void> withdrawConsentAndReset() => startOver();
 
@@ -268,9 +271,9 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> cancelWindowIfHandled(int timeOfDay) async {
-    final slots = diary.todaySchedules.where((s) => s.timeOfDay == timeOfDay).toList();
+    final slots = diary.actualTodaySchedules.where((s) => s.timeOfDay == timeOfDay).toList();
     if (slots.isEmpty) return;
-    final markedIds = {for (final o in diary.todayOccurrences) o.scheduleId};
+    final markedIds = {for (final o in diary.actualTodayOccurrences) o.scheduleId};
     if (slots.every((s) => markedIds.contains(s.id))) {
       await notificationScheduler.cancelWindow(timeOfDay);
     }

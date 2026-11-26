@@ -142,7 +142,7 @@ class ReminderScheduler(
             )
 
             val notif = Notification.Builder(ctx, NOTIF_CHANNEL_ID)
-                .setSmallIcon(ctx.applicationInfo.icon)
+                .setSmallIcon(R.drawable.ic_stat_wholewell)
                 .setContentTitle(ReminderLogic.formatNotificationTitle(slot.timeOfDayMinutes))
                 .setContentText(ReminderLogic.formatNotificationBody(slot.itemCount))
                 .setVisibility(Notification.VISIBILITY_PUBLIC)
@@ -302,7 +302,7 @@ class ReminderScheduler(
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
                 )
                 val notif = Notification.Builder(context, NOTIF_ALERT_CHANNEL_ID)
-                    .setSmallIcon(context.applicationInfo.icon)
+                    .setSmallIcon(R.drawable.ic_stat_wholewell)
                     .setContentTitle("WholeWell")
                     .setContentText("Có thông tin mới cần xem trong WholeWell")
                     .setVisibility(Notification.VISIBILITY_PUBLIC)

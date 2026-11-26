@@ -63,7 +63,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
     final s = _parsedServings ?? 1.0;
     final list = <Schedule>[];
     final ex = widget.existingSchedule;
-    for (final cur in diary.todaySchedules) {
+    for (final cur in diary.actualTodaySchedules) {
       if (ex != null && cur.id == ex.id) continue;
       list.add(cur);
     }
@@ -72,7 +72,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
       widget.product.id,
       _timeOfDay,
       s,
-      dayKey(diary.day),
+      dayKey(DateTime.now()),
       null,
     ));
     return list;
@@ -188,7 +188,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
       }
     }
 
-    final todayStr = dayKey(diary.day);
+    final todayStr = dayKey(DateTime.now());
     final ex = widget.existingSchedule;
     if (ex == null) {
       await diary.addSchedule(widget.product.id, _timeOfDay, servings, validFrom: todayStr);
@@ -223,7 +223,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
     if (ok != true || !mounted) return;
     setState(() => _saving = true);
     final state = AppScope.of(context);
-    await state.diary.endSchedule(ex.id, today: dayKey(state.diary.day));
+    await state.diary.endSchedule(ex.id, today: dayKey(DateTime.now()));
     await state.syncNotifications();
     if (mounted) Navigator.of(context).pop(true);
   }
