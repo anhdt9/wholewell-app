@@ -7,10 +7,12 @@ import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 
 import '../platform/label_scanner.dart';
+import '../platform/notification_scheduler.dart';
 import 'db_session_controller.dart';
 import 'diary_controller.dart';
 
 export '../platform/label_scanner.dart';
+export '../platform/notification_scheduler.dart';
 export 'db_session_controller.dart'
     show DataStatus, DbSessionController, SessionStage, khungTamConsentVersion;
 export 'diary_controller.dart'
@@ -26,6 +28,7 @@ class AppState extends ChangeNotifier {
   final DiaryController diary;
   final OcrEngine ocrEngine;
   final BarcodeScanner? barcodeScanner;
+  final NotificationScheduler notificationScheduler;
   final Future<FoodLibraryRepository> Function()? _openFoodLibrary;
   final Future<DsldLibraryRepository> Function()? _openDsldLibrary;
   DsldLibraryRepository? _dsldLibrary;
@@ -41,10 +44,12 @@ class AppState extends ChangeNotifier {
     DsldLibraryRepository? dsldLibrary,
     OcrEngine? ocrEngine,
     this.barcodeScanner,
+    NotificationScheduler? notificationScheduler,
   })  : _openFoodLibrary = openFoodLibrary,
         _openDsldLibrary = openDsldLibrary,
         _dsldLibrary = dsldLibrary,
         ocrEngine = ocrEngine ?? MlKitOcrEngine(),
+        notificationScheduler = notificationScheduler ?? FakeNotificationScheduler(),
         session = DbSessionController(opener: opener),
         diary = DiaryController(pack: pack, foodLibrary: foodLibrary) {
     session.addListener(notifyListeners);
@@ -59,10 +64,12 @@ class AppState extends ChangeNotifier {
     DsldLibraryRepository? dsldLibrary,
     OcrEngine? ocrEngine,
     this.barcodeScanner,
+    NotificationScheduler? notificationScheduler,
   })  : _openFoodLibrary = null,
         _openDsldLibrary = null,
         _dsldLibrary = dsldLibrary,
         ocrEngine = ocrEngine ?? FakeOcrEngine(),
+        notificationScheduler = notificationScheduler ?? FakeNotificationScheduler(),
         session = DbSessionController(repo: repo, initialStatus: DataStatus.ready),
         diary = DiaryController(pack: pack, repo: repo, foodLibrary: foodLibrary) {
     session.addListener(notifyListeners);
@@ -76,6 +83,7 @@ class AppState extends ChangeNotifier {
         _dsldLibrary = null,
         ocrEngine = FakeOcrEngine(),
         barcodeScanner = null,
+        notificationScheduler = FakeNotificationScheduler(),
         session = DbSessionController(initialStatus: DataStatus.unsupportedPlatform),
         diary = DiaryController(pack: pack) {
     session.addListener(notifyListeners);
@@ -89,6 +97,8 @@ class AppState extends ChangeNotifier {
   bool get caution => diary.caution;
   double get lastWaterMl => diary.lastWaterMl;
   int? get ageBumpedNotice => diary.ageBumpedNotice;
+  DayTimesSettings get dayTimesSettings => diary.dayTimesSettings;
+  bool get notificationsEnabled => diary.notificationsEnabled;
   DateTime get day => diary.day;
   bool get saveFailed => diary.saveFailed;
   bool get readFailed => diary.readFailed;
@@ -113,6 +123,7 @@ class AppState extends ChangeNotifier {
         await _ensureFoodLibrary();
         unawaited(_ensureDsldLibrary());
         await diary.reload();
+        unawaited(syncNotifications());
       });
 
   /// Kiểm tra tự tăng tuổi khi app quay lại tiền cảnh ở trạng thái đã sẵn sàng.
@@ -194,10 +205,13 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<void> startOver() => session.startOver(onCleared: () {
-        diary.attachRepository(null);
-        diary.clear();
-      });
+  Future<void> startOver() async {
+    await notificationScheduler.syncSchedules(const []);
+    await session.startOver(onCleared: () {
+      diary.attachRepository(null);
+      diary.clear();
+    });
+  }
 
   Future<void> withdrawConsentAndReset() => startOver();
 
@@ -247,9 +261,42 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  Future<void> syncNotifications() async {
+    if (!diary.notificationsEnabled) {
+      await notificationScheduler.syncSchedules(const []);
+      return;
+    }
+    if (!await notificationScheduler.hasPermission()) return;
+    await notificationScheduler.syncSchedules(diary.buildReminderSlots());
+  }
+
+  Future<void> cancelWindowIfHandled(int timeOfDay) async {
+    final slots = diary.actualTodaySchedules.where((s) => s.timeOfDay == timeOfDay).toList();
+    if (slots.isEmpty) return;
+    final markedIds = {for (final o in diary.actualTodayOccurrences) o.scheduleId};
+    if (slots.every((s) => markedIds.contains(s.id))) {
+      await notificationScheduler.cancelWindow(timeOfDay);
+    }
+  }
+
+  Future<bool> enableNotifications({required String consentVersion}) async {
+    final granted = await notificationScheduler.requestPermission();
+    final saved = await diary.grantNotificationConsent(consentVersion);
+    if (saved && granted) {
+      await syncNotifications();
+    }
+    return granted;
+  }
+
+  Future<void> disableNotifications() async {
+    await notificationScheduler.syncSchedules(const []);
+    await diary.withdrawNotificationConsent();
+  }
+
   @override
   void dispose() {
     _dsldLibrary?.close();
+    unawaited(notificationScheduler.dispose());
     session.removeListener(notifyListeners);
     diary.removeListener(notifyListeners);
     session.dispose();

@@ -133,6 +133,60 @@ class CompoundMeta {
   const CompoundMeta({required this.nameVi, required this.source});
 }
 
+class ScheduleRule {
+  final String id;
+  final String type;
+  final String severity;
+  final List<String> nutrients;
+  final List<String> forms;
+  final double? threshold;
+  final String? unit;
+  final int windowMinutes;
+  final bool uncertain;
+  final String messageVi;
+  final String tipVi;
+  final String source;
+  final String url;
+  final String accessedDate;
+  final String quote;
+
+  const ScheduleRule({
+    required this.id,
+    required this.type,
+    required this.severity,
+    required this.nutrients,
+    this.forms = const [],
+    this.threshold,
+    this.unit,
+    required this.windowMinutes,
+    required this.uncertain,
+    required this.messageVi,
+    required this.tipVi,
+    required this.source,
+    required this.url,
+    required this.accessedDate,
+    required this.quote,
+  });
+
+  factory ScheduleRule.fromJson(Map<String, dynamic> j) => ScheduleRule(
+        id: j['id'] as String,
+        type: j['type'] as String,
+        severity: j['severity'] as String,
+        nutrients: [for (final s in (j['nutrients'] as List)) s as String],
+        forms: [for (final s in ((j['forms'] as List?) ?? const [])) s as String],
+        threshold: (j['threshold'] as num?)?.toDouble(),
+        unit: j['unit'] as String?,
+        windowMinutes: (j['windowMinutes'] as num?)?.toInt() ?? 0,
+        uncertain: j['uncertain'] as bool? ?? false,
+        messageVi: j['messageVi'] as String,
+        tipVi: j['tipVi'] as String,
+        source: j['source'] as String,
+        url: j['url'] as String,
+        accessedDate: j['accessedDate'] as String,
+        quote: j['quote'] as String,
+      );
+}
+
 class ReferencePack {
   final String version;
   final int minProfileAge;
@@ -162,6 +216,7 @@ class ReferencePack {
   final Map<String, VitaminEEsterDef> vitaminEEsters;
   final Map<String, Map<String, double>> compounds;
   final Map<String, Map<String, CompoundMeta>> compoundMeta;
+  final List<ScheduleRule> scheduleRules;
 
   ReferencePack._({
     required this.version,
@@ -190,6 +245,7 @@ class ReferencePack {
     required this.vitaminEEsters,
     required this.compounds,
     required this.compoundMeta,
+    required this.scheduleRules,
   });
 
   factory ReferencePack.fromJsonString(String s) =>
@@ -336,6 +392,10 @@ class ReferencePack {
       vitaminEEsters: esters,
       compounds: compounds,
       compoundMeta: compoundMeta,
+      scheduleRules: [
+        for (final r in ((j['scheduleRules'] as List?) ?? const []).cast<Map<String, dynamic>>())
+          ScheduleRule.fromJson(r),
+      ],
     );
   }
 }

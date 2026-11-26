@@ -12,9 +12,11 @@ import '../state/app_state.dart';
 import '../state/dsld_ingredient_mapper.dart';
 import 'common/common_widgets.dart';
 import 'confirm_ingredients_screen.dart';
+import 'day_times_screen.dart';
 import 'dsld_search_screen.dart';
 import 'labels.dart';
 import 'product_detail_screen.dart';
+import 'today_doses_screen.dart';
 
 class SupplementsScreen extends StatefulWidget {
   const SupplementsScreen({super.key});
@@ -77,34 +79,75 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
       );
     }
 
+    final diary = AppScope.of(context).diary;
+    final schedules = diary.actualTodaySchedules;
+    final occMap = {for (final o in diary.actualTodayOccurrences) o.scheduleId: o};
+    final prodMap = {for (final s in _items) s.product.id: s.product};
+    final schedFlags = diary.scheduledUlFlags(overrideSchedules: schedules);
+    final schedNotices = [
+      for (final n in diary.scheduleNotices(overrideSchedules: schedules))
+        if (n.severity == 'notice') n,
+    ];
+
     return Scaffold(
-      body: ListView.separated(
+      body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
-        itemCount: _items.length,
-        separatorBuilder: (_, __) => const Divider(height: 1),
-        itemBuilder: (ctx, i) {
-          final s = _items[i];
-          final p = s.product;
-          final u = countUnitLabel(p.countUnit);
-          final parts = <String>[
-            s.validRemaining > 0 ? 'Còn ${fmt(s.validRemaining)} $u' : 'Kho đã hết',
-            if (s.isLowStock) 'Sắp hết',
-            if (s.nearestExpiryMonth != null) 'HSD ${fmtExpiryMonth(s.nearestExpiryMonth!)}',
-            if (s.expiredRemaining > 0) 'Đã hết hạn: ${fmt(s.expiredRemaining)} $u',
-          ];
-          return ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(p.name),
-            subtitle: Text(parts.join(' · ')),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () async {
-              await Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => ProductDetailScreen(productId: p.id)),
+        children: [
+          Card(
+            margin: const EdgeInsets.only(bottom: 12),
+            child: ListTile(
+              title: const Text('Lần uống hôm nay'),
+              subtitle: schedules.isEmpty
+                  ? const Text('Chưa có lịch uống. Mở một sản phẩm để đặt lịch.')
+                  : Text(
+                      [
+                        for (final s in schedules)
+                          '${occMap[s.id]?.status == OccurrenceStatus.taken ? "✓" : occMap[s.id]?.status == OccurrenceStatus.skipped ? "—" : "○"} '
+                              '${formatMinutesHhMm(s.timeOfDay)} ${prodMap[s.productId]?.name ?? ""}',
+                      ].join(' · '),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen()),
+              ),
+            ),
+          ),
+          Text('Kho', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 4),
+          for (var i = 0; i < _items.length; i++) ...[
+            if (i > 0) const Divider(height: 1),
+            Builder(builder: (ctx) {
+              final s = _items[i];
+              final p = s.product;
+              final u = countUnitLabel(p.countUnit);
+              final parts = <String>[
+                s.validRemaining > 0 ? 'Còn ${fmt(s.validRemaining)} $u' : 'Kho đã hết',
+                if (s.isLowStock) 'Sắp hết',
+                if (s.nearestExpiryMonth != null) 'HSD ${fmtExpiryMonth(s.nearestExpiryMonth!)}',
+                if (s.expiredRemaining > 0) 'Đã hết hạn: ${fmt(s.expiredRemaining)} $u',
+              ];
+              final hasUl = schedFlags.isNotEmpty &&
+                  schedules.any((sc) => sc.productId == p.id);
+              final hasNotice = schedNotices.any((n) => n.productIds.contains(p.id));
+              if (hasNotice) parts.add('ⓘ Lưu ý lịch');
+              if (hasUl) parts.add('⚠ Lịch vượt giới hạn');
+              return ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(p.name),
+                subtitle: Text(parts.join(' · ')),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () async {
+                  await Navigator.of(context).push(
+                    MaterialPageRoute<void>(builder: (_) => ProductDetailScreen(productId: p.id)),
+                  );
+                  await _load();
+                },
               );
-              await _load();
-            },
-          );
-        },
+            }),
+          ],
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'add_product',

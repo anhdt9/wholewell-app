@@ -6,6 +6,7 @@ import 'package:food_library/food_library.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 
+import '../platform/notification_scheduler.dart';
 import 'label_food_builder.dart';
 
 class DayJournalData {
@@ -83,6 +84,19 @@ class DiaryController extends ChangeNotifier {
   bool _caution = false;
   double _lastWaterMl = 250.0;
   int? _ageBumpedNotice;
+  DayTimesSettings _dayTimesSettings = const DayTimesSettings();
+  bool _notificationsEnabled = false;
+  List<Schedule> _todaySchedules = const [];
+  List<Occurrence> _todayOccurrences = const [];
+  List<Schedule> _actualTodaySchedules = const [];
+  List<Schedule> _actualYesterdaySchedules = const [];
+  List<Occurrence> _actualTodayOccurrences = const [];
+  List<Occurrence> _actualYesterdayOccurrences = const [];
+  List<DoseEntry> _actualTodayDoses = const [];
+  List<ProductSummary> _allProducts = const [];
+  Map<int, List<ProductIngredient>> _ingredientsByProduct = const {};
+  String? _dismissedScheduleNoticeSig;
+  String? _hiddenTipDay;
   DateTime _day = _dateOnly(DateTime.now());
   DayJournalData _data = DayJournalData.empty;
   bool _saveFailed = false;
@@ -103,6 +117,19 @@ class DiaryController extends ChangeNotifier {
   bool get caution => _caution;
   double get lastWaterMl => _lastWaterMl;
   int? get ageBumpedNotice => _ageBumpedNotice;
+  DayTimesSettings get dayTimesSettings => _dayTimesSettings;
+  bool get notificationsEnabled => _notificationsEnabled;
+  List<Schedule> get todaySchedules => _todaySchedules;
+  List<Occurrence> get todayOccurrences => _todayOccurrences;
+  List<Schedule> get actualTodaySchedules => _actualTodaySchedules;
+  List<Schedule> get actualYesterdaySchedules => _actualYesterdaySchedules;
+  List<Occurrence> get actualTodayOccurrences => _actualTodayOccurrences;
+  List<Occurrence> get actualYesterdayOccurrences => _actualYesterdayOccurrences;
+  List<DoseEntry> get actualTodayDoses => _actualTodayDoses;
+  List<ProductSummary> get allProducts => _allProducts;
+  Map<int, List<ProductIngredient>> get ingredientsByProduct => _ingredientsByProduct;
+  String? get dismissedScheduleNoticeSig => _dismissedScheduleNoticeSig;
+  bool get tipHiddenToday => _hiddenTipDay == dayKey(_day);
   DateTime get day => _day;
   bool get isViewingToday => dayKey(_day) == dayKey(DateTime.now());
   bool get saveFailed => _saveFailed;
@@ -133,6 +160,19 @@ class DiaryController extends ChangeNotifier {
     _caution = false;
     _lastWaterMl = 250.0;
     _ageBumpedNotice = null;
+    _dayTimesSettings = const DayTimesSettings();
+    _notificationsEnabled = false;
+    _todaySchedules = const [];
+    _todayOccurrences = const [];
+    _actualTodaySchedules = const [];
+    _actualYesterdaySchedules = const [];
+    _actualTodayOccurrences = const [];
+    _actualYesterdayOccurrences = const [];
+    _actualTodayDoses = const [];
+    _allProducts = const [];
+    _ingredientsByProduct = const {};
+    _dismissedScheduleNoticeSig = null;
+    _hiddenTipDay = null;
     _data = DayJournalData.empty;
     notifyListeners();
   }
@@ -189,6 +229,10 @@ class DiaryController extends ChangeNotifier {
     if (repo == null) return;
     final gen = ++_loadGen;
     final day = _day;
+    final toDay = dayKey(day);
+    final now = DateTime.now();
+    final realTodayKey = dayKey(now);
+    final realYesterdayKey = dayKey(now.subtract(const Duration(days: 1)));
     try {
       final results = await Future.wait([
         repo.loadProfile(),
@@ -197,6 +241,23 @@ class DiaryController extends ChangeNotifier {
         repo.lastWaterMl(),
         repo.loadAgeBumpedNotice(),
         _loadDayAndWindow(repo, day),
+        repo.loadDayTimesSettings(),
+        repo.latestNotificationConsent(),
+        repo.schedulesOn(toDay),
+        repo.occurrencesOn(toDay),
+        repo.schedulesOn(realTodayKey),
+        repo.schedulesOn(realYesterdayKey),
+        repo.occurrencesOn(realTodayKey),
+        repo.occurrencesOn(realYesterdayKey),
+        repo.dosesOn(realTodayKey),
+        repo.listProducts(),
+        repo.getUiState('dismissed_schedule_notice_sig'),
+        repo.getUiState('hidden_tip_day'),
+      ]);
+      if (gen != _loadGen) return;
+      final products = results[15] as List<ProductSummary>;
+      final details = await Future.wait([
+        for (final p in products) repo.productDetail(p.product.id),
       ]);
       if (gen != _loadGen) return;
       _profile = results[0] as Profile?;
@@ -206,6 +267,21 @@ class DiaryController extends ChangeNotifier {
       _lastWaterMl = (results[3] as double?) ?? 250.0;
       _ageBumpedNotice = results[4] as int?;
       _data = results[5] as DayJournalData;
+      _dayTimesSettings = results[6] as DayTimesSettings;
+      _notificationsEnabled = results[7] != null;
+      _todaySchedules = results[8] as List<Schedule>;
+      _todayOccurrences = results[9] as List<Occurrence>;
+      _actualTodaySchedules = results[10] as List<Schedule>;
+      _actualYesterdaySchedules = results[11] as List<Schedule>;
+      _actualTodayOccurrences = results[12] as List<Occurrence>;
+      _actualYesterdayOccurrences = results[13] as List<Occurrence>;
+      _actualTodayDoses = results[14] as List<DoseEntry>;
+      _allProducts = products;
+      _ingredientsByProduct = {
+        for (final d in details) d.product.id: d.ingredients,
+      };
+      _dismissedScheduleNoticeSig = results[16] as String?;
+      _hiddenTipDay = results[17] as String?;
       _readFailed = false;
     } on JournalStorageException {
       if (gen == _loadGen) _readFailed = true;
@@ -922,6 +998,8 @@ class DiaryController extends ChangeNotifier {
     required DateTime at,
     required List<IntakeLine> lines,
     ExpiredBoxChoice expiredBoxes = ExpiredBoxChoice.ask,
+    OccurrenceRef? occurrence,
+    bool skipAutoMatch = false,
     required String summaryLabel,
   }) async {
     final repo = _repo;
@@ -929,16 +1007,26 @@ class DiaryController extends ChangeNotifier {
       return const DoseLogged(FoodLogFeedback(summaryText: 'Không lưu được.', failed: true));
     }
     try {
+      OccurrenceRef? resolvedOcc = occurrence;
+      if (resolvedOcc == null && !skipAutoMatch && productId != null) {
+        final match = await findUnmarkedWindowMatch(productId: productId, at: at);
+        if (match != null) {
+          resolvedOcc = OccurrenceRef(match.scheduleId, match.day);
+        }
+      }
       final before = await _reportForDay(repo, at);
       final res = await repo.recordDose(DoseInput(
         at: at,
         productId: productId,
         name: name,
-        kind: productId == null ? DoseKind.oneOff : DoseKind.extra,
+        kind: resolvedOcc != null
+            ? DoseKind.scheduled
+            : (productId == null ? DoseKind.oneOff : DoseKind.extra),
         servings: servings,
         packVersion: pack.version,
         lines: lines,
         expiredBoxes: expiredBoxes,
+        occurrence: resolvedOcc,
       ));
       if (res is NeedsExpiredChoice) {
         return const DoseNeedsExpiredChoice();
@@ -976,6 +1064,7 @@ class DiaryController extends ChangeNotifier {
     required DateTime at,
     required List<IntakeLine> lines,
     ExpiredBoxChoice expiredBoxes = ExpiredBoxChoice.ask,
+    bool relinkSchedule = true,
     required String summaryLabel,
   }) async {
     final repo = _repo;
@@ -995,6 +1084,17 @@ class DiaryController extends ChangeNotifier {
       ));
       if (res is NeedsExpiredChoice) {
         return const DoseNeedsExpiredChoice();
+      }
+      if (relinkSchedule && productId != null) {
+        final match = await findUnmarkedWindowMatch(
+          productId: productId,
+          at: at,
+          ignoringDoseId: doseId,
+        );
+        await repo.relinkDoseOccurrence(
+          doseId,
+          match == null ? null : OccurrenceRef(match.scheduleId, match.day),
+        );
       }
       final recorded = res as DoseRecorded;
       final after = await _reportForDay(repo, at);
@@ -1093,6 +1193,216 @@ class DiaryController extends ChangeNotifier {
   }
 
   ActivityLevel suggestedLevel() => suggestActivityLevel(pack, _data.workouts7);
+
+  // ---- Lịch uống, Giờ trong ngày, Nhắc giờ & Bạn có biết (Việc 6) ----
+
+  Future<bool> saveDayTimesSettings(DayTimesSettings settings) async =>
+      (await _write((repo) async {
+        await repo.saveDayTimesSettings(settings);
+        return true;
+      })) ??
+      false;
+
+  Future<bool> saveShowTipCard(bool show) async =>
+      (await _write((repo) async {
+        await repo.saveShowTipCard(show);
+        return true;
+      })) ??
+      false;
+
+  Future<bool> grantNotificationConsent(String contentVersion) async =>
+      (await _write((repo) async {
+        await repo.grantNotificationConsent(contentVersion);
+        return true;
+      })) ??
+      false;
+
+  Future<bool> withdrawNotificationConsent() async =>
+      (await _write((repo) async {
+        await repo.withdrawNotificationConsent();
+        return true;
+      })) ??
+      false;
+
+  Future<void> dismissScheduleNotices(String signature) =>
+      _write((repo) => repo.setUiState('dismissed_schedule_notice_sig', signature));
+
+  Future<void> hideTipCardForToday() =>
+      _write((repo) => repo.setUiState('hidden_tip_day', dayKey(_day)));
+
+  Future<int?> addSchedule(int productId, int timeOfDay, double servings, {required String validFrom}) =>
+      _write((repo) => repo.addSchedule(productId, timeOfDay, servings, validFrom: validFrom));
+
+  Future<ScheduleChange?> updateSchedule(
+    int id, {
+    int? timeOfDay,
+    double? servings,
+    required String today,
+  }) =>
+      _write((repo) => repo.updateSchedule(id, timeOfDay: timeOfDay, servings: servings, today: today));
+
+  Future<void> endSchedule(int id, {required String today}) =>
+      _write((repo) => repo.endSchedule(id, today: today));
+
+  Future<void> skipOccurrence(OccurrenceRef o) =>
+      _write((repo) => repo.skipOccurrence(o));
+
+  Future<void> clearOccurrence(OccurrenceRef o) =>
+      _write((repo) => repo.clearOccurrence(o));
+
+  /// Khớp lần ghi lúc [at] vào một lần theo lịch chưa đánh dấu trong khung ±2 giờ (xét cả ngày trước).
+  Future<ScheduleMatch?> findUnmarkedWindowMatch({
+    required int productId,
+    required DateTime at,
+    int? ignoringDoseId,
+  }) async {
+    final repo = _repo;
+    if (repo == null) return null;
+    final dStr = dayKey(at);
+    final prevStr = dayKey(at.subtract(const Duration(days: 1)));
+    final res = await Future.wait([
+      repo.schedulesOn(dStr),
+      repo.schedulesOn(prevStr),
+      repo.occurrencesOn(dStr),
+      repo.occurrencesOn(prevStr),
+    ]);
+    final sToday = res[0] as List<Schedule>;
+    final sPrev = res[1] as List<Schedule>;
+    final oToday = res[2] as List<Occurrence>;
+    final oPrev = res[3] as List<Occurrence>;
+
+    final markedToday = {
+      for (final o in oToday)
+        if (ignoringDoseId == null || o.doseEntryId != ignoringDoseId) o.scheduleId,
+    };
+    final markedPrev = {
+      for (final o in oPrev)
+        if (ignoringDoseId == null || o.doseEntryId != ignoringDoseId) o.scheduleId,
+    };
+
+    final candidates = <ScheduleCandidate>[
+      for (final s in sPrev)
+        if (!markedPrev.contains(s.id))
+          ScheduleCandidate(scheduleId: s.id, productId: s.productId, day: prevStr, timeOfDay: s.timeOfDay),
+      for (final s in sToday)
+        if (!markedToday.contains(s.id))
+          ScheduleCandidate(scheduleId: s.id, productId: s.productId, day: dStr, timeOfDay: s.timeOfDay),
+    ];
+    return matchDoseToScheduleWindow(at, productId, candidates);
+  }
+
+  /// Kiểm tra vượt UL theo tổng lịch hằng ngày (kèm override cho màn Đặt lịch xem trước).
+  List<UlFlag> scheduledUlFlags({List<Schedule>? overrideSchedules}) {
+    final p = _profile;
+    if (p == null) return const [];
+    final scheds = overrideSchedules ?? _todaySchedules;
+    if (scheds.isEmpty) return const [];
+    final prodMap = {for (final s in _allProducts) s.product.id: s.product.name};
+    final items = <IntakeItem>[];
+    for (final s in scheds) {
+      final ings = _ingredientsByProduct[s.productId];
+      if (ings == null || ings.isEmpty) continue;
+      final lines = buildDoseLinesFromIngredients(ings, s.servings);
+      final nuts = <String, double>{};
+      final ulNuts = <String, double>{};
+      for (final l in lines) {
+        if (l.nutrientId == null) continue;
+        l.amounts.forEach((k, v) {
+          nuts[k] = (nuts[k] ?? 0) + v;
+        });
+        l.ulAmounts?.forEach((k, v) {
+          ulNuts[k] = (ulNuts[k] ?? 0) + v;
+        });
+      }
+      if (nuts.isNotEmpty) {
+        items.add(IntakeItem(
+          label: prodMap[s.productId] ?? 'Bổ sung #${s.productId}',
+          source: IntakeSource.supplement,
+          nutrients: nuts,
+          ulNutrients: ulNuts.isEmpty ? null : ulNuts,
+        ));
+      }
+    }
+    return checkUlSchedule(pack, p, items);
+  }
+
+  /// Đánh giá 5 quy tắc lịch từ gói dữ liệu (thuần dữ liệu).
+  List<ScheduleNotice> scheduleNotices({List<Schedule>? overrideSchedules}) {
+    final scheds = overrideSchedules ?? _todaySchedules;
+    if (scheds.isEmpty) return const [];
+    final mealTimes = MealTimes(
+      breakfast: _dayTimesSettings.breakfast,
+      lunch: _dayTimesSettings.lunch,
+      dinner: _dayTimesSettings.dinner,
+    );
+    final inputs = <ScheduledDoseInput>[];
+    for (final s in scheds) {
+      final ings = _ingredientsByProduct[s.productId] ?? const [];
+      final lines = buildDoseLinesFromIngredients(ings, s.servings);
+      final nuts = <ScheduledNutrient>[];
+      for (final l in lines) {
+        if (l.nutrientId == null) continue;
+        final val = l.amounts[l.nutrientId!];
+        if (val != null && val > 0) {
+          nuts.add(ScheduledNutrient(nutrientId: l.nutrientId!, form: l.form ?? 'unknown', amount: val));
+        }
+      }
+      inputs.add(ScheduledDoseInput(
+        scheduleId: s.id,
+        productId: s.productId,
+        timeOfDay: s.timeOfDay,
+        nutrients: nuts,
+      ));
+    }
+    return evaluateScheduleRules(pack, mealTimes, inputs);
+  }
+
+  String scheduleNoticeSignature(List<ScheduleNotice> notices) {
+    final keys = [
+      for (final n in notices) '${n.ruleId}@${n.timeOfDay}@${n.productIds.join(",")}',
+    ]..sort();
+    return keys.join('|');
+  }
+
+  /// Chọn câu "Bạn có biết" cho hôm nay (1 câu/ngày, ẩn nếu vượt UL hoặc đã bấm Ẩn).
+  ScheduleRule? todayTipRule({required bool hasUlWarnings}) {
+    if (!isViewingToday || !_dayTimesSettings.showTipCard || hasUlWarnings || tipHiddenToday) {
+      return null;
+    }
+    final activeRuleIds = {
+      for (final n in scheduleNotices())
+        if (n.severity == 'notice') n.ruleId,
+    };
+    final inStockNutrients = <String>{};
+    for (final s in _allProducts) {
+      for (final ing in _ingredientsByProduct[s.product.id] ?? const <ProductIngredient>[]) {
+        if (ing.nutrientId != null) inStockNutrients.add(ing.nutrientId!);
+      }
+    }
+    final eligible = [
+      for (final r in pack.scheduleRules)
+        if (!activeRuleIds.contains(r.id) && r.nutrients.every(inStockNutrients.contains)) r,
+    ];
+    if (eligible.isEmpty) return null;
+    final dayIdx = _day.difference(DateTime(2026, 1, 1)).inDays.abs();
+    return eligible[dayIdx % eligible.length];
+  }
+
+  List<ScheduledReminderSlot> buildReminderSlots() {
+    final byTime = <int, List<int>>{};
+    for (final s in _actualTodaySchedules) {
+      (byTime[s.timeOfDay] ??= []).add(s.id);
+    }
+    final times = byTime.keys.toList()..sort();
+    return [
+      for (final t in times)
+        ScheduledReminderSlot(
+          timeOfDayMinutes: t,
+          itemCount: byTime[t]!.length,
+          scheduleIds: byTime[t]!,
+        ),
+    ];
+  }
 
   static Meal _mealFromSlot(MealSlot? s) => switch (s) {
         MealSlot.breakfast => Meal.breakfast,

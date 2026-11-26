@@ -714,5 +714,65 @@ void main() {
       expect(await repo.schedulesOn('2026-11-25'), isEmpty);
       await repo.close();
     });
+
+    test('endSchedule, relinkDoseOccurrence, settings, notificationConsent trên cả Drift và InMemory', () async {
+      final repos = <JournalRepository>[
+        InMemoryJournalRepository(),
+        await createdRepo(testOpener(tempDir(), FakeSecureKeyStore(), now: () => DateTime(2026, 11, 26, 9, 0))),
+      ];
+      for (final repo in repos) {
+        final s0 = await repo.loadDayTimesSettings();
+        expect(s0.breakfast, 420);
+        expect(s0.dayTimesConfirmed, isFalse);
+        expect(s0.showTipCard, isTrue);
+
+        await repo.saveDayTimesSettings(s0.copyWith(breakfast: 450, dayTimesConfirmed: true, showTipCard: false));
+        final s1 = await repo.loadDayTimesSettings();
+        expect(s1.breakfast, 450);
+        expect(s1.dayTimesConfirmed, isTrue);
+        expect(s1.showTipCard, isFalse);
+
+        await repo.saveShowTipCard(true);
+        expect((await repo.loadDayTimesSettings()).showTipCard, isTrue);
+
+        expect(await repo.latestNotificationConsent(), isNull);
+        await repo.grantNotificationConsent('notif-1');
+        expect((await repo.latestNotificationConsent())?.contentVersion, 'notif-1');
+        await repo.withdrawNotificationConsent();
+        expect(await repo.latestNotificationConsent(), isNull);
+
+        final pid = await repo.addProduct('Canxi D3', CountUnit.tablet, 1);
+        final sid1 = await repo.addSchedule(pid, 480, 1, validFrom: '2026-11-20');
+        final sid2 = await repo.addSchedule(pid, 1200, 1, validFrom: '2026-11-20');
+        expect((await repo.schedulesOn('2026-11-26')), hasLength(2));
+
+        // Kho = 0 vẫn ghi được lần uống theo lịch và tính vào giới hạn.
+        final rec = await repo.recordDose(DoseInput(
+          at: DateTime(2026, 11, 26, 8, 5),
+          productId: pid,
+          name: 'Canxi D3',
+          kind: DoseKind.scheduled,
+          servings: 1,
+          packVersion: '1',
+          lines: const [],
+          occurrence: OccurrenceRef(sid1, '2026-11-26'),
+        ));
+        expect(rec, isA<DoseRecorded>());
+        final doseId = (rec as DoseRecorded).id;
+        expect((await repo.occurrencesOn('2026-11-26')).single.scheduleId, sid1);
+
+        // Chuyển occurrence sang sid2.
+        await repo.relinkDoseOccurrence(doseId, OccurrenceRef(sid2, '2026-11-26'));
+        expect((await repo.occurrencesOn('2026-11-26')).single.scheduleId, sid2);
+
+        // endSchedule trên lịch chưa đánh dấu (sid1) đóng ngay hôm nay; đã đánh dấu (sid2) đóng từ ngày mai.
+        await repo.endSchedule(sid1, today: '2026-11-26');
+        await repo.endSchedule(sid2, today: '2026-11-26');
+        expect((await repo.schedulesOn('2026-11-26')).map((s) => s.id), [sid2]);
+        expect(await repo.schedulesOn('2026-11-27'), isEmpty);
+
+        await repo.close();
+      }
+    });
   });
 }

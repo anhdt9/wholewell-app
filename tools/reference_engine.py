@@ -765,6 +765,232 @@ def check_ingredient_sanity(p, inp, pack=PACK):
     return {"suspectedUnitMistake": suspected, "exceedsSingleServingUl": exceeds}
 
 
+def _clock_diff_minutes(a: int, b: int) -> int:
+    d = abs(a - b) % 1440
+    return min(d, 1440 - d)
+
+
+def evaluate_schedule_rules(meal_times, scheduled_doses, pack=PACK):
+    """Đánh giá toàn bộ scheduleRules trong pack thuần bằng dữ liệu."""
+    rules = pack.get("scheduleRules", [])
+    meals = [meal_times["breakfast"], meal_times["lunch"], meal_times["dinner"]]
+    out = []
+
+    for r in rules:
+        rtype = r["type"]
+        req_nuts = r["nutrients"]
+        req_forms = set(r.get("forms") or [])
+        window = r.get("windowMinutes") or 0
+
+        if rtype == "single_dose_max":
+            target_nid = req_nuts[0]
+            threshold = r["threshold"]
+            by_time = {}
+            for d in scheduled_doses:
+                t = d["timeOfDay"]
+                total = sum(
+                    item["amount"]
+                    for item in d["nutrients"]
+                    if item["nutrientId"] == target_nid
+                    and (not req_forms or item.get("form") in req_forms)
+                )
+                if total > 0:
+                    entry = by_time.setdefault(t, {"amount": 0.0, "productIds": set()})
+                    entry["amount"] += total
+                    entry["productIds"].add(d["productId"])
+            for t in sorted(by_time):
+                entry = by_time[t]
+                if entry["amount"] > threshold:
+                    out.append({
+                        "ruleId": r["id"],
+                        "severity": r["severity"],
+                        "timeOfDay": t,
+                        "productIds": sorted(entry["productIds"]),
+                        "uncertain": r["uncertain"],
+                    })
+
+        elif rtype == "take_with_meal":
+            target_nid = req_nuts[0]
+            for d in scheduled_doses:
+                matched = any(
+                    item["nutrientId"] == target_nid
+                    and item["amount"] > 0
+                    and (not req_forms or item.get("form") in req_forms)
+                    for item in d["nutrients"]
+                )
+                if not matched:
+                    continue
+                if not any(_clock_diff_minutes(d["timeOfDay"], m) <= window for m in meals):
+                    out.append({
+                        "ruleId": r["id"],
+                        "severity": r["severity"],
+                        "timeOfDay": d["timeOfDay"],
+                        "productIds": [d["productId"]],
+                        "uncertain": r["uncertain"],
+                    })
+
+        elif rtype == "co_timing_caution":
+            n_a, n_b = req_nuts[0], req_nuts[1]
+            list_a = [
+                d for d in scheduled_doses
+                if any(it["nutrientId"] == n_a and it["amount"] > 0 for it in d["nutrients"])
+            ]
+            list_b = [
+                d for d in scheduled_doses
+                if any(it["nutrientId"] == n_b and it["amount"] > 0 for it in d["nutrients"])
+            ]
+            seen_clusters = set()
+            for da in list_a:
+                for db in list_b:
+                    if _clock_diff_minutes(da["timeOfDay"], db["timeOfDay"]) <= window:
+                        t_key = (min(da["timeOfDay"], db["timeOfDay"]), max(da["timeOfDay"], db["timeOfDay"]))
+                        if t_key in seen_clusters:
+                            continue
+                        seen_clusters.add(t_key)
+                        pids = sorted({da["productId"], db["productId"]})
+                        out.append({
+                            "ruleId": r["id"],
+                            "severity": r["severity"],
+                            "timeOfDay": da["timeOfDay"],
+                            "productIds": pids,
+                            "uncertain": r["uncertain"],
+                        })
+
+        elif rtype == "co_timing_threshold":
+            n_trigger, n_affected = req_nuts[0], req_nuts[1]
+            threshold = r["threshold"]
+            list_aff = [
+                d for d in scheduled_doses
+                if any(it["nutrientId"] == n_affected and it["amount"] > 0 for it in d["nutrients"])
+            ]
+            list_trig = [
+                d for d in scheduled_doses
+                if any(it["nutrientId"] == n_trigger and it["amount"] > 0 for it in d["nutrients"])
+            ]
+            seen_times = set()
+            for da in list_aff:
+                trig_sum = 0.0
+                pids = {da["productId"]}
+                for dt in list_trig:
+                    if _clock_diff_minutes(da["timeOfDay"], dt["timeOfDay"]) <= window:
+                        trig_amt = sum(
+                            it["amount"] for it in dt["nutrients"] if it["nutrientId"] == n_trigger
+                        )
+                        if trig_amt > 0:
+                            trig_sum += trig_amt
+                            pids.add(dt["productId"])
+                if trig_sum >= threshold and da["timeOfDay"] not in seen_times:
+                    seen_times.add(da["timeOfDay"])
+                    out.append({
+                        "ruleId": r["id"],
+                        "severity": r["severity"],
+                        "timeOfDay": da["timeOfDay"],
+                        "productIds": sorted(pids),
+                        "uncertain": r["uncertain"],
+                    })
+
+    return out
+
+
+def match_dose_to_schedule_window(dose_at_iso, product_id, candidates):
+    """Khớp lần uống trong khung ±2 giờ quanh giờ lịch (chỉ xét unmarked).
+    `candidates`: danh sách {scheduleId, productId, day, timeOfDay}.
+    """
+    dose_dt = datetime.fromisoformat(dose_at_iso)
+    best = None
+    for c in candidates:
+        if c["productId"] != product_id:
+            continue
+        base = datetime.strptime(c["day"], "%Y-%m-%d")
+        sched_minutes = c["timeOfDay"]
+        sched_dt = base.replace(hour=sched_minutes // 60, minute=sched_minutes % 60, second=0, microsecond=0)
+        diff_min = abs((dose_dt - sched_dt).total_seconds()) / 60.0
+        if diff_min <= 120.0 + 1e-9:
+            key = (diff_min, sched_dt, c["scheduleId"])
+            if best is None or key < best[0]:
+                best = (key, {"scheduleId": c["scheduleId"], "day": c["day"]})
+    return None if best is None else best[1]
+
+
+SCHEDULE_RULE_CASES = [
+    (
+        "ca_over_500_with_meal_ok_and_ca_iron_zinc",
+        {"breakfast": 420, "lunch": 720, "dinner": 1140},
+        [
+            {
+                "scheduleId": 1, "productId": 10, "timeOfDay": 480,  # 08:00 (trong ±1h bữa sáng 07:00)
+                "nutrients": [
+                    {"nutrientId": "calcium", "form": "calcium_carbonate", "amount": 500.0},
+                    {"nutrientId": "vitD", "form": "unknown", "amount": 10.0},
+                ],
+            },
+            {
+                "scheduleId": 2, "productId": 11, "timeOfDay": 480,
+                "nutrients": [
+                    {"nutrientId": "calcium", "form": "calcium_citrate", "amount": 100.0},
+                    {"nutrientId": "iron", "form": "ferrous_fumarate", "amount": 25.0},
+                ],
+            },
+            {
+                "scheduleId": 3, "productId": 12, "timeOfDay": 510,  # 08:30 (cách 08:00 30p <= 60p)
+                "nutrients": [
+                    {"nutrientId": "zinc", "form": "unknown", "amount": 15.0},
+                ],
+            },
+        ],
+    ),
+    (
+        "vitd_and_ca_carb_outside_meal_safe_iron_zinc",
+        {"breakfast": 420, "lunch": 720, "dinner": 1140},
+        [
+            {
+                "scheduleId": 4, "productId": 20, "timeOfDay": 540,  # 09:00 (cách bữa sáng 120p > 60p)
+                "nutrients": [
+                    {"nutrientId": "calcium", "form": "calcium_carbonate", "amount": 300.0},
+                    {"nutrientId": "vitD", "form": "unknown", "amount": 25.0},
+                    {"nutrientId": "iron", "form": "ferrous_sulfate", "amount": 18.0},
+                ],
+            },
+            {
+                "scheduleId": 5, "productId": 21, "timeOfDay": 1200,  # 20:00 (cùng bữa tối 19:00)
+                "nutrients": [
+                    {"nutrientId": "zinc", "form": "unknown", "amount": 15.0},
+                ],
+            },
+        ],
+    ),
+]
+
+WINDOW_MATCH_CASES = [
+    (
+        "midnight_prev_day_match",
+        "2026-11-26T00:30:00",
+        10,
+        [
+            {"scheduleId": 1, "productId": 10, "day": "2026-11-25", "timeOfDay": 1380},  # 23:00 hôm qua (+90p)
+            {"scheduleId": 2, "productId": 10, "day": "2026-11-26", "timeOfDay": 480},   # 08:00 hôm nay
+        ],
+    ),
+    (
+        "overlapping_windows_nearest",
+        "2026-11-26T08:40:00",
+        10,
+        [
+            {"scheduleId": 1, "productId": 10, "day": "2026-11-26", "timeOfDay": 480},  # 08:00 (40p)
+            {"scheduleId": 2, "productId": 10, "day": "2026-11-26", "timeOfDay": 540},  # 09:00 (20p)
+        ],
+    ),
+    (
+        "outside_2h_window",
+        "2026-11-26T14:05:00",
+        10,
+        [
+            {"scheduleId": 1, "productId": 10, "day": "2026-11-26", "timeOfDay": 1200},  # 20:00
+        ],
+    ),
+]
+
+
 SANITY_CASES = [
     ("vitD_normal_ug", "man30", {"nutrientId": "vitD", "source": "supplement", "form": "unknown", "amount": 25, "unit": "ug"}),
     ("vitD_mistake_mg", "man30", {"nutrientId": "vitD", "source": "supplement", "form": "unknown", "amount": 25, "unit": "mg"}),
@@ -786,8 +1012,11 @@ def main():
             "eer": {}, "group": {}, "targets": {}, "uls": {}, "ulDay": {}, "macros": {},
             "sugar": {}, "ulAvg": {}, "activity": {}, "workoutKcal": {},
             "dailyReport": {}, "averageReport": {}, "convertLine": {}, "sanityCheck": {},
+            "scheduleRules": {}, "windowMatch": {},
         },
         "sanityCases": [{"name": n, "profile": p, "input": inp} for n, p, inp in SANITY_CASES],
+        "scheduleRuleCases": [{"name": n, "mealTimes": m, "doses": d} for n, m, d in SCHEDULE_RULE_CASES],
+        "windowMatchCases": [{"name": n, "doseAt": dt, "productId": pid, "candidates": c} for n, dt, pid, c in WINDOW_MATCH_CASES],
     }
     ex = cases["expect"]
     for name, p in PROFILES.items():
@@ -835,6 +1064,10 @@ def main():
         ex["convertLine"][cname] = convert_intake_line(inp, EXTENDED_PACK if ext else PACK)
     for sname, pname, inp in SANITY_CASES:
         ex["sanityCheck"][sname] = check_ingredient_sanity(PROFILES[pname], inp, PACK)
+    for rname, meal_t, doses in SCHEDULE_RULE_CASES:
+        ex["scheduleRules"][rname] = evaluate_schedule_rules(meal_t, doses, PACK)
+    for wname, dt, pid, cands in WINDOW_MATCH_CASES:
+        ex["windowMatch"][wname] = match_dose_to_schedule_window(dt, pid, cands)
 
     out = ROOT / "packages/health_engine/test/fixtures/cases.json"
     out.parent.mkdir(parents=True, exist_ok=True)

@@ -83,6 +83,127 @@ class SafetyNote extends StatelessWidget {
   }
 }
 
+/// Lưu ý lịch trên Hôm nay: có nút "Đã hiểu" để thu gọn thành 1 dòng (tự mở lại khi lịch đổi).
+class CollapsibleScheduleNote extends StatefulWidget {
+  final List<String> messages;
+  final bool collapsed;
+  final VoidCallback onAcknowledge;
+
+  const CollapsibleScheduleNote({
+    super.key,
+    required this.messages,
+    required this.collapsed,
+    required this.onAcknowledge,
+  });
+
+  @override
+  State<CollapsibleScheduleNote> createState() => _CollapsibleScheduleNoteState();
+}
+
+class _CollapsibleScheduleNoteState extends State<CollapsibleScheduleNote> {
+  bool _manualExpand = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final t = Theme.of(context).textTheme;
+    final showCompact = widget.collapsed && !_manualExpand;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: showCompact
+          ? InkWell(
+              onTap: () => setState(() => _manualExpand = true),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 18, color: cs.onSurfaceVariant),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text('Lưu ý lịch (${widget.messages.length})', style: t.bodySmall),
+                  ),
+                  const Icon(Icons.chevron_right, size: 18),
+                ],
+              ),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.info_outline, size: 18, color: cs.onSurfaceVariant),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text('Lưu ý lịch', style: t.titleSmall)),
+                    TextButton(
+                      onPressed: () {
+                        setState(() => _manualExpand = false);
+                        widget.onAcknowledge();
+                      },
+                      child: const Text('Đã hiểu'),
+                    ),
+                  ],
+                ),
+                for (final m in widget.messages)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(m, style: t.bodySmall),
+                  ),
+              ],
+            ),
+    );
+  }
+}
+
+/// Thẻ "Bạn có biết" đứng yên ở cuối màn Hôm nay.
+class TipCard extends StatelessWidget {
+  final String text;
+  final VoidCallback onViewSource;
+  final VoidCallback onHide;
+
+  const TipCard({
+    super.key,
+    required this.text,
+    required this.onViewSource,
+    required this.onHide,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final t = Theme.of(context).textTheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Bạn có biết', style: t.titleSmall),
+          const SizedBox(height: 6),
+          Text(text, style: t.bodyMedium),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TextButton(onPressed: onViewSource, child: const Text('Xem nguồn ›')),
+              TextButton(onPressed: onHide, child: const Text('Ẩn')),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Dòng mục đã ghi (chạm mở sửa, tôn trọng Ẩn số calo và cỡ chữ 200%).
 class EntryTile extends StatelessWidget {
   final IconData leadingIcon;

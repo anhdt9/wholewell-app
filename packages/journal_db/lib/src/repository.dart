@@ -32,6 +32,14 @@ abstract interface class JournalRepository {
   Future<bool?> loadHideCalories();
   Future<void> saveHideCalories(bool v);
 
+  Future<DayTimesSettings> loadDayTimesSettings();
+  Future<void> saveDayTimesSettings(DayTimesSettings settings);
+  Future<void> saveShowTipCard(bool show);
+
+  Future<HealthConsentStatus?> latestNotificationConsent();
+  Future<void> grantNotificationConsent(String contentVersion);
+  Future<void> withdrawNotificationConsent();
+
   Future<OnboardingStep> loadOnboardingStep();
   Future<void> saveOnboardingStep(OnboardingStep s);
 
@@ -96,6 +104,20 @@ abstract interface class JournalRepository {
   Future<void> updateBox(int boxId, {required double remaining, String? expiryMonth});
   Future<void> deleteBox(int boxId);
 
+  Future<int> addSchedule(int productId, int timeOfDay, double servings, {required String validFrom});
+  Future<ScheduleChange> updateSchedule(
+    int id, {
+    int? timeOfDay,
+    double? servings,
+    required String today,
+  });
+  Future<void> endSchedule(int id, {required String today});
+  Future<List<Schedule>> schedulesOn(String day);
+  Future<List<Occurrence>> occurrencesOn(String day);
+  Future<void> skipOccurrence(OccurrenceRef o);
+  Future<void> clearOccurrence(OccurrenceRef o);
+  Future<void> relinkDoseOccurrence(int doseId, OccurrenceRef? newOccurrence);
+
   Future<DoseResult> recordDose(DoseInput d);
   Future<DoseResult> updateDose(UpdateDoseInput input);
   Future<void> moveDose(int id, DateTime at);
@@ -121,6 +143,8 @@ class InMemoryJournalRepository implements JournalRepository {
   String _cautionAnsweredOn;
   Profile? _profile;
   bool? _hide;
+  DayTimesSettings _dayTimesSettings = const DayTimesSettings();
+  HealthConsentStatus? _notificationConsent;
   OnboardingStep _step = OnboardingStep.bodyProfile;
   final _uiState = <String, String>{};
   final _foods = <FoodEntry>[];
@@ -128,6 +152,8 @@ class InMemoryJournalRepository implements JournalRepository {
   final _products = <Product>[];
   final _ingredients = <ProductIngredient>[];
   final _boxes = <StockBox>[];
+  final _schedules = <Schedule>[];
+  final _occurrences = <Occurrence>[];
   final _doses = <DoseEntry>[];
   final _workouts = <WorkoutRecord>[];
   final _waters = <WaterRecord>[];
@@ -250,6 +276,36 @@ class InMemoryJournalRepository implements JournalRepository {
   @override
   Future<void> saveHideCalories(bool v) async {
     _hide = v;
+    _changed();
+  }
+
+  @override
+  Future<DayTimesSettings> loadDayTimesSettings() async => _dayTimesSettings;
+
+  @override
+  Future<void> saveDayTimesSettings(DayTimesSettings settings) async {
+    _dayTimesSettings = settings;
+    _changed();
+  }
+
+  @override
+  Future<void> saveShowTipCard(bool show) async {
+    _dayTimesSettings = _dayTimesSettings.copyWith(showTipCard: show);
+    _changed();
+  }
+
+  @override
+  Future<HealthConsentStatus?> latestNotificationConsent() async => _notificationConsent;
+
+  @override
+  Future<void> grantNotificationConsent(String contentVersion) async {
+    _notificationConsent = HealthConsentStatus(contentVersion, DateTime.now());
+    _changed();
+  }
+
+  @override
+  Future<void> withdrawNotificationConsent() async {
+    _notificationConsent = null;
     _changed();
   }
 
@@ -589,6 +645,7 @@ class InMemoryJournalRepository implements JournalRepository {
     final today = dayKey(now);
     final from = dayKey(now.subtract(const Duration(days: 13)));
     final out = <ProductSummary>[];
+    final active = await schedulesOn(today);
     for (final p in _products) {
       if (!includeArchived && p.archived) continue;
       final boxes = [for (final b in _boxes) if (b.productId == p.id) b];
@@ -599,7 +656,7 @@ class InMemoryJournalRepository implements JournalRepository {
       out.add(summarizeProduct(
         product: p,
         boxes: boxes,
-        activeSchedules: const [],
+        activeSchedules: [for (final s in active) if (s.productId == p.id) s],
         recentDoses14Days: recent,
         now: now,
       ));
@@ -650,6 +707,14 @@ class InMemoryJournalRepository implements JournalRepository {
       barcode: old.barcode,
       archived: true,
     );
+    final today = dayKey(DateTime.now());
+    for (var i = 0; i < _schedules.length; i++) {
+      final s = _schedules[i];
+      if (s.productId == id && (s.validTo == null || s.validTo!.compareTo(today) > 0)) {
+        final to = today.compareTo(s.validFrom) < 0 ? s.validFrom : today;
+        _schedules[i] = Schedule(s.id, s.productId, s.timeOfDay, s.servings, s.validFrom, to);
+      }
+    }
     _changed();
   }
 
@@ -765,9 +830,132 @@ class InMemoryJournalRepository implements JournalRepository {
   }
 
   @override
+  Future<int> addSchedule(int productId, int timeOfDay, double servings, {required String validFrom}) async {
+    final id = _nextId++;
+    _schedules.add(Schedule(id, productId, timeOfDay, servings, validFrom, null));
+    _changed();
+    return id;
+  }
+
+  @override
+  Future<ScheduleChange> updateSchedule(
+    int id, {
+    int? timeOfDay,
+    double? servings,
+    required String today,
+  }) async {
+    final idx = _schedules.indexWhere((s) => s.id == id);
+    if (idx < 0) throw StateError('Không có lịch $id');
+    final old = _schedules[idx];
+    if (old.validTo != null) throw StateError('Lịch $id đã đóng');
+    final marked = _occurrences.any((o) => o.scheduleId == id && o.day == today);
+    var from = marked ? nextDay(today) : today;
+    if (from.compareTo(old.validFrom) < 0) from = old.validFrom;
+    _schedules[idx] = Schedule(old.id, old.productId, old.timeOfDay, old.servings, old.validFrom, from);
+    final newId = _nextId++;
+    _schedules.add(Schedule(
+      newId,
+      old.productId,
+      timeOfDay ?? old.timeOfDay,
+      servings ?? old.servings,
+      from,
+      null,
+    ));
+    _changed();
+    return ScheduleChange(newId, from);
+  }
+
+  @override
+  Future<void> endSchedule(int id, {required String today}) async {
+    final idx = _schedules.indexWhere((s) => s.id == id);
+    if (idx < 0) throw StateError('Không có lịch $id');
+    final old = _schedules[idx];
+    if (old.validTo != null) return;
+    final marked = _occurrences.any((o) => o.scheduleId == id && o.day == today);
+    var to = marked ? nextDay(today) : today;
+    if (to.compareTo(old.validFrom) < 0) to = old.validFrom;
+    _schedules[idx] = Schedule(old.id, old.productId, old.timeOfDay, old.servings, old.validFrom, to);
+    _changed();
+  }
+
+  @override
+  Future<List<Schedule>> schedulesOn(String day) async => [
+        for (final s in _schedules)
+          if (s.validFrom.compareTo(day) <= 0 && (s.validTo == null || s.validTo!.compareTo(day) > 0)) s,
+      ]..sort((a, b) {
+          final c = a.timeOfDay.compareTo(b.timeOfDay);
+          return c != 0 ? c : a.id.compareTo(b.id);
+        });
+
+  @override
+  Future<List<Occurrence>> occurrencesOn(String day) async =>
+      [for (final o in _occurrences) if (o.day == day) o];
+
+  @override
+  Future<void> skipOccurrence(OccurrenceRef o) async {
+    final idx = _occurrences.indexWhere((x) => x.scheduleId == o.scheduleId && x.day == o.day);
+    if (idx >= 0 && _occurrences[idx].status == OccurrenceStatus.taken) {
+      throw StateError('Lần này đã đánh dấu đã uống');
+    }
+    if (idx < 0) {
+      _occurrences.add(Occurrence(o.scheduleId, o.day, OccurrenceStatus.skipped, null));
+    }
+    _changed();
+  }
+
+  @override
+  Future<void> clearOccurrence(OccurrenceRef o) async {
+    final idx = _occurrences.indexWhere((x) => x.scheduleId == o.scheduleId && x.day == o.day);
+    if (idx < 0) return;
+    final doseId = _occurrences[idx].doseEntryId;
+    if (doseId != null) {
+      await deleteDose(doseId);
+    } else {
+      _occurrences.removeAt(idx);
+      _changed();
+    }
+  }
+
+  @override
+  Future<void> relinkDoseOccurrence(int doseId, OccurrenceRef? newOccurrence) async {
+    _occurrences.removeWhere((o) => o.doseEntryId == doseId);
+    if (newOccurrence != null) {
+      final idx = _occurrences.indexWhere(
+        (x) => x.scheduleId == newOccurrence.scheduleId && x.day == newOccurrence.day,
+      );
+      if (idx >= 0 && _occurrences[idx].status == OccurrenceStatus.taken) {
+        throw StateError('Lần này đã đánh dấu đã uống');
+      }
+      if (idx >= 0) {
+        _occurrences[idx] = Occurrence(
+          newOccurrence.scheduleId,
+          newOccurrence.day,
+          OccurrenceStatus.taken,
+          doseId,
+        );
+      } else {
+        _occurrences.add(Occurrence(
+          newOccurrence.scheduleId,
+          newOccurrence.day,
+          OccurrenceStatus.taken,
+          doseId,
+        ));
+      }
+    }
+    _changed();
+  }
+
+  @override
   Future<DoseResult> recordDose(DoseInput d) async {
     checkLinesWritable(d.lines);
     if (d.servings <= 0) throw ArgumentError.value(d.servings, 'servings');
+    if (d.occurrence != null) {
+      final o = d.occurrence!;
+      final existing = _occurrences.where((x) => x.scheduleId == o.scheduleId && x.day == o.day).firstOrNull;
+      if (existing != null && existing.status == OccurrenceStatus.taken) {
+        throw StateError('Lần này đã đánh dấu đã uống');
+      }
+    }
     var deductions = const <BoxDeduction>[];
     var shortfall = 0.0;
     if (d.productId != null && d.deductStock) {
@@ -789,6 +977,16 @@ class InMemoryJournalRepository implements JournalRepository {
       lines: List.unmodifiable(d.lines),
       deductions: List.unmodifiable(deductions),
     ));
+    if (d.occurrence != null) {
+      final o = d.occurrence!;
+      final idx = _occurrences.indexWhere((x) => x.scheduleId == o.scheduleId && x.day == o.day);
+      final occ = Occurrence(o.scheduleId, o.day, OccurrenceStatus.taken, id);
+      if (idx >= 0) {
+        _occurrences[idx] = occ;
+      } else {
+        _occurrences.add(occ);
+      }
+    }
     _changed();
     return DoseRecorded(id, shortfall);
   }
@@ -869,6 +1067,7 @@ class InMemoryJournalRepository implements JournalRepository {
     if (idx >= 0) {
       _restoreDeductions(_doses[idx].deductions);
       _doses.removeAt(idx);
+      _occurrences.removeWhere((o) => o.doseEntryId == id);
       _changed();
     }
   }

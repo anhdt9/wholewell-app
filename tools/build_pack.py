@@ -61,6 +61,14 @@ SOURCES = [
      "title": "NIH ODS – Iron Fact Sheet for Health Professionals",
      "url": "https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/",
      "retrieved": "2026-11-25"},
+    {"id": "nih_ods_zinc", "label": "A",
+     "title": "NIH ODS – Zinc Fact Sheet for Health Professionals",
+     "url": "https://ods.od.nih.gov/factsheets/Zinc-HealthProfessional/",
+     "retrieved": "2026-11-23"},
+    {"id": "nih_ods_vit_d", "label": "A",
+     "title": "NIH ODS – Vitamin D Fact Sheet for Health Professionals",
+     "url": "https://ods.od.nih.gov/factsheets/VitaminD-HealthProfessional/",
+     "retrieved": "2026-11-23"},
 ]
 
 MIN_PROFILE_AGE = 18
@@ -411,6 +419,96 @@ COMPOUND_META = {
     },
 }
 
+# Quy tắc lịch (tra NIH ODS Health Professional fact sheets ngày 23/11/2026, docs/plan.md mục 4).
+# Mọi quy tắc đều chạy bằng dữ liệu ở cả Python reference_engine và Dart health_engine.
+SCHEDULE_RULES = [
+    {
+        "id": "ca_single_dose_500",
+        "type": "single_dose_max",
+        "severity": "notice",
+        "nutrients": ["calcium"],
+        "forms": [],
+        "threshold": 500.0,
+        "unit": "mg",
+        "windowMinutes": 0,
+        "uncertain": False,
+        "messageVi": "Canxi hấp thu tốt nhất khi mỗi lần không quá 500 mg.",
+        "tipVi": "Canxi hấp thu tốt nhất khi mỗi lần không quá 500 mg.",
+        "source": "nih_ods_calcium",
+        "url": "https://ods.od.nih.gov/factsheets/Calcium-HealthProfessional/",
+        "accessedDate": "2026-11-23",
+        "quote": "Percentage of calcium absorbed depends on dose; absorption is highest in doses <= 500 mg.",
+    },
+    {
+        "id": "ca_carbonate_with_meal",
+        "type": "take_with_meal",
+        "severity": "suggestion",
+        "nutrients": ["calcium"],
+        "forms": ["calcium_carbonate"],
+        "threshold": None,
+        "unit": None,
+        "windowMinutes": 60,
+        "uncertain": False,
+        "messageVi": "Canxi carbonat hấp thu tốt hơn khi uống cùng bữa ăn.",
+        "tipVi": "Canxi carbonat hấp thu tốt hơn khi uống cùng bữa ăn.",
+        "source": "nih_ods_calcium",
+        "url": "https://ods.od.nih.gov/factsheets/Calcium-HealthProfessional/",
+        "accessedDate": "2026-11-23",
+        "quote": "Calcium carbonate is absorbed most efficiently when taken with food; calcium citrate is well absorbed with or without food.",
+    },
+    {
+        "id": "ca_iron_co_timing",
+        "type": "co_timing_caution",
+        "severity": "notice",
+        "nutrients": ["calcium", "iron"],
+        "forms": [],
+        "threshold": None,
+        "unit": None,
+        "windowMinutes": 60,
+        "uncertain": True,
+        "messageVi": "Canxi có thể làm giảm hấp thu sắt (chưa chắc chắn); có thể xếp hai loại vào giờ khác nhau.",
+        "tipVi": "Canxi có thể làm giảm hấp thu sắt (chưa chắc chắn); có thể xếp hai loại vào giờ khác nhau.",
+        "source": "nih_ods_iron",
+        "url": "https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/",
+        "accessedDate": "2026-11-23",
+        "quote": "Some experts recommend taking calcium and iron supplements at different times, although clinical significance is uncertain.",
+    },
+    {
+        "id": "iron_zinc_co_timing",
+        "type": "co_timing_threshold",
+        "severity": "notice",
+        "nutrients": ["iron", "zinc"],
+        "forms": [],
+        "threshold": 25.0,
+        "unit": "mg",
+        "windowMinutes": 60,
+        "uncertain": False,
+        "messageVi": "Sắt từ 25 mg trở lên uống cùng lúc với kẽm làm giảm hấp thu kẽm.",
+        "tipVi": "Sắt từ 25 mg trở lên uống cùng lúc với kẽm làm giảm hấp thu kẽm.",
+        "source": "nih_ods_zinc",
+        "url": "https://ods.od.nih.gov/factsheets/Zinc-HealthProfessional/",
+        "accessedDate": "2026-11-23",
+        "quote": "Large intakes of supplemental iron (>= 25 mg) taken simultaneously with zinc can reduce zinc absorption.",
+    },
+    {
+        "id": "vitd_with_meal",
+        "type": "take_with_meal",
+        "severity": "suggestion",
+        "nutrients": ["vitD"],
+        "forms": [],
+        "threshold": None,
+        "unit": None,
+        "windowMinutes": 60,
+        "uncertain": False,
+        "messageVi": "Chất béo trong bữa giúp hấp thu vitamin D; không có vẫn hấp thu một phần.",
+        "tipVi": "Chất béo trong bữa giúp hấp thu vitamin D; không có vẫn hấp thu một phần.",
+        "source": "nih_ods_vit_d",
+        "url": "https://ods.od.nih.gov/factsheets/VitaminD-HealthProfessional/",
+        "accessedDate": "2026-11-23",
+        "quote": "Vitamin D is fat soluble; taking it with a meal containing some fat improves absorption, though some is absorbed without dietary fat.",
+    },
+]
+
 
 def main():
     pack = {
@@ -433,6 +531,7 @@ def main():
         "palSuggestion": PAL_SUGGESTION,
         "unitConversions": UNIT_CONVERSIONS,
         "compoundMeta": COMPOUND_META,
+        "scheduleRules": SCHEDULE_RULES,
     }
     out = pathlib.Path(__file__).resolve().parent.parent / "packages/health_engine/assets/reference_pack.json"
     text = json.dumps(pack, ensure_ascii=False, indent=1)

@@ -6,5 +6,6 @@ export 'src/dri.dart';
 export 'src/energy.dart';
 export 'src/models.dart';
 export 'src/reference_pack.dart';
+export 'src/schedule.dart';
 export 'src/text.dart';
 export 'src/units.dart';
