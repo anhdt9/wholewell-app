@@ -685,5 +685,57 @@ void main() {
       expect(await driveProvider.listBackups(), isEmpty);
       expect(googleAuth.disconnectCalls, 1);
     });
+
+    testWidgets('createDriveBackup: currentUser != null nhưng authHeaders == null vẫn gọi lại signInGoogleDrive()',
+        (tester) async {
+      final dir = await makeTempDir('ww_drive_hdr_');
+      final keys = FakeSecureKeyStore();
+      final googleAuth = FakeGoogleAuth(
+        initialUser: const GoogleAuthAccount(id: 'u1', email: 'user@gmail.com'),
+      )..fakeHeaders = null;
+      final driveProvider = FakeBackupProvider();
+      final state = await tester.runAsync(() async {
+        final opener = makeOpener(dir, keys);
+        final res = (await opener.createNew(
+          const ConsentInput(contentVersion: mvpConsentVersion, ageYears: 26, caution: false),
+        )) as Opened;
+        await res.repository.saveProfile(
+          const Profile(
+            ageYears: 26,
+            sex: Sex.female,
+            heightCm: 160,
+            weightKg: 52,
+            activityLevel: ActivityLevel.active,
+          ),
+        );
+        await res.repository.saveHideCalories(false);
+        await res.repository.saveOnboardingStep(OnboardingStep.done);
+        await res.repository.close();
+        final s = AppState(
+          pack: pack,
+          opener: makeOpener(dir, keys),
+          googleAuth: googleAuth,
+          driveBackupProvider: driveProvider,
+        );
+        await s.start();
+        return s;
+      });
+      final appState = state!;
+      addTearDown(() async {
+        await appState.session.repo?.close();
+        appState.dispose();
+      });
+
+      final beforeCalls = googleAuth.signInCalls;
+      await tester.runAsync(() async {
+        await appState.createDriveBackup(
+          secret: 'reauth-secret-1',
+          memoryKiB: 256,
+          iterations: 1,
+        );
+      });
+      expect(googleAuth.signInCalls, beforeCalls + 1);
+      expect((await driveProvider.listBackups()).length, 1);
+    });
   });
 }

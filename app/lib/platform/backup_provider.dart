@@ -159,6 +159,7 @@ class FakeGoogleAuth implements GoogleAuth {
   bool failNetworkOnSilent = false;
   bool silentRevoked = false;
   bool failOnDisconnect = false;
+  int signInCalls = 0;
   int signOutCalls = 0;
   int disconnectCalls = 0;
   Map<String, String>? fakeHeaders = const {'Authorization': 'Bearer fake-token'};
@@ -170,6 +171,7 @@ class FakeGoogleAuth implements GoogleAuth {
 
   @override
   Future<GoogleAuthOutcome> signIn() async {
+    signInCalls++;
     if (cancelled) return const GoogleAuthCancelled();
     if (failNetworkOnSignIn) {
       return const GoogleAuthFailed('network', isNetworkError: true);

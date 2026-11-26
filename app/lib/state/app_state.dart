@@ -455,7 +455,7 @@ class AppState extends ChangeNotifier {
     int parallelism = BackupCodec.defaultParallelism,
   }) async {
     final headers = await googleAuth.authHeaders(interactive: false);
-    if (headers == null && await googleAuth.currentUser() == null) {
+    if (headers == null) {
       final auth = await signInGoogleDrive();
       if (auth is! GoogleAuthSignedIn) {
         throw StateError('Chưa đăng nhập Google Drive.');
