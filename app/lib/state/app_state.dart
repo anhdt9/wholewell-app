@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:dsld_library/dsld_library.dart';
 import 'package:flutter/foundation.dart';
@@ -6,11 +7,13 @@ import 'package:food_library/food_library.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 
+import '../platform/backup_provider.dart';
 import '../platform/label_scanner.dart';
 import '../platform/notification_scheduler.dart';
 import 'db_session_controller.dart';
 import 'diary_controller.dart';
 
+export '../platform/backup_provider.dart';
 export '../platform/label_scanner.dart';
 export '../platform/notification_scheduler.dart';
 export 'db_session_controller.dart'
@@ -29,6 +32,7 @@ class AppState extends ChangeNotifier {
   final OcrEngine ocrEngine;
   final BarcodeScanner? barcodeScanner;
   final NotificationScheduler notificationScheduler;
+  final BackupFileProvider backupFileProvider;
   final Future<FoodLibraryRepository> Function()? _openFoodLibrary;
   final Future<DsldLibraryRepository> Function()? _openDsldLibrary;
   DsldLibraryRepository? _dsldLibrary;
@@ -45,11 +49,13 @@ class AppState extends ChangeNotifier {
     OcrEngine? ocrEngine,
     this.barcodeScanner,
     NotificationScheduler? notificationScheduler,
+    BackupFileProvider? backupFileProvider,
   })  : _openFoodLibrary = openFoodLibrary,
         _openDsldLibrary = openDsldLibrary,
         _dsldLibrary = dsldLibrary,
         ocrEngine = ocrEngine ?? MlKitOcrEngine(),
         notificationScheduler = notificationScheduler ?? FakeNotificationScheduler(),
+        backupFileProvider = backupFileProvider ?? const AndroidBackupFileProvider(),
         session = DbSessionController(opener: opener),
         diary = DiaryController(pack: pack, foodLibrary: foodLibrary) {
     session.addListener(notifyListeners);
@@ -65,11 +71,13 @@ class AppState extends ChangeNotifier {
     OcrEngine? ocrEngine,
     this.barcodeScanner,
     NotificationScheduler? notificationScheduler,
+    BackupFileProvider? backupFileProvider,
   })  : _openFoodLibrary = null,
         _openDsldLibrary = null,
         _dsldLibrary = dsldLibrary,
         ocrEngine = ocrEngine ?? FakeOcrEngine(),
         notificationScheduler = notificationScheduler ?? FakeNotificationScheduler(),
+        backupFileProvider = backupFileProvider ?? FakeBackupFileProvider(),
         session = DbSessionController(repo: repo, initialStatus: DataStatus.ready),
         diary = DiaryController(pack: pack, repo: repo, foodLibrary: foodLibrary) {
     session.addListener(notifyListeners);
@@ -84,6 +92,7 @@ class AppState extends ChangeNotifier {
         ocrEngine = FakeOcrEngine(),
         barcodeScanner = null,
         notificationScheduler = FakeNotificationScheduler(),
+        backupFileProvider = FakeBackupFileProvider(),
         session = DbSessionController(initialStatus: DataStatus.unsupportedPlatform),
         diary = DiaryController(pack: pack) {
     session.addListener(notifyListeners);
@@ -291,6 +300,72 @@ class AppState extends ChangeNotifier {
   Future<void> disableNotifications() async {
     await notificationScheduler.syncSchedules(const []);
     await diary.withdrawNotificationConsent();
+  }
+
+  bool get canBackupToFile => session.hasOpener && session.repo is DriftJournalRepository;
+  bool get canRestoreFromFile => session.hasOpener;
+  DateTime? get lastFileBackupAt => diary.lastFileBackupAt;
+  HealthConsentStatus? get healthConsent => diary.healthConsent;
+
+  Future<String?> createEncryptedBackupFile({
+    required String secret,
+    int memoryKiB = BackupCodec.defaultMemoryKiB,
+    int iterations = BackupCodec.defaultIterations,
+    int parallelism = BackupCodec.defaultParallelism,
+  }) async {
+    final bytes = await session.exportBackup(
+      secret: secret,
+      memoryKiB: memoryKiB,
+      iterations: iterations,
+      parallelism: parallelism,
+    );
+    final n = DateTime.now();
+    final name =
+        'wholewell-${n.year}${n.month.toString().padLeft(2, '0')}${n.day.toString().padLeft(2, '0')}-${n.hour.toString().padLeft(2, '0')}${n.minute.toString().padLeft(2, '0')}.wwbackup';
+    final saved = await backupFileProvider.saveFile(
+      suggestedName: name,
+      mimeType: 'application/octet-stream',
+      bytes: bytes,
+    );
+    if (saved != null) {
+      await diary.recordFileBackupAt(n);
+    }
+    return saved;
+  }
+
+  Future<RestoreOutcome> restoreEncryptedBackupFile({
+    required Uint8List backupBytes,
+    required String secret,
+  }) async {
+    return session.restoreFromBackup(
+      backupBytes: backupBytes,
+      secret: secret,
+      onRestored: () async {
+        diary.attachRepository(session.repo);
+        if (session.stage == SessionStage.ready) {
+          await diary.checkAgeBumpOnReady();
+        }
+        await _ensureFoodLibrary();
+        unawaited(_ensureDsldLibrary());
+        await diary.reload();
+        unawaited(syncNotifications());
+      },
+    );
+  }
+
+  Future<String?> exportReadableJsonFile() async {
+    final repo = session.repo;
+    if (repo == null) return null;
+    final data = await repo.exportReadableJson();
+    final encoded = const JsonEncoder.withIndent('  ').convert(data);
+    final n = DateTime.now();
+    final name =
+        'wholewell-export-${n.year}${n.month.toString().padLeft(2, '0')}${n.day.toString().padLeft(2, '0')}.json';
+    return backupFileProvider.saveFile(
+      suggestedName: name,
+      mimeType: 'application/json',
+      bytes: Uint8List.fromList(utf8.encode(encoded)),
+    );
   }
 
   @override

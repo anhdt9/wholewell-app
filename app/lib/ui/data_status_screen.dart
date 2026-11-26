@@ -2,10 +2,9 @@ import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
 import '../state/app_state.dart';
+import 'backup_restore_screen.dart';
 
 /// Màn chặn khi CSDL chưa mở được (thiết kế tổng thể, mục Trạng thái, dòng "Toàn app").
-///
-/// [Khôi phục từ bản sao lưu] chưa bấm được cho tới khi có tính năng Sao lưu (việc 7).
 class DataStatusScreen extends StatelessWidget {
   final DataStatus status;
   const DataStatusScreen({super.key, required this.status});
@@ -13,7 +12,16 @@ class DataStatusScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppScope.of(context);
-    const restore = FilledButton.tonal(onPressed: null, child: Text('Khôi phục từ bản sao lưu'));
+    final restore = FilledButton.tonal(
+      onPressed: state.canRestoreFromFile
+          ? () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const RestoreBackupScreen(hasExistingData: false),
+                ),
+              )
+          : null,
+      child: const Text('Khôi phục từ bản sao lưu'),
+    );
     final retry = FilledButton(onPressed: state.start, child: const Text('Thử lại'));
     final (String text, List<Widget> actions) = switch (status) {
       DataStatus.waitingForUnlock => ('Mở khóa máy để xem dữ liệu.', const <Widget>[]),

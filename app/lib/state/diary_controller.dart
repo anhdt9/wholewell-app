@@ -97,6 +97,8 @@ class DiaryController extends ChangeNotifier {
   Map<int, List<ProductIngredient>> _ingredientsByProduct = const {};
   String? _dismissedScheduleNoticeSig;
   String? _hiddenTipDay;
+  DateTime? _lastFileBackupAt;
+  HealthConsentStatus? _healthConsent;
   DateTime _day = _dateOnly(DateTime.now());
   DayJournalData _data = DayJournalData.empty;
   bool _saveFailed = false;
@@ -130,6 +132,8 @@ class DiaryController extends ChangeNotifier {
   Map<int, List<ProductIngredient>> get ingredientsByProduct => _ingredientsByProduct;
   String? get dismissedScheduleNoticeSig => _dismissedScheduleNoticeSig;
   bool get tipHiddenToday => _hiddenTipDay == dayKey(_day);
+  DateTime? get lastFileBackupAt => _lastFileBackupAt;
+  HealthConsentStatus? get healthConsent => _healthConsent;
   DateTime get day => _day;
   bool get isViewingToday => dayKey(_day) == dayKey(DateTime.now());
   bool get saveFailed => _saveFailed;
@@ -173,6 +177,8 @@ class DiaryController extends ChangeNotifier {
     _ingredientsByProduct = const {};
     _dismissedScheduleNoticeSig = null;
     _hiddenTipDay = null;
+    _lastFileBackupAt = null;
+    _healthConsent = null;
     _data = DayJournalData.empty;
     notifyListeners();
   }
@@ -253,6 +259,8 @@ class DiaryController extends ChangeNotifier {
         repo.listProducts(),
         repo.getUiState('dismissed_schedule_notice_sig'),
         repo.getUiState('hidden_tip_day'),
+        repo.getUiState('last_file_backup_at'),
+        repo.latestHealthConsent(),
       ]);
       if (gen != _loadGen) return;
       final products = results[15] as List<ProductSummary>;
@@ -282,6 +290,12 @@ class DiaryController extends ChangeNotifier {
       };
       _dismissedScheduleNoticeSig = results[16] as String?;
       _hiddenTipDay = results[17] as String?;
+      final lastBackupRaw = results[18] as String?;
+      final lastBackupMs = lastBackupRaw == null ? null : int.tryParse(lastBackupRaw);
+      _lastFileBackupAt = lastBackupMs == null
+          ? null
+          : DateTime.fromMillisecondsSinceEpoch(lastBackupMs, isUtc: true).toLocal();
+      _healthConsent = results[19] as HealthConsentStatus?;
       _readFailed = false;
     } on JournalStorageException {
       if (gen == _loadGen) _readFailed = true;
@@ -1402,6 +1416,20 @@ class DiaryController extends ChangeNotifier {
           scheduleIds: byTime[t]!,
         ),
     ];
+  }
+
+  Future<void> recordFileBackupAt(DateTime at) async {
+    _lastFileBackupAt = at.toLocal();
+    notifyListeners();
+    final repo = _repo;
+    if (repo == null) return;
+    try {
+      await repo.setUiState('last_file_backup_at', at.toUtc().millisecondsSinceEpoch.toString());
+    } on JournalStorageException {
+      // Bỏ qua nếu không lưu được dấu thời gian.
+    } on StorageFullException {
+      // Bỏ qua nếu đầy bộ nhớ.
+    }
   }
 
   static Meal _mealFromSlot(MealSlot? s) => switch (s) {
