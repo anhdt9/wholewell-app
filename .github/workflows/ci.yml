@@ -38,6 +38,18 @@ jobs:
           dart analyze
           dart test
 
+  dsld-library:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+      - name: Test thư viện bổ sung NIH DSLD (SQLite FTS5)
+        working-directory: packages/dsld_library
+        run: |
+          dart pub get
+          dart analyze
+          dart test
+
   journal-db:
     runs-on: ubuntu-latest
     steps:
