@@ -6,6 +6,7 @@ import '../state/app_state.dart';
 import 'body_metrics_fields.dart';
 import 'common/common_widgets.dart';
 import 'drive_backup_screens.dart';
+import 'privacy_policy_screen.dart';
 
 enum _PreDbStep { welcome, eligibility, notEligible, consent }
 
@@ -738,7 +739,7 @@ class _ConsentView extends StatelessWidget {
                 '• Dữ liệu bạn nhập (tuổi, giới tính sinh học, chiều cao, cân nặng, mức vận động, '
                 'bữa ăn, nước uống, buổi tập, thực phẩm bổ sung) chỉ dùng để so sánh với mức tham chiếu trên máy.\n'
                 '• Toàn bộ được lưu trong CSDL mã hóa trên máy này; không gửi tới máy chủ hay bên thứ ba.\n'
-                '• Bạn có thể sửa hồ sơ ở Tôi → Hồ sơ hoặc rút đồng ý và xóa toàn bộ dữ liệu bất cứ lúc nào ở tab Tôi.',
+                '• Bạn có thể sửa hồ sơ ở Tôi → Hồ sơ hoặc rút đồng ý và xóa toàn bộ dữ liệu bất cứ lúc nào ở Tôi → Quyền riêng tư.',
               ),
             ],
           ),
@@ -772,7 +773,7 @@ class _ConsentView extends StatelessWidget {
           const SizedBox(height: 6),
           const Text('• Không gửi cho ai, kể cả nhóm phát triển'),
           const SizedBox(height: 6),
-          const Text('• Xem, sửa ở Tôi → Hồ sơ; xóa ở tab Tôi'),
+          const Text('• Xem, sửa ở Tôi → Hồ sơ; xóa ở Tôi → Quyền riêng tư'),
           const SizedBox(height: 20),
           CheckboxListTile(
             value: agreed,
@@ -781,12 +782,24 @@ class _ConsentView extends StatelessWidget {
             title: const Text('Tôi đồng ý cho app xử lý dữ liệu sức khỏe của tôi cho mục đích trên.'),
             onChanged: busy ? null : (v) => onAgreedChanged(v == true),
           ),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton(
-              onPressed: busy ? null : () => _showFullDetails(context),
-              child: const Text('Đọc đầy đủ'),
-            ),
+          Wrap(
+            spacing: 8,
+            children: [
+              TextButton(
+                style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+                onPressed: busy ? null : () => _showFullDetails(context),
+                child: const Text('Đọc đầy đủ'),
+              ),
+              TextButton(
+                style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+                onPressed: busy
+                    ? null
+                    : () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(builder: (_) => const PrivacyPolicyScreen()),
+                        ),
+                child: const Text('Chính sách quyền riêng tư'),
+              ),
+            ],
           ),
           if (errorText != null) ...[
             const SizedBox(height: 8),

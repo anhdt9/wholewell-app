@@ -4,6 +4,7 @@ import '../state/app_scope.dart';
 import 'backup_restore_screen.dart';
 import 'common/common_widgets.dart';
 import 'drive_backup_screens.dart';
+import 'privacy_policy_screen.dart';
 
 /// Màn Quyền riêng tư (`Tôi -> Quyền riêng tư`).
 class PrivacyScreen extends StatefulWidget {
@@ -249,6 +250,18 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
             const PendingDriveDeleteCard(),
           ],
           const Divider(height: 32),
+          Text('Tài liệu', style: t.titleMedium),
+          const SizedBox(height: 4),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            minTileHeight: 56,
+            title: const Text('Chính sách quyền riêng tư'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const PrivacyPolicyScreen()),
+            ),
+          ),
+          const Divider(height: 24),
           Text('Dữ liệu của bạn', style: t.titleMedium),
           const SizedBox(height: 12),
           OutlinedButton(
