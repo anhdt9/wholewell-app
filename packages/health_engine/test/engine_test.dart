@@ -544,4 +544,80 @@ void main() {
       });
     }
   });
+
+  group('scheduleRules và khớp khung ±2 giờ', () {
+    test('đọc đủ 5 scheduleRules từ reference_pack.json', () {
+      expect(pack.scheduleRules, hasLength(5));
+      for (final r in pack.scheduleRules) {
+        expect(r.messageVi, isNotEmpty);
+        expect(r.tipVi, isNotEmpty);
+        expect(pack.sources.containsKey(r.source), isTrue);
+      }
+    });
+
+    for (final c in (cases['scheduleRuleCases'] as List).cast<Map<String, dynamic>>()) {
+      final cname = c['name'] as String;
+      test('scheduleRules: $cname', () {
+        final mt = c['mealTimes'] as Map<String, dynamic>;
+        final mealTimes = MealTimes(
+          breakfast: (mt['breakfast'] as num).toInt(),
+          lunch: (mt['lunch'] as num).toInt(),
+          dinner: (mt['dinner'] as num).toInt(),
+        );
+        final doses = [
+          for (final d in (c['doses'] as List).cast<Map<String, dynamic>>())
+            ScheduledDoseInput(
+              scheduleId: (d['scheduleId'] as num).toInt(),
+              productId: (d['productId'] as num).toInt(),
+              timeOfDay: (d['timeOfDay'] as num).toInt(),
+              nutrients: [
+                for (final n in (d['nutrients'] as List).cast<Map<String, dynamic>>())
+                  ScheduledNutrient(
+                    nutrientId: n['nutrientId'] as String,
+                    form: n['form'] as String? ?? 'unknown',
+                    amount: (n['amount'] as num).toDouble(),
+                  ),
+              ],
+            ),
+        ];
+        final got = evaluateScheduleRules(pack, mealTimes, doses);
+        final want = ((expect_['scheduleRules'] as Map<String, dynamic>)[cname] as List)
+            .cast<Map<String, dynamic>>();
+        expect(got.length, want.length);
+        for (var i = 0; i < want.length; i++) {
+          expect(got[i].ruleId, want[i]['ruleId']);
+          expect(got[i].severity, want[i]['severity']);
+          expect(got[i].timeOfDay, (want[i]['timeOfDay'] as num).toInt());
+          expect(got[i].productIds, (want[i]['productIds'] as List).cast<int>());
+          expect(got[i].uncertain, want[i]['uncertain']);
+        }
+      });
+    }
+
+    for (final c in (cases['windowMatchCases'] as List).cast<Map<String, dynamic>>()) {
+      final cname = c['name'] as String;
+      test('windowMatch: $cname', () {
+        final dt = DateTime.parse(c['doseAt'] as String);
+        final pid = (c['productId'] as num).toInt();
+        final cands = [
+          for (final x in (c['candidates'] as List).cast<Map<String, dynamic>>())
+            ScheduleCandidate(
+              scheduleId: (x['scheduleId'] as num).toInt(),
+              productId: (x['productId'] as num).toInt(),
+              day: x['day'] as String,
+              timeOfDay: (x['timeOfDay'] as num).toInt(),
+            ),
+        ];
+        final got = matchDoseToScheduleWindow(dt, pid, cands);
+        final want = (expect_['windowMatch'] as Map<String, dynamic>)[cname] as Map<String, dynamic>?;
+        if (want == null) {
+          expect(got, isNull);
+        } else {
+          expect(got, isNotNull);
+          expect(got!.scheduleId, (want['scheduleId'] as num).toInt());
+          expect(got.day, want['day']);
+        }
+      });
+    }
+  });
 }

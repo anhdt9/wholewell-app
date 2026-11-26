@@ -221,6 +221,22 @@ for code, want in GOLDEN_STRENGTH.items():
     if acts.get(code, {}).get("muscleStrengthening") is not want:
         err(f"muscleStrengthening {code} sai")
 
+# ---- quy tắc lịch (scheduleRules)
+s_rules = p.get("scheduleRules", [])
+if len(s_rules) != 5:
+    err(f"scheduleRules phải có 5 quy tắc, thấy {len(s_rules)}")
+for sr in s_rules:
+    if sr.get("source") not in src_ids:
+        err(f"scheduleRule {sr.get('id')}: nguồn không tồn tại {sr.get('source')}")
+    for req in ("id", "type", "severity", "url", "accessedDate", "quote", "messageVi", "tipVi"):
+        if not sr.get(req):
+            err(f"scheduleRule {sr.get('id')}: thiếu {req}")
+    if sr.get("type") not in ("single_dose_max", "take_with_meal", "co_timing_caution", "co_timing_threshold"):
+        err(f"scheduleRule {sr.get('id')}: type lạ {sr.get('type')}")
+    for nid in sr.get("nutrients", []):
+        if nid not in N:
+            err(f"scheduleRule {sr.get('id')}: chất lạ {nid}")
+
 if errors:
     print("LỖI:")
     for x in errors:

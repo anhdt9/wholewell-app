@@ -7603,6 +7603,80 @@
     "suspectedUnitMistake": false,
     "exceedsSingleServingUl": false
    }
+  },
+  "scheduleRules": {
+   "ca_over_500_with_meal_ok_and_ca_iron_zinc": [
+    {
+     "ruleId": "ca_single_dose_500",
+     "severity": "notice",
+     "timeOfDay": 480,
+     "productIds": [
+      10,
+      11
+     ],
+     "uncertain": false
+    },
+    {
+     "ruleId": "ca_iron_co_timing",
+     "severity": "notice",
+     "timeOfDay": 480,
+     "productIds": [
+      10,
+      11
+     ],
+     "uncertain": true
+    },
+    {
+     "ruleId": "iron_zinc_co_timing",
+     "severity": "notice",
+     "timeOfDay": 510,
+     "productIds": [
+      11,
+      12
+     ],
+     "uncertain": false
+    }
+   ],
+   "vitd_and_ca_carb_outside_meal_safe_iron_zinc": [
+    {
+     "ruleId": "ca_carbonate_with_meal",
+     "severity": "suggestion",
+     "timeOfDay": 540,
+     "productIds": [
+      20
+     ],
+     "uncertain": false
+    },
+    {
+     "ruleId": "ca_iron_co_timing",
+     "severity": "notice",
+     "timeOfDay": 540,
+     "productIds": [
+      20
+     ],
+     "uncertain": true
+    },
+    {
+     "ruleId": "vitd_with_meal",
+     "severity": "suggestion",
+     "timeOfDay": 540,
+     "productIds": [
+      20
+     ],
+     "uncertain": false
+    }
+   ]
+  },
+  "windowMatch": {
+   "midnight_prev_day_match": {
+    "scheduleId": 1,
+    "day": "2026-11-25"
+   },
+   "overlapping_windows_nearest": {
+    "scheduleId": 2,
+    "day": "2026-11-26"
+   },
+   "outside_2h_window": null
   }
  },
  "sanityCases": [
@@ -7661,6 +7735,161 @@
     "amount": 100,
     "unit": "mg"
    }
+  }
+ ],
+ "scheduleRuleCases": [
+  {
+   "name": "ca_over_500_with_meal_ok_and_ca_iron_zinc",
+   "mealTimes": {
+    "breakfast": 420,
+    "lunch": 720,
+    "dinner": 1140
+   },
+   "doses": [
+    {
+     "scheduleId": 1,
+     "productId": 10,
+     "timeOfDay": 480,
+     "nutrients": [
+      {
+       "nutrientId": "calcium",
+       "form": "calcium_carbonate",
+       "amount": 500.0
+      },
+      {
+       "nutrientId": "vitD",
+       "form": "unknown",
+       "amount": 10.0
+      }
+     ]
+    },
+    {
+     "scheduleId": 2,
+     "productId": 11,
+     "timeOfDay": 480,
+     "nutrients": [
+      {
+       "nutrientId": "calcium",
+       "form": "calcium_citrate",
+       "amount": 100.0
+      },
+      {
+       "nutrientId": "iron",
+       "form": "ferrous_fumarate",
+       "amount": 25.0
+      }
+     ]
+    },
+    {
+     "scheduleId": 3,
+     "productId": 12,
+     "timeOfDay": 510,
+     "nutrients": [
+      {
+       "nutrientId": "zinc",
+       "form": "unknown",
+       "amount": 15.0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vitd_and_ca_carb_outside_meal_safe_iron_zinc",
+   "mealTimes": {
+    "breakfast": 420,
+    "lunch": 720,
+    "dinner": 1140
+   },
+   "doses": [
+    {
+     "scheduleId": 4,
+     "productId": 20,
+     "timeOfDay": 540,
+     "nutrients": [
+      {
+       "nutrientId": "calcium",
+       "form": "calcium_carbonate",
+       "amount": 300.0
+      },
+      {
+       "nutrientId": "vitD",
+       "form": "unknown",
+       "amount": 25.0
+      },
+      {
+       "nutrientId": "iron",
+       "form": "ferrous_sulfate",
+       "amount": 18.0
+      }
+     ]
+    },
+    {
+     "scheduleId": 5,
+     "productId": 21,
+     "timeOfDay": 1200,
+     "nutrients": [
+      {
+       "nutrientId": "zinc",
+       "form": "unknown",
+       "amount": 15.0
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "windowMatchCases": [
+  {
+   "name": "midnight_prev_day_match",
+   "doseAt": "2026-11-26T00:30:00",
+   "productId": 10,
+   "candidates": [
+    {
+     "scheduleId": 1,
+     "productId": 10,
+     "day": "2026-11-25",
+     "timeOfDay": 1380
+    },
+    {
+     "scheduleId": 2,
+     "productId": 10,
+     "day": "2026-11-26",
+     "timeOfDay": 480
+    }
+   ]
+  },
+  {
+   "name": "overlapping_windows_nearest",
+   "doseAt": "2026-11-26T08:40:00",
+   "productId": 10,
+   "candidates": [
+    {
+     "scheduleId": 1,
+     "productId": 10,
+     "day": "2026-11-26",
+     "timeOfDay": 480
+    },
+    {
+     "scheduleId": 2,
+     "productId": 10,
+     "day": "2026-11-26",
+     "timeOfDay": 540
+    }
+   ]
+  },
+  {
+   "name": "outside_2h_window",
+   "doseAt": "2026-11-26T14:05:00",
+   "productId": 10,
+   "candidates": [
+    {
+     "scheduleId": 1,
+     "productId": 10,
+     "day": "2026-11-26",
+     "timeOfDay": 1200
+    }
+   ]
   }
  ]
 }
