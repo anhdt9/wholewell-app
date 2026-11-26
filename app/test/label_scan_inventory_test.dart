@@ -360,7 +360,7 @@ void main() {
       await state.diary.recordSupplementDose(
         name: 'Viên cũ',
         servings: 1,
-        at: DateTime(2026, 11, 25, 9, 0),
+        at: DateTime(state.day.year, state.day.month, state.day.day, 9, 0),
         lines: const [
           IntakeLine(
             nutrientId: 'vitE',

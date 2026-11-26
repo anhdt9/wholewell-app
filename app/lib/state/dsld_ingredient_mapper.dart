@@ -114,7 +114,7 @@ class DsldIngredientMapper {
       labelAmount: amount,
       labelUnit: unit ?? _defaultUnitFor(def?.unit),
       isCompound: p != null && p.compoundKind != CompoundKind.elemental,
-      origin: IngredientOrigin.manual,
+      origin: IngredientOrigin.barcode,
       confirmed: false,
     );
   }
