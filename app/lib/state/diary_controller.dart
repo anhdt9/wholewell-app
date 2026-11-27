@@ -1225,10 +1225,18 @@ class DiaryController extends ChangeNotifier {
 
   Future<void> addWorkout(WorkoutEntry w) => _write((repo) => repo.addWorkout(atNow(), w));
 
+  Future<void> addWorkoutAt(DateTime startAt, WorkoutEntry w) =>
+      _write((repo) => repo.addWorkout(startAt, w));
+
+  Future<void> updateWorkout(int id, DateTime startAt, WorkoutEntry w) =>
+      _write((repo) => repo.updateWorkout(id, startAt, w));
+
+  Future<void> deleteWorkout(int id) => _write((repo) => repo.deleteWorkout(id));
+
   Future<void> removeWorkoutByIndex(int index) {
     final ws = _data.workouts;
     if (index < 0 || index >= ws.length) return Future.value();
-    return _write((repo) => repo.deleteWorkout(ws[index].id));
+    return deleteWorkout(ws[index].id);
   }
 
   DailyReport? report() {

@@ -3,7 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
 import 'body_metrics_fields.dart';
-import 'common/common_widgets.dart';
+import 'privacy_screen.dart';
 
 /// Màn Hồ sơ (mở từ `Tôi -> Hồ sơ` hoặc nút `Sửa` ở dòng nhắc tuổi trên Hôm nay).
 class ProfileScreen extends StatefulWidget {
@@ -106,13 +106,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Navigator.of(context).maybePop();
   }
 
-  Future<void> _wipeFromPregnancyCard() async {
-    final confirmed = await showWipeConfirmDialog(context);
-    if (!confirmed || !mounted) return;
-    final state = AppScope.of(context);
-    Navigator.of(context).popUntil((r) => r.isFirst);
-    await state.withdrawConsentAndReset();
-  }
+  Future<void> _wipeFromPregnancyCard() => confirmAndWipeAllData(
+        context,
+        isMounted: () => mounted,
+        onBusyChanged: (b) => setState(() => _saving = b),
+      );
 
   @override
   Widget build(BuildContext context) {

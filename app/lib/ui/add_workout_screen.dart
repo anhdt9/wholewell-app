@@ -1,11 +1,13 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:health_engine/health_engine.dart';
+import 'package:journal_db/journal_db.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
 import 'labels.dart';
 
 class AddWorkoutScreen extends StatefulWidget {
-  const AddWorkoutScreen({super.key});
+  final WorkoutRecord? editing;
+  const AddWorkoutScreen({super.key, this.editing});
   @override
   State<AddWorkoutScreen> createState() => _AddWorkoutScreenState();
 }
@@ -17,6 +19,16 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
   bool _saving = false;
 
   @override
+  void initState() {
+    super.initState();
+    final e = widget.editing;
+    if (e != null) {
+      _code = e.workout.activityCode;
+      _minutes.text = fmt(e.workout.minutes);
+    }
+  }
+
+  @override
   void dispose() {
     _minutes.dispose();
     super.dispose();
@@ -26,7 +38,46 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
     if (_saving) return;
     setState(() => _saving = true);
     try {
-      await AppScope.of(context).addWorkout(WorkoutEntry(activityCode: selected.code, minutes: minutes));
+      final state = AppScope.of(context);
+      final e = widget.editing;
+      final entry = WorkoutEntry(activityCode: selected.code, minutes: minutes);
+      if (e != null) {
+        await state.diary.updateWorkout(e.id, e.startAt, entry);
+      } else {
+        await state.addWorkout(entry);
+      }
+      if (!mounted) return;
+      Navigator.of(context).pop();
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _delete() async {
+    final e = widget.editing;
+    if (e == null || _saving) return;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Xóa buổi tập?'),
+        content: const Text('Buổi tập này sẽ bị xóa khỏi nhật ký.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Hủy')),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Xóa'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    setState(() => _saving = true);
+    try {
+      await AppScope.of(context).diary.deleteWorkout(e.id);
       if (!mounted) return;
       Navigator.of(context).pop();
     } finally {
@@ -48,14 +99,23 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
         : workoutKcal(state.pack, state.profile!, WorkoutEntry(activityCode: selected.code, minutes: minutes));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Thêm buổi tập'), actions: [
-        TextButton(
-          onPressed: _saving || selected == null || minutes <= 0
-              ? null
-              : () => _save(selected, minutes),
-          child: const Text('Lưu'),
-        ),
-      ]),
+      appBar: AppBar(
+        title: Text(widget.editing != null ? 'Sửa buổi tập' : 'Thêm buổi tập'),
+        actions: [
+          if (widget.editing != null)
+            IconButton(
+              tooltip: 'Xóa khỏi nhật ký',
+              icon: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
+              onPressed: _saving ? null : _delete,
+            ),
+          TextButton(
+            onPressed: _saving || selected == null || minutes <= 0
+                ? null
+                : () => _save(selected, minutes),
+            child: const Text('Lưu'),
+          ),
+        ],
+      ),
       body: Column(children: [
         Padding(
           padding: const EdgeInsets.all(16),

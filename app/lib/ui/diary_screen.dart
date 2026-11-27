@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../state/app_scope.dart';
 import '../state/diary_controller.dart';
 import 'add_supplement_screen.dart';
+import 'add_workout_screen.dart';
 import 'common/common_widgets.dart';
 import 'common/food_feedback_sheet.dart';
 import 'edit_food_screen.dart';
@@ -23,13 +24,35 @@ class DiaryScreen extends StatefulWidget {
 class _DiaryScreenState extends State<DiaryScreen> {
   _DiaryFilter _filter = _DiaryFilter.all;
 
+  Future<bool> _confirmSwipeDelete(BuildContext context, String itemLabel) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Xóa $itemLabel?'),
+        content: Text('Mục $itemLabel này sẽ bị xóa khỏi nhật ký.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Hủy')),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Xóa'),
+          ),
+        ],
+      ),
+    );
+    return ok == true;
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = AppScope.of(context);
     final foods = state.diary.todayFoods;
     final doses = state.diary.todayDoses;
     final waters = state.todayWaters;
-    final ws = state.todayWorkouts;
+    final ws = state.diary.todayWorkouts;
     final t = Theme.of(context).textTheme;
 
     void open(Widget page) =>
@@ -97,6 +120,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
           for (final d in doses)
             Dismissible(
               key: ValueKey('dose-${d.id}'),
+              confirmDismiss: (_) => _confirmSwipeDelete(context, 'lần uống bổ sung'),
               onDismissed: (_) => state.diary.deleteDoseEntry(d.id),
               child: EntryTile(
                 leadingIcon: Icons.medication,
@@ -139,20 +163,25 @@ class _DiaryScreenState extends State<DiaryScreen> {
         if (showWorkout) ...[
           Text('Buổi tập', style: t.titleMedium),
           if (ws.isEmpty) const Padding(padding: EdgeInsets.all(8), child: Text('Chưa có.')),
-          for (var i = 0; i < ws.length; i++)
+          for (final w in ws)
             Dismissible(
-              key: ValueKey('w-$i-${ws[i].activityCode}'),
-              onDismissed: (_) => state.removeWorkout(i),
-              child: ListTile(
-                leading: const Icon(Icons.directions_run),
-                title: Text(state.pack.activities[ws[i].activityCode]?.nameVi ?? ws[i].activityCode),
-                subtitle: Text('${fmt(ws[i].minutes)} phút'
-                    '${state.hideCalories || state.profile == null ? '' : ' · ${workoutKcal(state.pack, state.profile!, ws[i]).round()} kcal'}'),
+              key: ValueKey('workout-${w.id}'),
+              confirmDismiss: (_) => _confirmSwipeDelete(context, 'buổi tập'),
+              onDismissed: (_) => state.diary.deleteWorkout(w.id),
+              child: EntryTile(
+                leadingIcon: Icons.directions_run,
+                title: state.pack.activities[w.workout.activityCode]?.nameVi ?? w.workout.activityCode,
+                subtitle: '${fmt(w.workout.minutes)} phút',
+                timeText: fmtTime24(w.startAt),
+                kcal: state.profile == null
+                    ? null
+                    : workoutKcal(state.pack, state.profile!, w.workout),
+                onTap: () => open(AddWorkoutScreen(editing: w)),
               ),
             ),
           const SizedBox(height: 16),
         ],
-        Text('Chạm món ăn hoặc lần uống nước để sửa; vuốt sang bên để xóa bổ sung hoặc buổi tập.',
+        Text('Chạm vào mục để sửa; vuốt sang bên để xóa bổ sung hoặc buổi tập.',
             style: t.bodySmall),
       ],
     );

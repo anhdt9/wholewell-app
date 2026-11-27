@@ -106,7 +106,14 @@ class _HomeScreenState extends State<HomeScreen> {
           : null,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,
-        onDestinationSelected: (i) => setState(() => _tab = i),
+        onDestinationSelected: (i) {
+          if (i == 0 && _tab == 0 && !state.diary.isViewingToday) {
+            unawaited(state.resetToToday());
+          }
+          if (i != _tab) {
+            setState(() => _tab = i);
+          }
+        },
         destinations: const [
           NavigationDestination(icon: Icon(Icons.insights), label: 'Hôm nay'),
           NavigationDestination(icon: Icon(Icons.restaurant), label: 'Nhật ký'),

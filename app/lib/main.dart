@@ -85,14 +85,20 @@ class WholeWellApp extends StatefulWidget {
 class _WholeWellAppState extends State<WholeWellApp> {
   late final AppLifecycleListener _lifecycle;
   final _messenger = GlobalKey<ScaffoldMessengerState>();
+  final _navKey = GlobalKey<NavigatorState>();
 
   @override
   void initState() {
     super.initState();
-    // Máy đang khóa: đọc lại khóa khi app trở lại; đã mở thì kiểm tự tăng tuổi.
-    _lifecycle = AppLifecycleListener(onResume: () {
-      unawaited(widget.state.onAppResume());
-    });
+    // Máy đang khóa: đọc lại khóa khi app trở lại; đã mở thì kiểm tự tăng tuổi & ngày đang xem.
+    _lifecycle = AppLifecycleListener(
+      onPause: () => widget.state.onAppBackgrounded(),
+      onHide: () => widget.state.onAppBackgrounded(),
+      onResume: () {
+        final atRoot = !(_navKey.currentState?.canPop() ?? false);
+        unawaited(widget.state.onAppResume(atRootScreen: atRoot));
+      },
+    );
     widget.state.addListener(_onState);
   }
 
@@ -126,8 +132,14 @@ class _WholeWellAppState extends State<WholeWellApp> {
       child: MaterialApp(
         title: 'WholeWell',
         debugShowCheckedModeBanner: false,
+        navigatorKey: _navKey,
         scaffoldMessengerKey: _messenger,
         theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
+        darkTheme: ThemeData(
+          colorSchemeSeed: Colors.teal,
+          brightness: Brightness.dark,
+          useMaterial3: true,
+        ),
         home: ListenableBuilder(
           listenable: state,
           builder: (context, _) => switch (state.status) {

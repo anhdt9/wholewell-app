@@ -131,6 +131,7 @@ abstract interface class JournalRepository {
   Future<List<DoseEntry>> dosesBetween(String fromDay, String toDay);
 
   Future<int> addWorkout(DateTime startAt, WorkoutEntry w);
+  Future<void> updateWorkout(int id, DateTime startAt, WorkoutEntry w);
   Future<void> deleteWorkout(int id);
   Future<List<WorkoutRecord>> workoutsOn(String day);
   Future<List<WorkoutRecord>> workoutsBetween(String fromDay, String toDay);
@@ -1121,6 +1122,20 @@ class InMemoryJournalRepository implements JournalRepository {
     ));
     _changed();
     return id;
+  }
+
+  @override
+  Future<void> updateWorkout(int id, DateTime startAt, WorkoutEntry w) async {
+    final idx = _workouts.indexWhere((x) => x.id == id);
+    if (idx < 0) return;
+    final d = dayKey(startAt);
+    _workouts[idx] = WorkoutRecord(
+      id,
+      startAt,
+      d,
+      WorkoutEntry(activityCode: w.activityCode, minutes: w.minutes, day: d),
+    );
+    _changed();
   }
 
   @override

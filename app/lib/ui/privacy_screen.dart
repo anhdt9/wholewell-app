@@ -1,10 +1,132 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
+import '../state/app_state.dart';
 import 'backup_restore_screen.dart';
 import 'common/common_widgets.dart';
 import 'drive_backup_screens.dart';
 import 'privacy_policy_screen.dart';
+
+/// Hiện hộp thoại xác nhận Xóa toàn bộ dữ liệu (kèm tùy chọn Drive nếu đang bật),
+/// chờ `withdrawConsentAndReset` xong rồi mới quay về màn gốc.
+Future<void> confirmAndWipeAllData(
+  BuildContext context, {
+  required bool Function() isMounted,
+  void Function(bool busy)? onBusyChanged,
+}) async {
+  final state = AppScope.of(context);
+  final nav = Navigator.of(context);
+  final messenger = ScaffoldMessenger.maybeOf(context);
+  final hasDrive = state.driveEnabled;
+  final bool? ok;
+  var deleteDrive = false;
+
+  if (!hasDrive) {
+    ok = await showWipeConfirmDialog(
+      context,
+      message: 'Mọi dữ liệu trên máy này sẽ bị xóa và không lấy lại được, trừ khi bạn có bản sao lưu.',
+    );
+  } else {
+    var typed = '';
+    ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          final cs = Theme.of(ctx).colorScheme;
+          final canConfirm = typed.trim() == 'XÓA';
+          return AlertDialog(
+            title: const Text('Xóa toàn bộ dữ liệu?'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Mọi dữ liệu trên máy này sẽ bị xóa và không lấy lại được, trừ khi bạn có bản sao lưu.',
+                  ),
+                  const SizedBox(height: 8),
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    value: deleteDrive,
+                    onChanged: (v) => setDialogState(() => deleteDrive = v ?? false),
+                    title: const Text('Xóa cả bản sao lưu trên Google Drive'),
+                  ),
+                  Text(
+                    'Tệp sao lưu bạn đã xuất ra ngoài thì app không xóa được.',
+                    style: Theme.of(ctx).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('Gõ XÓA để xác nhận.'),
+                  const SizedBox(height: 8),
+                  TextField(
+                    autofocus: true,
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'XÓA',
+                    ),
+                    onChanged: (v) => setDialogState(() => typed = v),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Hủy')),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: cs.error,
+                  foregroundColor: cs.onError,
+                ),
+                onPressed: canConfirm ? () => Navigator.of(ctx).pop(true) : null,
+                child: const Text('Xóa toàn bộ'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  if (ok != true || !isMounted()) return;
+  await _executeResetAndReturnToRoot(
+    state: state,
+    nav: nav,
+    messenger: messenger,
+    deleteDriveBackup: deleteDrive,
+    isMounted: isMounted,
+    onBusyChanged: onBusyChanged,
+  );
+}
+
+/// Thực thi xóa dữ liệu trên máy (và bản Drive nếu chọn) trước khi `popUntil` về màn gốc.
+Future<void> _executeResetAndReturnToRoot({
+  required AppState state,
+  required NavigatorState nav,
+  required ScaffoldMessengerState? messenger,
+  required bool deleteDriveBackup,
+  required bool Function() isMounted,
+  void Function(bool busy)? onBusyChanged,
+}) async {
+  onBusyChanged?.call(true);
+  try {
+    final remoteCleared = await state.withdrawConsentAndReset(
+      deleteDriveBackup: deleteDriveBackup,
+    );
+    if (isMounted()) nav.popUntil((r) => r.isFirst);
+    if (deleteDriveBackup && !remoteCleared) {
+      messenger
+        ?..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Chưa xóa được bản trên Google Drive. App sẽ thử lại khi có mạng.'),
+          ),
+        );
+    }
+  } finally {
+    if (isMounted()) onBusyChanged?.call(false);
+  }
+}
 
 /// Màn Quyền riêng tư (`Tôi -> Quyền riêng tư`).
 class PrivacyScreen extends StatefulWidget {
@@ -70,29 +192,15 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
     await _resetAndReturnToRoot(deleteDriveBackup: hasDrive && deleteDrive);
   }
 
-  Future<void> _resetAndReturnToRoot({required bool deleteDriveBackup}) async {
-    final state = AppScope.of(context);
-    final nav = Navigator.of(context);
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    setState(() => _busy = true);
-    try {
-      final remoteCleared = await state.withdrawConsentAndReset(
+  Future<void> _resetAndReturnToRoot({required bool deleteDriveBackup}) =>
+      _executeResetAndReturnToRoot(
+        state: AppScope.of(context),
+        nav: Navigator.of(context),
+        messenger: ScaffoldMessenger.maybeOf(context),
         deleteDriveBackup: deleteDriveBackup,
+        isMounted: () => mounted,
+        onBusyChanged: (b) => setState(() => _busy = b),
       );
-      if (mounted) nav.popUntil((r) => r.isFirst);
-      if (deleteDriveBackup && !remoteCleared) {
-        messenger
-          ?..hideCurrentSnackBar()
-          ..showSnackBar(
-            const SnackBar(
-              content: Text('Chưa xóa được bản trên Google Drive. App sẽ thử lại khi có mạng.'),
-            ),
-          );
-      }
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
 
   Future<void> _exportData() async {
     final go = await showDialog<bool>(
@@ -131,81 +239,11 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
     }
   }
 
-  Future<void> _wipeAll() async {
-    final hasDrive = AppScope.of(context).driveEnabled;
-    if (!hasDrive) {
-      final ok = await showWipeConfirmDialog(
+  Future<void> _wipeAll() => confirmAndWipeAllData(
         context,
-        message: 'Mọi dữ liệu trên máy này sẽ bị xóa và không lấy lại được, trừ khi bạn có bản sao lưu.',
+        isMounted: () => mounted,
+        onBusyChanged: (b) => setState(() => _busy = b),
       );
-      if (!ok || !mounted) return;
-      await _resetAndReturnToRoot(deleteDriveBackup: false);
-      return;
-    }
-
-    var typed = '';
-    var deleteDrive = false; // Xóa toàn bộ: không đánh sẵn theo mvp-overview.md dòng 716.
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) {
-          final cs = Theme.of(ctx).colorScheme;
-          final canConfirm = typed.trim() == 'XÓA';
-          return AlertDialog(
-            title: const Text('Xóa toàn bộ dữ liệu?'),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Mọi dữ liệu trên máy này sẽ bị xóa và không lấy lại được, trừ khi bạn có bản sao lưu.',
-                  ),
-                  const SizedBox(height: 8),
-                  CheckboxListTile(
-                    contentPadding: EdgeInsets.zero,
-                    controlAffinity: ListTileControlAffinity.leading,
-                    value: deleteDrive,
-                    onChanged: (v) => setDialogState(() => deleteDrive = v ?? false),
-                    title: const Text('Xóa cả bản sao lưu trên Google Drive'),
-                  ),
-                  Text(
-                    'Tệp sao lưu bạn đã xuất ra ngoài thì app không xóa được.',
-                    style: Theme.of(ctx).textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 12),
-                  const Text('Gõ XÓA để xác nhận.'),
-                  const SizedBox(height: 8),
-                  TextField(
-                    autofocus: true,
-                    textCapitalization: TextCapitalization.characters,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: 'XÓA',
-                    ),
-                    onChanged: (v) => setDialogState(() => typed = v),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Hủy')),
-              FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: cs.error,
-                  foregroundColor: cs.onError,
-                ),
-                onPressed: canConfirm ? () => Navigator.of(ctx).pop(true) : null,
-                child: const Text('Xóa toàn bộ'),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-    if (ok != true || !mounted) return;
-    await _resetAndReturnToRoot(deleteDriveBackup: deleteDrive);
-  }
 
   @override
   Widget build(BuildContext context) {

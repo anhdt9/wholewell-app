@@ -61,7 +61,13 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
    - **#28:** Công tắc tùy chọn `"Hiện tên sản phẩm trên thông báo"` trong `Tôi → Nhắc giờ` (tắt mặc định; chỉ đồng bộ tên sản phẩm dạng `"Đến giờ uống: <tên SP>"` khi bật, xóa sạch ngay khi tắt, không hiện tên chất hay liều lượng).
 10. **Kiểm toán mã nguồn (Audit):**
     - **Phần 1 (Phân tích tĩnh & Dọn rác — PR #34 đã gộp vào `main`):** nâng cấp `very_good_analysis` v11, xử lý `Future` / `unawaited` / `try-finally` / type safety, rà dead code & assets thừa.
-    - **Phần 3 & Phần 4 (Bảo mật, Lifecycle & Edge cases — nhánh `chore/audit-security-edge-cases`):** rà lịch sử Git (0 secret), `AndroidManifest.xml` / `DbKeyStore.kt` / `BackupFileChannel.kt`, thêm giới hạn timeout cho Google Drive API, khóa double-tap trên `Hôm nay` / `Lần uống hôm nay` / `Ghi món` / hộp thoại hộp sản phẩm, bảo vệ `try/finally` cho `ScanProductScreen` / `TextEditingController` và kiểm tra `ctx.mounted` / `.isFinite`.
+    - **Phần 2, 3 & 4 (Runtime, Bảo mật, Lifecycle & Edge cases — PR #35 đã gộp vào `main`):** đo `meminfo` foreground trên `SM-S928B` S24 Ultra (`TOTAL PSS ~258.7 MB`, không rò rỉ Activity/View) & `analyze-size`; rà Git history (0 secret), `AndroidManifest.xml` / `DbKeyStore.kt` / `BackupFileChannel.kt`, thêm timeout Google Drive API, khóa double-tap, bảo vệ `try/finally`, `ctx.mounted` / `.isFinite`.
+11. **Vá lỗi luồng thao tác, Dark Mode & A11y (`fix/navigation-diary-darkmode-a11y`):**
+    - Sửa back-stack khi tạo sản phẩm bổ sung mới (`popUntil((r) => r.isFirst)` trước khi mở `ProductDetailScreen`).
+    - Tự đưa ngày đang xem về hôm nay khi chạm lại tab Hôm nay hoặc quay lại từ nền > 5 phút / qua nửa đêm khi đang ở màn gốc (`AppState.onAppBackgrounded` / `onAppResume`).
+    - Đồng bộ luồng xóa toàn bộ dữ liệu từ `Tôi → Hồ sơ` theo `Quyền riêng tư` (`confirmAndWipeAllData`: hỏi gõ `XÓA`, tùy chọn xóa Drive, `await` xong mới về gốc).
+    - Nhật ký: thêm `updateWorkout` trong `journal_db`, chạm vào buổi tập để sửa (`AddWorkoutScreen`), dùng `ValueKey('workout-${w.id}')`, thêm hộp thoại xác nhận khi vuốt xóa bổ sung và buổi tập.
+    - Giao diện: bật `darkTheme` cho `MaterialApp`, bỏ màu cứng ở `_MacroRow`, co giãn `_EnergyCard` & `_MacroRow` theo cỡ chữ 200%, và thêm thẻ gợi ý nhẹ khi màn Hôm nay trống (`batch1_audit_fixes_test.dart`).
 
 ## Để sau MVP (giai đoạn 2)
 

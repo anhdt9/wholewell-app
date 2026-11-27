@@ -143,7 +143,9 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
       });
       return;
     }
-    Navigator.of(context).pushReplacement(
+    final nav = Navigator.of(context);
+    nav.popUntil((r) => r.isFirst);
+    nav.push(
       MaterialPageRoute<void>(builder: (_) => ProductDetailScreen(productId: pid)),
     );
   }

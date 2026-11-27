@@ -169,6 +169,8 @@ void main() {
     expect(find.text('Bạn có biết'), findsOneWidget);
 
     // Bấm Xem nguồn › -> mở màn Nguồn số liệu.
+    await tester.ensureVisible(find.text('Xem nguồn ›'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Xem nguồn ›'));
     await tester.pumpAndSettle();
     expect(find.text('Nguồn số liệu'), findsOneWidget);
