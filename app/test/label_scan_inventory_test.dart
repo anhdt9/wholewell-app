@@ -442,5 +442,40 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('chưa phù hợp với chất này'), findsNothing);
     });
+
+    testWidgets('OCR nhiều chất có nút Chọn tất cả / Bỏ chọn tất cả mà không tự lưu', (tester) async {
+      final ocr = FakeOcrEngine(
+        nextGalleryResult: const OcrImagePickResult(paths: ['/fake/multi.jpg']),
+        nextOcrResult: const OcrLabelResult(lines: [
+          'Vitamin C 500 mg',
+          'Zinc Gluconate 15 mg',
+        ]),
+      );
+      final state = await makeReadyState(ocr: ocr, scanner: FakeBarcodeScanner());
+
+      await tester.pumpWidget(WholeWellApp(state: state));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Bổ sung'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Thêm sản phẩm'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Chọn ảnh từ thư viện'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Đọc thông tin từ 1 ảnh'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tiếp tục (0/2 đã xác nhận)'), findsOneWidget);
+      await tester.tap(find.text('Chọn tất cả (2)'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tiếp tục (2/2 đã xác nhận)'), findsOneWidget);
+      expect(find.text('Bỏ chọn tất cả'), findsOneWidget);
+      expect(state.diary.allProducts, isEmpty);
+
+      await tester.tap(find.text('Bỏ chọn tất cả'));
+      await tester.pumpAndSettle();
+      expect(find.text('Tiếp tục (0/2 đã xác nhận)'), findsOneWidget);
+    });
   });
 }
