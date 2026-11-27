@@ -157,7 +157,9 @@ class _TwoSegmentPainter extends CustomPainter {
         foodColor != oldDelegate.foodColor ||
         supplementColor != oldDelegate.supplementColor ||
         markerColor != oldDelegate.markerColor ||
-        overLimitBorderColor != oldDelegate.overLimitBorderColor;
+        overLimitBorderColor != oldDelegate.overLimitBorderColor ||
+        overLimitHighlightColor != oldDelegate.overLimitHighlightColor ||
+        outlineColor != oldDelegate.outlineColor;
   }
 }
 
@@ -452,6 +454,7 @@ class _TargetRangePainter extends CustomPainter {
         maxPercent != oldDelegate.maxPercent ||
         trackColor != oldDelegate.trackColor ||
         bandColor != oldDelegate.bandColor ||
+        bandTickColor != oldDelegate.bandTickColor ||
         dotColor != oldDelegate.dotColor ||
         dotHaloColor != oldDelegate.dotHaloColor;
   }
