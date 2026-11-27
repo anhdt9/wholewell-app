@@ -1,5 +1,7 @@
-/// Màn Chi tiết chất: 2 tổng (mức khuyến nghị vs giới hạn an toàn), đóng góp hôm nay & 7 ngày qua.
+/// Màn Chi tiết chất: 2 tổng (mức khuyến nghị vs giới hạn an toàn), đóng góp hôm nay & biểu đồ 7 ngày qua.
 library;
+
+import 'dart:math' as math;
 
 import 'package:health_engine/health_engine.dart';
 import 'package:material_ui/material_ui.dart';
@@ -32,7 +34,7 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
     if (def == null || daily == null || profile == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Chi tiết chất')),
-        body: const Center(child: Text('Chưa có dữ liệu cho chất này.')),
+        body: const EmptyState(message: 'Chưa có dữ liệu cho chất này.'),
       );
     }
 
@@ -42,17 +44,19 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
     if (activeStatus == null) {
       return Scaffold(
         appBar: AppBar(title: Text(def.nameVi)),
-        body: const Center(child: Text('Chưa có dữ liệu cho chất này.')),
+        body: const EmptyState(message: 'Chưa có dữ liệu cho chất này.'),
       );
     }
 
     final cl = CautionLabels(caution: state.caution);
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
+    final ww = context.wwColors;
     final u = unitLabel(def.unit);
     final target = activeStatus.target;
     final foodAndFortified = activeStatus.foodAmount + activeStatus.fortifiedAmount;
     final hasScopedUl = def.ulScope != UlScope.total || def.ulKey != null;
+    final ulExceeded = activeStatus.ul != null && activeStatus.ulAmount > activeStatus.ul!;
 
     final contribs = _buildTodayContributions(state, def);
     final group = driGroupDefFor(pack, profile);
@@ -61,154 +65,194 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(def.nameVi)),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+        padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxl),
         children: [
           if (state.caution) ...[
             const SafetyNote(message: cautionBannerMessage),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
           ],
-          Wrap(
-            spacing: 8,
-            children: [
-              ChoiceChip(
-                label: const Text('Hôm nay'),
-                selected: !_sevenDayMode,
-                materialTapTargetSize: MaterialTapTargetSize.padded,
-                onSelected: (_) => setState(() => _sevenDayMode = false),
-              ),
-              ChoiceChip(
-                label: const Text('7 ngày'),
-                selected: _sevenDayMode,
-                materialTapTargetSize: MaterialTapTargetSize.padded,
-                onSelected: (_) => setState(() => _sevenDayMode = true),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _sevenDayMode
-                        ? 'Trung bình ${period?.loggedDaysCount ?? 0} ngày có ghi: ${fmt(activeStatus.totalAmount)} $u/ngày'
-                        : 'Tổng mọi nguồn: ${fmt(activeStatus.totalAmount)} $u',
-                    style: t.titleMedium,
-                  ),
-                  if (target != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      _targetLine(activeStatus, target, u, cl),
-                      style: t.bodyMedium,
-                    ),
-                    const SizedBox(height: 10),
-                    TwoSegmentProgressBar(
-                      foodAmount: foodAndFortified,
-                      supplementAmount: activeStatus.supplementAmount,
-                      targetAmount: target.value,
-                      semanticsLabel:
-                          '${def.nameVi}, ${fmt(activeStatus.totalAmount)} trên ${fmt(target.value)} $u',
-                    ),
-                    if (target.isEstimate) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        'Chưa đủ dữ liệu để đặt mức khuyến nghị chính thức; đây là mức ước tính.',
-                        style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                      ),
-                    ],
-                  ],
-                  const SizedBox(height: 8),
-                  Text(
-                    'Thực phẩm ${fmt(foodAndFortified)} · bổ sung ${fmt(activeStatus.supplementAmount)} $u',
-                    style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                  ),
-                ],
-              ),
+          SizedBox(
+            width: double.infinity,
+            child: SegmentedButton<bool>(
+              showSelectedIcon: false,
+              segments: const [
+                ButtonSegment<bool>(value: false, label: Text('Hôm nay')),
+                ButtonSegment<bool>(value: true, label: Text('7 ngày')),
+              ],
+              selected: {_sevenDayMode},
+              onSelectionChanged: (sel) => setState(() => _sevenDayMode = sel.first),
             ),
           ),
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Tính vào giới hạn an toàn', style: t.titleSmall),
-                  const SizedBox(height: 4),
-                  if (activeStatus.ul != null) ...[
+          const SizedBox(height: AppSpacing.lg),
+          SurfaceCard(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _sevenDayMode
+                      ? 'Trung bình ${period?.loggedDaysCount ?? 0} ngày có ghi: ${fmt(activeStatus.totalAmount)} $u/ngày'
+                      : 'Tổng mọi nguồn: ${fmt(activeStatus.totalAmount)} $u',
+                  style: tabularNumberStyle(t.titleMedium),
+                ),
+                if (target != null) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    _targetLine(activeStatus, target, u, cl),
+                    style: tabularNumberStyle(t.bodyMedium),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  TwoSegmentProgressBar(
+                    foodAmount: foodAndFortified,
+                    supplementAmount: activeStatus.supplementAmount,
+                    targetAmount: target.value,
+                    overLimit: ulExceeded,
+                    semanticsLabel:
+                        '${def.nameVi}, ${fmt(activeStatus.totalAmount)} trên ${fmt(target.value)} $u',
+                  ),
+                  if (target.isEstimate) ...[
+                    const SizedBox(height: AppSpacing.sm),
                     Text(
-                      '${fmt(activeStatus.ulAmount)} / ${fmt(activeStatus.ul!)} $u'
-                      '${activeStatus.ulAmount > activeStatus.ul! ? ' · Vượt giới hạn an toàn' : ''}',
-                      style: t.titleMedium?.copyWith(
-                        color: activeStatus.ulAmount > activeStatus.ul! ? cs.error : null,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _ulScopeDescription(def),
-                      style: t.bodySmall,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'App không tính thuốc, trừ khi bạn ghi.',
+                      'Chưa đủ dữ liệu để đặt mức khuyến nghị chính thức; đây là mức ước tính.',
                       style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                     ),
-                  ] else
-                    Text(
-                      'Chưa có giới hạn an toàn được đặt cho chất này.',
-                      style: t.bodySmall,
-                    ),
+                  ],
                 ],
-              ),
+                const SizedBox(height: AppSpacing.md),
+                Wrap(
+                  spacing: AppSpacing.lg,
+                  runSpacing: AppSpacing.xs,
+                  children: [
+                    _SourceDotLabel(
+                      color: ww.foodSource,
+                      text: 'Thực phẩm ${fmt(foodAndFortified)} $u',
+                    ),
+                    _SourceDotLabel(
+                      color: ww.supplementSource,
+                      text: 'Bổ sung ${fmt(activeStatus.supplementAmount)} $u',
+                    ),
+                  ],
+                ),
+                const Divider(height: AppSpacing.xl),
+                Text('Tính vào giới hạn an toàn', style: t.titleSmall),
+                const SizedBox(height: AppSpacing.xs),
+                if (activeStatus.ul != null) ...[
+                  Wrap(
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.xs,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
+                        '${fmt(activeStatus.ulAmount)} / ${fmt(activeStatus.ul!)} $u',
+                        style: tabularNumberStyle(
+                          t.titleMedium?.copyWith(
+                            color: ulExceeded ? ww.onWarningContainer : cs.onSurface,
+                          ),
+                        ),
+                      ),
+                      if (ulExceeded)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: ww.warningContainer,
+                            borderRadius: AppRadius.pillRadius,
+                            border: Border.all(color: ww.warningBorder),
+                          ),
+                          child: Text(
+                            'Vượt giới hạn an toàn',
+                            style: t.labelSmall?.copyWith(
+                              color: ww.onWarningContainer,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(_ulScopeDescription(def), style: t.bodySmall),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    'App không tính thuốc, trừ khi bạn ghi.',
+                    style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                  ),
+                ] else
+                  Text(
+                    'Chưa có giới hạn an toàn được đặt cho chất này.',
+                    style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                  ),
+              ],
             ),
           ),
           if (def.id == 'iron') ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             const SafetyNote(
               message: 'Vitamin C hỗ trợ hấp thu sắt không heme (sắt từ nguồn thực vật).',
             ),
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           if (!_sevenDayMode) ...[
             Text('Đóng góp hôm nay', style: t.titleMedium),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             if (contribs.isEmpty)
-              Text(
-                'Chưa có mục nào đóng góp ${def.nameVi} trong ngày này.',
-                style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+              SurfaceCard(
+                child: Text(
+                  'Chưa có mục nào đóng góp ${def.nameVi} trong ngày này.',
+                  style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                ),
               )
             else
-              for (final c in contribs)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(c.title),
-                  subtitle: Text(
-                    [
-                      if (c.detail != null) c.detail!,
-                      if (hasScopedUl)
-                        c.countsTowardUl ? 'tính vào giới hạn' : 'không tính vào giới hạn',
-                    ].join(' · '),
-                  ),
-                  trailing: Text(
-                    '${fmt(c.amount)} $u',
-                    style: t.titleSmall,
-                  ),
+              SurfaceCard(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.xs,
                 ),
+                child: Column(
+                  children: [
+                    for (var i = 0; i < contribs.length; i++) ...[
+                      if (i > 0)
+                        Divider(
+                          height: 1,
+                          color: ww.outlineSubtle.withValues(alpha: 0.5),
+                        ),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(contribs[i].title),
+                        subtitle: Text(
+                          [
+                            if (contribs[i].detail != null) contribs[i].detail!,
+                            if (hasScopedUl)
+                              contribs[i].countsTowardUl
+                                  ? 'tính vào giới hạn'
+                                  : 'không tính vào giới hạn',
+                          ].join(' · '),
+                        ),
+                        trailing: Text(
+                          '${fmt(contribs[i].amount)} $u',
+                          style: tabularNumberStyle(t.titleSmall),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
           ] else ...[
             Text('7 ngày qua', style: t.titleMedium),
-            const SizedBox(height: 8),
-            _SevenDayBars(
+            const SizedBox(height: AppSpacing.sm),
+            _SevenDayChartCard(
               days: state.diary.window7Days,
               nutrientId: def.id,
               targetValue: target?.value,
+              targetLabel: cl.caution ? 'Mức tham chiếu' : 'Mức khuyến nghị',
+              ulValue: activeStatus.ul,
               unit: u,
             ),
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           Text(groupText, style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           Align(
             alignment: Alignment.centerLeft,
             child: TextButton(
@@ -322,6 +366,29 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
   }
 }
 
+class _SourceDotLabel extends StatelessWidget {
+  final Color color;
+  final String text;
+  const _SourceDotLabel({required this.color, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 6),
+        Text(text, style: tabularNumberStyle(t.bodySmall)),
+      ],
+    );
+  }
+}
+
 class _NutrientContribution {
   final String title;
   final String? detail;
@@ -336,24 +403,33 @@ class _NutrientContribution {
   });
 }
 
-class _SevenDayBars extends StatelessWidget {
+class _SevenDayChartCard extends StatelessWidget {
   final List<({DateTime day, List<IntakeItem> items})> days;
   final String nutrientId;
   final double? targetValue;
+  final String targetLabel;
+  final double? ulValue;
   final String unit;
 
-  const _SevenDayBars({
+  const _SevenDayChartCard({
     required this.days,
     required this.nutrientId,
     required this.targetValue,
+    required this.targetLabel,
+    required this.ulValue,
     required this.unit,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (days.isEmpty) return const Text('Chưa có dữ liệu trong 7 ngày qua.');
+    if (days.isEmpty) {
+      return const SurfaceCard(child: Text('Chưa có dữ liệu trong 7 ngày qua.'));
+    }
+
     final cs = Theme.of(context).colorScheme;
+    final ww = context.wwColors;
     final t = Theme.of(context).textTheme;
+
     final values = [
       for (final d in days)
         (
@@ -361,68 +437,194 @@ class _SevenDayBars extends StatelessWidget {
           amount: d.items.fold<double>(0, (s, it) => s + it.amount(nutrientId)),
         ),
     ];
-    final maxAmount = values.fold<double>(targetValue ?? 0, (m, v) => v.amount > m ? v.amount : m);
+    final maxData = values.fold<double>(0, (m, v) => v.amount > m ? v.amount : m);
+    final showUlLine = ulValue != null && ulValue! > 0 && maxData >= 0.7 * ulValue!;
+    final rawPeak = [
+      maxData,
+      if (targetValue != null && targetValue! > 0) targetValue!,
+      if (showUlLine) ulValue!,
+    ].fold<double>(0, math.max);
+    final scaleMax = rawPeak <= 0 ? 1.0 : rawPeak * 1.15;
 
-    final textScale = MediaQuery.textScalerOf(context).scale(1);
-
-    return Column(
-      children: [
-        for (final v in values)
-          Semantics(
-            label: '${v.day.day}/${v.day.month}: ${fmt(v.amount)} $unit',
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: textScale >= 1.3
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+    return SurfaceCard(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            height: 156,
+            child: CustomPaint(
+              painter: _SevenDayColumnsPainter(
+                amounts: [for (final v in values) v.amount],
+                scaleMax: scaleMax,
+                targetValue: targetValue,
+                ulValue: showUlLine ? ulValue : null,
+                pastBarColor: cs.primary.withValues(alpha: 0.40),
+                latestBarColor: cs.primary,
+                trackColor: ww.subtleSurface,
+                targetLineColor: cs.onSurfaceVariant.withValues(alpha: 0.65),
+                ulLineColor: ww.warningBorder,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              for (var i = 0; i < values.length; i++)
+                Expanded(
+                  child: Semantics(
+                    label: '${values[i].day.day}/${values[i].day.month}: ${fmt(values[i].amount)} $unit',
+                    child: Column(
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('${v.day.day}/${v.day.month}', style: t.bodySmall),
-                            Flexible(
-                              child: Text(
-                                '${fmt(v.amount)} $unit',
-                                textAlign: TextAlign.right,
-                                style: t.bodySmall,
-                              ),
+                        Text(
+                          '${values[i].day.day}/${values[i].day.month}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: tabularNumberStyle(
+                            t.labelSmall?.copyWith(
+                              fontWeight: i == values.length - 1 ? FontWeight.w600 : FontWeight.w400,
+                              color: i == values.length - 1 ? cs.onSurface : cs.onSurfaceVariant,
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        LinearProgressIndicator(
-                          value: maxAmount <= 0 ? 0 : (v.amount / maxAmount).clamp(0.0, 1.0),
-                          color: cs.primary,
-                          backgroundColor: cs.surfaceContainerHighest,
-                        ),
-                      ],
-                    )
-                  : Row(
-                      children: [
-                        SizedBox(
-                          width: 48,
-                          child: Text('${v.day.day}/${v.day.month}', style: t.bodySmall),
-                        ),
-                        Expanded(
-                          child: LinearProgressIndicator(
-                            value: maxAmount <= 0 ? 0 : (v.amount / maxAmount).clamp(0.0, 1.0),
-                            color: cs.primary,
-                            backgroundColor: cs.surfaceContainerHighest,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            '${fmt(v.amount)} $unit',
-                            textAlign: TextAlign.right,
-                            style: t.bodySmall,
                           ),
                         ),
                       ],
                     ),
-            ),
+                  ),
+                ),
+            ],
           ),
+          if ((targetValue != null && targetValue! > 0) || showUlLine) ...[
+            const SizedBox(height: AppSpacing.md),
+            Wrap(
+              spacing: AppSpacing.lg,
+              runSpacing: AppSpacing.xs,
+              children: [
+                if (targetValue != null && targetValue! > 0)
+                  _DashedLegendItem(
+                    color: cs.onSurfaceVariant.withValues(alpha: 0.7),
+                    text: '$targetLabel (${fmt(targetValue!)} $unit)',
+                  ),
+                if (showUlLine)
+                  _DashedLegendItem(
+                    color: ww.warningBorder,
+                    text: 'Giới hạn an toàn (${fmt(ulValue!)} $unit)',
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _DashedLegendItem extends StatelessWidget {
+  final Color color;
+  final String text;
+  const _DashedLegendItem({required this.color, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(width: 14, height: 2, color: color),
+        const SizedBox(width: 6),
+        Flexible(child: Text(text, style: tabularNumberStyle(t.bodySmall))),
       ],
     );
+  }
+}
+
+class _SevenDayColumnsPainter extends CustomPainter {
+  final List<double> amounts;
+  final double scaleMax;
+  final double? targetValue;
+  final double? ulValue;
+  final Color pastBarColor;
+  final Color latestBarColor;
+  final Color trackColor;
+  final Color targetLineColor;
+  final Color ulLineColor;
+
+  const _SevenDayColumnsPainter({
+    required this.amounts,
+    required this.scaleMax,
+    required this.targetValue,
+    required this.ulValue,
+    required this.pastBarColor,
+    required this.latestBarColor,
+    required this.trackColor,
+    required this.targetLineColor,
+    required this.ulLineColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (amounts.isEmpty || size.width <= 0 || size.height <= 0) return;
+
+    final baselineY = size.height;
+    final slotW = size.width / amounts.length;
+    final barW = math.min(26.0, slotW * 0.54);
+
+    for (var i = 0; i < amounts.length; i++) {
+      final centerX = slotW * i + slotW / 2;
+      final left = centerX - barW / 2;
+      final ratio = scaleMax <= 0 ? 0.0 : (amounts[i] / scaleMax).clamp(0.0, 1.0);
+      final barH = ratio > 0 ? math.max(4.0, size.height * ratio) : 2.0;
+      final top = baselineY - barH;
+      final rect = Rect.fromLTWH(left, top, barW, barH);
+      final rrect = RRect.fromRectAndCorners(
+        rect,
+        topLeft: const Radius.circular(6),
+        topRight: const Radius.circular(6),
+      );
+      final isLatest = i == amounts.length - 1;
+      final color = ratio == 0
+          ? trackColor
+          : (isLatest ? latestBarColor : pastBarColor);
+      canvas.drawRRect(rrect, Paint()..color = color);
+    }
+
+    if (targetValue != null && targetValue! > 0 && scaleMax > 0) {
+      final y = (baselineY - size.height * (targetValue! / scaleMax)).clamp(1.0, baselineY - 1.0);
+      _drawDashedLine(canvas, size.width, y, targetLineColor);
+    }
+
+    if (ulValue != null && ulValue! > 0 && scaleMax > 0) {
+      final y = (baselineY - size.height * (ulValue! / scaleMax)).clamp(1.0, baselineY - 1.0);
+      _drawDashedLine(canvas, size.width, y, ulLineColor);
+    }
+  }
+
+  void _drawDashedLine(Canvas canvas, double width, double y, Color color) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.5;
+    const dash = 5.0;
+    const gap = 4.0;
+    var x = 0.0;
+    while (x < width) {
+      final endX = math.min(width, x + dash);
+      canvas.drawLine(Offset(x, y), Offset(endX, y), paint);
+      x += dash + gap;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SevenDayColumnsPainter oldDelegate) {
+    if (amounts.length != oldDelegate.amounts.length) return true;
+    for (var i = 0; i < amounts.length; i++) {
+      if (amounts[i] != oldDelegate.amounts[i]) return true;
+    }
+    return scaleMax != oldDelegate.scaleMax ||
+        targetValue != oldDelegate.targetValue ||
+        ulValue != oldDelegate.ulValue ||
+        pastBarColor != oldDelegate.pastBarColor ||
+        latestBarColor != oldDelegate.latestBarColor ||
+        trackColor != oldDelegate.trackColor ||
+        targetLineColor != oldDelegate.targetLineColor ||
+        ulLineColor != oldDelegate.ulLineColor;
   }
 }

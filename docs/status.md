@@ -82,9 +82,13 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
     - Thiết kế UX tổng thể [design/visual-refresh.md](design/visual-refresh.md): **đã duyệt** 27/11/2026 (gồm `SnackBarBehavior.floating`).
     - Nhúng offline bộ font `BeVietnamPro` (`Regular`/`Medium`/`SemiBold`/`Bold`, 100% không gọi mạng) trong `app/assets/fonts/` và `app/pubspec.yaml`; thêm `lucide_icons_flutter` thay toàn bộ `Icons.*` trong `app/lib/`.
     - Hoàn thiện [tokens.dart](../app/lib/ui/design_system/tokens.dart) với `WholeWellColors` (`ThemeExtension` Light/Dark), `AppSpacing` (`xs..xxl`), `AppRadius` (`control/card/sheet/pill` dạng `const`), `tabularNumberStyle`, và `ThemeData` Light/Dark đồng bộ (bao gồm `SnackBarBehavior.floating`).
-16. **Đại tu giao diện — PR 2: Shared Widgets (`ui/refresh-p2-shared-widgets`):**
+16. **Đại tu giao diện — PR 2: Shared Widgets (PR #41 đã gộp vào `main`):**
     - Tách và vẽ bằng `CustomPainter` trong [data_viz.dart](../app/lib/ui/common/data_viz.dart): `TwoSegmentProgressBar` (khoảng hở `2 px`, vạch `100%` khi vượt mốc, viền `overLimit`), `EnergyArcGauge` (vòng cung 240° `TweenAnimationBuilder` 250 ms, tự ẩn khi bật `Ẩn số calo`), `TargetRangeBar` (khoảng AMDR + chấm vị trí).
     - Nâng cấp `EmptyState`, `ErrorState`, thêm `showAppModalSheet` và `LoadingSkeletonBox` trong [common_widgets.dart](../app/lib/ui/common/common_widgets.dart), kèm bộ kiểm thử [shared_widgets_test.dart](../app/test/shared_widgets_test.dart).
+17. **Đại tu giao diện — PR 3: 2 màn mặt tiền (`ui/refresh-p3-front-screens`):**
+    - [home_screen.dart](../app/lib/ui/home_screen.dart): chuyển nút chọn ngày sang Pill DaySwitcher (`‹ Hôm nay, dd/MM ›`) có nút chuyển ngày trước/sau và chạm giữa mở lịch.
+    - [today_screen.dart](../app/lib/ui/today_screen.dart): cảnh báo UL hổ phách dịu (`WholeWellColors.warningContainer`), thẻ Năng lượng & Đa lượng hợp nhất dùng `EnergyArcGauge` + `TargetRangeBar` (tự chuyển 3 cột gọn khi bật `Ẩn số calo`), thẻ Nước nút pill, bảng vi chất gom trong `SurfaceCard` kèm `overLimit`.
+    - [nutrient_detail_screen.dart](../app/lib/ui/nutrient_detail_screen.dart): chuyển tab `SegmentedButton`, thẻ tóm tắt 2 tổng hợp nhất, danh sách đóng góp tách `Divider` mảnh, và biểu đồ cột 7 ngày qua bằng `CustomPainter` (bo trên, ngày cũ mờ 40%, đường đứt Mức khuyến nghị và Giới hạn an toàn khi đạt ≥ 70% UL), kèm kiểm thử [front_screens_refresh_test.dart](../app/test/front_screens_refresh_test.dart).
 
 ## Để sau MVP (giai đoạn 2)
 
