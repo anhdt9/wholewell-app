@@ -3,15 +3,20 @@ name: CI
 on:
   pull_request:
     branches: [main]
+  workflow_call:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   data-and-engine:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -33,6 +38,7 @@ jobs:
 
   food-library:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
@@ -45,6 +51,7 @@ jobs:
 
   dsld-library:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
@@ -57,6 +64,7 @@ jobs:
 
   journal-db:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
@@ -69,6 +77,7 @@ jobs:
 
   app:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -105,6 +114,25 @@ jobs:
           name: wholewell-debug-apk
           path: app/build/app/outputs/flutter-apk/app-debug.apk
           retention-days: 14
+          if-no-files-found: error
       - name: Test JVM phần Kotlin (kho khóa)
         working-directory: app/android
         run: ./gradlew :app:testDebugUnitTest --no-daemon
+
+  ci-ok:
+    if: always()
+    needs:
+      - data-and-engine
+      - food-library
+      - dsld-library
+      - journal-db
+      - app
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Tổng hợp kết quả CI
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          echo "$NEEDS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          echo "$NEEDS" | jq -e 'all(.[]; .result == "success")'
