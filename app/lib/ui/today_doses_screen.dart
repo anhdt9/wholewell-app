@@ -312,158 +312,189 @@ class _ScheduleOccurrenceTileState extends State<_ScheduleOccurrenceTile> {
         );
 
       case ScheduleWindowPhase.overdue:
-        return Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('$name · $doseLabel', style: tabularNumberStyle(t.bodyLarge)),
-                    Text(
-                      'Chưa đánh dấu',
-                      style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                    ),
-                  ],
-                ),
-              ),
-              OutlinedButton(
-                onPressed: _busy
-                    ? null
-                    : () => _runGuarded(() async {
-                          final picked = await showTimePicker(
-                            context: context,
-                            initialTime: TimeOfDay(hour: now.hour, minute: now.minute),
-                          );
-                          if (picked == null || !context.mounted) return;
-                          final at = DateTime(
-                            now.year,
-                            now.month,
-                            now.day,
-                            picked.hour,
-                            picked.minute,
-                          );
-                          await markScheduledDoseTaken(
-                            context,
-                            schedule: schedule,
-                            scheduleDay: scheduleDay,
-                            at: at,
-                          );
-                        }),
-                child: const Text('Đánh dấu'),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              TextButton(
-                onPressed: _busy
-                    ? null
-                    : () => _runGuarded(() async {
-                          await diary.skipOccurrence(OccurrenceRef(schedule.id, scheduleDay));
-                          if (context.mounted) {
-                            await AppScope.of(context).cancelWindowIfHandled(schedule.timeOfDay);
-                          }
-                        }),
-                child: const Text('Bỏ qua'),
-              ),
-            ],
+        return _buildActionTile(
+          context: context,
+          title: '$name · $doseLabel',
+          subtitle: 'Chưa đánh dấu',
+          textTheme: t,
+          cs: cs,
+          primaryAction: OutlinedButton(
+            onPressed: _busy
+                ? null
+                : () => _runGuarded(() async {
+                      final picked = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay(hour: now.hour, minute: now.minute),
+                      );
+                      if (picked == null || !context.mounted) return;
+                      final at = DateTime(
+                        now.year,
+                        now.month,
+                        now.day,
+                        picked.hour,
+                        picked.minute,
+                      );
+                      await markScheduledDoseTaken(
+                        context,
+                        schedule: schedule,
+                        scheduleDay: scheduleDay,
+                        at: at,
+                      );
+                    }),
+            child: const Text('Đánh dấu'),
+          ),
+          skipAction: TextButton(
+            onPressed: _busy
+                ? null
+                : () => _runGuarded(() async {
+                      await diary.skipOccurrence(OccurrenceRef(schedule.id, scheduleDay));
+                      if (context.mounted) {
+                        await AppScope.of(context).cancelWindowIfHandled(schedule.timeOfDay);
+                      }
+                    }),
+            child: const Text('Bỏ qua'),
           ),
         );
 
       case ScheduleWindowPhase.inWindow:
-        return Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text('$name · $doseLabel', style: tabularNumberStyle(t.bodyLarge)),
-              ),
-              FilledButton.tonal(
-                onPressed: _busy
-                    ? null
-                    : () {
-                        unawaited(HapticFeedback.selectionClick());
-                        unawaited(
-                          _runGuarded(
-                            () => markScheduledDoseTaken(
-                              context,
-                              schedule: schedule,
-                              scheduleDay: scheduleDay,
-                              at: now,
-                            ),
-                          ),
-                        );
-                      },
-                child: const Text('Đã uống'),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              TextButton(
-                onPressed: _busy
-                    ? null
-                    : () => _runGuarded(() async {
-                          await diary.skipOccurrence(OccurrenceRef(schedule.id, scheduleDay));
-                          if (context.mounted) {
-                            await AppScope.of(context).cancelWindowIfHandled(schedule.timeOfDay);
-                          }
-                        }),
-                child: const Text('Bỏ qua'),
-              ),
-            ],
+        return _buildActionTile(
+          context: context,
+          title: '$name · $doseLabel',
+          textTheme: t,
+          cs: cs,
+          primaryAction: FilledButton.tonal(
+            onPressed: _busy
+                ? null
+                : () {
+                    unawaited(HapticFeedback.selectionClick());
+                    unawaited(
+                      _runGuarded(
+                        () => markScheduledDoseTaken(
+                          context,
+                          schedule: schedule,
+                          scheduleDay: scheduleDay,
+                          at: now,
+                        ),
+                      ),
+                    );
+                  },
+            child: const Text('Đã uống'),
+          ),
+          skipAction: TextButton(
+            onPressed: _busy
+                ? null
+                : () => _runGuarded(() async {
+                      await diary.skipOccurrence(OccurrenceRef(schedule.id, scheduleDay));
+                      if (context.mounted) {
+                        await AppScope.of(context).cancelWindowIfHandled(schedule.timeOfDay);
+                      }
+                    }),
+            child: const Text('Bỏ qua'),
           ),
         );
 
       case ScheduleWindowPhase.early:
-        return Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text('$name · $doseLabel', style: tabularNumberStyle(t.bodyLarge)),
-              ),
-              OutlinedButton(
-                onPressed: _busy
-                    ? null
-                    : () => _runGuarded(() async {
-                          final asExtra = await showDialog<bool>(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              title: Text(
-                                'Ghi cho lần ${formatMinutesHhMm(schedule.timeOfDay)} theo lịch hay lần uống thêm?',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx, true),
-                                  child: const Text('Lần uống thêm'),
-                                ),
-                                FilledButton(
-                                  onPressed: () => Navigator.pop(ctx, false),
-                                  child: Text('Lần ${formatMinutesHhMm(schedule.timeOfDay)} theo lịch'),
-                                ),
-                              ],
+        return _buildActionTile(
+          context: context,
+          title: '$name · $doseLabel',
+          textTheme: t,
+          cs: cs,
+          primaryAction: OutlinedButton(
+            onPressed: _busy
+                ? null
+                : () => _runGuarded(() async {
+                      final asExtra = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: Text(
+                            'Ghi cho lần ${formatMinutesHhMm(schedule.timeOfDay)} theo lịch hay lần uống thêm?',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              child: const Text('Lần uống thêm'),
                             ),
-                          );
-                          if (asExtra == null || !context.mounted) return;
-                          await markScheduledDoseTaken(
-                            context,
-                            schedule: schedule,
-                            scheduleDay: scheduleDay,
-                            at: now,
-                            asExtra: asExtra,
-                          );
-                        }),
-                child: const Text('Uống sớm?'),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              TextButton(
-                onPressed: _busy
-                    ? null
-                    : () => _runGuarded(
-                          () => diary.skipOccurrence(OccurrenceRef(schedule.id, scheduleDay)),
+                            FilledButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: Text('Lần ${formatMinutesHhMm(schedule.timeOfDay)} theo lịch'),
+                            ),
+                          ],
                         ),
-                child: const Text('Bỏ qua'),
-              ),
-            ],
+                      );
+                      if (asExtra == null || !context.mounted) return;
+                      await markScheduledDoseTaken(
+                        context,
+                        schedule: schedule,
+                        scheduleDay: scheduleDay,
+                        at: now,
+                        asExtra: asExtra,
+                      );
+                    }),
+            child: const Text('Uống sớm?'),
+          ),
+          skipAction: TextButton(
+            onPressed: _busy
+                ? null
+                : () => _runGuarded(
+                      () => diary.skipOccurrence(OccurrenceRef(schedule.id, scheduleDay)),
+                    ),
+            child: const Text('Bỏ qua'),
           ),
         );
     }
+  }
+
+  Widget _buildActionTile({
+    required BuildContext context,
+    required String title,
+    String? subtitle,
+    required TextTheme textTheme,
+    required ColorScheme cs,
+    required Widget primaryAction,
+    required Widget skipAction,
+  }) {
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    final titleBlock = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: tabularNumberStyle(textTheme.bodyLarge)),
+        if (subtitle != null)
+          Text(
+            subtitle,
+            style: textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+          ),
+      ],
+    );
+
+    if (textScale >= 1.3) {
+      return Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            titleBlock,
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: AppSpacing.xs,
+              runSpacing: AppSpacing.xs,
+              children: [primaryAction, skipAction],
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Row(
+        children: [
+          Expanded(child: titleBlock),
+          const SizedBox(width: AppSpacing.sm),
+          primaryAction,
+          const SizedBox(width: AppSpacing.xs),
+          skipAction,
+        ],
+      ),
+    );
   }
 }

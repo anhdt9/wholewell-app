@@ -263,4 +263,56 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.bySemanticsLabel('Bước 1 trên 3'), findsOneWidget);
   });
+
+  testWidgets('TodayDosesScreen ở màn 360dp và cỡ chữ 200% xếp dọc nút trong overdue/inWindow/early không tràn',
+      (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final state = await _makeReadyState(pack);
+    addTearDown(state.dispose);
+
+    final pid = await state.diary.createProductWithIngredientsAndBox(
+      name: 'Phức hợp Vitamin B Tổng Hợp Cao Cấp',
+      countUnit: CountUnit.tablet,
+      unitsPerServing: 1,
+      ingredients: const [],
+      initialBoxRemaining: 30,
+    );
+    final today = dayKey(state.day);
+    // 06:00 overdue, 12:00 inWindow, 20:00 early khi now = 12:15
+    await state.diary.addSchedule(pid!, 360, 1, validFrom: today);
+    await state.diary.addSchedule(pid, 720, 1, validFrom: today);
+    await state.diary.addSchedule(pid, 1200, 1, validFrom: today);
+    final now = DateTime(state.day.year, state.day.month, state.day.day, 12, 15);
+
+    await tester.pumpWidget(
+      MediaQuery(
+        data: const MediaQueryData(
+          size: Size(360, 800),
+          textScaler: TextScaler.linear(2.0),
+        ),
+        child: _wrapWithAppTheme(state, TodayDosesScreen(nowOverride: now)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Đánh dấu'), findsOneWidget);
+    expect(find.text('Đã uống'), findsOneWidget);
+
+    final firstTitleY = tester.getTopLeft(find.textContaining('Phức hợp Vitamin B').first).dy;
+    final markBtnY = tester.getTopLeft(find.text('Đánh dấu')).dy;
+    expect(markBtnY, greaterThan(firstTitleY));
+
+    await tester.scrollUntilVisible(find.text('Uống sớm?'), 200);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.text('Uống sớm?'), findsOneWidget);
+    expect(find.text('Bỏ qua'), findsWidgets);
+  });
 }
