@@ -9,6 +9,7 @@ import '../design_system/tokens.dart';
 import '../labels.dart';
 
 export '../design_system/tokens.dart';
+export 'data_viz.dart';
 
 /// Khung thẻ viền chuẩn (dùng chung thay vì copy-paste `BoxDecoration` bo góc 12).
 class SurfaceCard extends StatelessWidget {
@@ -174,7 +175,7 @@ class CalorieText extends StatelessWidget {
   Widget build(BuildContext context) {
     final hide = hideOverride ?? AppScope.maybeOf(context)?.hideCalories ?? false;
     if (hide || kcal == null) return const SizedBox.shrink();
-    return Text('$prefix${kcal!.round()}$suffix', style: style);
+    return Text('$prefix${kcal!.round()}$suffix', style: tabularNumberStyle(style));
   }
 }
 
@@ -381,23 +382,48 @@ class EntryTile extends StatelessWidget {
 }
 
 class EmptyState extends StatelessWidget {
+  final IconData icon;
+  final String? title;
   final String message;
   final String? actionLabel;
   final VoidCallback? onAction;
 
-  const EmptyState({super.key, required this.message, this.actionLabel, this.onAction});
+  const EmptyState({
+    super.key,
+    this.icon = LucideIcons.inbox,
+    this.title,
+    required this.message,
+    this.actionLabel,
+    this.onAction,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final t = Theme.of(context).textTheme;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(message, textAlign: TextAlign.center),
+            Icon(
+              icon,
+              size: 44,
+              color: cs.onSurfaceVariant.withValues(alpha: 0.72),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            if (title != null) ...[
+              Text(title!, style: t.titleMedium, textAlign: TextAlign.center),
+              const SizedBox(height: AppSpacing.xs),
+            ],
+            Text(
+              message,
+              style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+              textAlign: TextAlign.center,
+            ),
             if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.lg),
               FilledButton(onPressed: onAction, child: Text(actionLabel!)),
             ],
           ],
@@ -408,31 +434,139 @@ class EmptyState extends StatelessWidget {
 }
 
 class ErrorState extends StatelessWidget {
+  final String? title;
   final String message;
   final String? actionLabel;
   final VoidCallback? onAction;
 
-  const ErrorState({super.key, required this.message, this.actionLabel, this.onAction});
+  const ErrorState({
+    super.key,
+    this.title,
+    required this.message,
+    this.actionLabel,
+    this.onAction,
+  });
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final t = Theme.of(context).textTheme;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(LucideIcons.triangleAlert, size: 40, color: cs.error),
-            const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center),
-            if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: 16),
-              FilledButton(onPressed: onAction, child: Text(actionLabel!)),
+            Icon(LucideIcons.triangleAlert, size: 44, color: cs.error),
+            const SizedBox(height: AppSpacing.md),
+            if (title != null) ...[
+              Text(title!, style: t.titleMedium, textAlign: TextAlign.center),
+              const SizedBox(height: AppSpacing.xs),
+            ],
+            Text(
+              message,
+              style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+              textAlign: TextAlign.center,
+            ),
+            if (onAction != null) ...[
+              const SizedBox(height: AppSpacing.lg),
+              FilledButton(onPressed: onAction, child: Text(actionLabel ?? 'Thử lại')),
             ],
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Mở Bottom Sheet chuẩn với `SafeArea`, bo trên 24 px, drag handle và tự đệm bàn phím.
+Future<T?> showAppModalSheet<T>({
+  required BuildContext context,
+  required WidgetBuilder builder,
+  bool isScrollControlled = true,
+}) {
+  return showModalBottomSheet<T>(
+    context: context,
+    isScrollControlled: isScrollControlled,
+    useSafeArea: true,
+    showDragHandle: true,
+    shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheetTopRadius),
+    builder: (ctx) => Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
+      child: SafeArea(
+        top: false,
+        child: builder(ctx),
+      ),
+    ),
+  );
+}
+
+/// Khung xám nhấp nháy nhẹ dùng khi chờ tải danh sách chậm (DSLD / Google Drive).
+class LoadingSkeletonBox extends StatefulWidget {
+  final double? width;
+  final double height;
+  final BorderRadiusGeometry borderRadius;
+
+  const LoadingSkeletonBox({
+    super.key,
+    this.width,
+    required this.height,
+    this.borderRadius = AppRadius.controlRadius,
+  });
+
+  @override
+  State<LoadingSkeletonBox> createState() => _LoadingSkeletonBoxState();
+}
+
+class _LoadingSkeletonBoxState extends State<LoadingSkeletonBox>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  bool _animating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 280),
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final disableAnimations = MediaQuery.disableAnimationsOf(context);
+    if (disableAnimations && _animating) {
+      _controller.stop();
+      _animating = false;
+    } else if (!disableAnimations && !_animating) {
+      _animating = true;
+      _controller.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ww = context.wwColors;
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        final color = Color.lerp(ww.subtleSurface, ww.outlineSubtle, _controller.value)!;
+        return Container(
+          width: widget.width ?? double.infinity,
+          height: widget.height,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: widget.borderRadius,
+          ),
+        );
+      },
     );
   }
 }
@@ -614,55 +748,3 @@ String fmtShortDay(DateTime d, {DateTime? now}) {
 }
 
 String fmtUnitShort(String u) => unitLabel(u);
-
-/// Thanh tiến độ hai đoạn (thực phẩm vs bổ sung) theo `mvp-overview.md` (`LabeledProgress`).
-class TwoSegmentProgressBar extends StatelessWidget {
-  final double foodAmount;
-  final double supplementAmount;
-  final double targetAmount;
-  final String? semanticsLabel;
-
-  const TwoSegmentProgressBar({
-    super.key,
-    required this.foodAmount,
-    required this.supplementAmount,
-    required this.targetAmount,
-    this.semanticsLabel,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final total = foodAmount + supplementAmount;
-    final denom = targetAmount > 0 ? (total > targetAmount ? total : targetAmount) : total;
-    final foodRatio = denom <= 0 ? 0.0 : (foodAmount / denom).clamp(0.0, 1.0);
-    final suppRatio = denom <= 0 ? 0.0 : (supplementAmount / denom).clamp(0.0, 1.0 - foodRatio);
-    final fillRatio = targetAmount <= 0
-        ? (total > 0 ? 1.0 : 0.0)
-        : (total / targetAmount).clamp(0.0, 1.0);
-
-    final bar = ClipRRect(
-      borderRadius: BorderRadius.circular(4),
-      child: Container(
-        height: 6,
-        color: cs.surfaceContainerHighest,
-        child: LayoutBuilder(builder: (context, constraints) {
-          final w = constraints.maxWidth;
-          final filledW = w * fillRatio;
-          final sumRatio = foodRatio + suppRatio;
-          final foodW = sumRatio <= 0 ? 0.0 : filledW * (foodRatio / sumRatio);
-          final suppW = (filledW - foodW).clamp(0.0, filledW);
-          return Row(
-            children: [
-              if (foodW > 0) Container(width: foodW, height: 6, color: cs.primary),
-              if (suppW > 0) Container(width: suppW, height: 6, color: cs.tertiary),
-            ],
-          );
-        }),
-      ),
-    );
-
-    if (semanticsLabel == null) return bar;
-    return Semantics(label: semanticsLabel, child: bar);
-  }
-}
