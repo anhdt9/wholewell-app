@@ -1,6 +1,8 @@
 /// Màn Thông tin sản phẩm, Chi tiết sản phẩm và Quản lý hộp (kho, hạn dùng).
 library;
 
+import 'dart:async';
+
 import 'package:dsld_library/dsld_library.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
@@ -238,7 +240,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _load();
+    unawaited(_load());
   }
 
   Future<void> _load() async {
@@ -485,7 +487,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   const SizedBox(height: 8),
                 ],
                 OutlinedButton(
-                  onPressed: () => openSchedule(),
+                  onPressed: openSchedule,
                   child: Text(prodSchedules.isEmpty ? 'Đặt lịch' : 'Thêm lịch'),
                 ),
               ],
@@ -539,7 +541,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _load();
+    unawaited(_load());
   }
 
   Future<void> _load() async {
@@ -684,7 +686,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                   ],
                 ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _editBox(),
+        onPressed: _editBox,
         icon: const Icon(Icons.add),
         label: const Text('Thêm hộp'),
       ),

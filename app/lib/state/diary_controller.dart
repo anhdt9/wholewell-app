@@ -253,70 +253,92 @@ class DiaryController extends ChangeNotifier {
     final realTodayKey = dayKey(now);
     final realYesterdayKey = dayKey(now.subtract(const Duration(days: 1)));
     try {
-      final results = await Future.wait([
-        repo.loadProfile(),
-        repo.loadHideCalories(),
-        repo.loadConsentProfile(),
-        repo.lastWaterMl(),
-        repo.loadAgeBumpedNotice(),
-        _loadDayAndWindow(repo, day),
-        repo.loadDayTimesSettings(),
-        repo.latestNotificationConsent(),
-        repo.schedulesOn(toDay),
-        repo.occurrencesOn(toDay),
-        repo.schedulesOn(realTodayKey),
-        repo.schedulesOn(realYesterdayKey),
-        repo.occurrencesOn(realTodayKey),
-        repo.occurrencesOn(realYesterdayKey),
-        repo.dosesOn(realTodayKey),
-        repo.listProducts(),
-        repo.getUiState('dismissed_schedule_notice_sig'),
-        repo.getUiState('hidden_tip_day'),
-        repo.getUiState('last_file_backup_at'),
-        repo.latestHealthConsent(),
-        repo.getUiState('last_drive_backup_at'),
-        repo.latestDriveConsent(),
+      final profileF = repo.loadProfile();
+      final hideCalF = repo.loadHideCalories();
+      final consentProfileF = repo.loadConsentProfile();
+      final lastWaterMlF = repo.lastWaterMl();
+      final ageBumpedF = repo.loadAgeBumpedNotice();
+      final dayDataF = _loadDayAndWindow(repo, day);
+      final dayTimesF = repo.loadDayTimesSettings();
+      final notifConsentF = repo.latestNotificationConsent();
+      final schedsF = repo.schedulesOn(toDay);
+      final occsF = repo.occurrencesOn(toDay);
+      final actualTodaySchedsF = repo.schedulesOn(realTodayKey);
+      final actualYestSchedsF = repo.schedulesOn(realYesterdayKey);
+      final actualTodayOccsF = repo.occurrencesOn(realTodayKey);
+      final actualYestOccsF = repo.occurrencesOn(realYesterdayKey);
+      final actualTodayDosesF = repo.dosesOn(realTodayKey);
+      final productsF = repo.listProducts();
+      final dismissedSigF = repo.getUiState('dismissed_schedule_notice_sig');
+      final hiddenTipDayF = repo.getUiState('hidden_tip_day');
+      final lastBackupRawF = repo.getUiState('last_file_backup_at');
+      final healthConsentF = repo.latestHealthConsent();
+      final lastDriveRawF = repo.getUiState('last_drive_backup_at');
+      final driveConsentF = repo.latestDriveConsent();
+
+      await Future.wait<void>([
+        profileF,
+        hideCalF,
+        consentProfileF,
+        lastWaterMlF,
+        ageBumpedF,
+        dayDataF,
+        dayTimesF,
+        notifConsentF,
+        schedsF,
+        occsF,
+        actualTodaySchedsF,
+        actualYestSchedsF,
+        actualTodayOccsF,
+        actualYestOccsF,
+        actualTodayDosesF,
+        productsF,
+        dismissedSigF,
+        hiddenTipDayF,
+        lastBackupRawF,
+        healthConsentF,
+        lastDriveRawF,
+        driveConsentF,
       ]);
       if (gen != _loadGen) return;
-      final products = results[15] as List<ProductSummary>;
+      final products = await productsF;
       final details = await Future.wait([
         for (final p in products) repo.productDetail(p.product.id),
       ]);
       if (gen != _loadGen) return;
-      _profile = results[0] as Profile?;
-      _hideCalories = (results[1] as bool?) ?? false;
-      final consentProfile = results[2] as ConsentProfileState?;
-      _caution = consentProfile?.caution ?? false;
-      _lastWaterMl = (results[3] as double?) ?? 250.0;
-      _ageBumpedNotice = results[4] as int?;
-      _data = results[5] as DayJournalData;
-      _dayTimesSettings = results[6] as DayTimesSettings;
-      _notificationsEnabled = results[7] != null;
-      _todaySchedules = results[8] as List<Schedule>;
-      _todayOccurrences = results[9] as List<Occurrence>;
-      _actualTodaySchedules = results[10] as List<Schedule>;
-      _actualYesterdaySchedules = results[11] as List<Schedule>;
-      _actualTodayOccurrences = results[12] as List<Occurrence>;
-      _actualYesterdayOccurrences = results[13] as List<Occurrence>;
-      _actualTodayDoses = results[14] as List<DoseEntry>;
+      _profile = await profileF;
+      _hideCalories = (await hideCalF) ?? false;
+      _caution = (await consentProfileF)?.caution ?? false;
+      _lastWaterMl = (await lastWaterMlF) ?? 250.0;
+      _ageBumpedNotice = await ageBumpedF;
+      _data = await dayDataF;
+      _dayTimesSettings = await dayTimesF;
+      _notificationsEnabled = (await notifConsentF) != null;
+      _todaySchedules = await schedsF;
+      _todayOccurrences = await occsF;
+      _actualTodaySchedules = await actualTodaySchedsF;
+      _actualYesterdaySchedules = await actualYestSchedsF;
+      _actualTodayOccurrences = await actualTodayOccsF;
+      _actualYesterdayOccurrences = await actualYestOccsF;
+      _actualTodayDoses = await actualTodayDosesF;
       _allProducts = products;
       _ingredientsByProduct = {
         for (final d in details) d.product.id: d.ingredients,
       };
-      _dismissedScheduleNoticeSig = results[16] as String?;
-      _hiddenTipDay = results[17] as String?;
-      final lastBackupRaw = results[18] as String?;
+      _dismissedScheduleNoticeSig = await dismissedSigF;
+      _hiddenTipDay = await hiddenTipDayF;
+      final lastBackupRaw = await lastBackupRawF;
       final lastBackupMs = lastBackupRaw == null ? null : int.tryParse(lastBackupRaw);
       _lastFileBackupAt = lastBackupMs == null
           ? null
           : DateTime.fromMillisecondsSinceEpoch(lastBackupMs, isUtc: true).toLocal();
-      _healthConsent = results[19] as HealthConsentStatus?;
-      final lastDriveRaw = results[20] as String?;
+      _healthConsent = await healthConsentF;
+      final lastDriveRaw = await lastDriveRawF;
       final lastDriveMs = lastDriveRaw == null ? null : int.tryParse(lastDriveRaw);
       _lastDriveBackupAt = lastDriveMs == null
           ? null
           : DateTime.fromMillisecondsSinceEpoch(lastDriveMs, isUtc: true).toLocal();
-      _driveConsent = results[21] as HealthConsentStatus?;
+      _driveConsent = await driveConsentF;
       _readFailed = false;
     } on JournalStorageException {
       if (gen == _loadGen) _readFailed = true;

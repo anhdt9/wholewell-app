@@ -39,36 +39,49 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
   }
 
   Future<void> _enableFirstTime() async {
+    if (_busy) return;
     setState(() => _busy = true);
-    final state = AppScope.of(context);
-    final granted = await state.enableNotifications(consentVersion: 'notif-1');
-    await _refreshPermStatus();
+    var granted = false;
+    try {
+      final state = AppScope.of(context);
+      granted = await state.enableNotifications(consentVersion: 'notif-1');
+      await _refreshPermStatus();
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
     if (!mounted) return;
-    setState(() => _busy = false);
     if (widget.firstSetupFlow && granted) {
       Navigator.of(context).pop(true);
     }
   }
 
   Future<void> _toggle(bool v) async {
+    if (_busy) return;
     setState(() => _busy = true);
-    final state = AppScope.of(context);
-    if (v) {
-      await state.enableNotifications(consentVersion: 'notif-1');
-    } else {
-      await state.disableNotifications();
+    try {
+      final state = AppScope.of(context);
+      if (v) {
+        await state.enableNotifications(consentVersion: 'notif-1');
+      } else {
+        await state.disableNotifications();
+      }
+      await _refreshPermStatus();
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
-    await _refreshPermStatus();
-    if (mounted) setState(() => _busy = false);
   }
 
   Future<void> _toggleShowDetails(bool v) async {
+    if (_busy) return;
     setState(() => _busy = true);
-    final state = AppScope.of(context);
-    final next = state.diary.dayTimesSettings.copyWith(reminderShowDetails: v);
-    await state.diary.saveDayTimesSettings(next);
-    await state.syncNotifications();
-    if (mounted) setState(() => _busy = false);
+    try {
+      final state = AppScope.of(context);
+      final next = state.diary.dayTimesSettings.copyWith(reminderShowDetails: v);
+      await state.diary.saveDayTimesSettings(next);
+      await state.syncNotifications();
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   @override

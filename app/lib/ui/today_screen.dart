@@ -72,7 +72,7 @@ class TodayScreen extends StatelessWidget {
                 await nav.push(MaterialPageRoute<void>(builder: (_) => const ProfileScreen()));
               }
             },
-            onDismiss: () => state.diary.dismissAgeBumpedNotice(),
+            onDismiss: state.diary.dismissAgeBumpedNotice,
           ),
           const SizedBox(height: 12),
         ],
@@ -132,7 +132,7 @@ class TodayScreen extends StatelessWidget {
             onViewSource: () => Navigator.of(context).push(
               MaterialPageRoute<void>(builder: (_) => SourcesScreen(highlightRuleId: tipRule.id)),
             ),
-            onHide: () => diary.hideTipCardForToday(),
+            onHide: diary.hideTipCardForToday,
           ),
           const SizedBox(height: 16),
         ],
@@ -379,7 +379,8 @@ class _EnergyCard extends StatelessWidget {
 }
 
 class _Stat extends StatelessWidget {
-  final String label, value;
+  final String label;
+  final String value;
   const _Stat({required this.label, required this.value});
   @override
   Widget build(BuildContext context) => Column(

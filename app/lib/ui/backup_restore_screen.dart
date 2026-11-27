@@ -6,6 +6,14 @@ import '../platform/backup_provider.dart';
 import '../state/app_scope.dart';
 import 'drive_backup_screens.dart';
 
+/// Lỗi nghiệp vụ hiển thị trực tiếp thông điệp tiếng Việt trong [BackupSecretSection].
+class BackupSubmitException implements Exception {
+  final String message;
+  const BackupSubmitException(this.message);
+  @override
+  String toString() => message;
+}
+
 String fmtBackupDateTime(DateTime t) {
   final l = t.toLocal();
   String p(int v) => v.toString().padLeft(2, '0');
@@ -289,11 +297,11 @@ class _BackupSecretSectionState extends State<BackupSecretSection> {
     });
     try {
       await widget.onSubmit(_activeSecret);
-    } on String catch (msg) {
+    } on BackupSubmitException catch (e) {
       if (mounted) {
         setState(() {
           _busy = false;
-          _errorText = msg;
+          _errorText = e.message;
         });
       }
       return;
@@ -470,7 +478,7 @@ class CreateBackupScreen extends StatelessWidget {
                 iterations: iterations,
               );
               if (savedName == null) {
-                throw 'Chưa lưu được tệp sao lưu.';
+                throw const BackupSubmitException('Chưa lưu được tệp sao lưu.');
               }
               if (!context.mounted) return;
               ScaffoldMessenger.of(context)

@@ -154,26 +154,29 @@ class _FoodPortionScreenState extends State<FoodPortionScreen> {
     final diary = state.diary;
 
     late final FoodLogFeedback fb;
-    if (_isCustom) {
-      fb = await diary.recordCustomFood(
-        widget.customFood!,
-        usedQty: _qty,
-        meal: widget.initialMeal,
-        at: widget.initialAt,
-      );
-    } else {
-      fb = await diary.recordLibraryFood(
-        food: widget.libraryFood!,
-        portionUnit: _unitLabel,
-        portionQty: _qty,
-        grams: _grams,
-        meal: widget.initialMeal,
-        at: widget.initialAt,
-      );
+    try {
+      if (_isCustom) {
+        fb = await diary.recordCustomFood(
+          widget.customFood!,
+          usedQty: _qty,
+          meal: widget.initialMeal,
+          at: widget.initialAt,
+        );
+      } else {
+        fb = await diary.recordLibraryFood(
+          food: widget.libraryFood!,
+          portionUnit: _unitLabel,
+          portionQty: _qty,
+          grams: _grams,
+          meal: widget.initialMeal,
+          at: widget.initialAt,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
 
     if (!mounted) return;
-    setState(() => _saving = false);
 
     if (fb.failed) {
       await presentFoodFeedback(context, feedback: fb, pack: state.pack);

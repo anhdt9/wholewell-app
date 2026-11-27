@@ -392,8 +392,9 @@ void main() {
       expect(files.savedFiles.single.suggestedName, endsWith('.json'));
       final exported = jsonDecode(utf8.decode(files.savedFiles.single.bytes)) as Map<String, Object?>;
       expect(exported['app'], 'WholeWell');
-      final tables = exported['tables'] as Map<String, Object?>;
-      expect((tables['water_entries'] as List).length, 1);
+      final tables = exported['tables'] as Map<String, Object?>?;
+      expect(tables, isNotNull);
+      expect((tables!['water_entries'] as List?)?.length, 1);
 
       // Rút đồng ý -> xác nhận -> xóa CSDL, hủy thông báo, về màn Chào mừng.
       await tester.tap(find.widgetWithText(OutlinedButton, 'Rút đồng ý'));
@@ -802,7 +803,7 @@ void main() {
       expect(googleAuth.signInSilentlyCalls, 0);
 
       // Khi cần reauth (pending delete + signInSilently trả null), onAppResume thứ 2 không lặp lại signInSilently.
-      await tester.runAsync(() => pendingStore.markPendingDelete());
+      await tester.runAsync(pendingStore.markPendingDelete);
       googleAuth.silentRevoked = true;
       await tester.runAsync(state.onAppResume);
       expect(googleAuth.signInSilentlyCalls, 1);

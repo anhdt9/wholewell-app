@@ -243,9 +243,13 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
     }
 
     setState(() => _saving = true);
-    final fb = await state.diary.recordLabelFood(draft, saveForReuse: _saveForReuse);
+    final FoodLogFeedback fb;
+    try {
+      fb = await state.diary.recordLabelFood(draft, saveForReuse: _saveForReuse);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
     if (!mounted) return;
-    setState(() => _saving = false);
 
     if (fb.failed) {
       await presentFoodFeedback(context, feedback: fb, pack: pack);

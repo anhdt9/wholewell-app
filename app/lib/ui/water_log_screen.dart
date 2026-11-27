@@ -68,6 +68,7 @@ class _WaterLogScreenState extends State<WaterLogScreen> {
   }
 
   Future<void> _save() async {
+    if (_saving) return;
     final ml = _parsedMl();
     if (ml == null || !ml.isFinite || ml <= 0 || ml > 5000) {
       setState(() => _errorText = 'Nhập lượng nước từ 1 đến 5.000 ml.');
@@ -80,23 +81,24 @@ class _WaterLogScreenState extends State<WaterLogScreen> {
     final state = AppScope.of(context);
     final diary = state.diary;
     final e = widget.editing;
-    if (e == null) {
-      final id = await diary.addWater(_at, ml);
-      if (!mounted) return;
-      setState(() => _saving = false);
-      if (id == null) return;
-      final nav = Navigator.of(context);
-      showUndoWaterSnack(context, ml: ml, onUndo: () => diary.deleteWater(id));
-      nav.pop();
-    } else {
-      final ok = await diary.updateWater(e.id, at: _at, ml: ml);
-      if (!mounted) return;
-      setState(() => _saving = false);
-      if (ok) Navigator.of(context).pop();
+    try {
+      if (e == null) {
+        final id = await diary.addWater(_at, ml);
+        if (!mounted || id == null) return;
+        final nav = Navigator.of(context);
+        showUndoWaterSnack(context, ml: ml, onUndo: () => diary.deleteWater(id));
+        nav.pop();
+      } else {
+        final ok = await diary.updateWater(e.id, at: _at, ml: ml);
+        if (mounted && ok) Navigator.of(context).pop();
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
   }
 
   Future<void> _delete() async {
+    if (_saving) return;
     final e = widget.editing;
     if (e == null) return;
     final confirm = await showDialog<bool>(
@@ -118,10 +120,12 @@ class _WaterLogScreenState extends State<WaterLogScreen> {
     );
     if (confirm != true || !mounted) return;
     setState(() => _saving = true);
-    final ok = await AppScope.of(context).diary.deleteWater(e.id);
-    if (!mounted) return;
-    setState(() => _saving = false);
-    if (ok) Navigator.of(context).pop();
+    try {
+      final ok = await AppScope.of(context).diary.deleteWater(e.id);
+      if (mounted && ok) Navigator.of(context).pop();
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   @override

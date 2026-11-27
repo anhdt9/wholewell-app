@@ -47,12 +47,17 @@ class _DayTimesScreenState extends State<DayTimesScreen> {
   }
 
   Future<void> _save() async {
+    if (_saving) return;
     setState(() => _saving = true);
-    final ok = await AppScope.of(context).diary.saveDayTimesSettings(
-          _settings.copyWith(dayTimesConfirmed: true),
-        );
+    final bool ok;
+    try {
+      ok = await AppScope.of(context).diary.saveDayTimesSettings(
+            _settings.copyWith(dayTimesConfirmed: true),
+          );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
     if (!mounted) return;
-    setState(() => _saving = false);
     if (ok) Navigator.of(context).pop(true);
   }
 

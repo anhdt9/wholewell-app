@@ -84,7 +84,7 @@ class FakeBackupFileProvider implements BackupFileProvider {
     required String mimeType,
     required Uint8List bytes,
   }) async {
-    if (saveError != null) throw saveError!;
+    if (saveError != null) Error.throwWithStackTrace(saveError!, StackTrace.current);
     if (cancelSave) return null;
     final name = nextSaveName ?? suggestedName;
     savedFiles.add(
@@ -100,7 +100,7 @@ class FakeBackupFileProvider implements BackupFileProvider {
 
   @override
   Future<PickedBackupFile?> pickFile() async {
-    if (pickError != null) throw pickError!;
+    if (pickError != null) Error.throwWithStackTrace(pickError!, StackTrace.current);
     return nextPickFile;
   }
 }
@@ -273,7 +273,7 @@ class FakeBackupProvider implements BackupProvider {
 
   @override
   Future<List<CloudBackupInfo>> listBackups() async {
-    if (errorOnList != null) throw errorOnList!;
+    if (errorOnList != null) Error.throwWithStackTrace(errorOnList!, StackTrace.current);
     return [for (final r in _records) r.info];
   }
 
@@ -285,7 +285,7 @@ class FakeBackupProvider implements BackupProvider {
 
   @override
   Future<CloudBackupInfo> upload(Uint8List encryptedBackupBytes) async {
-    if (errorOnUpload != null) throw errorOnUpload!;
+    if (errorOnUpload != null) Error.throwWithStackTrace(errorOnUpload!, StackTrace.current);
     final copy = Uint8List.fromList(encryptedBackupBytes);
     final idx = _seq++;
     final info = CloudBackupInfo(
@@ -303,7 +303,7 @@ class FakeBackupProvider implements BackupProvider {
 
   @override
   Future<Uint8List> download(String id) async {
-    if (errorOnDownload != null) throw errorOnDownload!;
+    if (errorOnDownload != null) Error.throwWithStackTrace(errorOnDownload!, StackTrace.current);
     final rec = _records.cast<_FakeBackupRecord?>().firstWhere(
           (r) => r?.info.id == id,
           orElse: () => null,
@@ -315,7 +315,7 @@ class FakeBackupProvider implements BackupProvider {
   @override
   Future<void> deleteAll() async {
     deleteAllCalls++;
-    if (errorOnDelete != null) throw errorOnDelete!;
+    if (errorOnDelete != null) Error.throwWithStackTrace(errorOnDelete!, StackTrace.current);
     _records.clear();
   }
 }

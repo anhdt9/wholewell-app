@@ -206,18 +206,19 @@ class LabelFoodBuilder {
     }
 
     // Quy tắc Đường bổ sung: nhập 0 => ghi 0 (addedSugarKnown = true); bỏ trống => không ghi (false).
-    final addedSugarKnown = draft.addedSugarG != null;
-    if (draft.addedSugarG != null) {
+    final addedSugar = draft.addedSugarG;
+    final addedSugarKnown = addedSugar != null;
+    if (addedSugar != null) {
       intakeLines.add(IntakeLine(
         nutrientId: 'addedSugar',
         source: IntakeSource.food,
-        labelAmount: draft.addedSugarG!,
+        labelAmount: addedSugar,
         labelUnit: 'g',
-        amounts: {'addedSugar': draft.addedSugarG! * scale},
+        amounts: {'addedSugar': addedSugar * scale},
       ));
       customLines.add(CustomFoodLine(
         nutrientId: 'addedSugar',
-        labelAmount: draft.addedSugarG!,
+        labelAmount: addedSugar,
         labelUnit: 'g',
         source: IntakeSource.food,
       ));
@@ -443,7 +444,7 @@ class LabelFoodBuilder {
       } else {
         // vitA -> retinol, folate -> folicAcid: nếu có phần UL sẽ do key UL kiểm;
         // nếu chỉ là dạng thực vật/tự nhiên không có key UL thì kiểm 10x RDA/AI.
-        if (!totals.containsKey(def.ulKey!) && targetVal != null && val > 10 * targetVal) {
+        if (!totals.containsKey(def.ulKey) && targetVal != null && val > 10 * targetVal) {
           flagged = true;
         }
       }

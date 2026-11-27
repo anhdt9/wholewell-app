@@ -119,7 +119,7 @@ class _ScheduleOccurrenceTile extends StatelessWidget {
           onTap: dose == null
               ? null
               : () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(builder: (_) => AddSupplementScreen(existingDose: dose!)),
+                    MaterialPageRoute<void>(builder: (_) => AddSupplementScreen(existingDose: dose)),
                   ),
         );
 

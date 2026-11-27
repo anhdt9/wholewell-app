@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:health_engine/health_engine.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -177,11 +179,11 @@ class _UpgradeConsentFlowState extends State<UpgradeConsentFlow> {
     super.didChangeDependencies();
     if (_prefilled) return;
     _prefilled = true;
-    AppScope.of(context).consentAgeYears().then((age) {
+    unawaited(AppScope.of(context).consentAgeYears().then((age) {
       if (mounted && age != null && _ageCtl.text.isEmpty) {
         setState(() => _ageCtl.text = '$age');
       }
-    });
+    }));
   }
 
   @override
