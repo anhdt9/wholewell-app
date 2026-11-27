@@ -5,6 +5,7 @@ import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
+import 'common/common_widgets.dart';
 
 String formatMinutesHhMm(int minutes) {
   final m = ((minutes % 1440) + 1440) % 1440;
@@ -57,6 +58,7 @@ class _DayTimesScreenState extends State<DayTimesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final allMealsOff = !_settings.hasBreakfast && !_settings.hasLunch && !_settings.hasDinner;
     return Scaffold(
       appBar: AppBar(title: const Text('Giờ trong ngày')),
       body: ListView(
@@ -65,15 +67,62 @@ class _DayTimesScreenState extends State<DayTimesScreen> {
           const Text('Dùng để tự chọn bữa ăn và gợi ý xếp lịch vitamin D, canxi.'),
           const SizedBox(height: 12),
           _timeRow('Thức dậy', _settings.wake, (v) => _settings = _settings.copyWith(wake: v)),
-          _timeRow('Bữa sáng', _settings.breakfast, (v) => _settings = _settings.copyWith(breakfast: v)),
-          _timeRow('Bữa trưa', _settings.lunch, (v) => _settings = _settings.copyWith(lunch: v)),
-          _timeRow('Bữa tối', _settings.dinner, (v) => _settings = _settings.copyWith(dinner: v)),
+          _mealRow(
+            label: 'Bữa sáng',
+            enabled: _settings.hasBreakfast,
+            mins: _settings.breakfast,
+            onToggle: (v) => setState(() => _settings = _settings.copyWith(hasBreakfast: v)),
+            onPicked: (v) => _settings = _settings.copyWith(breakfast: v),
+          ),
+          _mealRow(
+            label: 'Bữa trưa',
+            enabled: _settings.hasLunch,
+            mins: _settings.lunch,
+            onToggle: (v) => setState(() => _settings = _settings.copyWith(hasLunch: v)),
+            onPicked: (v) => _settings = _settings.copyWith(lunch: v),
+          ),
+          _mealRow(
+            label: 'Bữa tối',
+            enabled: _settings.hasDinner,
+            mins: _settings.dinner,
+            onToggle: (v) => setState(() => _settings = _settings.copyWith(hasDinner: v)),
+            onPicked: (v) => _settings = _settings.copyWith(dinner: v),
+          ),
           _timeRow('Đi ngủ', _settings.sleep, (v) => _settings = _settings.copyWith(sleep: v)),
+          if (allMealsOff) ...[
+            const SizedBox(height: 12),
+            const SafetyNote(message: 'Đã tắt hết bữa chính — món mới mặc định vào Phụ.'),
+          ],
           const SizedBox(height: 20),
           FilledButton(
             onPressed: _saving ? null : _save,
             child: Text(widget.onboardingFlow ? 'Xác nhận và tiếp tục' : 'Lưu'),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _mealRow({
+    required String label,
+    required bool enabled,
+    required int mins,
+    required ValueChanged<bool> onToggle,
+    required ValueChanged<int> onPicked,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(child: Text(label, style: Theme.of(context).textTheme.bodyLarge)),
+          if (enabled) ...[
+            OutlinedButton(
+              onPressed: () => _pickTime(mins, onPicked),
+              child: Text(formatMinutesHhMm(mins)),
+            ),
+            const SizedBox(width: 8),
+          ],
+          Switch(value: enabled, onChanged: _saving ? null : onToggle),
         ],
       ),
     );

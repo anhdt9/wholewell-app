@@ -34,11 +34,8 @@ enum SessionStage {
   /// CSDL mở được nhưng consent là `khung-tam-0` hoặc thiếu consent hợp lệ.
   upgradeRequired,
 
-  /// Đã có consent hợp lệ, đang dở bước 3/4 Hồ sơ cơ thể.
+  /// Đã có consent hợp lệ, đang dở bước 3/3 Hồ sơ cơ thể.
   onboardingBodyProfile,
-
-  /// Đã xong hồ sơ cơ thể, đang dở bước 4/4 Hiển thị calo.
-  onboardingCalorieDisplay,
 
   /// Hoàn tất thiết lập, vào màn chính.
   ready,
@@ -99,9 +96,13 @@ class DbSessionController extends ChangeNotifier {
     final hide = await r.loadHideCalories();
     if (step == OnboardingStep.bodyProfile || profile == null) {
       _stage = SessionStage.onboardingBodyProfile;
-    } else if (step == OnboardingStep.calorieDisplay || hide == null) {
-      _stage = SessionStage.onboardingCalorieDisplay;
     } else {
+      if (hide == null) {
+        await r.saveHideCalories(false);
+      }
+      if (step != OnboardingStep.done) {
+        await r.saveOnboardingStep(OnboardingStep.done);
+      }
       _stage = SessionStage.ready;
     }
   }

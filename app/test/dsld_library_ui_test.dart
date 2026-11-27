@@ -35,7 +35,6 @@ Future<AppState> _makeReadyState({
     weightKg: 65,
     activityLevel: ActivityLevel.active,
   ));
-  await state.completeCalorieDisplayOnboarding(false);
   return state;
 }
 

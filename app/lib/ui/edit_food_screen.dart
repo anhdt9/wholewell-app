@@ -289,12 +289,10 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                 Text('Bữa', style: t.titleSmall),
                 const SizedBox(height: 8),
                 SegmentedButton<Meal>(
-                  segments: const [
-                    ButtonSegment(value: Meal.breakfast, label: Text('Sáng')),
-                    ButtonSegment(value: Meal.lunch, label: Text('Trưa')),
-                    ButtonSegment(value: Meal.dinner, label: Text('Tối')),
-                    ButtonSegment(value: Meal.snack, label: Text('Phụ')),
-                  ],
+                  segments: enabledMealSegments(
+                    AppScope.of(context).diary.dayTimesSettings,
+                    alwaysInclude: _meal,
+                  ),
                   selected: {_meal},
                   onSelectionChanged: (s) => setState(() => _meal = s.first),
                 ),

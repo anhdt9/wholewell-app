@@ -50,7 +50,6 @@ Future<AppState> _makeReadyState(
     weightKg: 68,
     activityLevel: ActivityLevel.active,
   ));
-  await state.completeCalorieDisplayOnboarding(false);
   return state;
 }
 
@@ -139,7 +138,6 @@ void main() {
         weightKg: 68,
         activityLevel: ActivityLevel.active,
       ));
-      await state.completeCalorieDisplayOnboarding(false);
       addTearDown(state.dispose);
 
       await tester.pumpWidget(_wrapWithState(state, const AddWorkoutScreen()));

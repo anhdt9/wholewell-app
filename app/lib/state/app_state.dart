@@ -215,14 +215,7 @@ class AppState extends ChangeNotifier {
   Future<int?> consentAgeYears() async => (await session.repo?.loadConsentProfile())?.ageYears;
 
   Future<bool> saveOnboardingBodyProfile(Profile p) async {
-    final ok = await diary.saveBodyProfileForOnboarding(p);
-    if (!ok) return false;
-    session.setStage(SessionStage.onboardingCalorieDisplay);
-    return true;
-  }
-
-  Future<bool> completeCalorieDisplayOnboarding(bool hideCalories) async {
-    final ok = await diary.completeCalorieDisplayOnboarding(hideCalories);
+    final ok = await diary.completeBodyProfileOnboarding(p);
     if (!ok) return false;
     session.setStage(SessionStage.ready);
     await diary.checkAgeBumpOnReady();

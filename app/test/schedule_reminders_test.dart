@@ -26,7 +26,6 @@ Future<AppState> _makeReadyState({
     weightKg: 65,
     activityLevel: ActivityLevel.active,
   ));
-  await state.completeCalorieDisplayOnboarding(false);
   return state;
 }
 
@@ -217,7 +216,6 @@ void main() {
       weightKg: 65,
       activityLevel: ActivityLevel.active,
     ));
-    await state.completeCalorieDisplayOnboarding(false);
 
     // Sản phẩm chỉ còn hộp ĐÃ HẾT HẠN và vượt UL Magie (400 mg > 350 mg).
     final createdPid = await repo.addProduct('Magie Hết Hạn', CountUnit.tablet, 1);

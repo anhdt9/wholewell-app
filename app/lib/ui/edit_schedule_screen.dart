@@ -41,10 +41,18 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
     if (!_inited) {
       final ex = widget.existingSchedule;
       final settings = AppScope.of(context).diary.dayTimesSettings;
-      _timeOfDay = ex?.timeOfDay ?? settings.breakfast;
+      _timeOfDay = ex?.timeOfDay ?? _defaultScheduleTime(settings);
       _servingsCtrl = TextEditingController(text: fmt(ex?.servings ?? 1.0));
       _inited = true;
     }
+  }
+
+  static int _defaultScheduleTime(DayTimesSettings s) {
+    if (s.hasBreakfast) return s.breakfast;
+    if (s.hasLunch) return s.lunch;
+    if (s.hasDinner) return s.dinner;
+    final now = DateTime.now();
+    return now.hour * 60 + now.minute;
   }
 
   @override
@@ -263,23 +271,27 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
               child: Text(formatMinutesHhMm(_timeOfDay)),
             ),
           ),
-          Wrap(
-            spacing: 8,
-            children: [
-              ActionChip(
-                label: Text('Sáng ${formatMinutesHhMm(settings.breakfast)}'),
-                onPressed: () => setState(() => _timeOfDay = settings.breakfast),
-              ),
-              ActionChip(
-                label: Text('Trưa ${formatMinutesHhMm(settings.lunch)}'),
-                onPressed: () => setState(() => _timeOfDay = settings.lunch),
-              ),
-              ActionChip(
-                label: Text('Tối ${formatMinutesHhMm(settings.dinner)}'),
-                onPressed: () => setState(() => _timeOfDay = settings.dinner),
-              ),
-            ],
-          ),
+          if (settings.hasBreakfast || settings.hasLunch || settings.hasDinner)
+            Wrap(
+              spacing: 8,
+              children: [
+                if (settings.hasBreakfast)
+                  ActionChip(
+                    label: Text('Sáng ${formatMinutesHhMm(settings.breakfast)}'),
+                    onPressed: () => setState(() => _timeOfDay = settings.breakfast),
+                  ),
+                if (settings.hasLunch)
+                  ActionChip(
+                    label: Text('Trưa ${formatMinutesHhMm(settings.lunch)}'),
+                    onPressed: () => setState(() => _timeOfDay = settings.lunch),
+                  ),
+                if (settings.hasDinner)
+                  ActionChip(
+                    label: Text('Tối ${formatMinutesHhMm(settings.dinner)}'),
+                    onPressed: () => setState(() => _timeOfDay = settings.dinner),
+                  ),
+              ],
+            ),
           const SizedBox(height: 16),
           TextField(
             controller: _servingsCtrl,

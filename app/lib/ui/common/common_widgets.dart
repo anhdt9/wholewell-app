@@ -1,10 +1,26 @@
 /// Các thành phần giao diện dùng chung theo `docs/design/mvp-overview.md`.
 library;
 
+import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../state/app_scope.dart';
 import '../labels.dart';
+
+/// Các nút chọn bữa theo cài đặt `Giờ trong ngày` (luôn giữ `Phụ` và [alwaysInclude]).
+List<ButtonSegment<Meal>> enabledMealSegments(
+  DayTimesSettings settings, {
+  Meal? alwaysInclude,
+}) =>
+    [
+      if (settings.hasBreakfast || alwaysInclude == Meal.breakfast)
+        const ButtonSegment(value: Meal.breakfast, label: Text('Sáng')),
+      if (settings.hasLunch || alwaysInclude == Meal.lunch)
+        const ButtonSegment(value: Meal.lunch, label: Text('Trưa')),
+      if (settings.hasDinner || alwaysInclude == Meal.dinner)
+        const ButtonSegment(value: Meal.dinner, label: Text('Tối')),
+      const ButtonSegment(value: Meal.snack, label: Text('Phụ')),
+    ];
 
 /// Hiển thị số kcal; biến mất hoàn toàn (không chiếm chỗ) khi bật "Ẩn số calo".
 class CalorieText extends StatelessWidget {
@@ -311,7 +327,7 @@ class ErrorState extends StatelessWidget {
   }
 }
 
-/// Khung chuẩn các bước thiết lập (`1/4`..`4/4`, nâng cấp): nút chính luôn thấy khi bàn phím mở.
+/// Khung chuẩn các bước thiết lập (`1/3`..`3/3`, nâng cấp): nút chính luôn thấy khi bàn phím mở.
 class StepScaffold extends StatelessWidget {
   final String? stepLabel;
   final String? title;

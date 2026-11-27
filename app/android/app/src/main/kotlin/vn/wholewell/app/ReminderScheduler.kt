@@ -141,10 +141,11 @@ class ReminderScheduler(
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
 
-            val notif = Notification.Builder(ctx, NOTIF_CHANNEL_ID)
+            val body = ReminderLogic.formatNotificationBody(slot.itemCount, slot.detailText)
+            val builder = Notification.Builder(ctx, NOTIF_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_stat_wholewell)
                 .setContentTitle(ReminderLogic.formatNotificationTitle(slot.timeOfDayMinutes))
-                .setContentText(ReminderLogic.formatNotificationBody(slot.itemCount))
+                .setContentText(body)
                 .setVisibility(Notification.VISIBILITY_PUBLIC)
                 .setAutoCancel(true)
                 .setTimeoutAfter(ReminderLogic.TIMEOUT_MILLIS)
@@ -155,7 +156,10 @@ class ReminderScheduler(
                 .addAction(
                     Notification.Action.Builder(null, "Mở app", openAppPi).build(),
                 )
-                .build()
+            if (!slot.detailText.isNullOrBlank()) {
+                builder.setStyle(Notification.BigTextStyle().bigText(body))
+            }
+            val notif = builder.build()
 
             val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             nm.notify(notificationIdForTime(slot.timeOfDayMinutes), notif)
@@ -263,7 +267,8 @@ class ReminderScheduler(
                     val count = (m["itemCount"] as? Number)?.toInt() ?: 1
                     val ids = ((m["scheduleIds"] as? List<*>) ?: emptyList<Any>())
                         .mapNotNull { (it as? Number)?.toInt() }
-                    ReminderSlotMeta(tod, count, ids)
+                    val detailText = (m["detailText"] as? String)?.trim()?.takeIf { it.isNotEmpty() }
+                    ReminderSlotMeta(tod, count, ids, detailText)
                 }
                 val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 val oldSlots = ReminderLogic.decodeSlots(prefs.getString(KEY_SLOTS, null))

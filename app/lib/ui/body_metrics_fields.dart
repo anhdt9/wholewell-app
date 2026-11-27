@@ -38,7 +38,7 @@ class BodyMeasureValidation {
   }
 }
 
-/// Khối nhập Giới tính sinh học, Chiều cao, Cân nặng, Mức vận động dùng chung giữa 3/4 và Hồ sơ.
+/// Khối nhập Giới tính sinh học, Chiều cao, Cân nặng, Mức vận động dùng chung giữa 3/3 và Hồ sơ.
 class BodyMetricsFields extends StatelessWidget {
   final Sex? sex;
   final ValueChanged<Sex> onSexChanged;

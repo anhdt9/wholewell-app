@@ -62,10 +62,20 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
     if (mounted) setState(() => _busy = false);
   }
 
+  Future<void> _toggleShowDetails(bool v) async {
+    setState(() => _busy = true);
+    final state = AppScope.of(context);
+    final next = state.diary.dayTimesSettings.copyWith(reminderShowDetails: v);
+    await state.diary.saveDayTimesSettings(next);
+    await state.syncNotifications();
+    if (mounted) setState(() => _busy = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = AppScope.of(context);
     final enabled = state.notificationsEnabled;
+    final showDetails = state.diary.dayTimesSettings.reminderShowDetails;
     final t = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -76,7 +86,8 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           const Text('Nhận thông báo khi tới giờ uống bổ sung.'),
           const SizedBox(height: 12),
           Text(
-            '• Màn hình khóa chỉ hiện "Đến giờ uống", không hiện tên chất hay sản phẩm.\n'
+            '• Mặc định màn hình khóa chỉ hiện "Đến giờ uống", không hiện tên chất hay sản phẩm.\n'
+            '• Nếu bật hiện tên sản phẩm, tên sản phẩm có thể thấy trên màn hình khóa; app vẫn không hiện tên chất hay liều lượng.\n'
             '• Bấm "Đã uống" cần mở khóa máy trước khi ghi.',
             style: t.bodySmall,
           ),
@@ -106,6 +117,20 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               value: true,
               onChanged: _busy ? null : _toggle,
             ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Hiện tên sản phẩm trên thông báo'),
+              subtitle: const Text('Ví dụ: "Đến giờ uống: Vitamin C 500 mg"'),
+              value: showDetails,
+              onChanged: _busy ? null : _toggleShowDetails,
+            ),
+            if (showDetails) ...[
+              const SizedBox(height: 8),
+              const SafetyNote(
+                message:
+                    'Tên sản phẩm bổ sung sẽ hiển thị trên thông báo và màn hình khóa. App vẫn không hiện tên chất hay liều lượng.',
+              ),
+            ],
           ],
           if (!_hasPerm) ...[
             const SizedBox(height: 12),

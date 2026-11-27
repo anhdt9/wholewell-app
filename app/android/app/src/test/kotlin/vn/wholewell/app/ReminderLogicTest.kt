@@ -13,6 +13,15 @@ class ReminderLogicTest {
         assertEquals("WholeWell · 20:05", ReminderLogic.formatNotificationTitle(20 * 60 + 5))
         assertEquals("Đến giờ uống", ReminderLogic.formatNotificationBody(1))
         assertEquals("Đến giờ uống, 2 loại", ReminderLogic.formatNotificationBody(2))
+        assertEquals(
+            "Đến giờ uống: Vitamin C 500 mg",
+            ReminderLogic.formatNotificationBody(1, "Vitamin C 500 mg"),
+        )
+        assertEquals(
+            "Đến giờ uống: Canxi D3, Vitamin C 500 mg",
+            ReminderLogic.formatNotificationBody(2, "Canxi D3, Vitamin C 500 mg"),
+        )
+        assertEquals("Đến giờ uống, 2 loại", ReminderLogic.formatNotificationBody(2, "   "))
         assertEquals(2L * 60L * 60L * 1000L, ReminderLogic.TIMEOUT_MILLIS)
     }
 
@@ -46,5 +55,25 @@ class ReminderLogicTest {
         val json = ReminderLogic.encodeSlots(slots)
         assertTrue(!json.contains("Canxi") && !json.contains("Vitamin"))
         assertEquals(slots, ReminderLogic.decodeSlots(json))
+    }
+
+    @Test
+    fun encodeDecodeSlotsVoiTenHienThiCoDauPhayVaXoaSachKhiTat() {
+        val slots = listOf(
+            ReminderSlotMeta(
+                timeOfDayMinutes = 480,
+                itemCount = 2,
+                scheduleIds = listOf(1, 3),
+                detailText = "Canxi D3, Vitamin C 500 mg",
+            ),
+            ReminderSlotMeta(timeOfDayMinutes = 1200, itemCount = 1, scheduleIds = listOf(2)),
+        )
+        val encoded = ReminderLogic.encodeSlots(slots)
+        assertEquals(slots, ReminderLogic.decodeSlots(encoded))
+
+        val cleared = slots.map { it.copy(detailText = null) }
+        val encodedCleared = ReminderLogic.encodeSlots(cleared)
+        assertTrue(!encodedCleared.contains("Canxi") && !encodedCleared.contains("Vitamin"))
+        assertEquals(cleared, ReminderLogic.decodeSlots(encodedCleared))
     }
 }

@@ -127,7 +127,7 @@ void main() {
       expect(dbKeyStore, contains('noBackupFilesDir'));
     });
 
-    testWidgets('Màn Đồng ý (2/4) dùng đúng chữ "Tôi → Quyền riêng tư" và mở tức thì Chính sách quyền riêng tư offline',
+    testWidgets('Màn Đồng ý (2/3) dùng đúng chữ "Tôi → Quyền riêng tư" và mở tức thì Chính sách quyền riêng tư offline',
         (tester) async {
       final pack = ReferencePack.fromJsonString(File('assets/reference_pack.json').readAsStringSync());
       final dir = Directory.systemTemp.createTempSync('ww_gate2_consent_');

@@ -136,7 +136,6 @@ class _WholeWellAppState extends State<WholeWellApp> {
                 SessionStage.welcome => const OnboardingFlow(),
                 SessionStage.upgradeRequired => const UpgradeConsentFlow(),
                 SessionStage.onboardingBodyProfile => const OnboardingBodyProfileScreen(),
-                SessionStage.onboardingCalorieDisplay => const OnboardingCalorieDisplayScreen(),
                 SessionStage.ready => const HomeScreen(),
               },
             final s => DataStatusScreen(status: s),
