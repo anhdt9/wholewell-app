@@ -508,3 +508,55 @@ String fmtShortDay(DateTime d, {DateTime? now}) {
 }
 
 String fmtUnitShort(String u) => unitLabel(u);
+
+/// Thanh tiến độ hai đoạn (thực phẩm vs bổ sung) theo `mvp-overview.md` (`LabeledProgress`).
+class TwoSegmentProgressBar extends StatelessWidget {
+  final double foodAmount;
+  final double supplementAmount;
+  final double targetAmount;
+  final String? semanticsLabel;
+
+  const TwoSegmentProgressBar({
+    super.key,
+    required this.foodAmount,
+    required this.supplementAmount,
+    required this.targetAmount,
+    this.semanticsLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final total = foodAmount + supplementAmount;
+    final denom = targetAmount > 0 ? (total > targetAmount ? total : targetAmount) : total;
+    final foodRatio = denom <= 0 ? 0.0 : (foodAmount / denom).clamp(0.0, 1.0);
+    final suppRatio = denom <= 0 ? 0.0 : (supplementAmount / denom).clamp(0.0, 1.0 - foodRatio);
+    final fillRatio = targetAmount <= 0
+        ? (total > 0 ? 1.0 : 0.0)
+        : (total / targetAmount).clamp(0.0, 1.0);
+
+    final bar = ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: Container(
+        height: 6,
+        color: cs.surfaceContainerHighest,
+        child: LayoutBuilder(builder: (context, constraints) {
+          final w = constraints.maxWidth;
+          final filledW = w * fillRatio;
+          final sumRatio = foodRatio + suppRatio;
+          final foodW = sumRatio <= 0 ? 0.0 : filledW * (foodRatio / sumRatio);
+          final suppW = (filledW - foodW).clamp(0.0, filledW);
+          return Row(
+            children: [
+              if (foodW > 0) Container(width: foodW, height: 6, color: cs.primary),
+              if (suppW > 0) Container(width: suppW, height: 6, color: cs.tertiary),
+            ],
+          );
+        }),
+      ),
+    );
+
+    if (semanticsLabel == null) return bar;
+    return Semantics(label: semanticsLabel, child: bar);
+  }
+}

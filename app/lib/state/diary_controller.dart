@@ -15,6 +15,7 @@ class DayJournalData {
   final List<WorkoutRecord> workouts;
   final List<WaterRecord> waters;
   final List<List<IntakeItem>> last7;
+  final List<({DateTime day, List<IntakeItem> items})> window7Days;
   final List<WorkoutEntry> workouts7;
 
   const DayJournalData({
@@ -23,6 +24,7 @@ class DayJournalData {
     required this.workouts,
     required this.waters,
     required this.last7,
+    this.window7Days = const [],
     required this.workouts7,
   });
 
@@ -32,6 +34,7 @@ class DayJournalData {
     workouts: [],
     waters: [],
     last7: [],
+    window7Days: [],
     workouts7: [],
   );
 }
@@ -150,6 +153,7 @@ class DiaryController extends ChangeNotifier {
   double get todayWaterTotalMl => _data.waters.fold<double>(0, (s, w) => s + w.ml);
   List<WorkoutEntry> get todayWorkoutEntries => [for (final w in _data.workouts) w.workout];
   List<IntakeItem> get todayItems => intakeItemsFor(_data.foods, _data.doses);
+  List<({DateTime day, List<IntakeItem> items})> get window7Days => _data.window7Days;
 
   void attachRepository(JournalRepository? repo) {
     _repo = repo;
@@ -406,9 +410,12 @@ class DiaryController extends ChangeNotifier {
     }
 
     final last7 = <List<IntakeItem>>[];
+    final window7 = <({DateTime day, List<IntakeItem> items})>[];
     for (var i = 6; i >= 0; i--) {
-      final k = dayKey(day.subtract(Duration(days: i)));
+      final d = _dateOnly(day.subtract(Duration(days: i)));
+      final k = dayKey(d);
       final items = intakeItemsFor(foodsByDay[k] ?? const [], dosesByDay[k] ?? const []);
+      window7.add((day: d, items: items));
       if (items.isNotEmpty) last7.add(items);
     }
 
@@ -418,6 +425,7 @@ class DiaryController extends ChangeNotifier {
       workouts: [for (final w in allWorkouts) if (w.day == toDay) w],
       waters: waters,
       last7: last7,
+      window7Days: window7,
       workouts7: [for (final w in allWorkouts) w.workout],
     );
   }
@@ -1248,6 +1256,17 @@ class DiaryController extends ChangeNotifier {
       todayItems,
       workouts: todayWorkoutEntries,
       last7Days: _data.last7,
+      workouts7: _data.workouts7,
+    );
+  }
+
+  PeriodReport? periodReport7Days() {
+    final p = _profile;
+    if (p == null) return null;
+    return averageReport(
+      pack,
+      p,
+      _data.last7,
       workouts7: _data.workouts7,
     );
   }

@@ -9,6 +9,7 @@ import 'common/common_widgets.dart';
 import 'day_times_screen.dart';
 import 'drive_backup_screens.dart';
 import 'labels.dart';
+import 'nutrient_detail_screen.dart';
 import 'profile_screen.dart';
 import 'schedule_dose_helper.dart';
 import 'sources_screen.dart';
@@ -16,9 +17,18 @@ import 'supplements_screen.dart';
 import 'today_doses_screen.dart';
 import 'water_log_screen.dart';
 
+enum _NutrientFilter { all, withSupplement, underTarget }
+
 /// Tổng kết ngày: cảnh báo UL, dòng thận trọng, nhắc tuổi, calo, đường, vi chất, nước.
-class TodayScreen extends StatelessWidget {
+class TodayScreen extends StatefulWidget {
   const TodayScreen({super.key});
+
+  @override
+  State<TodayScreen> createState() => _TodayScreenState();
+}
+
+class _TodayScreenState extends State<TodayScreen> {
+  _NutrientFilter _nutrientFilter = _NutrientFilter.all;
 
   @override
   Widget build(BuildContext context) {
@@ -120,8 +130,68 @@ class TodayScreen extends StatelessWidget {
         const SizedBox(height: 4),
         Text(cl.nutrientsSubtitle, style: t.bodySmall),
         const SizedBox(height: 8),
-        for (final n in r.nutrients.where((n) => n.target != null && pack.nutrients[n.nutrientId]!.group != 'macro'))
-          _NutrientRow(status: n, def: pack.nutrients[n.nutrientId]!),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            ChoiceChip(
+              label: const Text('Tất cả'),
+              selected: _nutrientFilter == _NutrientFilter.all,
+              materialTapTargetSize: MaterialTapTargetSize.padded,
+              onSelected: (_) => setState(() => _nutrientFilter = _NutrientFilter.all),
+            ),
+            ChoiceChip(
+              label: const Text('Có bổ sung'),
+              selected: _nutrientFilter == _NutrientFilter.withSupplement,
+              materialTapTargetSize: MaterialTapTargetSize.padded,
+              onSelected: (_) => setState(() => _nutrientFilter = _NutrientFilter.withSupplement),
+            ),
+            ChoiceChip(
+              label: Text(cl.underTargetFilter),
+              selected: _nutrientFilter == _NutrientFilter.underTarget,
+              materialTapTargetSize: MaterialTapTargetSize.padded,
+              onSelected: (_) => setState(() => _nutrientFilter = _NutrientFilter.underTarget),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const _TwoSegmentLegend(),
+        const SizedBox(height: 4),
+        Builder(builder: (context) {
+          final alertIds = {for (final f in combinedFlags) f.nutrientId};
+          final visible = [
+            for (final n in r.nutrients)
+              if (pack.nutrients[n.nutrientId]!.group != 'macro' &&
+                  (n.target != null || alertIds.contains(n.nutrientId)))
+                if (switch (_nutrientFilter) {
+                  _NutrientFilter.all => true,
+                  _NutrientFilter.withSupplement => n.supplementAmount > 0,
+                  _NutrientFilter.underTarget =>
+                    n.target != null && n.totalAmount < n.target!.value,
+                })
+                  n,
+          ];
+          if (visible.isEmpty) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Text('Không có vi chất nào thuộc mục lọc này.'),
+            );
+          }
+          return Column(
+            children: [
+              for (final n in visible)
+                _NutrientRow(
+                  status: n,
+                  def: pack.nutrients[n.nutrientId]!,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => NutrientDetailScreen(nutrientId: n.nutrientId),
+                    ),
+                  ),
+                ),
+            ],
+          );
+        }),
         const SizedBox(height: 16),
         _WaterCard(
           totalMl: state.diary.todayWaterTotalMl,
@@ -566,22 +636,91 @@ class _SugarCard extends StatelessWidget {
   }
 }
 
+class _TwoSegmentLegend extends StatelessWidget {
+  const _TwoSegmentLegend();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final t = Theme.of(context).textTheme;
+    return Wrap(
+      spacing: 16,
+      runSpacing: 4,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 12, height: 6, color: cs.primary),
+            const SizedBox(width: 6),
+            Text('Thực phẩm', style: t.bodySmall),
+          ],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 12, height: 6, color: cs.tertiary),
+            const SizedBox(width: 6),
+            Text('Bổ sung', style: t.bodySmall),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
 class _NutrientRow extends StatelessWidget {
   final NutrientStatus status;
   final NutrientDef def;
-  const _NutrientRow({required this.status, required this.def});
+  final VoidCallback onTap;
+
+  const _NutrientRow({
+    required this.status,
+    required this.def,
+    required this.onTap,
+  });
+
   @override
   Widget build(BuildContext context) {
+    final target = status.target;
     final pct = status.percentOfTarget ?? 0;
-    final target = status.target!;
-    return ListTile(
-      dense: true,
-      contentPadding: EdgeInsets.zero,
-      title: Text(def.nameVi + (target.isEstimate ? ' (ước tính)' : '')),
-      subtitle: LinearProgressIndicator(value: (pct / 100).clamp(0, 1).toDouble()),
-      trailing: Text(
-          '${fmt(status.totalAmount)}/${fmt(target.value)} ${unitLabel(def.unit)}\n${pct.round()}%',
-          textAlign: TextAlign.right),
+    final u = unitLabel(def.unit);
+    final name = def.nameVi + (target?.isEstimate == true ? ' (ước tính)' : '');
+    final valueText = target != null
+        ? '${fmt(status.totalAmount)}/${fmt(target.value)} $u · ${pct.round()}%'
+        : '${fmt(status.totalAmount)} $u';
+    final foodAndFort = status.foodAmount + status.fortifiedAmount;
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    final t = Theme.of(context).textTheme;
+
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (textScale >= 1.3) ...[
+              Text(name, style: t.bodyMedium),
+              const SizedBox(height: 2),
+              Text(valueText, style: t.bodySmall),
+            ] else
+              Row(
+                children: [
+                  Expanded(child: Text(name, style: t.bodyMedium)),
+                  const SizedBox(width: 8),
+                  Text(valueText, style: t.bodySmall),
+                ],
+              ),
+            const SizedBox(height: 6),
+            TwoSegmentProgressBar(
+              foodAmount: foodAndFort,
+              supplementAmount: status.supplementAmount,
+              targetAmount: target?.value ?? (status.ul ?? status.totalAmount),
+              semanticsLabel: '$name, $valueText',
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

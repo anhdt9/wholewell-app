@@ -296,6 +296,7 @@ class AppState extends ChangeNotifier {
   Future<void> removeWorkout(int index) => diary.removeWorkoutByIndex(index);
 
   DailyReport? report() => diary.report();
+  PeriodReport? periodReport7Days() => diary.periodReport7Days();
   ActivityLevel suggestedLevel() => diary.suggestedLevel();
 
   Future<void> _ensureDsldLibrary() async {
