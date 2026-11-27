@@ -109,7 +109,6 @@ class BodyMetricsFields extends StatelessWidget {
           decoration: InputDecoration(
             labelText: 'Chiều cao',
             suffixText: 'cm',
-            border: const OutlineInputBorder(),
             errorText: heightCheck?.blockingError,
             helperText: heightCheck?.blockingError == null ? heightCheck?.softWarning : null,
           ),
@@ -123,7 +122,6 @@ class BodyMetricsFields extends StatelessWidget {
           decoration: InputDecoration(
             labelText: 'Cân nặng',
             suffixText: 'kg',
-            border: const OutlineInputBorder(),
             errorText: weightCheck?.blockingError,
             helperText: weightCheck?.blockingError == null ? weightCheck?.softWarning : null,
           ),
@@ -135,7 +133,6 @@ class BodyMetricsFields extends StatelessWidget {
           initialValue: level,
           decoration: const InputDecoration(
             labelText: 'Mức vận động',
-            border: OutlineInputBorder(),
           ),
           hint: const Text('Chọn mức vận động'),
           items: [

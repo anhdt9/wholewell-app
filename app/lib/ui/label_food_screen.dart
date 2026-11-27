@@ -1,9 +1,12 @@
 /// Màn Nhập theo nhãn (theo `docs/design/food-library.md`).
 library;
 
-import 'package:material_ui/material_ui.dart';
+import 'dart:async';
+
+import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
 import '../state/diary_controller.dart';
@@ -134,9 +137,8 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
         if (d.group != 'macro' && d.id != 'sodium' && d.id != 'retinol' && !existing.contains(d.id)) d,
     ];
     var filter = '';
-    final picked = await showModalBottomSheet<String>(
+    final picked = await showAppModalSheet<String>(
       context: context,
-      isScrollControlled: true,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheet) {
           final q = normalizeSearchAscii(filter);
@@ -144,41 +146,37 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
             for (final d in options)
               if (q.isEmpty || normalizeSearchAscii(d.nameVi).contains(q)) d,
           ];
-          return SafeArea(
-            child: SizedBox(
-              height: MediaQuery.of(ctx).size.height * 0.65,
-              child: Column(
-                children: [
-                  const SizedBox(height: 12),
-                  Text('Chọn chất trên nhãn', style: Theme.of(ctx).textTheme.titleMedium),
-                  Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: TextField(
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(LucideIcons.search),
-                        hintText: 'Tìm vitamin, khoáng chất...',
-                        border: OutlineInputBorder(),
-                      ),
-                      onChanged: (v) => setSheet(() => filter = v),
+          return SizedBox(
+            height: MediaQuery.of(ctx).size.height * 0.65,
+            child: Column(
+              children: [
+                Text('Chọn chất trên nhãn', style: Theme.of(ctx).textTheme.titleMedium),
+                Padding(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(LucideIcons.search),
+                      hintText: 'Tìm vitamin, khoáng chất...',
                     ),
+                    onChanged: (v) => setSheet(() => filter = v),
                   ),
-                  Expanded(
-                    child: ListView(
-                      children: [
-                        for (final d in shown)
-                          ListTile(
-                            minTileHeight: 48,
-                            title: Text(d.nameVi),
-                            subtitle: d.group == 'mineral'
-                                ? const Text('Nhập theo lượng nguyên tố ghi trên nhãn')
-                                : null,
-                            onTap: () => Navigator.pop(ctx, d.id),
-                          ),
-                      ],
-                    ),
+                ),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      for (final d in shown)
+                        ListTile(
+                          minTileHeight: 48,
+                          title: Text(d.nameVi),
+                          subtitle: d.group == 'mineral'
+                              ? const Text('Nhập theo lượng nguyên tố ghi trên nhãn')
+                              : null,
+                          onTap: () => Navigator.pop(ctx, d.id),
+                        ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
         },
@@ -255,6 +253,7 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
       await presentFoodFeedback(context, feedback: fb, pack: pack);
       return;
     }
+    unawaited(HapticFeedback.lightImpact());
     Navigator.of(context).pop(fb);
   }
 
@@ -303,7 +302,7 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
                 children: [
                   TextFormField(
                     controller: _name,
-                    decoration: const InputDecoration(labelText: 'Tên món', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(labelText: 'Tên món'),
                     validator: (s) => (s == null || s.trim().isEmpty) ? 'Nhập tên món' : null,
                   ),
                   const SizedBox(height: 12),
@@ -321,7 +320,7 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
                         child: TextFormField(
                           controller: _basisQty,
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          decoration: const InputDecoration(border: OutlineInputBorder()),
+                          decoration: const InputDecoration(),
                           validator: _validatePos,
                           onChanged: (v) {
                             if (!_usedManuallyEdited) _usedQty.text = v;
@@ -333,7 +332,7 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
                         child: DropdownButtonFormField<String>(
                           isExpanded: true,
                           initialValue: _basisUnit,
-                          decoration: const InputDecoration(border: OutlineInputBorder()),
+                          decoration: const InputDecoration(),
                           items: [for (final u in _basisUnits) DropdownMenuItem(value: u, child: Text(u))],
                           onChanged: (u) {
                             if (u != null) setState(() => _basisUnit = u);
@@ -349,7 +348,6 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
                     decoration: InputDecoration(
                       labelText: 'Bạn đã dùng',
                       suffixText: _basisUnit,
-                      border: const OutlineInputBorder(),
                     ),
                     validator: _validatePos,
                     onChanged: (_) => _usedManuallyEdited = true,
@@ -420,7 +418,6 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
             labelText: label,
             helperText: helper,
             helperMaxLines: 3,
-            border: const OutlineInputBorder(),
           ),
           validator: _validateNonNeg,
         ),
@@ -463,7 +460,7 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
               DropdownButtonFormField<LabelFolateMode>(
                 isExpanded: true,
                 initialValue: row.folateMode ?? LabelFolateMode.folateGeneral,
-                decoration: const InputDecoration(labelText: 'Cách ghi trên nhãn', border: OutlineInputBorder()),
+                decoration: const InputDecoration(labelText: 'Cách ghi trên nhãn'),
                 items: const [
                   DropdownMenuItem(value: LabelFolateMode.folicAcidOnly, child: Text('Axit folic')),
                   DropdownMenuItem(
@@ -498,7 +495,6 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
                     decoration: InputDecoration(
                       labelText: 'Lượng trên nhãn',
                       errorText: isFlagged ? 'Kiểm tra lại mg và µg' : null,
-                      border: const OutlineInputBorder(),
                     ),
                     validator: _validateNonNeg,
                   ),
@@ -514,7 +510,6 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(
                   labelText: 'Trong đó axit folic (µg)',
-                  border: OutlineInputBorder(),
                 ),
                 validator: _validateNonNeg,
               ),
@@ -583,7 +578,7 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
       isExpanded: true,
       key: ValueKey('unit-${row.nutrientId}-${row.folateMode}-${row.unit}'),
       initialValue: items.any((i) => i.value == row.unit) ? row.unit : items.first.value,
-      decoration: const InputDecoration(border: OutlineInputBorder()),
+      decoration: const InputDecoration(),
       items: items,
       onChanged: (u) {
         if (u != null) {
@@ -637,7 +632,7 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
       isExpanded: true,
       key: ValueKey('form-${row.nutrientId}-${row.folateMode}-${row.unit}-${row.form}'),
       initialValue: items.any((i) => i.value == row.form) ? row.form : items.first.value,
-      decoration: const InputDecoration(labelText: 'Dạng', border: OutlineInputBorder()),
+      decoration: const InputDecoration(labelText: 'Dạng'),
       items: items,
       onChanged: (v) {
         if (v != null) setState(() => row.form = v);

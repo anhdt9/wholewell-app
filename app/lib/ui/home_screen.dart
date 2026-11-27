@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
@@ -114,9 +115,11 @@ class _HomeScreenState extends State<HomeScreen> {
         selectedIndex: _tab,
         onDestinationSelected: (i) {
           if (i == 0 && _tab == 0 && !state.diary.isViewingToday) {
+            unawaited(HapticFeedback.selectionClick());
             unawaited(state.resetToToday());
           }
           if (i != _tab) {
+            unawaited(HapticFeedback.selectionClick());
             setState(() => _tab = i);
           }
         },

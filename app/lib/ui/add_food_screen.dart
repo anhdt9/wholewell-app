@@ -3,6 +3,7 @@ library;
 
 import 'dart:async';
 
+import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:material_ui/material_ui.dart';
 import 'package:food_library/food_library.dart';
 import 'package:journal_db/journal_db.dart';
@@ -139,6 +140,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
     try {
       final diary = AppScope.of(context).diary;
       final fb = await diary.logRecentFood(e, meal: _meal);
+      if (!fb.failed) unawaited(HapticFeedback.lightImpact());
       await _finishWithFeedback(fb);
     } finally {
       _loggingRecent = false;
@@ -244,7 +246,6 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
                   decoration: InputDecoration(
                     prefixIcon: const Icon(LucideIcons.search),
                     hintText: 'Tìm món...',
-                    border: const OutlineInputBorder(),
                     suffixIcon: _showSpinner
                         ? const Padding(
                             padding: EdgeInsets.all(12),

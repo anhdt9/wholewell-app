@@ -63,7 +63,6 @@ Future<void> confirmAndWipeAllData(
                     autofocus: true,
                     textCapitalization: TextCapitalization.characters,
                     decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
                       hintText: 'XÓA',
                     ),
                     onChanged: (v) => setDialogState(() => typed = v),

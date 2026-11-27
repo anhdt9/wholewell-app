@@ -389,7 +389,6 @@ class _BackupSecretSectionState extends State<BackupSecretSection> {
             obscureText: _obscurePass,
             decoration: InputDecoration(
               labelText: 'Mật khẩu (tối thiểu 8 ký tự)',
-              border: const OutlineInputBorder(),
               suffixIcon: IconButton(
                 tooltip: _obscurePass ? 'Hiện' : 'Ẩn',
                 onPressed: () => setState(() => _obscurePass = !_obscurePass),
@@ -405,7 +404,6 @@ class _BackupSecretSectionState extends State<BackupSecretSection> {
             obscureText: _obscurePass,
             decoration: InputDecoration(
               labelText: 'Nhập lại mật khẩu',
-              border: const OutlineInputBorder(),
               errorText: pwErr,
             ),
             onChanged: (_) => setState(() => _errorText = null),
@@ -644,7 +642,6 @@ class _RestoreBackupScreenState extends State<RestoreBackupScreen> {
             obscureText: _obscure,
             decoration: InputDecoration(
               labelText: 'Mã khôi phục / mật khẩu',
-              border: const OutlineInputBorder(),
               suffixIcon: IconButton(
                 tooltip: _obscure ? 'Hiện' : 'Ẩn',
                 onPressed: () => setState(() => _obscure = !_obscure),

@@ -489,10 +489,14 @@ class _RestoreDriveBackupScreenState extends State<RestoreDriveBackupScreen> {
             ),
             const SizedBox(height: 12),
             if (_loadingList)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+                child: Column(
+                  children: [
+                    LoadingSkeletonBox(height: 52),
+                    SizedBox(height: AppSpacing.sm),
+                    LoadingSkeletonBox(height: 52),
+                  ],
                 ),
               )
             else if (backups == null || backups.isEmpty)
@@ -521,7 +525,6 @@ class _RestoreDriveBackupScreenState extends State<RestoreDriveBackupScreen> {
                 obscureText: _obscure,
                 decoration: InputDecoration(
                   labelText: 'Mã khôi phục / mật khẩu',
-                  border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
                     tooltip: _obscure ? 'Hiện' : 'Ẩn',
                     onPressed: () => setState(() => _obscure = !_obscure),

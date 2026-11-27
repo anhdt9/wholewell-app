@@ -177,10 +177,8 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
   Future<void> _editOrAddLine([int? index]) async {
     final pack = AppScope.of(context).pack;
     final initial = index == null ? EditableIngredient() : _lines[index];
-    final edited = await showModalBottomSheet<EditableIngredient>(
+    final edited = await showAppModalSheet<EditableIngredient>(
       context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
       builder: (_) => _EditIngredientSheet(pack: pack, initial: initial),
     );
     if (edited == null) return;
@@ -298,6 +296,8 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
     ReferencePack pack,
     ColorScheme cs,
   ) {
+    final ww = context.wwColors;
+    final t = Theme.of(context).textTheme;
     final def = l.nutrientId == null ? null : pack.nutrients[l.nutrientId!];
     final title = def?.nameVi ?? (l.freeName ?? 'Chưa chọn chất');
     final check = _sanity(l, state);
@@ -336,33 +336,40 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: Theme.of(context).textTheme.titleSmall),
+                Text(title, style: t.titleSmall),
                 if (subtitle.isNotEmpty)
-                  Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+                  Text(subtitle, style: tabularNumberStyle(t.bodySmall)),
                 if (unitBad)
                   Container(
-                    margin: const EdgeInsets.only(top: 4),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    margin: const EdgeInsets.only(top: AppSpacing.xs),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xs,
+                    ),
                     decoration: BoxDecoration(
                       color: cs.errorContainer,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: AppRadius.controlRadius,
                     ),
                     child: Text(
                       '⚠ Đơn vị "${unitLabel(l.labelUnit.name)}" chưa phù hợp với chất này. Bấm Sửa để chọn lại.',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onErrorContainer),
+                      style: t.bodySmall?.copyWith(color: cs.onErrorContainer),
                     ),
                   )
                 else if (sanity.hasWarning)
                   Container(
-                    margin: const EdgeInsets.only(top: 4),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    margin: const EdgeInsets.only(top: AppSpacing.xs),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xs,
+                    ),
                     decoration: BoxDecoration(
-                      color: cs.secondaryContainer,
-                      borderRadius: BorderRadius.circular(8),
+                      color: ww.warningContainer,
+                      borderRadius: AppRadius.controlRadius,
+                      border: Border.all(color: ww.warningBorder),
                     ),
                     child: Text(
                       '⚠ Số này khá lớn so với mức thông thường, hãy kiểm lại đơn vị mg/µg trên nhãn.',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: t.bodySmall?.copyWith(color: ww.onWarningContainer),
                     ),
                   ),
               ],
@@ -463,175 +470,204 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
       _unit = allowedUnits.first;
     }
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(16, 8, 16, MediaQuery.of(context).viewInsets.bottom + 20),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('Sửa dòng thành phần', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              initialValue: _isFree ? '__free__' : _nutrientId,
-              decoration: const InputDecoration(labelText: 'Chất dinh dưỡng'),
-              items: [
-                for (final d in nutrients)
-                  DropdownMenuItem(value: d.id, child: Text(d.nameVi)),
-                const DropdownMenuItem(
-                  value: '__free__',
-                  child: Text('Chất khác (không tính giới hạn)'),
-                ),
-              ],
-              onChanged: (v) {
-                setState(() {
-                  if (v == '__free__') {
-                    _isFree = true;
-                    _nutrientId = null;
-                    _isCompound = false;
-                    _form = NutrientForm.unknown;
-                  } else {
-                    _isFree = false;
-                    _nutrientId = v;
-                    _form = NutrientForm.unknown;
-                    _isCompound = false;
-                    final allowed = _allowedUnitsFor(_nutrientId, false);
-                    if (!allowed.contains(_unit)) _unit = allowed.first;
-                  }
-                });
-              },
-            ),
-            if (_isFree) ...[
-              const SizedBox(height: 8),
-              TextField(
-                controller: _freeName,
-                decoration: const InputDecoration(labelText: 'Tên chất (vd. Coenzyme Q10)'),
-              ),
-            ],
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _amountCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(labelText: 'Lượng mỗi khẩu phần'),
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.md),
+            child: Text('Sửa dòng thành phần', style: Theme.of(context).textTheme.titleMedium),
+          ),
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  DropdownButtonFormField<String>(
+                    initialValue: _isFree ? '__free__' : _nutrientId,
+                    decoration: const InputDecoration(labelText: 'Chất dinh dưỡng'),
+                    items: [
+                      for (final d in nutrients)
+                        DropdownMenuItem(value: d.id, child: Text(d.nameVi)),
+                      const DropdownMenuItem(
+                        value: '__free__',
+                        child: Text('Chất khác (không tính giới hạn)'),
+                      ),
+                    ],
+                    onChanged: (v) {
+                      setState(() {
+                        if (v == '__free__') {
+                          _isFree = true;
+                          _nutrientId = null;
+                          _isCompound = false;
+                          _form = NutrientForm.unknown;
+                        } else {
+                          _isFree = false;
+                          _nutrientId = v;
+                          _form = NutrientForm.unknown;
+                          _isCompound = false;
+                          final allowed = _allowedUnitsFor(_nutrientId, false);
+                          if (!allowed.contains(_unit)) _unit = allowed.first;
+                        }
+                      });
+                    },
                   ),
-                ),
-                const SizedBox(width: 12),
-                DropdownButton<LabelUnit>(
-                  value: _unit,
-                  items: [
-                    for (final u in allowedUnits)
-                      DropdownMenuItem(value: u, child: Text(_unitDisplay(u))),
-                  ],
-                  onChanged: (u) {
-                    if (u != null) setState(() => _unit = u);
-                  },
-                ),
-              ],
-            ),
-            if (!_isFree && compounds != null && compounds.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                initialValue: !_isCompound
-                    ? '__elemental__'
-                    : (compounds.containsKey(_form) ? _form : NutrientForm.unknown),
-                decoration: const InputDecoration(labelText: 'Dạng trên nhãn'),
-                items: [
-                  const DropdownMenuItem(value: '__elemental__', child: Text('Nguyên tố (elemental)')),
-                  for (final fid in compounds.keys)
-                    DropdownMenuItem(
-                      value: fid,
-                      child: Text(compoundMeta?[fid]?.nameVi ?? fid),
+                  if (_isFree) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    TextField(
+                      controller: _freeName,
+                      decoration: const InputDecoration(labelText: 'Tên chất (vd. Coenzyme Q10)'),
                     ),
-                  const DropdownMenuItem(
-                    value: NutrientForm.unknown,
-                    child: Text('Chưa rõ dạng (tính thận trọng)'),
+                  ],
+                  const SizedBox(height: AppSpacing.md),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _amountCtrl,
+                          style: tabularNumberStyle(null),
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(labelText: 'Lượng mỗi khẩu phần'),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      DropdownButton<LabelUnit>(
+                        value: _unit,
+                        items: [
+                          for (final u in allowedUnits)
+                            DropdownMenuItem(value: u, child: Text(_unitDisplay(u))),
+                        ],
+                        onChanged: (u) {
+                          if (u != null) setState(() => _unit = u);
+                        },
+                      ),
+                    ],
                   ),
+                  if (!_isFree && compounds != null && compounds.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    DropdownButtonFormField<String>(
+                      initialValue: !_isCompound
+                          ? '__elemental__'
+                          : (compounds.containsKey(_form) ? _form : NutrientForm.unknown),
+                      decoration: const InputDecoration(labelText: 'Dạng trên nhãn'),
+                      items: [
+                        const DropdownMenuItem(value: '__elemental__', child: Text('Nguyên tố (elemental)')),
+                        for (final fid in compounds.keys)
+                          DropdownMenuItem(
+                            value: fid,
+                            child: Text(compoundMeta?[fid]?.nameVi ?? fid),
+                          ),
+                        const DropdownMenuItem(
+                          value: NutrientForm.unknown,
+                          child: Text('Chưa rõ dạng (tính thận trọng)'),
+                        ),
+                      ],
+                      onChanged: (v) {
+                        setState(() {
+                          if (v == '__elemental__' || v == null) {
+                            _isCompound = false;
+                            _form = NutrientForm.unknown;
+                          } else {
+                            _isCompound = true;
+                            _form = v;
+                          }
+                        });
+                      },
+                    ),
+                  ],
+                  if (!_isFree && _nutrientId == 'vitE') ...[
+                    const SizedBox(height: AppSpacing.md),
+                    DropdownButtonFormField<String>(
+                      initialValue: _form == NutrientForm.natural2r || _form == NutrientForm.synthetic2r
+                          ? _form
+                          : NutrientForm.unknown,
+                      decoration: const InputDecoration(labelText: 'Dạng vitamin E'),
+                      items: const [
+                        DropdownMenuItem(value: NutrientForm.natural2r, child: Text('Tự nhiên (d-alpha)')),
+                        DropdownMenuItem(value: NutrientForm.synthetic2r, child: Text('Tổng hợp (dl-alpha)')),
+                        DropdownMenuItem(value: NutrientForm.unknown, child: Text('Chưa rõ dạng')),
+                      ],
+                      onChanged: (v) => setState(() => _form = v ?? NutrientForm.unknown),
+                    ),
+                  ],
+                  if (!_isFree && _nutrientId == 'vitA') ...[
+                    const SizedBox(height: AppSpacing.md),
+                    DropdownButtonFormField<String>(
+                      initialValue: _form == NutrientForm.retinol || _form == NutrientForm.betaCarotene
+                          ? _form
+                          : NutrientForm.unknown,
+                      decoration: const InputDecoration(labelText: 'Dạng vitamin A'),
+                      items: const [
+                        DropdownMenuItem(
+                          value: NutrientForm.retinol,
+                          child: Text('Retinol / Retinyl (tính giới hạn)'),
+                        ),
+                        DropdownMenuItem(
+                          value: NutrientForm.betaCarotene,
+                          child: Text('Beta-caroten (không tính giới hạn)'),
+                        ),
+                        DropdownMenuItem(value: NutrientForm.unknown, child: Text('Chưa rõ dạng')),
+                      ],
+                      onChanged: (v) => setState(() => _form = v ?? NutrientForm.unknown),
+                    ),
+                  ],
+                  const SizedBox(height: AppSpacing.lg),
                 ],
-                onChanged: (v) {
-                  setState(() {
-                    if (v == '__elemental__' || v == null) {
-                      _isCompound = false;
-                      _form = NutrientForm.unknown;
-                    } else {
-                      _isCompound = true;
-                      _form = v;
-                    }
-                  });
-                },
               ),
-            ],
-            if (!_isFree && _nutrientId == 'vitE') ...[
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                initialValue: _form == NutrientForm.natural2r || _form == NutrientForm.synthetic2r
-                    ? _form
-                    : NutrientForm.unknown,
-                decoration: const InputDecoration(labelText: 'Dạng vitamin E'),
-                items: const [
-                  DropdownMenuItem(value: NutrientForm.natural2r, child: Text('Tự nhiên (d-alpha)')),
-                  DropdownMenuItem(value: NutrientForm.synthetic2r, child: Text('Tổng hợp (dl-alpha)')),
-                  DropdownMenuItem(value: NutrientForm.unknown, child: Text('Chưa rõ dạng')),
-                ],
-                onChanged: (v) => setState(() => _form = v ?? NutrientForm.unknown),
-              ),
-            ],
-            if (!_isFree && _nutrientId == 'vitA') ...[
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                initialValue: _form == NutrientForm.retinol || _form == NutrientForm.betaCarotene
-                    ? _form
-                    : NutrientForm.unknown,
-                decoration: const InputDecoration(labelText: 'Dạng vitamin A'),
-                items: const [
-                  DropdownMenuItem(value: NutrientForm.retinol, child: Text('Retinol / Retinyl (tính giới hạn)')),
-                  DropdownMenuItem(value: NutrientForm.betaCarotene, child: Text('Beta-caroten (không tính giới hạn)')),
-                  DropdownMenuItem(value: NutrientForm.unknown, child: Text('Chưa rõ dạng')),
-                ],
-                onChanged: (v) => setState(() => _form = v ?? NutrientForm.unknown),
-              ),
-            ],
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: () {
-                final amt = double.tryParse(_amountCtrl.text.trim().replaceAll(',', '.'));
-                if (amt == null || !amt.isFinite || amt <= 0) return;
-                if (!_isFree && _nutrientId == null) return;
-                if (_isFree && _freeName.text.trim().isEmpty) return;
-                if (!_isFree) {
-                  final ok = SupplementIngredientHelper.isUnitCompatible(
-                    widget.pack,
-                    nutrientId: _nutrientId,
-                    form: _form,
-                    amount: amt,
-                    unit: _unit,
-                    isCompound: _isCompound,
-                  );
-                  if (!ok) {
-                    AppFeedback.showSnack(context, 'Đơn vị này không phù hợp với chất đã chọn.');
-                    return;
-                  }
-                }
-                Navigator.pop(
-                  context,
-                  EditableIngredient(
-                    nutrientId: _isFree ? null : _nutrientId,
-                    freeName: _isFree ? _freeName.text.trim() : null,
-                    form: _form,
-                    labelAmount: amt,
-                    labelUnit: _unit,
-                    isCompound: _isCompound,
-                    origin: widget.initial.origin,
-                    confirmed: true,
-                  ),
-                );
-              },
-              child: const Text('Xác nhận dòng này'),
             ),
-          ],
-        ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.lg),
+            child: SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: FilledButton(
+                onPressed: _submitLine,
+                child: const Text('Xác nhận dòng này'),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _submitLine() {
+    final amt = double.tryParse(_amountCtrl.text.trim().replaceAll(',', '.'));
+    if (amt == null || !amt.isFinite || amt <= 0) return;
+    if (!_isFree && _nutrientId == null) return;
+    if (_isFree && _freeName.text.trim().isEmpty) return;
+    if (!_isFree) {
+      final ok = SupplementIngredientHelper.isUnitCompatible(
+        widget.pack,
+        nutrientId: _nutrientId,
+        form: _form,
+        amount: amt,
+        unit: _unit,
+        isCompound: _isCompound,
+      );
+      if (!ok) {
+        AppFeedback.showSnack(context, 'Đơn vị này không phù hợp với chất đã chọn.');
+        return;
+      }
+    }
+    Navigator.pop(
+      context,
+      EditableIngredient(
+        nutrientId: _isFree ? null : _nutrientId,
+        freeName: _isFree ? _freeName.text.trim() : null,
+        form: _form,
+        labelAmount: amt,
+        labelUnit: _unit,
+        isCompound: _isCompound,
+        origin: widget.initial.origin,
+        confirmed: true,
       ),
     );
   }

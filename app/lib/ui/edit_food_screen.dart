@@ -246,7 +246,6 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                         textAlign: TextAlign.center,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         decoration: InputDecoration(
-                          border: const OutlineInputBorder(),
                           suffixText: _unitLabel,
                         ),
                         onChanged: (raw) {

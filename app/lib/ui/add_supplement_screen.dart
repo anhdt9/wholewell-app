@@ -3,6 +3,7 @@ library;
 
 import 'dart:async';
 
+import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
@@ -282,6 +283,7 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
       return;
     }
 
+    unawaited(HapticFeedback.lightImpact());
     final feedback = (outcome as DoseLogged).feedback;
     final navigator = Navigator.of(context);
     final rootCtx = navigator.context;
