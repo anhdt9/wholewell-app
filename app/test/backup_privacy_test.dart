@@ -374,6 +374,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Tôi'));
       await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Quyền riêng tư'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Quyền riêng tư'));
       await tester.pumpAndSettle();
 
@@ -651,6 +653,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Tôi'));
       await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Quyền riêng tư'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Quyền riêng tư'));
       await tester.pumpAndSettle();
 
@@ -686,6 +690,8 @@ void main() {
       expect(find.text('Chưa xóa được bản trên Google Drive do hết phiên đăng nhập.'), findsOneWidget);
 
       // Bấm Đăng nhập để xóa -> xóa sạch trên Drive, xóa cờ và thu hồi quyền.
+      await tester.ensureVisible(find.text('Đăng nhập để xóa'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Đăng nhập để xóa'));
       await _drainUntil(tester, () => !appState.drivePendingDeleteActive);
       expect(pendingFile.existsSync(), isFalse);

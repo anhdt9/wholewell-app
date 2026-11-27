@@ -85,10 +85,16 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
 16. **Đại tu giao diện — PR 2: Shared Widgets (PR #41 đã gộp vào `main`):**
     - Tách và vẽ bằng `CustomPainter` trong [data_viz.dart](../app/lib/ui/common/data_viz.dart): `TwoSegmentProgressBar` (khoảng hở `2 px`, vạch `100%` khi vượt mốc, viền `overLimit`), `EnergyArcGauge` (vòng cung 240° `TweenAnimationBuilder` 250 ms, tự ẩn khi bật `Ẩn số calo`), `TargetRangeBar` (khoảng AMDR + chấm vị trí).
     - Nâng cấp `EmptyState`, `ErrorState`, thêm `showAppModalSheet` và `LoadingSkeletonBox` trong [common_widgets.dart](../app/lib/ui/common/common_widgets.dart), kèm bộ kiểm thử [shared_widgets_test.dart](../app/test/shared_widgets_test.dart).
-17. **Đại tu giao diện — PR 3: 2 màn mặt tiền (`ui/refresh-p3-front-screens`):**
+17. **Đại tu giao diện — PR 3: 2 màn mặt tiền (PR #42 đã gộp vào `main`):**
     - [home_screen.dart](../app/lib/ui/home_screen.dart): chuyển nút chọn ngày sang Pill DaySwitcher (`‹ Hôm nay, dd/MM ›`) có nút chuyển ngày trước/sau và chạm giữa mở lịch.
     - [today_screen.dart](../app/lib/ui/today_screen.dart): cảnh báo UL hổ phách dịu (`WholeWellColors.warningContainer`), thẻ Năng lượng & Đa lượng hợp nhất dùng `EnergyArcGauge` + `TargetRangeBar` (tự chuyển 3 cột gọn khi bật `Ẩn số calo`), thẻ Nước nút pill, bảng vi chất gom trong `SurfaceCard` kèm `overLimit`.
-    - [nutrient_detail_screen.dart](../app/lib/ui/nutrient_detail_screen.dart): chuyển tab `SegmentedButton`, thẻ tóm tắt 2 tổng hợp nhất, danh sách đóng góp tách `Divider` mảnh, và biểu đồ cột 7 ngày qua bằng `CustomPainter` (bo trên, ngày cũ mờ 40%, đường đứt Mức khuyến nghị và Giới hạn an toàn khi đạt ≥ 70% UL), kèm kiểm thử [front_screens_refresh_test.dart](../app/test/front_screens_refresh_test.dart).
+    - [nutrient_detail_screen.dart](../app/lib/ui/nutrient_detail_screen.dart): chuyển tab `SegmentedButton`, thẻ tóm tắt 2 tổng hợp nhất, danh sách đóng góp tách `Divider` mảnh, và biểu đồ cột 7 ngày qua bằng `CustomPainter` (bo trên, ngày cũ mờ 40%, đường đứt `Mức khuyến nghị`/`Mức tham chiếu` và `Giới hạn an toàn` khi đạt ≥ 70% UL), kèm kiểm thử [front_screens_refresh_test.dart](../app/test/front_screens_refresh_test.dart).
+18. **Đại tu giao diện — PR 4: Luồng nhập liệu & Màn phụ (`ui/refresh-p4-secondary-screens`):**
+    - [food_portion_screen.dart](../app/lib/ui/food_portion_screen.dart): ghim thẻ tóm tắt dinh dưỡng tức thì ở trên (tự ẩn kcal khi bật `Ẩn số calo`, cuộn toàn trang ở cỡ chữ ≥ 1.5x màn thấp), `AnimatedSwitcher` 200 ms, nút/chip ≥ 48 dp.
+    - [confirm_ingredients_screen.dart](../app/lib/ui/confirm_ingredients_screen.dart): mở sheet sửa thành phần qua `showAppModalSheet` với nút full-width `48 dp` ghim đáy.
+    - [log_sheet.dart](../app/lib/ui/common/log_sheet.dart) & [diary_screen.dart](../app/lib/ui/diary_screen.dart): `Bảng Ghi` 4 ô bo `16 dp` với icon nền tròn pastel theo nhóm; `Nhật ký` nhóm món ăn theo bữa trong `Card` phân tách bằng `Divider` mảnh.
+    - [supplements_screen.dart](../app/lib/ui/supplements_screen.dart) & [today_doses_screen.dart](../app/lib/ui/today_doses_screen.dart): thanh lượng còn lại + pill trạng thái dịu trong `Kho`; timeline dọc ở `Lần uống hôm nay`.
+    - [onboarding_flow.dart](../app/lib/ui/onboarding_flow.dart), [common_widgets.dart](../app/lib/ui/common/common_widgets.dart) & [me_screen.dart](../app/lib/ui/me_screen.dart): huy hiệu minh họa tối giản & thẻ cam kết ở `Chào mừng`, thanh tiến độ 3 đoạn mảnh ở `StepScaffold`, tab `Tôi` gom 4 nhóm thẻ; gỡ `OutlineInputBorder()` viết cứng toàn app, bổ sung `LoadingSkeletonBox`, `HapticFeedback` và kiểm thử [secondary_screens_refresh_test.dart](../app/test/secondary_screens_refresh_test.dart).
 
 ## Để sau MVP (giai đoạn 2)
 
