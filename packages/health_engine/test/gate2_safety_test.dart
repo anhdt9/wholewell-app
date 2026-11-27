@@ -268,5 +268,53 @@ void main() {
       expect(rep.sugar.mealsOverLimit.single.meal, MealSlot.snack);
       expect(rep.sugar.mealsOverLimit.single.grams, 12);
     });
+
+    test('lineCountsTowardUl khớp phạm vi từng chất, ulKey và ulAmounts', () {
+      final ca = pack.nutrients['calcium']!;
+      final mg = pack.nutrients['magnesium']!;
+      final vitE = pack.nutrients['vitE']!;
+      final niacin = pack.nutrients['niacin']!;
+      final vitA = pack.nutrients['vitA']!;
+      final folate = pack.nutrients['folate']!;
+
+      // total: mọi nguồn có > 0 đều tính.
+      expect(lineCountsTowardUl(ca, source: IntakeSource.food, amounts: const {'calcium': 120}), isTrue);
+      expect(lineCountsTowardUl(ca, source: IntakeSource.supplement, amounts: const {'calcium': 500}), isTrue);
+      expect(lineCountsTowardUl(ca, source: IntakeSource.food, amounts: const {'calcium': 0}), isFalse);
+
+      // supplement: chỉ supplement.
+      expect(lineCountsTowardUl(mg, source: IntakeSource.food, amounts: const {'magnesium': 100}), isFalse);
+      expect(lineCountsTowardUl(mg, source: IntakeSource.fortified, amounts: const {'magnesium': 100}), isFalse);
+      expect(lineCountsTowardUl(mg, source: IntakeSource.supplement, amounts: const {'magnesium': 100}), isTrue);
+
+      // synthetic: fortified và supplement, không tính food.
+      expect(lineCountsTowardUl(vitE, source: IntakeSource.food, amounts: const {'vitE': 15}), isFalse);
+      expect(lineCountsTowardUl(vitE, source: IntakeSource.fortified, amounts: const {'vitE': 15}), isTrue);
+      expect(lineCountsTowardUl(niacin, source: IntakeSource.supplement, amounts: const {'niacin': 20}), isTrue);
+
+      // ulKey: vitA -> retinol (ulScope total), folate -> folicAcid (ulScope total).
+      expect(lineCountsTowardUl(vitA, source: IntakeSource.food, amounts: const {'vitA': 500}), isFalse);
+      expect(
+        lineCountsTowardUl(vitA, source: IntakeSource.food, amounts: const {'vitA': 500, 'retinol': 300}),
+        isTrue,
+      );
+      expect(
+        lineCountsTowardUl(
+          vitA,
+          source: IntakeSource.supplement,
+          amounts: const {'vitA': 500},
+          ulAmounts: const {'retinol': 500},
+        ),
+        isTrue,
+      );
+      expect(
+        lineCountsTowardUl(folate, source: IntakeSource.food, amounts: const {'folate': 400}),
+        isFalse,
+      );
+      expect(
+        lineCountsTowardUl(folate, source: IntakeSource.fortified, amounts: const {'folate': 400, 'folicAcid': 200}),
+        isTrue,
+      );
+    });
   });
 }

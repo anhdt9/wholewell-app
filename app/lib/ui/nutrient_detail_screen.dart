@@ -235,13 +235,13 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
   }
 
   static String _ulScopeDescription(NutrientDef def) {
-    return switch (def.ulScope) {
-      UlScope.total => 'Tính mọi nguồn (thực phẩm, tăng cường, bổ sung).',
-      UlScope.supplement => 'Chỉ tính bổ sung bạn ghi, không tính thức ăn.',
-      UlScope.synthetic => switch (def.id) {
-          'vitA' => 'Chỉ tính retinol (bổ sung, thực phẩm tăng cường, nguồn động vật), không tính beta-caroten.',
-          'folate' => 'Chỉ tính axit folic (bổ sung, thực phẩm tăng cường), không tính folate tự nhiên.',
-          _ => 'Chỉ tính từ bổ sung và thực phẩm tăng cường.',
+    return switch (def.id) {
+      'vitA' => 'Chỉ tính retinol (bổ sung, thực phẩm tăng cường, nguồn động vật), không tính beta-caroten.',
+      'folate' => 'Chỉ tính axit folic (bổ sung, thực phẩm tăng cường), không tính folate tự nhiên.',
+      _ => switch (def.ulScope) {
+          UlScope.total => 'Tính mọi nguồn (thực phẩm, tăng cường, bổ sung).',
+          UlScope.supplement => 'Chỉ tính bổ sung bạn ghi, không tính thức ăn.',
+          UlScope.synthetic => 'Chỉ tính từ bổ sung và thực phẩm tăng cường.',
         },
     };
   }
