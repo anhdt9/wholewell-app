@@ -280,7 +280,7 @@ class _NextDoseCardState extends State<_NextDoseCard> {
         child: ListTile(
           title: const Text('Lần uống hôm nay'),
           subtitle: const Text('Đã hoàn tất các lần uống theo lịch hôm nay.'),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: const Icon(LucideIcons.chevronRight),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen()),
           ),
@@ -364,7 +364,7 @@ class _AgeBumpedBanner extends StatelessWidget {
               TextButton(onPressed: onEdit, child: const Text('Sửa')),
               IconButton(
                 tooltip: 'Đóng',
-                icon: const Icon(Icons.close, size: 18),
+                icon: const Icon(LucideIcons.x, size: 18),
                 onPressed: onDismiss,
               ),
             ],
@@ -459,12 +459,12 @@ class _EmptyTodayHintCard extends StatelessWidget {
               children: [
                 FilledButton.tonalIcon(
                   onPressed: onLogFood,
-                  icon: const Icon(Icons.restaurant),
+                  icon: const Icon(LucideIcons.utensils),
                   label: const Text('Ghi món ăn'),
                 ),
                 OutlinedButton.icon(
                   onPressed: onAddSupplement,
-                  icon: const Icon(Icons.medication_outlined),
+                  icon: const Icon(LucideIcons.pill),
                   label: const Text('Thêm bổ sung'),
                 ),
               ],

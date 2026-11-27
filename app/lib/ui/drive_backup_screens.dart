@@ -27,14 +27,14 @@ Future<void> showRestoreSourcePicker(
             FilledButton.tonalIcon(
               style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
               onPressed: () => Navigator.of(ctx).pop('file'),
-              icon: const Icon(Icons.folder_open_outlined),
+              icon: const Icon(LucideIcons.folderOpen),
               label: const Text('Từ tệp trên máy (.wwbackup)'),
             ),
             const SizedBox(height: 10),
             OutlinedButton.icon(
               style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
               onPressed: () => Navigator.of(ctx).pop('drive'),
-              icon: const Icon(Icons.cloud_download_outlined),
+              icon: const Icon(LucideIcons.cloudDownload),
               label: const Text('Từ Google Drive'),
             ),
           ],
@@ -106,7 +106,7 @@ class _PendingDriveDeleteCardState extends State<PendingDriveDeleteCard> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.info_outline, size: 18),
+              const Icon(LucideIcons.info, size: 18),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -474,7 +474,7 @@ class _RestoreDriveBackupScreenState extends State<RestoreDriveBackupScreen> {
             FilledButton.icon(
               style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
               onPressed: _loadingList ? null : _signInAndLoad,
-              icon: const Icon(Icons.login),
+              icon: const Icon(LucideIcons.logIn),
               label: const Text('Đăng nhập Google'),
             ),
           ] else ...[
@@ -525,7 +525,7 @@ class _RestoreDriveBackupScreenState extends State<RestoreDriveBackupScreen> {
                   suffixIcon: IconButton(
                     tooltip: _obscure ? 'Hiện' : 'Ẩn',
                     onPressed: () => setState(() => _obscure = !_obscure),
-                    icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                    icon: Icon(_obscure ? LucideIcons.eye : LucideIcons.eyeOff),
                   ),
                 ),
                 onChanged: (_) => setState(() => _errorText = null),
@@ -537,7 +537,7 @@ class _RestoreDriveBackupScreenState extends State<RestoreDriveBackupScreen> {
                   borderColor: cs.surfaceContainerHighest,
                   child: const Row(
                     children: [
-                      Icon(Icons.info_outline, size: 18),
+                      Icon(LucideIcons.info, size: 18),
                       SizedBox(width: 8),
                       Expanded(
                         child: Text('Khôi phục sẽ thay dữ liệu hiện tại trên máy này.'),

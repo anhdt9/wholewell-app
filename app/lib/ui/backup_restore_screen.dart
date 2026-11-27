@@ -367,7 +367,7 @@ class _BackupSecretSectionState extends State<BackupSecretSection> {
                   alignment: Alignment.centerRight,
                   child: TextButton.icon(
                     onPressed: _busy ? null : _copyKey,
-                    icon: const Icon(Icons.copy, size: 18),
+                    icon: const Icon(LucideIcons.copy, size: 18),
                     label: const Text('Sao chép'),
                   ),
                 ),
@@ -393,7 +393,7 @@ class _BackupSecretSectionState extends State<BackupSecretSection> {
               suffixIcon: IconButton(
                 tooltip: _obscurePass ? 'Hiện' : 'Ẩn',
                 onPressed: () => setState(() => _obscurePass = !_obscurePass),
-                icon: Icon(_obscurePass ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                icon: Icon(_obscurePass ? LucideIcons.eye : LucideIcons.eyeOff),
               ),
             ),
             onChanged: (_) => setState(() => _errorText = null),
@@ -511,7 +511,7 @@ class BackupRadioRow extends StatelessWidget {
             child: Row(
               children: [
                 Icon(
-                  selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                  selected ? LucideIcons.circleDot : LucideIcons.circle,
                   color: selected ? cs.primary : cs.onSurfaceVariant,
                 ),
                 const SizedBox(width: 12),
@@ -634,7 +634,7 @@ class _RestoreBackupScreenState extends State<RestoreBackupScreen> {
           OutlinedButton.icon(
             style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             onPressed: _busy ? null : _pickFile,
-            icon: const Icon(Icons.folder_open_outlined),
+            icon: const Icon(LucideIcons.folderOpen),
             label: const Text('Chọn tệp sao lưu'),
           ),
           const SizedBox(height: 16),
@@ -648,7 +648,7 @@ class _RestoreBackupScreenState extends State<RestoreBackupScreen> {
               suffixIcon: IconButton(
                 tooltip: _obscure ? 'Hiện' : 'Ẩn',
                 onPressed: () => setState(() => _obscure = !_obscure),
-                icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                icon: Icon(_obscure ? LucideIcons.eye : LucideIcons.eyeOff),
               ),
             ),
             onChanged: (_) => setState(() => _errorText = null),
@@ -660,7 +660,7 @@ class _RestoreBackupScreenState extends State<RestoreBackupScreen> {
               borderColor: cs.surfaceContainerHighest,
               child: const Row(
                 children: [
-                  Icon(Icons.info_outline, size: 18),
+                  Icon(LucideIcons.info, size: 18),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text('Khôi phục sẽ thay dữ liệu hiện tại trên máy này.'),

@@ -154,7 +154,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                 await state.notificationScheduler.openNotificationSettings();
                 await _refreshPermStatus();
               },
-              icon: const Icon(Icons.settings_outlined),
+              icon: const Icon(LucideIcons.settings),
               label: const Text('Mở cài đặt'),
             ),
           ],

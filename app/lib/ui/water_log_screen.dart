@@ -188,7 +188,7 @@ class _WaterLogScreenState extends State<WaterLogScreen> {
               borderRadius: BorderRadius.circular(8),
               side: BorderSide(color: cs.outlineVariant),
             ),
-            leading: const Icon(Icons.access_time),
+            leading: const Icon(LucideIcons.clock),
             title: const Text('Giờ'),
             trailing: Text(fmtTime24(_at), style: t.titleMedium),
             onTap: _saving ? null : _pickTime,

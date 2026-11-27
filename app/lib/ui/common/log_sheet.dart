@@ -41,7 +41,7 @@ Future<void> showLogSheet(BuildContext context) {
               children: [
                 Expanded(
                   child: _LogTile(
-                    icon: Icons.restaurant,
+                    icon: LucideIcons.utensils,
                     label: 'Món ăn',
                     onTap: () => open(const AddFoodScreen()),
                   ),
@@ -49,7 +49,7 @@ Future<void> showLogSheet(BuildContext context) {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _LogTile(
-                    icon: Icons.medication_outlined,
+                    icon: LucideIcons.pill,
                     label: 'Bổ sung',
                     onTap: () => open(const AddSupplementScreen()),
                   ),
@@ -61,7 +61,7 @@ Future<void> showLogSheet(BuildContext context) {
               children: [
                 Expanded(
                   child: _LogTile(
-                    icon: Icons.water_drop_outlined,
+                    icon: LucideIcons.droplet,
                     label: 'Nước',
                     onTap: () => open(const WaterLogScreen()),
                   ),
@@ -69,7 +69,7 @@ Future<void> showLogSheet(BuildContext context) {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _LogTile(
-                    icon: Icons.directions_run,
+                    icon: LucideIcons.footprints,
                     label: 'Buổi tập',
                     onTap: () => open(const AddWorkoutScreen()),
                   ),

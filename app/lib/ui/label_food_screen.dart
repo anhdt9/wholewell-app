@@ -155,7 +155,7 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
                     padding: const EdgeInsets.all(12),
                     child: TextField(
                       decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.search),
+                        prefixIcon: Icon(LucideIcons.search),
                         hintText: 'Tìm vitamin, khoáng chất...',
                         border: OutlineInputBorder(),
                       ),
@@ -375,7 +375,7 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
                     height: 48,
                     child: OutlinedButton.icon(
                       onPressed: _pickMicro,
-                      icon: const Icon(Icons.add),
+                      icon: const Icon(LucideIcons.plus),
                       label: const Text('Thêm vi chất trên nhãn'),
                     ),
                   ),
@@ -453,7 +453,7 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
                       _micros.removeAt(index).dispose();
                     });
                   },
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(LucideIcons.x),
                   tooltip: 'Xóa dòng chất',
                 ),
               ],

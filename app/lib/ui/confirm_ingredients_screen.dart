@@ -231,7 +231,7 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
             const SizedBox(height: 12),
             FilledButton.tonalIcon(
               onPressed: _saving ? null : _confirmAllAndSubmit,
-              icon: const Icon(Icons.done_all),
+              icon: const Icon(LucideIcons.checkCheck),
               label: Text('Xác nhận tất cả (${_lines.length})'),
             ),
           ] else if (!widget.fromDsld && _lines.length > 1 && _allUnitCompatible) ...[
@@ -240,7 +240,7 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
               alignment: Alignment.centerRight,
               child: TextButton.icon(
                 onPressed: _saving ? null : () => _setAllConfirmed(!_allConfirmed),
-                icon: Icon(_allConfirmed ? Icons.remove_done : Icons.done_all),
+                icon: Icon(_allConfirmed ? LucideIcons.circleX : LucideIcons.checkCheck),
                 label: Text(_allConfirmed ? 'Bỏ chọn tất cả' : 'Chọn tất cả (${_lines.length})'),
               ),
             ),
@@ -258,7 +258,7 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
           const SizedBox(height: 12),
           OutlinedButton.icon(
             onPressed: _editOrAddLine,
-            icon: const Icon(Icons.add),
+            icon: const Icon(LucideIcons.plus),
             label: const Text('Thêm dòng thành phần'),
           ),
           if (widget.rawOcrLines.isNotEmpty) ...[
@@ -374,7 +374,7 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
           ),
           IconButton(
             tooltip: 'Xóa dòng',
-            icon: const Icon(Icons.delete_outline),
+            icon: const Icon(LucideIcons.trash2),
             onPressed: () => setState(() => _lines.removeAt(index)),
           ),
         ],

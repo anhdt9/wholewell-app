@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../state/app_scope.dart';
 import 'backup_restore_screen.dart';
 import 'day_times_screen.dart';
+import 'design_system/tokens.dart';
 import 'notification_settings_screen.dart';
 import 'privacy_screen.dart';
 import 'profile_screen.dart';
@@ -41,68 +42,68 @@ class MeScreen extends StatelessWidget {
       children: [
         ListTile(
           minTileHeight: 56,
-          leading: const Icon(Icons.person_outline),
+          leading: const Icon(LucideIcons.user),
           title: const Text('Hồ sơ'),
           subtitle: Text(profileSummary),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: const Icon(LucideIcons.chevronRight),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(builder: (_) => const ProfileScreen()),
           ),
         ),
         ListTile(
           minTileHeight: 56,
-          leading: const Icon(Icons.visibility_outlined),
+          leading: const Icon(LucideIcons.eye),
           title: const Text('Hiển thị'),
           subtitle: Text(state.hideCalories ? 'Đang ẩn số calo' : 'Đang hiện số calo'),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: const Icon(LucideIcons.chevronRight),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(builder: (_) => const DisplaySettingsScreen()),
           ),
         ),
         ListTile(
           minTileHeight: 56,
-          leading: const Icon(Icons.schedule_outlined),
+          leading: const Icon(LucideIcons.clock),
           title: const Text('Giờ trong ngày'),
           subtitle: Text(_mealSummary(state.dayTimesSettings)),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: const Icon(LucideIcons.chevronRight),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(builder: (_) => const DayTimesScreen()),
           ),
         ),
         ListTile(
           minTileHeight: 56,
-          leading: const Icon(Icons.notifications_outlined),
+          leading: const Icon(LucideIcons.bell),
           title: const Text('Nhắc giờ'),
           subtitle: Text(state.notificationsEnabled ? 'Đang bật' : 'Chưa bật'),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: const Icon(LucideIcons.chevronRight),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(builder: (_) => const NotificationSettingsScreen()),
           ),
         ),
         ListTile(
           minTileHeight: 56,
-          leading: const Icon(Icons.backup_outlined),
+          leading: const Icon(LucideIcons.databaseBackup),
           title: const Text('Sao lưu và khôi phục'),
           subtitle: Text(backupSummary),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: const Icon(LucideIcons.chevronRight),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(builder: (_) => const BackupRestoreScreen()),
           ),
         ),
         ListTile(
           minTileHeight: 56,
-          leading: const Icon(Icons.lock_outline),
+          leading: const Icon(LucideIcons.lock),
           title: const Text('Quyền riêng tư'),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: const Icon(LucideIcons.chevronRight),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(builder: (_) => const PrivacyScreen()),
           ),
         ),
         ListTile(
           minTileHeight: 56,
-          leading: const Icon(Icons.menu_book_outlined),
+          leading: const Icon(LucideIcons.bookOpen),
           title: const Text('Nguồn số liệu'),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: const Icon(LucideIcons.chevronRight),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(builder: (_) => const SourcesScreen()),
           ),

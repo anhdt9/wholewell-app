@@ -361,7 +361,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               subtitle: summary.expiredRemaining > 0
                   ? Text('Đã hết hạn: ${fmt(summary.expiredRemaining)} $unit')
                   : Text('${detail.boxes.length} hộp · Chạm để xem / thêm hộp'),
-              trailing: const Icon(Icons.chevron_right),
+              trailing: const Icon(LucideIcons.chevronRight),
               onTap: () async {
                 await Navigator.of(context).push(
                   MaterialPageRoute<void>(builder: (_) => ProductBoxesScreen(product: p)),
@@ -476,7 +476,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       title: Text(
                         'Lịch: mỗi ngày ${fmt(s.servings * p.unitsPerServing)} $unit lúc ${formatMinutesHhMm(s.timeOfDay)}',
                       ),
-                      trailing: const Icon(Icons.chevron_right),
+                      trailing: const Icon(LucideIcons.chevronRight),
                       onTap: () => openSchedule(s),
                     ),
                 for (final n in prodNotices) ...[
@@ -702,7 +702,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                           subtitle: Text(b.expiryMonth == null
                               ? 'Không ghi hạn dùng'
                               : 'HSD ${fmtExpiryMonth(b.expiryMonth!)}'),
-                          trailing: const Icon(Icons.chevron_right),
+                          trailing: const Icon(LucideIcons.chevronRight),
                           onTap: () => _editBox(b),
                         ),
                     ],
@@ -713,7 +713,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                         ListTile(
                           title: Text('Còn ${fmt(b.remaining)} $unit'),
                           subtitle: Text('HSD ${fmtExpiryMonth(b.expiryMonth!)}'),
-                          trailing: const Icon(Icons.chevron_right),
+                          trailing: const Icon(LucideIcons.chevronRight),
                           onTap: () => _editBox(b),
                         ),
                     ],
@@ -721,7 +721,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                 ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _editBox,
-        icon: const Icon(Icons.add),
+        icon: const Icon(LucideIcons.plus),
         label: const Text('Thêm hộp'),
       ),
     );

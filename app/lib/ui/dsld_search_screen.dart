@@ -5,6 +5,7 @@ import 'package:dsld_library/dsld_library.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
+import 'design_system/tokens.dart';
 
 class DsldSearchScreen extends StatefulWidget {
   const DsldSearchScreen({super.key});
@@ -71,7 +72,7 @@ class _DsldSearchScreenState extends State<DsldSearchScreen> {
               controller: _ctrl,
               autofocus: true,
               decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: Icon(LucideIcons.search),
                 hintText: 'Tìm tên sản phẩm hoặc tên hãng...',
               ),
               onChanged: _onQueryChanged,
@@ -117,7 +118,7 @@ class _DsldSearchScreenState extends State<DsldSearchScreen> {
                               if (i == _results.length) {
                                 return ListTile(
                                   title: const Text('Không thấy sản phẩm? Chụp ảnh bảng thành phần'),
-                                  trailing: const Icon(Icons.photo_camera_outlined),
+                                  trailing: const Icon(LucideIcons.camera),
                                   onTap: () => Navigator.of(context).pop(),
                                 );
                               }
@@ -129,7 +130,7 @@ class _DsldSearchScreenState extends State<DsldSearchScreen> {
                               return ListTile(
                                 title: Text(item.productName),
                                 subtitle: sub.isEmpty ? null : Text(sub),
-                                trailing: const Icon(Icons.chevron_right),
+                                trailing: const Icon(LucideIcons.chevronRight),
                                 onTap: () => _pick(item),
                               );
                             },

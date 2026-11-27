@@ -109,7 +109,7 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-              trailing: const Icon(Icons.chevron_right),
+              trailing: const Icon(LucideIcons.chevronRight),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen()),
               ),
@@ -138,7 +138,7 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                 contentPadding: EdgeInsets.zero,
                 title: Text(p.name),
                 subtitle: Text(parts.join(' · ')),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: const Icon(LucideIcons.chevronRight),
                 onTap: () async {
                   await Navigator.of(context).push(
                     MaterialPageRoute<void>(builder: (_) => ProductDetailScreen(productId: p.id)),
@@ -153,7 +153,7 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'add_product',
         onPressed: _addProduct,
-        icon: const Icon(Icons.add),
+        icon: const Icon(LucideIcons.plus),
         label: const Text('Thêm sản phẩm'),
       ),
     );
@@ -262,7 +262,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
                         if (m.brandName.isNotEmpty) m.brandName,
                         if (m.servingSize.isNotEmpty) m.servingSize,
                       ].join(' · ')),
-                      trailing: const Icon(Icons.chevron_right),
+                      trailing: const Icon(LucideIcons.chevronRight),
                       onTap: () => Navigator.pop(ctx, m),
                     );
                   },
@@ -500,7 +500,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
           if (adapter != null)
             OutlinedButton.icon(
               onPressed: _busy ? null : _scanWithAdapter,
-              icon: const Icon(Icons.qr_code_scanner),
+              icon: const Icon(LucideIcons.scanBarcode),
               label: const Text('Quét mã vạch'),
             )
           else if (_useLiveMobileScanner && !_scannerPaused)
@@ -553,10 +553,11 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
               ListTile(
                 dense: true,
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.image_outlined),
+                leading: const Icon(LucideIcons.image),
                 title: Text('Ảnh ${i + 1}'),
                 trailing: IconButton(
-                  icon: const Icon(Icons.close),
+                  tooltip: 'Xóa ảnh',
+                  icon: const Icon(LucideIcons.x),
                   onPressed: _busy ? null : () => setState(() => _imagePaths.removeAt(i)),
                 ),
               ),
@@ -573,7 +574,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
               const SizedBox(height: 8),
               OutlinedButton.icon(
                 onPressed: () => AppScope.of(context).ocrEngine.openAppSettings(),
-                icon: const Icon(Icons.settings_outlined),
+                icon: const Icon(LucideIcons.settings),
                 label: const Text('Mở cài đặt'),
               ),
             ],
@@ -587,7 +588,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
           if (_imagePaths.isNotEmpty) ...[
             FilledButton.icon(
               onPressed: _busy ? null : _analyzeImages,
-              icon: const Icon(Icons.document_scanner_outlined),
+              icon: const Icon(LucideIcons.scanText),
               label: Text('Đọc thông tin từ ${_imagePaths.length} ảnh'),
             ),
             const SizedBox(height: 8),
@@ -595,20 +596,20 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
           if (state.dsldLibrary != null) ...[
             OutlinedButton.icon(
               onPressed: _busy ? null : _openDsldSearch,
-              icon: const Icon(Icons.search),
+              icon: const Icon(LucideIcons.search),
               label: const Text('Tìm theo tên sản phẩm'),
             ),
             const SizedBox(height: 8),
           ],
           OutlinedButton.icon(
             onPressed: _busy ? null : () => _addImage(fromCamera: true),
-            icon: const Icon(Icons.photo_camera),
+            icon: const Icon(LucideIcons.camera),
             label: Text(_imagePaths.isEmpty ? 'Chụp ảnh nhãn (tên, thành phần)' : 'Chụp thêm ảnh khác'),
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
             onPressed: _busy ? null : () => _addImage(fromCamera: false),
-            icon: const Icon(Icons.photo_library_outlined),
+            icon: const Icon(LucideIcons.image),
             label: Text(_imagePaths.isEmpty ? 'Chọn ảnh từ thư viện' : 'Chọn thêm ảnh từ thư viện'),
           ),
           const SizedBox(height: 8),
