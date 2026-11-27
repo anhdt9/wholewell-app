@@ -339,7 +339,7 @@ void main() {
       expect(memJson['watersCount'], 1);
     });
 
-    test('Nhánh B khôi phục bản schema v1 tự nâng cấp lên v2 và bảo toàn dữ liệu', () async {
+    test('Nhánh B khôi phục bản schema v1 tự nâng cấp lên v3 và bảo toàn dữ liệu', () async {
       final dir = tempDir();
       final files = DbFiles(dir);
       files.dir.createSync(recursive: true);
@@ -396,6 +396,10 @@ void main() {
       expect(profile?.ageYears, 28);
       final dayTimes = await repo.loadDayTimesSettings();
       expect(dayTimes.showTipCard, isTrue);
+      expect(dayTimes.hasBreakfast, isTrue);
+      expect(dayTimes.hasLunch, isTrue);
+      expect(dayTimes.hasDinner, isTrue);
+      expect(dayTimes.reminderShowDetails, isFalse);
     });
 
     test('drive consent: latestDriveConsent, grantDriveConsent, withdrawDriveConsent trên cả Drift và InMemory và bảo toàn khi khôi phục', () async {

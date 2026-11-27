@@ -4,14 +4,14 @@ library;
 import 'reference_pack.dart';
 
 class MealTimes {
-  final int breakfast;
-  final int lunch;
-  final int dinner;
+  final int? breakfast;
+  final int? lunch;
+  final int? dinner;
 
   const MealTimes({
-    required this.breakfast,
-    required this.lunch,
-    required this.dinner,
+    this.breakfast,
+    this.lunch,
+    this.dinner,
   });
 }
 
@@ -94,7 +94,11 @@ List<ScheduleNotice> evaluateScheduleRules(
   MealTimes mealTimes,
   List<ScheduledDoseInput> doses,
 ) {
-  final meals = [mealTimes.breakfast, mealTimes.lunch, mealTimes.dinner];
+  final meals = <int>[
+    if (mealTimes.breakfast != null) mealTimes.breakfast!,
+    if (mealTimes.lunch != null) mealTimes.lunch!,
+    if (mealTimes.dinner != null) mealTimes.dinner!,
+  ];
   final out = <ScheduleNotice>[];
 
   for (final r in pack.scheduleRules) {

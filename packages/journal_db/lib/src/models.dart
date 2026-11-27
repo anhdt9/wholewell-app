@@ -489,7 +489,7 @@ class ScheduleChange {
   const ScheduleChange(this.newScheduleId, this.effectiveFrom);
 }
 
-/// Cài đặt giờ trong ngày và công tắc thẻ "Bạn có biết" trong bảng `settings`.
+/// Cài đặt giờ trong ngày, bật/tắt bữa chính, thẻ "Bạn có biết" và hiển thị tên SP trên thông báo.
 class DayTimesSettings {
   final int wake;
   final int breakfast;
@@ -498,6 +498,10 @@ class DayTimesSettings {
   final int sleep;
   final bool dayTimesConfirmed;
   final bool showTipCard;
+  final bool hasBreakfast;
+  final bool hasLunch;
+  final bool hasDinner;
+  final bool reminderShowDetails;
 
   const DayTimesSettings({
     this.wake = 360,
@@ -507,6 +511,10 @@ class DayTimesSettings {
     this.sleep = 1350,
     this.dayTimesConfirmed = false,
     this.showTipCard = true,
+    this.hasBreakfast = true,
+    this.hasLunch = true,
+    this.hasDinner = true,
+    this.reminderShowDetails = false,
   });
 
   DayTimesSettings copyWith({
@@ -517,6 +525,10 @@ class DayTimesSettings {
     int? sleep,
     bool? dayTimesConfirmed,
     bool? showTipCard,
+    bool? hasBreakfast,
+    bool? hasLunch,
+    bool? hasDinner,
+    bool? reminderShowDetails,
   }) =>
       DayTimesSettings(
         wake: wake ?? this.wake,
@@ -526,6 +538,10 @@ class DayTimesSettings {
         sleep: sleep ?? this.sleep,
         dayTimesConfirmed: dayTimesConfirmed ?? this.dayTimesConfirmed,
         showTipCard: showTipCard ?? this.showTipCard,
+        hasBreakfast: hasBreakfast ?? this.hasBreakfast,
+        hasLunch: hasLunch ?? this.hasLunch,
+        hasDinner: hasDinner ?? this.hasDinner,
+        reminderShowDetails: reminderShowDetails ?? this.reminderShowDetails,
       );
 }
 
