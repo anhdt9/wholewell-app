@@ -349,9 +349,15 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Chưa ghi nước hôm nay'), findsOneWidget);
       await tester.ensureVisible(find.text('+250 ml'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('+250 ml'));
       await tester.pumpAndSettle();
 
+      await tester.dragUntilVisible(
+        find.text('Đã uống 250 ml'),
+        find.byType(ListView).first,
+        const Offset(0, 200),
+      );
       expect(find.text('Đã uống 250 ml'), findsOneWidget);
       expect(find.text('Đã ghi 250 ml nước'), findsOneWidget);
 
@@ -377,12 +383,18 @@ void main() {
       await tester.tap(find.text('Lưu'));
       await tester.pumpAndSettle();
 
+      // WaterLogScreen đã pop, quay về TodayScreen – cuộn vào viewport nếu cần.
+      await tester.ensureVisible(find.text('Đã uống 500 ml', skipOffstage: false));
+      await tester.pumpAndSettle();
       expect(find.text('Đã uống 500 ml'), findsOneWidget);
       expect(find.text('+500 ml'), findsOneWidget);
 
       // Chuyển sang ngày hôm qua rồi bấm +500 ml: ghi vào hôm qua lúc 12:00.
       final yesterday = DateTime.now().subtract(const Duration(days: 1));
       await state.setDay(yesterday);
+      await tester.pumpAndSettle();
+      // _WaterCard có thể ra ngoài viewport sau khi đổi ngày – cuộn vào.
+      await tester.ensureVisible(find.text('+500 ml', skipOffstage: false));
       await tester.pumpAndSettle();
       await tester.tap(find.text('+500 ml'));
       await tester.pumpAndSettle();
