@@ -155,12 +155,22 @@ void main() {
     expect(find.text('App không tính thuốc, trừ khi bạn ghi.'), findsOneWidget);
 
     // Đóng góp hôm nay phân biệt rõ tính / không tính vào giới hạn.
+    await tester.dragUntilVisible(
+      find.textContaining('Cơm trắng'),
+      find.byType(ListView).first,
+      const Offset(0, -200),
+    );
     expect(find.textContaining('Magie Citrat'), findsOneWidget);
     expect(find.textContaining('Cơm trắng'), findsOneWidget);
     expect(find.textContaining('tính vào giới hạn'), findsWidgets);
     expect(find.textContaining('không tính vào giới hạn'), findsWidgets);
 
     // Chuyển sang 7 ngày.
+    await tester.dragUntilVisible(
+      find.text('7 ngày'),
+      find.byType(ListView).first,
+      const Offset(0, 200),
+    );
     await tester.ensureVisible(find.text('7 ngày'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('7 ngày'));

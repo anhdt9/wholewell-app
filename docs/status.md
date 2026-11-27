@@ -78,10 +78,13 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
 14. **Chuẩn hóa Design System & Feedback Patterns (PR #39 đã gộp vào `main`):**
     - Thêm [tokens.dart](../app/lib/ui/design_system/tokens.dart) (`AppSpacing`, `AppRadius`, `buildWholeWellTheme` với `filledButtonTheme`, `outlinedButtonTheme`, `cardTheme`) áp dụng cho cả chế độ sáng và tối trong `main.dart`.
     - Bổ sung `SurfaceCard`, `ResponsiveStatRow`, `AppFeedback.showSnack`, `showConfirmDialog` vào [common_widgets.dart](../app/lib/ui/common/common_widgets.dart) và thay thế các đoạn `Container`/hộp thoại xác nhận/`SnackBar` lặp lại trên toàn giao diện.
-15. **Đại tu giao diện — PR 1: Nền móng (`ui/refresh-p1-foundation`):**
+15. **Đại tu giao diện — PR 1: Nền móng (PR #40 đã gộp vào `main`):**
     - Thiết kế UX tổng thể [design/visual-refresh.md](design/visual-refresh.md): **đã duyệt** 27/11/2026 (gồm `SnackBarBehavior.floating`).
     - Nhúng offline bộ font `BeVietnamPro` (`Regular`/`Medium`/`SemiBold`/`Bold`, 100% không gọi mạng) trong `app/assets/fonts/` và `app/pubspec.yaml`; thêm `lucide_icons_flutter` thay toàn bộ `Icons.*` trong `app/lib/`.
-    - Hoàn thiện [tokens.dart](../app/lib/ui/design_system/tokens.dart) với `WholeWellColors` (`ThemeExtension` Light/Dark), `AppSpacing` (`xs..xxl`), `AppRadius` (`control/card/sheet/pill`), `tabularNumberStyle`, và `ThemeData` Light/Dark đồng bộ (bao gồm `SnackBarBehavior.floating`).
+    - Hoàn thiện [tokens.dart](../app/lib/ui/design_system/tokens.dart) với `WholeWellColors` (`ThemeExtension` Light/Dark), `AppSpacing` (`xs..xxl`), `AppRadius` (`control/card/sheet/pill` dạng `const`), `tabularNumberStyle`, và `ThemeData` Light/Dark đồng bộ (bao gồm `SnackBarBehavior.floating`).
+16. **Đại tu giao diện — PR 2: Shared Widgets (`ui/refresh-p2-shared-widgets`):**
+    - Tách và vẽ bằng `CustomPainter` trong [data_viz.dart](../app/lib/ui/common/data_viz.dart): `TwoSegmentProgressBar` (khoảng hở `2 px`, vạch `100%` khi vượt mốc, viền `overLimit`), `EnergyArcGauge` (vòng cung 240° `TweenAnimationBuilder` 250 ms, tự ẩn khi bật `Ẩn số calo`), `TargetRangeBar` (khoảng AMDR + chấm vị trí).
+    - Nâng cấp `EmptyState`, `ErrorState`, thêm `showAppModalSheet` và `LoadingSkeletonBox` trong [common_widgets.dart](../app/lib/ui/common/common_widgets.dart), kèm bộ kiểm thử [shared_widgets_test.dart](../app/test/shared_widgets_test.dart).
 
 ## Để sau MVP (giai đoạn 2)
 
