@@ -127,14 +127,21 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
     );
   }
 
-  Future<void> _confirmAllAndSubmit() async {
+  void _setAllConfirmed(bool value) {
+    final pack = AppScope.of(context).pack;
     setState(() {
       for (final l in _lines) {
-        if ((l.labelAmount ?? 0) > 0 && _isUnitCompatible(l, AppScope.of(context).pack)) {
+        if (!value) {
+          l.confirmed = false;
+        } else if ((l.labelAmount ?? 0) > 0 && _isUnitCompatible(l, pack)) {
           l.confirmed = true;
         }
       }
     });
+  }
+
+  Future<void> _confirmAllAndSubmit() async {
+    _setAllConfirmed(true);
     if (_allConfirmed && !_saving) {
       await _submit();
     }
@@ -301,6 +308,16 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
               onPressed: _saving ? null : _confirmAllAndSubmit,
               icon: const Icon(Icons.done_all),
               label: Text('Xác nhận tất cả (${_lines.length})'),
+            ),
+          ] else if (!widget.fromDsld && _lines.length > 1 && _allUnitCompatible) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: _saving ? null : () => _setAllConfirmed(!_allConfirmed),
+                icon: Icon(_allConfirmed ? Icons.remove_done : Icons.done_all),
+                label: Text(_allConfirmed ? 'Bỏ chọn tất cả' : 'Chọn tất cả (${_lines.length})'),
+              ),
             ),
           ],
           const SizedBox(height: 12),
