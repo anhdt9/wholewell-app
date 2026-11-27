@@ -265,7 +265,12 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
       for (final l in d.lines) {
         final amt = l.amounts[def.id] ?? 0;
         if (amt <= 0) continue;
-        final countsUl = _lineCountsTowardUl(l, def);
+        final countsUl = lineCountsTowardUl(
+          def,
+          source: l.source,
+          amounts: l.amounts,
+          ulAmounts: l.ulAmounts,
+        );
         final formName = l.form != null && l.form != NutrientForm.unknown
             ? (pack.compoundMeta[def.id]?[l.form!]?.nameVi ?? l.form!)
             : (l.uncertain ? 'chưa rõ dạng' : null);
@@ -291,7 +296,14 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
       var countsUl = false;
       var anyFortified = false;
       for (final l in f.lines) {
-        if (_lineCountsTowardUl(l, def)) countsUl = true;
+        if (lineCountsTowardUl(
+          def,
+          source: l.source,
+          amounts: l.amounts,
+          ulAmounts: l.ulAmounts,
+        )) {
+          countsUl = true;
+        }
         final amt = l.amounts[def.id] ?? 0;
         if (amt <= 0) continue;
         sum += amt;
@@ -308,18 +320,6 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
 
     list.sort((a, b) => b.amount.compareTo(a.amount));
     return list;
-  }
-
-  static bool _lineCountsTowardUl(IntakeLine l, NutrientDef def) {
-    final ulKey = def.ulKey ?? def.id;
-    final ulAmt = l.ulAmounts?[ulKey] ?? l.amounts[ulKey] ?? 0;
-    if (ulAmt <= 0 && def.ulKey != null) return false;
-    return switch (def.ulScope) {
-      UlScope.total => true,
-      UlScope.supplement => l.source == IntakeSource.supplement,
-      UlScope.synthetic =>
-        l.source == IntakeSource.supplement || l.source == IntakeSource.fortified,
-    };
   }
 }
 

@@ -171,4 +171,83 @@ void main() {
     expect(s.status, DataStatus.unsupportedPlatform);
     expect(s.profile, isNull);
   });
+
+  test('memoize report() & periodReport7Days(), và hideTipCardForToday không gọi reload()', () async {
+    var foodBetweenCalls = 0;
+    final repo = _CountingRepo(() => foodBetweenCalls++);
+    final s = AppState.withRepository(pack: pack, repo: repo);
+    await s.start();
+    await s.saveProfile(profile);
+    final r1 = s.report();
+    final r2 = s.report();
+    final p1 = s.periodReport7Days();
+    final p2 = s.periodReport7Days();
+    expect(identical(r1, r2), isTrue);
+    expect(identical(p1, p2), isTrue);
+
+    final callsBefore = foodBetweenCalls;
+    await s.diary.hideTipCardForToday();
+    await s.diary.dismissScheduleNotices('sig1');
+    expect(foodBetweenCalls, callsBefore);
+    expect(s.diary.tipHiddenToday, isTrue);
+    expect(s.diary.dismissedScheduleNoticeSig, 'sig1');
+
+    // Ghi dữ liệu mới -> invalidate cache.
+    await s.addItem(const IntakeItem(
+      label: 'Phở',
+      source: IntakeSource.food,
+      nutrients: {'energyKcal': 400},
+    ));
+    final r3 = s.report();
+    expect(identical(r1, r3), isFalse);
+  });
+
+  test('lineCountsTowardUl đồng bộ với amountForUl cho vitA (retinol) và magnesium', () {
+    final vitA = pack.nutrients['vitA']!;
+    final mag = pack.nutrients['magnesium']!;
+
+    expect(
+      lineCountsTowardUl(
+        vitA,
+        source: IntakeSource.food,
+        amounts: const {'vitA': 500, 'retinol': 500},
+      ),
+      isTrue,
+    );
+    expect(
+      lineCountsTowardUl(
+        vitA,
+        source: IntakeSource.food,
+        amounts: const {'vitA': 500},
+      ),
+      isFalse,
+    );
+    expect(
+      lineCountsTowardUl(
+        mag,
+        source: IntakeSource.food,
+        amounts: const {'magnesium': 200},
+      ),
+      isFalse,
+    );
+    expect(
+      lineCountsTowardUl(
+        mag,
+        source: IntakeSource.supplement,
+        amounts: const {'magnesium': 200},
+      ),
+      isTrue,
+    );
+  });
+}
+
+class _CountingRepo extends InMemoryJournalRepository {
+  final void Function() onFoodsBetween;
+  _CountingRepo(this.onFoodsBetween);
+
+  @override
+  Future<List<FoodEntry>> foodsBetween(String fromDay, String toDay) {
+    onFoodsBetween();
+    return super.foodsBetween(fromDay, toDay);
+  }
 }

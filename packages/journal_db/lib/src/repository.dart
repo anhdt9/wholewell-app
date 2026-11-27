@@ -93,6 +93,7 @@ abstract interface class JournalRepository {
   Future<Product> productById(int id);
   Future<Product?> productByBarcode(String barcode);
   Future<List<ProductSummary>> listProducts({bool includeArchived = false});
+  Future<Map<int, List<ProductIngredient>>> allProductIngredients();
   Future<ProductDetail> productDetail(int productId);
   Future<void> updateProduct(
     int id, {
@@ -685,6 +686,15 @@ class InMemoryJournalRepository implements JournalRepository {
         recentDoses14Days: recent,
         now: now,
       ));
+    }
+    return out;
+  }
+
+  @override
+  Future<Map<int, List<ProductIngredient>>> allProductIngredients() async {
+    final out = <int, List<ProductIngredient>>{};
+    for (final i in _ingredients) {
+      (out[i.productId] ??= []).add(i);
     }
     return out;
   }

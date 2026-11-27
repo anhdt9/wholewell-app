@@ -120,9 +120,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
       onEdit: fb.savedFoodId == null
           ? null
           : () async {
-              final repo = state.session.repo;
-              if (repo == null) return;
-              final entry = await repo.foodById(fb.savedFoodId!);
+              final entry = await state.diary.foodById(fb.savedFoodId!);
               if (entry != null && nav.mounted) {
                 final editFb = await nav.push<FoodLogFeedback>(
                   MaterialPageRoute(builder: (_) => EditFoodScreen(entry: entry)),

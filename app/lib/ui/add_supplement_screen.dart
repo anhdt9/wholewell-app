@@ -167,7 +167,6 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
       };
 
   List<IntakeLine> _buildOneOffLines(ReferencePack pack) {
-    final conv = UnitConverter(pack);
     final out = <IntakeLine>[];
     for (final l in _lines) {
       final raw = double.tryParse(l.amount.text.trim().replaceAll(',', '.'));
@@ -180,24 +179,14 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
         'folicAcid' => NutrientForm.folicAcid,
         _ => NutrientForm.unknown,
       };
-      final converted = conv.convertIntakeLine(IntakeLineInput(
+      final line = SupplementIngredientHelper.toOneOffIntakeLine(
+        pack,
         nutrientId: l.nutrientId,
-        source: IntakeSource.supplement,
         form: form,
         amount: raw,
         unit: labelUnit,
-      ));
-      if (converted.amounts.isEmpty) continue;
-      out.add(IntakeLine(
-        nutrientId: l.nutrientId,
-        source: IntakeSource.supplement,
-        form: form,
-        uncertain: converted.uncertain,
-        labelAmount: raw,
-        labelUnit: labelUnit.name,
-        amounts: converted.amounts,
-        ulAmounts: converted.ulAmounts,
-      ));
+      );
+      if (line != null) out.add(line);
     }
     return out;
   }

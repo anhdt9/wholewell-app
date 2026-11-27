@@ -100,24 +100,15 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
     _lines = [for (final l in widget.initialLines) l];
   }
 
-  bool _isUnitCompatible(EditableIngredient l, ReferencePack pack) {
-    if (l.nutrientId == null || l.labelAmount == null || l.labelAmount! <= 0) return true;
-    try {
-      UnitConverter(pack).convertIntakeLine(IntakeLineInput(
+  bool _isUnitCompatible(EditableIngredient l, ReferencePack pack) =>
+      SupplementIngredientHelper.isUnitCompatible(
+        pack,
         nutrientId: l.nutrientId,
-        source: IntakeSource.supplement,
         form: l.form,
-        amount: l.labelAmount!,
+        amount: l.labelAmount,
         unit: l.labelUnit,
-        compoundKind: l.isCompound
-            ? (l.form == NutrientForm.unknown ? CompoundKind.unknown : CompoundKind.compound)
-            : CompoundKind.elemental,
-      ));
-      return true;
-    } on ArgumentError {
-      return false;
-    }
-  }
+        isCompound: l.isCompound,
+      );
 
   bool get _allUnitCompatible {
     if (_lines.isEmpty) return false;
@@ -155,102 +146,32 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
     );
   }
 
-  IngredientDraft _toDraft(EditableIngredient l, ReferencePack pack) {
-    final conv = UnitConverter(pack);
-    if (l.nutrientId == null || l.labelAmount == null) {
-      return IngredientDraft(
+  IngredientDraft _toDraft(EditableIngredient l, ReferencePack pack) =>
+      SupplementIngredientHelper.toDraft(
+        pack,
+        nutrientId: l.nutrientId,
         freeName: l.freeName,
         form: l.form,
         labelAmount: l.labelAmount,
-        labelUnit: l.labelUnit.name,
-        isCompound: false,
-        origin: l.origin,
-        confirmed: l.confirmed,
-      );
-    }
-    try {
-      final converted = conv.convertIntakeLine(IntakeLineInput(
-        nutrientId: l.nutrientId,
-        source: IntakeSource.supplement,
-        form: l.form,
-        amount: l.labelAmount!,
-        unit: l.labelUnit,
-        compoundKind: l.isCompound
-            ? (l.form == NutrientForm.unknown ? CompoundKind.unknown : CompoundKind.compound)
-            : CompoundKind.elemental,
-      ));
-      final def = pack.nutrients[l.nutrientId!];
-      final stdAmount = converted.amounts[l.nutrientId!] ?? converted.amounts.values.firstOrNull;
-      return IngredientDraft(
-        nutrientId: l.nutrientId,
-        form: l.form,
-        amountPerServing: stdAmount,
-        unit: def?.unit,
-        labelAmount: l.labelAmount,
-        labelUnit: l.labelUnit.name,
+        labelUnit: l.labelUnit,
         isCompound: l.isCompound,
         origin: l.origin,
         confirmed: l.confirmed,
       );
-    } on ArgumentError {
-      return IngredientDraft(
-        nutrientId: l.nutrientId,
-        form: l.form,
-        labelAmount: l.labelAmount,
-        labelUnit: l.labelUnit.name,
-        isCompound: l.isCompound,
-        origin: l.origin,
-        confirmed: false,
-      );
-    }
-  }
 
   ({IngredientSanityResult sanity, bool unitIncompatible}) _sanity(
     EditableIngredient l,
     AppState state,
-  ) {
-    if (l.nutrientId == null || l.labelAmount == null || l.labelAmount! <= 0) {
-      return (
-        sanity: const IngredientSanityResult(
-          suspectedUnitMistake: false,
-          exceedsSingleServingUl: false,
-        ),
-        unitIncompatible: false,
+  ) =>
+      SupplementIngredientHelper.checkSanity(
+        state.pack,
+        profile: state.profile,
+        nutrientId: l.nutrientId,
+        form: l.form,
+        amount: l.labelAmount,
+        unit: l.labelUnit,
+        isCompound: l.isCompound,
       );
-    }
-    final profile = state.profile ??
-        const Profile(
-          ageYears: 30,
-          sex: Sex.male,
-          heightCm: 170,
-          weightKg: 65,
-          activityLevel: ActivityLevel.inactive,
-        );
-    try {
-      final res = UnitConverter(state.pack).checkIngredientSanity(
-        profile,
-        IntakeLineInput(
-          nutrientId: l.nutrientId,
-          source: IntakeSource.supplement,
-          form: l.form,
-          amount: l.labelAmount!,
-          unit: l.labelUnit,
-          compoundKind: l.isCompound
-              ? (l.form == NutrientForm.unknown ? CompoundKind.unknown : CompoundKind.compound)
-              : CompoundKind.elemental,
-        ),
-      );
-      return (sanity: res, unitIncompatible: false);
-    } on ArgumentError {
-      return (
-        sanity: const IngredientSanityResult(
-          suspectedUnitMistake: false,
-          exceedsSingleServingUl: false,
-        ),
-        unitIncompatible: true,
-      );
-    }
-  }
 
   Future<void> _editOrAddLine([int? index]) async {
     final pack = AppScope.of(context).pack;
@@ -679,18 +600,15 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                 if (!_isFree && _nutrientId == null) return;
                 if (_isFree && _freeName.text.trim().isEmpty) return;
                 if (!_isFree) {
-                  try {
-                    UnitConverter(widget.pack).convertIntakeLine(IntakeLineInput(
-                      nutrientId: _nutrientId,
-                      source: IntakeSource.supplement,
-                      form: _form,
-                      amount: amt,
-                      unit: _unit,
-                      compoundKind: _isCompound
-                          ? (_form == NutrientForm.unknown ? CompoundKind.unknown : CompoundKind.compound)
-                          : CompoundKind.elemental,
-                    ));
-                  } on ArgumentError {
+                  final ok = SupplementIngredientHelper.isUnitCompatible(
+                    widget.pack,
+                    nutrientId: _nutrientId,
+                    form: _form,
+                    amount: amt,
+                    unit: _unit,
+                    isCompound: _isCompound,
+                  );
+                  if (!ok) {
                     ScaffoldMessenger.maybeOf(context)?.showSnackBar(
                       const SnackBar(content: Text('Đơn vị này không phù hợp với chất đã chọn.')),
                     );

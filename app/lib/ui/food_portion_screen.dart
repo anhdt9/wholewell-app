@@ -196,51 +196,28 @@ class _FoodPortionScreenState extends State<FoodPortionScreen> {
     final cus = widget.customFood;
     final title = lib?.nameVi ?? cus!.name;
 
-    // Tính tóm tắt dinh dưỡng tức thì theo khẩu phần hiện tại.
-    double kcal = 0;
-    double protein = 0;
-    double fat = 0;
-    double carb = 0;
-    double addedSugar = 0;
-    double? totalSugar;
-    bool sugarKnown;
-
-    if (cus != null) {
-      sugarKnown = cus.addedSugarKnown;
-      final input = LabelFoodBuilder.entryFromCustomFood(
-        cus,
-        usedQty: _qty,
-        meal: widget.initialMeal,
-        at: widget.initialAt,
-        pack: state.pack,
-      );
-      for (final l in input.lines) {
-        kcal += l.amounts['energyKcal'] ?? 0;
-        protein += l.amounts['protein'] ?? 0;
-        fat += l.amounts['fat'] ?? 0;
-        carb += l.amounts['carbohydrate'] ?? 0;
-        addedSugar += l.amounts['addedSugar'] ?? 0;
-      }
-      for (final cl in cus.lines) {
-        if (cl.nutrientId == 'totalSugar') {
-          totalSugar = (totalSugar ?? 0) + cl.labelAmount * (_qty / cus.labelBasisQty);
-        }
-      }
-    } else {
-      final f = lib!;
-      sugarKnown = f.addedSugarKnown;
-      final lines = state.foodLibrary?.computeLines(f, _grams, pack: state.pack) ??
-          computeFoodIntakeLines(f, _grams, pack: state.pack);
-      for (final l in lines) {
-        kcal += l.amounts['energyKcal'] ?? 0;
-        protein += l.amounts['protein'] ?? 0;
-        fat += l.amounts['fat'] ?? 0;
-        carb += l.amounts['carbohydrate'] ?? 0;
-        addedSugar += l.amounts['addedSugar'] ?? 0;
-      }
-      final rawTs = f.displayAmountPer100g('totalSugar');
-      if (rawTs != null) totalSugar = rawTs * (_grams / 100.0);
-    }
+    // Tính tóm tắt dinh dưỡng tức thì qua domain helper dùng chung.
+    final preview = cus != null
+        ? LabelFoodBuilder.previewCustomFood(
+            cus,
+            qty: _qty,
+            meal: widget.initialMeal,
+            at: widget.initialAt,
+            pack: state.pack,
+          )
+        : LabelFoodBuilder.previewLibraryFood(
+            lib!,
+            grams: _grams,
+            pack: state.pack,
+            foodLibrary: state.foodLibrary,
+          );
+    final kcal = preview.kcal;
+    final protein = preview.protein;
+    final fat = preview.fat;
+    final carb = preview.carb;
+    final addedSugar = preview.addedSugar;
+    final totalSugar = preview.totalSugar;
+    final sugarKnown = preview.sugarKnown;
 
     return Scaffold(
       appBar: AppBar(title: Text(title)),
