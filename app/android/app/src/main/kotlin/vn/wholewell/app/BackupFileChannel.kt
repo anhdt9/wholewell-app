@@ -1,6 +1,7 @@
 package vn.wholewell.app
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Handler
@@ -8,6 +9,7 @@ import android.os.Looper
 import android.provider.OpenableColumns
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import java.io.ByteArrayOutputStream
 import java.util.concurrent.Executors
 
 /**
@@ -22,6 +24,7 @@ class BackupFileChannel(
         const val CHANNEL = "vn.wholewell.app/backup_files"
         private const val REQ_SAVE = 7101
         private const val REQ_PICK = 7102
+        private const val MAX_PICK_BYTES = 50 * 1024 * 1024
     }
 
     private val ioExecutor = Executors.newSingleThreadExecutor()
@@ -56,8 +59,14 @@ class BackupFileChannel(
                     type = mimeType
                     putExtra(Intent.EXTRA_TITLE, suggestedName)
                 }
-                @Suppress("DEPRECATION")
-                activity.startActivityForResult(intent, REQ_SAVE)
+                try {
+                    @Suppress("DEPRECATION")
+                    activity.startActivityForResult(intent, REQ_SAVE)
+                } catch (_: ActivityNotFoundException) {
+                    pendingSaveResult = null
+                    pendingSaveBytes = null
+                    result.error("NO_FILE_PICKER", "Thiết bị không có trình quản lý tệp.", null)
+                }
             }
 
             "pickFile" -> {
@@ -70,8 +79,13 @@ class BackupFileChannel(
                     addCategory(Intent.CATEGORY_OPENABLE)
                     type = "*/*"
                 }
-                @Suppress("DEPRECATION")
-                activity.startActivityForResult(intent, REQ_PICK)
+                try {
+                    @Suppress("DEPRECATION")
+                    activity.startActivityForResult(intent, REQ_PICK)
+                } catch (_: ActivityNotFoundException) {
+                    pendingPickResult = null
+                    result.error("NO_FILE_PICKER", "Thiết bị không có trình quản lý tệp.", null)
+                }
             }
 
             else -> result.notImplemented()
@@ -123,7 +137,19 @@ class BackupFileChannel(
                 ioExecutor.execute {
                     try {
                         val bytes = activity.contentResolver.openInputStream(uri)?.use { stream ->
-                            stream.readBytes()
+                            val out = ByteArrayOutputStream()
+                            val buf = ByteArray(16 * 1024)
+                            var total = 0
+                            while (true) {
+                                val n = stream.read(buf)
+                                if (n < 0) break
+                                total += n
+                                if (total > MAX_PICK_BYTES) {
+                                    throw IllegalStateException("Tệp quá lớn (> 50 MB).")
+                                }
+                                out.write(buf, 0, n)
+                            }
+                            out.toByteArray()
                         } ?: throw IllegalStateException("Không đọc được tệp.")
                         val name = queryDisplayName(uri) ?: "backup.wwbackup"
                         mainHandler.post {

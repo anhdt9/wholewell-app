@@ -184,44 +184,56 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
     final trimmed = code.trim();
     if (trimmed.isEmpty || _busy) return;
     setState(() => _busy = true);
-    final state = AppScope.of(context);
-    final found = await state.diary.findProductByBarcode(trimmed);
-    if (!mounted) return;
-    if (found != null) {
-      setState(() => _busy = false);
-      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-        const SnackBar(content: Text('Đã tìm thấy sản phẩm đã lưu.')),
-      );
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute<void>(builder: (_) => ProductDetailScreen(productId: found.id)),
-      );
-      return;
-    }
-
-    final dsld = state.dsldLibrary;
-    if (dsld != null) {
-      final matches = await dsld.findByBarcode(trimmed);
+    try {
+      final state = AppScope.of(context);
+      final found = await state.diary.findProductByBarcode(trimmed);
       if (!mounted) return;
-      if (matches.length == 1) {
+      if (found != null) {
         setState(() => _busy = false);
-        _openDsldProduct(matches.first);
+        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+          const SnackBar(content: Text('Đã tìm thấy sản phẩm đã lưu.')),
+        );
+        await Navigator.of(context).pushReplacement(
+          MaterialPageRoute<void>(builder: (_) => ProductDetailScreen(productId: found.id)),
+        );
         return;
       }
-      if (matches.length > 1) {
-        setState(() => _busy = false);
-        final picked = await _pickDsldVersion(trimmed, matches);
-        if (picked != null && mounted) {
-          _openDsldProduct(picked);
+
+      final dsld = state.dsldLibrary;
+      if (dsld != null) {
+        final matches = await dsld.findByBarcode(trimmed);
+        if (!mounted) return;
+        if (matches.length == 1) {
+          setState(() => _busy = false);
+          _openDsldProduct(matches.first);
+          return;
         }
-        return;
+        if (matches.length > 1) {
+          setState(() => _busy = false);
+          final picked = await _pickDsldVersion(trimmed, matches);
+          if (picked != null && mounted) {
+            _openDsldProduct(picked);
+          }
+          return;
+        }
+      }
+
+      setState(() {
+        _busy = false;
+        _barcode = trimmed;
+        _statusMsg = 'Chưa thấy trong thư viện nhãn. Hãy chụp bảng thành phần hoặc nhập tay.';
+      });
+    } on Object {
+      if (mounted) {
+        setState(() {
+          _statusMsg = 'Chưa tra được mã vạch. Thử lại.';
+        });
+      }
+    } finally {
+      if (mounted && _busy) {
+        setState(() => _busy = false);
       }
     }
-
-    setState(() {
-      _busy = false;
-      _barcode = trimmed;
-      _statusMsg = 'Chưa thấy trong thư viện nhãn. Hãy chụp bảng thành phần hoặc nhập tay.';
-    });
   }
 
   Future<DsldProductDetail?> _pickDsldVersion(String barcode, List<DsldProductDetail> matches) {
@@ -323,53 +335,68 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
       _scannerPaused = true;
       _statusMsg = null;
     });
-    // Nhả camera từ MobileScanner trước khi mở DocumentScanner / ImagePicker.
-    await Future<void>.delayed(const Duration(milliseconds: 50));
-    if (!mounted) return;
-    final state = AppScope.of(context);
-    final picked = fromCamera
-        ? await state.ocrEngine.captureLabelImage()
-        : await state.ocrEngine.pickLabelImageFromGallery();
-    if (!mounted) return;
-    if (picked.permissionDenied) {
-      setState(() {
-        _busy = false;
-        _scannerPaused = false;
-        _cameraDenied = fromCamera;
-        _statusMsg = 'Chưa có quyền máy ảnh. Bạn có thể mở cài đặt, chọn ảnh từ thư viện hoặc nhập tay.';
-      });
-      return;
-    }
-    if (picked.paths.isEmpty) {
-      setState(() {
-        _busy = false;
-        _scannerPaused = false;
-      });
-      return;
-    }
-
-    if (!fromCamera && _barcode == null) {
-      final detected = await _detectBarcodeFromImages(picked.paths, state);
+    try {
+      // Nhả camera từ MobileScanner trước khi mở DocumentScanner / ImagePicker.
+      await Future<void>.delayed(const Duration(milliseconds: 50));
       if (!mounted) return;
-      if (detected != null) {
+      final state = AppScope.of(context);
+      final picked = fromCamera
+          ? await state.ocrEngine.captureLabelImage()
+          : await state.ocrEngine.pickLabelImageFromGallery();
+      if (!mounted) return;
+      if (picked.permissionDenied) {
         setState(() {
           _busy = false;
           _scannerPaused = false;
-          _cameraDenied = false;
-          _imagePaths.addAll(picked.paths);
+          _cameraDenied = fromCamera;
+          _statusMsg = 'Chưa có quyền máy ảnh. Bạn có thể mở cài đặt, chọn ảnh từ thư viện hoặc nhập tay.';
         });
-        await _handleBarcode(detected);
         return;
       }
-    }
+      if (picked.paths.isEmpty) {
+        setState(() {
+          _busy = false;
+          _scannerPaused = false;
+        });
+        return;
+      }
 
-    setState(() {
-      _busy = false;
-      _scannerPaused = false;
-      _cameraDenied = false;
-      _imagePaths.addAll(picked.paths);
-      _statusMsg = 'Đã thêm ${picked.paths.length} ảnh (tổng ${_imagePaths.length}). Có thể chụp thêm mặt khác rồi bấm Đọc thông tin.';
-    });
+      if (!fromCamera && _barcode == null) {
+        final detected = await _detectBarcodeFromImages(picked.paths, state);
+        if (!mounted) return;
+        if (detected != null) {
+          setState(() {
+            _busy = false;
+            _scannerPaused = false;
+            _cameraDenied = false;
+            _imagePaths.addAll(picked.paths);
+          });
+          await _handleBarcode(detected);
+          return;
+        }
+      }
+
+      setState(() {
+        _busy = false;
+        _scannerPaused = false;
+        _cameraDenied = false;
+        _imagePaths.addAll(picked.paths);
+        _statusMsg = 'Đã thêm ${picked.paths.length} ảnh (tổng ${_imagePaths.length}). Có thể chụp thêm mặt khác rồi bấm Đọc thông tin.';
+      });
+    } on Object {
+      if (mounted) {
+        setState(() {
+          _statusMsg = 'Chưa chọn hoặc chụp được ảnh. Thử lại.';
+        });
+      }
+    } finally {
+      if (mounted && (_busy || _scannerPaused)) {
+        setState(() {
+          _busy = false;
+          _scannerPaused = false;
+        });
+      }
+    }
   }
 
   Future<String?> _detectBarcodeFromImages(List<String> paths, AppState state) async {
@@ -401,28 +428,40 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
       _busy = true;
       _statusMsg = 'Đang đọc chữ trên ${_imagePaths.length} ảnh...';
     });
-    final state = AppScope.of(context);
-    final ocr = await state.ocrEngine.recognizeLabelFromImages(_imagePaths);
-    if (!mounted) return;
-    if (ocr.errorMessage != null && ocr.lines.isEmpty) {
-      setState(() {
-        _busy = false;
-        _statusMsg = ocr.errorMessage;
-      });
-      return;
+    try {
+      final state = AppScope.of(context);
+      final ocr = await state.ocrEngine.recognizeLabelFromImages(_imagePaths);
+      if (!mounted) return;
+      if (ocr.errorMessage != null && ocr.lines.isEmpty) {
+        setState(() {
+          _busy = false;
+          _statusMsg = ocr.errorMessage;
+        });
+        return;
+      }
+      ParsedLabelPackage? pkg;
+      final aiJson = await state.ocrEngine.extractLabelJsonWithOnDeviceAi(ocr.lines);
+      if (aiJson != null) {
+        pkg = SupplementLabelParser.parseAiJson(aiJson, ocr.lines);
+      }
+      pkg ??= SupplementLabelParser.parsePackage(ocr.lines);
+      if (!mounted) return;
+      setState(() => _busy = false);
+      _openConfirm(
+        [for (final p in pkg.ingredients) EditableIngredient.fromParsed(p, state.pack)],
+        pkg: pkg,
+      );
+    } on Object {
+      if (mounted) {
+        setState(() {
+          _statusMsg = 'Không đọc được chữ từ ảnh. Thử lại hoặc nhập tay.';
+        });
+      }
+    } finally {
+      if (mounted && _busy) {
+        setState(() => _busy = false);
+      }
     }
-    ParsedLabelPackage? pkg;
-    final aiJson = await state.ocrEngine.extractLabelJsonWithOnDeviceAi(ocr.lines);
-    if (aiJson != null) {
-      pkg = SupplementLabelParser.parseAiJson(aiJson, ocr.lines);
-    }
-    pkg ??= SupplementLabelParser.parsePackage(ocr.lines);
-    if (!mounted) return;
-    setState(() => _busy = false);
-    _openConfirm(
-      [for (final p in pkg.ingredients) EditableIngredient.fromParsed(p, state.pack)],
-      pkg: pkg,
-    );
   }
 
   void _openConfirm(List<EditableIngredient> initial, {ParsedLabelPackage? pkg}) {

@@ -59,6 +59,9 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
    - **#26:** Công tắc bật/tắt từng bữa (`Bữa sáng`, `Bữa trưa`, `Bữa tối`) trong `Tôi → Giờ trong ngày` (giữ giờ cũ khi bật lại, cho phép tắt cả 3 bữa chính), lọc bữa ở `Ghi món`, `Nhập theo nhãn`, `Đặt lịch uống`, `evaluateScheduleRules` và `defaultMealFor`, vẫn giữ món cũ đọc/sửa bình thường ở `Sửa món`.
    - **#27:** Bỏ bước `4/4 Hiển thị calo` khỏi luồng vào app lần đầu (`1/3`..`3/3`, nút `Xong`, mặc định hiện số calo và vẫn chỉnh được ở `Tôi → Hiển thị`), tự hoàn tất CSDL cũ đang dở `calorie_display`.
    - **#28:** Công tắc tùy chọn `"Hiện tên sản phẩm trên thông báo"` trong `Tôi → Nhắc giờ` (tắt mặc định; chỉ đồng bộ tên sản phẩm dạng `"Đến giờ uống: <tên SP>"` khi bật, xóa sạch ngay khi tắt, không hiện tên chất hay liều lượng).
+10. **Kiểm toán mã nguồn (Audit):**
+    - **Phần 1 (Phân tích tĩnh & Dọn rác — PR #34 đã gộp vào `main`):** nâng cấp `very_good_analysis` v11, xử lý `Future` / `unawaited` / `try-finally` / type safety, rà dead code & assets thừa.
+    - **Phần 3 & Phần 4 (Bảo mật, Lifecycle & Edge cases — nhánh `chore/audit-security-edge-cases`):** rà lịch sử Git (0 secret), `AndroidManifest.xml` / `DbKeyStore.kt` / `BackupFileChannel.kt`, thêm giới hạn timeout cho Google Drive API, khóa double-tap trên `Hôm nay` / `Lần uống hôm nay` / `Ghi món` / hộp thoại hộp sản phẩm, bảo vệ `try/finally` cho `ScanProductScreen` / `TextEditingController` và kiểm tra `ctx.mounted` / `.isFinite`.
 
 ## Để sau MVP (giai đoạn 2)
 

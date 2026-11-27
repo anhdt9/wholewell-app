@@ -554,87 +554,124 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
   }
 
   Future<void> _editBox([StockBox? box]) async {
+    final diary = AppScope.of(context).diary;
     final remCtrl = TextEditingController(text: box == null ? '' : fmt(box.remaining));
     final expCtrl = TextEditingController(
       text: box?.expiryMonth == null ? '' : fmtExpiryMonth(box!.expiryMonth!),
     );
     String? err;
-    final saved = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setLocal) => AlertDialog(
-          title: Text(box == null ? 'Thêm hộp' : 'Sửa hộp'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: remCtrl,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(
-                  labelText: 'Số còn lại (${countUnitLabel(widget.product.countUnit)})',
+    var saving = false;
+    final bool? saved;
+    try {
+      saved = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => StatefulBuilder(
+          builder: (ctx, setLocal) => AlertDialog(
+            title: Text(box == null ? 'Thêm hộp' : 'Sửa hộp'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: remCtrl,
+                  enabled: !saving,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                    labelText: 'Số còn lại (${countUnitLabel(widget.product.countUnit)})',
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: expCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Hạn dùng (tùy chọn)',
-                  hintText: 'MM/YYYY',
-                ),
-              ),
-              if (err != null) ...[
                 const SizedBox(height: 8),
-                Text(err!, style: TextStyle(color: Theme.of(ctx).colorScheme.error)),
+                TextField(
+                  controller: expCtrl,
+                  enabled: !saving,
+                  decoration: const InputDecoration(
+                    labelText: 'Hạn dùng (tùy chọn)',
+                    hintText: 'MM/YYYY',
+                  ),
+                ),
+                if (err != null) ...[
+                  const SizedBox(height: 8),
+                  Text(err!, style: TextStyle(color: Theme.of(ctx).colorScheme.error)),
+                ],
               ],
+            ),
+            actions: [
+              if (box != null)
+                TextButton(
+                  onPressed: saving
+                      ? null
+                      : () async {
+                          setLocal(() => saving = true);
+                          try {
+                            await diary.deleteProductBox(box.id);
+                            if (ctx.mounted) Navigator.pop(ctx, true);
+                          } on Object {
+                            if (ctx.mounted) {
+                              setLocal(() {
+                                saving = false;
+                                err = 'Không xóa được hộp. Thử lại.';
+                              });
+                            }
+                          }
+                        },
+                  child: Text('Xóa', style: TextStyle(color: Theme.of(ctx).colorScheme.error)),
+                ),
+              TextButton(
+                onPressed: saving ? null : () => Navigator.pop(ctx, false),
+                child: const Text('Hủy'),
+              ),
+              FilledButton(
+                onPressed: saving
+                    ? null
+                    : () async {
+                        final rem = double.tryParse(remCtrl.text.trim().replaceAll(',', '.'));
+                        if (rem == null || !rem.isFinite || rem < 0) {
+                          setLocal(() => err = 'Số còn lại không được âm.');
+                          return;
+                        }
+                        final parsed = parseExpiryMmYyyy(expCtrl.text);
+                        if (!parsed.ok) {
+                          setLocal(() => err = 'Nhập hạn dùng theo tháng/năm (MM/YYYY), tháng từ 01 đến 12.');
+                          return;
+                        }
+                        setLocal(() {
+                          saving = true;
+                          err = null;
+                        });
+                        try {
+                          if (box == null) {
+                            await diary.addProductBox(
+                              widget.product.id,
+                              remaining: rem,
+                              expiryMonth: parsed.yyyyMm,
+                            );
+                          } else {
+                            await diary.updateProductBox(
+                              box.id,
+                              remaining: rem,
+                              expiryMonth: parsed.yyyyMm,
+                            );
+                          }
+                          if (ctx.mounted) Navigator.pop(ctx, true);
+                        } on Object {
+                          if (ctx.mounted) {
+                            setLocal(() {
+                              saving = false;
+                              err = 'Không lưu được hộp. Thử lại.';
+                            });
+                          }
+                        }
+                      },
+                child: const Text('Lưu'),
+              ),
             ],
           ),
-          actions: [
-            if (box != null)
-              TextButton(
-                onPressed: () async {
-                  await AppScope.of(context).diary.deleteProductBox(box.id);
-                  if (ctx.mounted) Navigator.pop(ctx, true);
-                },
-                child: Text('Xóa', style: TextStyle(color: Theme.of(ctx).colorScheme.error)),
-              ),
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
-            FilledButton(
-              onPressed: () async {
-                final rem = double.tryParse(remCtrl.text.trim().replaceAll(',', '.'));
-                if (rem == null || !rem.isFinite || rem < 0) {
-                  setLocal(() => err = 'Số còn lại không được âm.');
-                  return;
-                }
-                final parsed = parseExpiryMmYyyy(expCtrl.text);
-                if (!parsed.ok) {
-                  setLocal(() => err = 'Nhập hạn dùng theo tháng/năm (MM/YYYY), tháng từ 01 đến 12.');
-                  return;
-                }
-                final diary = AppScope.of(context).diary;
-                if (box == null) {
-                  await diary.addProductBox(
-                    widget.product.id,
-                    remaining: rem,
-                    expiryMonth: parsed.yyyyMm,
-                  );
-                } else {
-                  await diary.updateProductBox(
-                    box.id,
-                    remaining: rem,
-                    expiryMonth: parsed.yyyyMm,
-                  );
-                }
-                if (ctx.mounted) Navigator.pop(ctx, true);
-              },
-              child: const Text('Lưu'),
-            ),
-          ],
         ),
-      ),
-    );
-    remCtrl.dispose();
-    expCtrl.dispose();
-    if (saved == true) await _load();
+      );
+    } finally {
+      remCtrl.dispose();
+      expCtrl.dispose();
+    }
+    if (saved == true && mounted) await _load();
   }
 
   @override

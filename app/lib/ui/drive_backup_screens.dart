@@ -168,36 +168,45 @@ class _DriveConsentScreenState extends State<DriveConsentScreen> {
   String? _errorText;
 
   Future<void> _continue() async {
+    if (_busy) return;
     setState(() {
       _busy = true;
       _errorText = null;
     });
     final state = AppScope.of(context);
-    final auth = await state.signInGoogleDrive();
-    if (!mounted) return;
-    switch (auth) {
-      case GoogleAuthSignedIn():
-        final saved = await state.grantDriveConsent(mvpConsentVersion);
-        if (!mounted) return;
-        if (!saved) {
+    try {
+      final auth = await state.signInGoogleDrive();
+      if (!mounted) return;
+      switch (auth) {
+        case GoogleAuthSignedIn():
+          final saved = await state.grantDriveConsent(mvpConsentVersion);
+          if (!mounted) return;
+          if (!saved) {
+            setState(() {
+              _busy = false;
+              _errorText = 'Chưa lưu được đồng ý. Thử lại.';
+            });
+            return;
+          }
+          await Navigator.of(context).pushReplacement(
+            MaterialPageRoute<void>(builder: (_) => const CreateDriveBackupScreen()),
+          );
+        case GoogleAuthCancelled():
+          setState(() => _busy = false);
+        case GoogleAuthFailed(:final isNetworkError):
           setState(() {
             _busy = false;
-            _errorText = 'Chưa lưu được đồng ý. Thử lại.';
+            _errorText = isNetworkError
+                ? 'Chưa kết nối được Google Drive. Kiểm tra mạng và thử lại.'
+                : 'Không đăng nhập được Google Drive. Kiểm tra tài khoản Google hoặc thử lại.';
           });
-          return;
-        }
-        await Navigator.of(context).pushReplacement(
-          MaterialPageRoute<void>(builder: (_) => const CreateDriveBackupScreen()),
-        );
-      case GoogleAuthCancelled():
-        setState(() => _busy = false);
-      case GoogleAuthFailed(:final isNetworkError):
-        setState(() {
-          _busy = false;
-          _errorText = isNetworkError
-              ? 'Chưa kết nối được Google Drive. Kiểm tra mạng và thử lại.'
-              : 'Không đăng nhập được Google Drive. Kiểm tra tài khoản Google hoặc thử lại.';
-        });
+      }
+    } on Object {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _errorText = 'Chưa kết nối được Google Drive. Kiểm tra mạng và thử lại.';
+      });
     }
   }
 
@@ -347,25 +356,34 @@ class _RestoreDriveBackupScreenState extends State<RestoreDriveBackupScreen> {
   }
 
   Future<void> _signInAndLoad({bool switchAccount = false}) async {
+    if (_loadingList || _busy) return;
     setState(() {
       _loadingList = true;
       _errorText = null;
     });
     final state = AppScope.of(context);
-    final auth = switchAccount
-        ? await state.switchGoogleDriveAccount()
-        : await state.signInGoogleDrive();
-    if (!mounted) return;
-    switch (auth) {
-      case GoogleAuthSignedIn():
-        await _loadBackups();
-      case GoogleAuthCancelled():
-        setState(() => _loadingList = false);
-      case GoogleAuthFailed():
-        setState(() {
-          _loadingList = false;
-          _errorText = 'Chưa kết nối được Google Drive. Kiểm tra mạng và thử lại.';
-        });
+    try {
+      final auth = switchAccount
+          ? await state.switchGoogleDriveAccount()
+          : await state.signInGoogleDrive();
+      if (!mounted) return;
+      switch (auth) {
+        case GoogleAuthSignedIn():
+          await _loadBackups();
+        case GoogleAuthCancelled():
+          setState(() => _loadingList = false);
+        case GoogleAuthFailed():
+          setState(() {
+            _loadingList = false;
+            _errorText = 'Chưa kết nối được Google Drive. Kiểm tra mạng và thử lại.';
+          });
+      }
+    } on Object {
+      if (!mounted) return;
+      setState(() {
+        _loadingList = false;
+        _errorText = 'Chưa kết nối được Google Drive. Kiểm tra mạng và thử lại.';
+      });
     }
   }
 
@@ -392,6 +410,7 @@ class _RestoreDriveBackupScreenState extends State<RestoreDriveBackupScreen> {
   }
 
   Future<void> _restore() async {
+    if (_busy) return;
     final id = _selectedId;
     if (id == null || _secretCtl.text.trim().isEmpty) return;
 

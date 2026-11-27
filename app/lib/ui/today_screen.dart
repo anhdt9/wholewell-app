@@ -146,12 +146,38 @@ class TodayScreen extends StatelessWidget {
   }
 }
 
-class _NextDoseCard extends StatelessWidget {
+class _NextDoseCard extends StatefulWidget {
   final DiaryController diary;
   const _NextDoseCard({required this.diary});
 
   @override
+  State<_NextDoseCard> createState() => _NextDoseCardState();
+}
+
+class _NextDoseCardState extends State<_NextDoseCard> {
+  bool _busy = false;
+
+  Future<void> _markSlotTaken(List<Schedule> slotItems, String todayStr, DateTime now) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      for (final s in slotItems) {
+        if (!mounted) break;
+        await markScheduledDoseTaken(
+          context,
+          schedule: s,
+          scheduleDay: todayStr,
+          at: now,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final diary = widget.diary;
     final now = DateTime.now();
     final todayStr = dayKey(diary.day);
     final occMap = {for (final o in diary.todayOccurrences) o.scheduleId: o};
@@ -218,17 +244,7 @@ class _NextDoseCard extends StatelessWidget {
           const SizedBox(height: 8),
           if (phase == ScheduleWindowPhase.inWindow)
             FilledButton.tonal(
-              onPressed: () async {
-                for (final s in slotItems) {
-                  if (!context.mounted) break;
-                  await markScheduledDoseTaken(
-                    context,
-                    schedule: s,
-                    scheduleDay: todayStr,
-                    at: now,
-                  );
-                }
-              },
+              onPressed: _busy ? null : () => _markSlotTaken(slotItems, todayStr, now),
               child: Text(slotItems.length > 1 ? 'Đã uống cả ${slotItems.length}' : 'Đã uống'),
             )
           else

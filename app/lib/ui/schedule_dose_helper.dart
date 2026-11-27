@@ -197,7 +197,7 @@ Future<void> showReminderQuickConfirmSheet(
                     OutlinedButton(
                       onPressed: () async {
                         final t = await showTimePicker(context: ctx, initialTime: pickedTime);
-                        if (t != null) setSheetState(() => pickedTime = t);
+                        if (t != null && ctx.mounted) setSheetState(() => pickedTime = t);
                       },
                       child: Text(formatMinutesHhMm(pickedTime.hour * 60 + pickedTime.minute)),
                     ),
