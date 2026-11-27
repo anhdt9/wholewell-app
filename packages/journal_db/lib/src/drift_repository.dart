@@ -1697,6 +1697,18 @@ class DriftJournalRepository implements JournalRepository {
   }
 
   @override
+  Future<void> updateWorkout(int id, DateTime startAt, WorkoutEntry w) {
+    final (ms, tz, day) = _when(startAt);
+    return _guard(
+      write: true,
+      () => _update(
+        'UPDATE workout_entries SET start_at = ?, tz_offset = ?, day = ?, activity_code = ?, minutes = ? WHERE id = ?',
+        [ms, tz, day, w.activityCode, w.minutes, id],
+      ),
+    );
+  }
+
+  @override
   Future<void> deleteWorkout(int id) => _guard(
     write: true,
     () => _update('DELETE FROM workout_entries WHERE id = ?', [id]),

@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
 import '../state/diary_controller.dart';
+import 'add_food_screen.dart';
 import 'common/common_widgets.dart';
 import 'day_times_screen.dart';
 import 'drive_backup_screens.dart';
@@ -11,6 +12,7 @@ import 'labels.dart';
 import 'profile_screen.dart';
 import 'schedule_dose_helper.dart';
 import 'sources_screen.dart';
+import 'supplements_screen.dart';
 import 'today_doses_screen.dart';
 import 'water_log_screen.dart';
 
@@ -78,6 +80,21 @@ class TodayScreen extends StatelessWidget {
         ],
         if (isToday && diary.todaySchedules.isNotEmpty) ...[
           _NextDoseCard(diary: diary),
+          const SizedBox(height: 12),
+        ],
+        if (isToday &&
+            !hasFood &&
+            diary.todayDoses.isEmpty &&
+            state.todayWaters.isEmpty &&
+            state.todayWorkouts.isEmpty) ...[
+          _EmptyTodayHintCard(
+            onLogFood: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const AddFoodScreen()),
+            ),
+            onAddSupplement: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const ScanProductScreen()),
+            ),
+          ),
           const SizedBox(height: 12),
         ],
         if (!state.hideCalories) ...[
@@ -354,6 +371,53 @@ class _WaterCard extends StatelessWidget {
   }
 }
 
+class _EmptyTodayHintCard extends StatelessWidget {
+  final VoidCallback onLogFood;
+  final VoidCallback onAddSupplement;
+  const _EmptyTodayHintCard({
+    required this.onLogFood,
+    required this.onAddSupplement,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Chưa có mục nào hôm nay', style: t.titleMedium),
+            const SizedBox(height: 4),
+            Text(
+              'Ghi bữa ăn đầu tiên hoặc thêm sản phẩm bổ sung để xem tổng kết trong ngày.',
+              style: t.bodySmall,
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilledButton.tonalIcon(
+                  onPressed: onLogFood,
+                  icon: const Icon(Icons.restaurant),
+                  label: const Text('Ghi món ăn'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: onAddSupplement,
+                  icon: const Icon(Icons.medication_outlined),
+                  label: const Text('Thêm bổ sung'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _EnergyCard extends StatelessWidget {
   final DailyReport report;
   final CautionLabels labels;
@@ -363,17 +427,36 @@ class _EnergyCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final r = report;
     final eer = r.eerKcal;
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Expanded(child: _Stat(label: 'Calo nạp', value: '${r.energyInKcal.round()} kcal')),
-              Expanded(child: _Stat(label: labels.calorieGoalLabel, value: eer == null ? '—' : '$eer kcal')),
-              Expanded(child: _Stat(label: 'Tiêu hao khi tập', value: '${r.energyOutWorkoutKcal.round()} kcal')),
-            ]),
+            LayoutBuilder(builder: (context, constraints) {
+              final stackStats = textScale >= 1.3 || constraints.maxWidth < 340;
+              final stats = [
+                _Stat(label: 'Calo nạp', value: '${r.energyInKcal.round()} kcal'),
+                _Stat(label: labels.calorieGoalLabel, value: eer == null ? '—' : '$eer kcal'),
+                _Stat(label: 'Tiêu hao khi tập', value: '${r.energyOutWorkoutKcal.round()} kcal'),
+              ];
+              if (stackStats) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (var i = 0; i < stats.length; i++) ...[
+                      if (i > 0) const SizedBox(height: 8),
+                      stats[i],
+                    ],
+                  ],
+                );
+              }
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [for (final s in stats) Expanded(child: s)],
+              );
+            }),
             if (eer != null) ...[
               const SizedBox(height: 12),
               LinearProgressIndicator(value: (r.energyInKcal / eer).clamp(0, 1).toDouble()),
@@ -414,30 +497,49 @@ class _MacroRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = share;
-    final color = switch (s.status) {
-      RangeStatus.within => Colors.green,
-      RangeStatus.below => Colors.orange,
-      RangeStatus.above => Colors.orange,
-    };
+    final cs = Theme.of(context).colorScheme;
+    final color = s.status == RangeStatus.within ? cs.primary : cs.secondary;
     final note = switch (s.status) {
       RangeStatus.within => 'trong khoảng',
       RangeStatus.below => 'thấp hơn khoảng',
       RangeStatus.above => 'cao hơn khoảng',
     };
+    final detail = '${s.percentEnergy.round()}% · ${s.amdr.min.round()}–${s.amdr.max.round()}% · $note';
+    final progress = (s.percentEnergy / 100).clamp(0, 1).toDouble();
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(children: [
-        SizedBox(width: 80, child: Text(macroLabel(s.macro))),
-        Expanded(
-          child: LinearProgressIndicator(value: (s.percentEnergy / 100).clamp(0, 1).toDouble(), color: color),
-        ),
-        const SizedBox(width: 8),
-        SizedBox(
-          width: 150,
-          child: Text('${s.percentEnergy.round()}% · ${s.amdr.min.round()}–${s.amdr.max.round()}% · $note',
-              style: Theme.of(context).textTheme.bodySmall),
-        ),
-      ]),
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: LayoutBuilder(builder: (context, constraints) {
+        final narrowOrLargeText = textScale >= 1.3 || constraints.maxWidth < 360;
+        if (narrowOrLargeText) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                spacing: 8,
+                runSpacing: 2,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(macroLabel(s.macro), style: Theme.of(context).textTheme.bodyMedium),
+                  Text(detail, style: Theme.of(context).textTheme.bodySmall),
+                ],
+              ),
+              const SizedBox(height: 4),
+              LinearProgressIndicator(value: progress, color: color),
+            ],
+          );
+        }
+        return Row(children: [
+          SizedBox(width: 80, child: Text(macroLabel(s.macro))),
+          Expanded(child: LinearProgressIndicator(value: progress, color: color)),
+          const SizedBox(width: 8),
+          Flexible(
+            flex: 2,
+            child: Text(detail, style: Theme.of(context).textTheme.bodySmall),
+          ),
+        ]);
+      }),
     );
   }
 }

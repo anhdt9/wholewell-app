@@ -46,6 +46,8 @@ class AppState extends ChangeNotifier {
   bool _drivePendingDeleteActive = false;
   bool _drivePendingDeleteNeedsReauth = false;
   bool _checkingDriveState = false;
+  DateTime? _backgroundedAt;
+  String _lastActiveDayKey = dayKey(DateTime.now());
 
   AppState({
     required this.pack,
@@ -161,13 +163,30 @@ class AppState extends ChangeNotifier {
     await _checkDriveStateAndPendingDelete();
   }
 
-  /// Kiểm tra tự tăng tuổi và cờ chờ xóa Drive khi app quay lại tiền cảnh.
-  Future<void> onAppResume() async {
+  /// Ghi nhận thời điểm app vào nền để kiểm tra giới hạn 5 phút khi quay lại.
+  void onAppBackgrounded({DateTime? now}) {
+    _backgroundedAt ??= now ?? DateTime.now();
+  }
+
+  /// Kiểm tra tự tăng tuổi, đưa ngày đang xem về hôm nay (nếu qua nửa đêm / nền > 5 phút)
+  /// và cờ chờ xóa Drive khi app quay lại tiền cảnh.
+  Future<void> onAppResume({bool atRootScreen = true, DateTime? now}) async {
+    final current = now ?? DateTime.now();
+    final todayStr = dayKey(current);
+    final crossedMidnight = todayStr != _lastActiveDayKey;
+    final bg = _backgroundedAt;
+    final longBackground = bg != null && current.difference(bg) > const Duration(minutes: 5);
+    _backgroundedAt = null;
+    _lastActiveDayKey = todayStr;
+
     if (status == DataStatus.waitingForUnlock || status == DataStatus.lowStorage) {
       await start();
       return;
     }
     if (status == DataStatus.ready && stage == SessionStage.ready) {
+      if (atRootScreen && (crossedMidnight || longBackground) && dayKey(day) != todayStr) {
+        await diary.setDay(current);
+      }
       await diary.checkAgeBumpOnReady();
     }
     await _checkDriveStateAndPendingDelete(fromResume: true);
@@ -269,6 +288,7 @@ class AppState extends ChangeNotifier {
 
   Future<void> setHideCalories(bool v) => diary.setHideCalories(v);
   Future<void> setDay(DateTime d) => diary.setDay(d);
+  Future<void> resetToToday({DateTime? now}) => setDay(now ?? DateTime.now());
   Future<void> addItem(IntakeItem it) => diary.addItem(it);
   Future<void> recordDose(String name, List<IntakeLine> lines) => diary.recordDose(name, lines);
   Future<void> removeItem(int index) => diary.removeItemByIndex(index);
