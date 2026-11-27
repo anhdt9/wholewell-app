@@ -30,13 +30,14 @@ class SurfaceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final ww = context.wwColors;
     return Container(
       width: double.infinity,
       margin: margin,
       padding: padding,
       decoration: BoxDecoration(
-        color: color ?? cs.surfaceContainerLow,
-        borderRadius: AppRadius.card,
+        color: color ?? ww.cardSurface,
+        borderRadius: AppRadius.cardRadius,
         border: Border.all(color: borderColor ?? cs.outlineVariant),
       ),
       child: child,
@@ -189,7 +190,7 @@ class EstimateChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
-        borderRadius: AppRadius.card,
+        borderRadius: AppRadius.pillRadius,
       ),
       child: Text(
         label,
@@ -211,7 +212,7 @@ class SafetyNote extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline, size: 18, color: cs.onSurfaceVariant),
+          Icon(LucideIcons.info, size: 18, color: cs.onSurfaceVariant),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(message, style: Theme.of(context).textTheme.bodySmall),
@@ -254,12 +255,12 @@ class _CollapsibleScheduleNoteState extends State<CollapsibleScheduleNote> {
               onTap: () => setState(() => _manualExpand = true),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, size: 18, color: cs.onSurfaceVariant),
+                  Icon(LucideIcons.info, size: 18, color: cs.onSurfaceVariant),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text('Lưu ý lịch (${widget.messages.length})', style: t.bodySmall),
                   ),
-                  const Icon(Icons.chevron_right, size: 18),
+                  const Icon(LucideIcons.chevronRight, size: 18),
                 ],
               ),
             )
@@ -268,7 +269,7 @@ class _CollapsibleScheduleNoteState extends State<CollapsibleScheduleNote> {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.info_outline, size: 18, color: cs.onSurfaceVariant),
+                    Icon(LucideIcons.info, size: 18, color: cs.onSurfaceVariant),
                     const SizedBox(width: 8),
                     Expanded(child: Text('Lưu ý lịch', style: t.titleSmall)),
                     TextButton(
@@ -422,7 +423,7 @@ class ErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.warning_amber_rounded, size: 40, color: cs.error),
+            Icon(LucideIcons.triangleAlert, size: 40, color: cs.error),
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center),
             if (actionLabel != null && onAction != null) ...[
@@ -471,7 +472,7 @@ class StepScaffold extends StatelessWidget {
             ? null
             : IconButton(
                 tooltip: 'Quay lại',
-                icon: const Icon(Icons.arrow_back),
+                icon: const Icon(LucideIcons.arrowLeft),
                 onPressed: busy ? null : onBack,
               ),
         title: title != null ? Text(title!) : null,

@@ -75,9 +75,13 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
     - Thêm `allProductIngredients()` trong `JournalRepository` để bỏ vòng lặp N+1 `productDetail` trong `DiaryController.reload()`.
     - Memoize `report()` và `periodReport7Days()` theo phiên bản dữ liệu, và dùng `_writeUiStateOnly` cho `dismissScheduleNotices` / `hideTipCardForToday` để tránh bắn lại 22 query `reload()`.
     - Đưa `lineCountsTowardUl` vào `health_engine`, `foodById` vào `DiaryController`, `previewCustomFood`/`previewLibraryFood`/`previewEditEntryKcal` vào `LabelFoodBuilder`, và tách `SupplementIngredientHelper` khỏi UI (`repository_test.dart`, `app_state_test.dart`).
-14. **Chuẩn hóa Design System & Feedback Patterns (`chore/design-system-and-feedback`):**
+14. **Chuẩn hóa Design System & Feedback Patterns (PR #39 đã gộp vào `main`):**
     - Thêm [tokens.dart](../app/lib/ui/design_system/tokens.dart) (`AppSpacing`, `AppRadius`, `buildWholeWellTheme` với `filledButtonTheme`, `outlinedButtonTheme`, `cardTheme`) áp dụng cho cả chế độ sáng và tối trong `main.dart`.
     - Bổ sung `SurfaceCard`, `ResponsiveStatRow`, `AppFeedback.showSnack`, `showConfirmDialog` vào [common_widgets.dart](../app/lib/ui/common/common_widgets.dart) và thay thế các đoạn `Container`/hộp thoại xác nhận/`SnackBar` lặp lại trên toàn giao diện.
+15. **Đại tu giao diện — PR 1: Nền móng (`ui/refresh-p1-foundation`):**
+    - Thiết kế UX tổng thể [design/visual-refresh.md](design/visual-refresh.md): **đã duyệt** 27/11/2026 (gồm `SnackBarBehavior.floating`).
+    - Nhúng offline bộ font `BeVietnamPro` (`Regular`/`Medium`/`SemiBold`/`Bold`, 100% không gọi mạng) trong `app/assets/fonts/` và `app/pubspec.yaml`; thêm `lucide_icons_flutter` thay toàn bộ `Icons.*` trong `app/lib/`.
+    - Hoàn thiện [tokens.dart](../app/lib/ui/design_system/tokens.dart) với `WholeWellColors` (`ThemeExtension` Light/Dark), `AppSpacing` (`xs..xxl`), `AppRadius` (`control/card/sheet/pill`), `tabularNumberStyle`, và `ThemeData` Light/Dark đồng bộ (bao gồm `SnackBarBehavior.floating`).
 
 ## Để sau MVP (giai đoạn 2)
 

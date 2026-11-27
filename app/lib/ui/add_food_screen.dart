@@ -242,7 +242,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
                   controller: _searchCtrl,
                   onChanged: _onSearchChanged,
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon: const Icon(LucideIcons.search),
                     hintText: 'Tìm món...',
                     border: const OutlineInputBorder(),
                     suffixIcon: _showSpinner
@@ -252,11 +252,12 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
                           )
                         : (isSearching
                             ? IconButton(
+                                tooltip: 'Xóa tìm kiếm',
                                 onPressed: () {
                                   _searchCtrl.clear();
                                   unawaited(_refreshLists(''));
                                 },
-                                icon: const Icon(Icons.clear),
+                                icon: const Icon(LucideIcons.x),
                               )
                             : null),
                   ),
@@ -352,12 +353,13 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
       ),
       trailing: showMenu
           ? IconButton(
-              icon: const Icon(Icons.more_vert),
+              tooltip: 'Tùy chọn',
+              icon: const Icon(LucideIcons.ellipsisVertical),
               onPressed: () => showModalBottomSheet<void>(
                 context: context,
                 builder: (ctx) => SafeArea(
                   child: ListTile(
-                    leading: const Icon(Icons.delete_outline),
+                    leading: const Icon(LucideIcons.trash2),
                     title: const Text('Bỏ lưu món này'),
                     onTap: () {
                       Navigator.pop(ctx);

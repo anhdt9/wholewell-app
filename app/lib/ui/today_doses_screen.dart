@@ -136,10 +136,10 @@ class _ScheduleOccurrenceTileState extends State<_ScheduleOccurrenceTile> {
             : ' ${dose.at.hour.toString().padLeft(2, '0')}:${dose.at.minute.toString().padLeft(2, '0')}';
         return ListTile(
           contentPadding: EdgeInsets.zero,
-          leading: const Icon(Icons.check_circle_outline),
+          leading: const Icon(LucideIcons.circleCheck),
           title: Text('$name · $doseLabel'),
           subtitle: Text('Đã uống$timeStr'),
-          trailing: dose == null ? null : const Icon(Icons.chevron_right),
+          trailing: dose == null ? null : const Icon(LucideIcons.chevronRight),
           onTap: dose == null
               ? null
               : () => Navigator.of(context).push(
@@ -150,7 +150,7 @@ class _ScheduleOccurrenceTileState extends State<_ScheduleOccurrenceTile> {
       case ScheduleWindowPhase.skipped:
         return ListTile(
           contentPadding: EdgeInsets.zero,
-          leading: const Icon(Icons.remove_circle_outline),
+          leading: const Icon(LucideIcons.circleMinus),
           title: Text('$name · $doseLabel'),
           subtitle: const Text('Đã bỏ qua'),
           trailing: TextButton(

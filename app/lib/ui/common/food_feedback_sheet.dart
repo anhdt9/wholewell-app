@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:health_engine/health_engine.dart';
 
 import '../../state/diary_controller.dart';
+import '../design_system/tokens.dart';
 import '../labels.dart';
 
 String _ulScopeText(UlScope s) => switch (s) {
@@ -103,7 +104,7 @@ Future<void> presentFoodFeedback(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Row(
                     children: [
-                      const Icon(Icons.inventory_2_outlined, size: 18),
+                      const Icon(LucideIcons.package, size: 18),
                       const SizedBox(width: 8),
                       const Expanded(child: Text('Kho đã hết · Thêm hộp')),
                       if (onAddBox != null)

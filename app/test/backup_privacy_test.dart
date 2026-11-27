@@ -511,8 +511,14 @@ void main() {
       });
       expect((await driveProvider.listBackups()).length, 3);
 
+      // Chờ SnackBar nổi tự đóng trước khi chạm nút phía dưới màn hình.
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+
       // Ngắt kết nối Google Drive (giữ bản trên Drive).
-      await tester.tap(find.text('Ngắt kết nối Google Drive'));
+      final disconnectBtn = find.text('Ngắt kết nối Google Drive');
+      await tester.ensureVisible(disconnectBtn);
+      await tester.tap(disconnectBtn);
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Ngắt kết nối'));
       await tester.pumpAndSettle();

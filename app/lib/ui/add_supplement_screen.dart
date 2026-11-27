@@ -340,7 +340,7 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
                         ? 'Còn ${fmt(s.validRemaining)} ${countUnitLabel(s.product.countUnit)}'
                         : 'Kho đã hết',
                   ),
-                  trailing: const Icon(Icons.chevron_right),
+                  trailing: const Icon(LucideIcons.chevronRight),
                   onTap: () => _pickProduct(s.product.id),
                 ),
               const Divider(),
@@ -351,9 +351,9 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
               ),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.edit_note),
+              leading: const Icon(LucideIcons.filePenLine),
               title: const Text('Ghi một lần (không lưu tủ)'),
-              trailing: const Icon(Icons.chevron_right),
+              trailing: const Icon(LucideIcons.chevronRight),
               onTap: () => setState(() => _oneOffMode = true),
             ),
           ],
@@ -373,7 +373,7 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
           if (_isEditing)
             IconButton(
               tooltip: 'Xóa',
-              icon: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
+              icon: Icon(LucideIcons.trash2, color: Theme.of(context).colorScheme.error),
               onPressed: _deleteExisting,
             ),
           TextButton(onPressed: _saving ? null : _save, child: const Text('Lưu')),
@@ -384,7 +384,7 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
         children: [
           ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.schedule),
+            leading: const Icon(LucideIcons.clock),
             title: const Text('Giờ uống'),
             trailing: Text(timeStr, style: Theme.of(context).textTheme.titleMedium),
             onTap: _pickTime,
@@ -465,7 +465,7 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
             const SizedBox(height: 12),
             OutlinedButton.icon(
               onPressed: _addOneOffLine,
-              icon: const Icon(Icons.add),
+              icon: const Icon(LucideIcons.plus),
               label: const Text('Thêm chất'),
             ),
           ],

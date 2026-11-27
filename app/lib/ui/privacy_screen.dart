@@ -289,7 +289,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
             contentPadding: EdgeInsets.zero,
             minTileHeight: 56,
             title: const Text('Chính sách quyền riêng tư'),
-            trailing: const Icon(Icons.chevron_right),
+            trailing: const Icon(LucideIcons.chevronRight),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute<void>(builder: (_) => const PrivacyPolicyScreen()),
             ),

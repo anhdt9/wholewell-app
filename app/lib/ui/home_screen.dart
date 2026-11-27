@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../state/app_scope.dart';
 import '../state/app_state.dart';
 import 'common/log_sheet.dart';
+import 'design_system/tokens.dart';
 import 'diary_screen.dart';
 import 'me_screen.dart';
 import 'schedule_dose_helper.dart';
@@ -81,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           if (_tab < 2)
             TextButton.icon(
-              icon: const Icon(Icons.calendar_today, size: 18),
+              icon: const Icon(LucideIcons.calendar, size: 18),
               label: Text('${d.day}/${d.month}/${d.year}'),
               onPressed: () async {
                 final picked = await showDatePicker(
@@ -99,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: _tab < 2
           ? FloatingActionButton.extended(
               heroTag: 'log_sheet',
-              icon: const Icon(Icons.add),
+              icon: const Icon(LucideIcons.plus),
               label: const Text('Ghi'),
               onPressed: () => showLogSheet(context),
             )
@@ -115,10 +116,10 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         },
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.insights), label: 'Hôm nay'),
-          NavigationDestination(icon: Icon(Icons.restaurant), label: 'Nhật ký'),
-          NavigationDestination(icon: Icon(Icons.medication_outlined), label: 'Bổ sung'),
-          NavigationDestination(icon: Icon(Icons.person), label: 'Tôi'),
+          NavigationDestination(icon: Icon(LucideIcons.activity), label: 'Hôm nay'),
+          NavigationDestination(icon: Icon(LucideIcons.utensils), label: 'Nhật ký'),
+          NavigationDestination(icon: Icon(LucideIcons.pill), label: 'Bổ sung'),
+          NavigationDestination(icon: Icon(LucideIcons.user), label: 'Tôi'),
         ],
       ),
     );

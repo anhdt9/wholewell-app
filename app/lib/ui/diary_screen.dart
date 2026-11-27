@@ -89,8 +89,8 @@ class _DiaryScreenState extends State<DiaryScreen> {
           for (final f in foods)
             EntryTile(
               leadingIcon: f.lines.any((l) => l.source == IntakeSource.fortified)
-                  ? Icons.local_drink
-                  : Icons.restaurant,
+                  ? LucideIcons.cupSoda
+                  : LucideIcons.utensils,
               title: f.name,
               subtitle: _foodSubtitle(f),
               timeText: fmtTime24(f.at),
@@ -110,7 +110,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
               confirmDismiss: (_) => _confirmSwipeDelete(context, 'lần uống bổ sung'),
               onDismissed: (_) => state.diary.deleteDoseEntry(d.id),
               child: EntryTile(
-                leadingIcon: Icons.medication,
+                leadingIcon: LucideIcons.pill,
                 title: d.name ?? 'Bổ sung',
                 subtitle: '${fmt(d.servings)} lần · ${d.lines.length} chất',
                 timeText: fmtTime24(d.at),
@@ -139,7 +139,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
             ),
           for (final w in waters)
             EntryTile(
-              leadingIcon: Icons.water_drop_outlined,
+              leadingIcon: LucideIcons.droplet,
               title: '${fmtWaterMl(w.ml)} ml',
               subtitle: 'Nước uống',
               timeText: fmtTime24(w.at),
@@ -156,7 +156,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
               confirmDismiss: (_) => _confirmSwipeDelete(context, 'buổi tập'),
               onDismissed: (_) => state.diary.deleteWorkout(w.id),
               child: EntryTile(
-                leadingIcon: Icons.directions_run,
+                leadingIcon: LucideIcons.footprints,
                 title: state.pack.activities[w.workout.activityCode]?.nameVi ?? w.workout.activityCode,
                 subtitle: '${fmt(w.workout.minutes)} phút',
                 timeText: fmtTime24(w.startAt),

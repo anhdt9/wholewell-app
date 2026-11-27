@@ -95,7 +95,7 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
           if (widget.editing != null)
             IconButton(
               tooltip: 'Xóa khỏi nhật ký',
-              icon: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
+              icon: Icon(LucideIcons.trash2, color: Theme.of(context).colorScheme.error),
               onPressed: _saving ? null : _delete,
             ),
           TextButton(
@@ -112,7 +112,7 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
           child: Row(children: [
             Expanded(
               child: TextField(
-                decoration: const InputDecoration(labelText: 'Tìm hoạt động', prefixIcon: Icon(Icons.search)),
+                decoration: const InputDecoration(labelText: 'Tìm hoạt động', prefixIcon: Icon(LucideIcons.search)),
                 onChanged: (s) => setState(() => _query = s),
               ),
             ),

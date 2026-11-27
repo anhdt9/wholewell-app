@@ -236,7 +236,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                       child: OutlinedButton(
                         onPressed: () => _stepQty(-1),
                         style: OutlinedButton.styleFrom(padding: EdgeInsets.zero),
-                        child: const Icon(Icons.remove),
+                        child: const Icon(LucideIcons.minus),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -264,7 +264,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                       child: OutlinedButton(
                         onPressed: () => _stepQty(1),
                         style: OutlinedButton.styleFrom(padding: EdgeInsets.zero),
-                        child: const Icon(Icons.add),
+                        child: const Icon(LucideIcons.plus),
                       ),
                     ),
                   ],
