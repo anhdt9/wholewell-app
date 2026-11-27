@@ -245,7 +245,7 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
               days: state.diary.window7Days,
               nutrientId: def.id,
               targetValue: target?.value,
-              targetLabel: cl.caution ? 'Mức TC' : 'Mức KN',
+              targetLabel: cl.caution ? 'Mức tham chiếu' : 'Mức khuyến nghị',
               ulValue: activeStatus.ul,
               unit: u,
             ),
@@ -531,7 +531,7 @@ class _DashedLegendItem extends StatelessWidget {
       children: [
         Container(width: 14, height: 2, color: color),
         const SizedBox(width: 6),
-        Text(text, style: tabularNumberStyle(t.bodySmall)),
+        Flexible(child: Text(text, style: tabularNumberStyle(t.bodySmall))),
       ],
     );
   }

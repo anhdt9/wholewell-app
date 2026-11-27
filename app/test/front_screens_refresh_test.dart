@@ -113,6 +113,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('7 ngày qua'), findsOneWidget);
+    expect(find.textContaining('Mức khuyến nghị ('), findsOneWidget);
     expect(find.textContaining('Giới hạn an toàn (350 mg)'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
