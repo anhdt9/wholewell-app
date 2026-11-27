@@ -68,9 +68,13 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
     - Đồng bộ luồng xóa toàn bộ dữ liệu từ `Tôi → Hồ sơ` theo `Quyền riêng tư` (`confirmAndWipeAllData`: hỏi gõ `XÓA`, tùy chọn xóa Drive, `await` xong mới về gốc).
     - Nhật ký: thêm `updateWorkout` trong `journal_db`, chạm vào buổi tập để sửa (`AddWorkoutScreen`), dùng `ValueKey('workout-${w.id}')`, thêm hộp thoại xác nhận khi vuốt xóa bổ sung và buổi tập.
     - Giao diện: bật `darkTheme` cho `MaterialApp`, bỏ màu cứng ở `_MacroRow`, co giãn `_EnergyCard` & `_MacroRow` theo cỡ chữ 200%, và thêm thẻ gợi ý nhẹ khi màn Hôm nay trống (`batch1_audit_fixes_test.dart`).
-12. **Bộ lọc vi chất & Màn Chi tiết chất (`feat/nutrient-filter-and-detail`):**
+12. **Bộ lọc vi chất & Màn Chi tiết chất (PR #37 đã gộp vào `main`):**
     - Thêm bộ lọc vi chất (`Tất cả`, `Có bổ sung`, `Dưới mức khuyến nghị` / `Dưới mức tham chiếu`) và thanh tiến độ hai đoạn (`TwoSegmentProgressBar`: Thực phẩm vs Bổ sung) trên màn Hôm nay ([today_screen.dart](../app/lib/ui/today_screen.dart)).
     - Tạo màn **Chi tiết chất** ([nutrient_detail_screen.dart](../app/lib/ui/nutrient_detail_screen.dart)): hiện đủ 2 tổng (mức khuyến nghị/ước tính vs giới hạn an toàn đúng phạm vi từng chất), đóng góp hôm nay theo nguồn/dạng, thông tin vitamin C + sắt, chuyển `[Hôm nay | 7 ngày]` với biểu đồ 7 ngày qua có `Semantics` và co giãn cỡ chữ 200% (`nutrient_detail_filter_test.dart`).
+13. **Tối ưu hiệu năng DB/State & Tách logic khỏi UI (`perf/cache-batch-queries-and-domain-helpers`):**
+    - Thêm `allProductIngredients()` trong `JournalRepository` để bỏ vòng lặp N+1 `productDetail` trong `DiaryController.reload()`.
+    - Memoize `report()` và `periodReport7Days()` theo phiên bản dữ liệu, và dùng `_writeUiStateOnly` cho `dismissScheduleNotices` / `hideTipCardForToday` để tránh bắn lại 22 query `reload()`.
+    - Đưa `lineCountsTowardUl` vào `health_engine`, `foodById` vào `DiaryController`, `previewCustomFood`/`previewLibraryFood`/`previewEditEntryKcal` vào `LabelFoodBuilder`, và tách `SupplementIngredientHelper` khỏi UI (`repository_test.dart`, `app_state_test.dart`).
 
 ## Để sau MVP (giai đoạn 2)
 

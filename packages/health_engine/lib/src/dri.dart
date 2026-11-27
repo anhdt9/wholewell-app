@@ -69,18 +69,36 @@ double? ulFor(ReferencePack pack, Profile p, String nutrientId) {
   return u1;
 }
 
+/// Kiểm tra nguồn nạp có nằm trong phạm vi UL của chất hay không.
+bool isSourceInUlScope(UlScope scope, IntakeSource source) => switch (scope) {
+      UlScope.total => true,
+      UlScope.supplement => source == IntakeSource.supplement,
+      UlScope.synthetic =>
+        source == IntakeSource.supplement || source == IntakeSource.fortified,
+    };
+
+/// Kiểm tra một dòng nạp có đóng góp (> 0) vào giới hạn an toàn của [def] hay không,
+/// dùng chung một quy tắc duy nhất với [amountForUl].
+bool lineCountsTowardUl(
+  NutrientDef def, {
+  required IntakeSource source,
+  required Map<String, double> amounts,
+  Map<String, double>? ulAmounts,
+}) {
+  if (!isSourceInUlScope(def.ulScope, source)) return false;
+  final key = def.ulKey ?? def.id;
+  final ulAmt = ulAmounts?[key] ?? amounts[key] ?? 0;
+  return ulAmt > 0;
+}
+
 /// Lượng chất dùng để so với UL, đúng phạm vi UL của từng chất (ưu tiên [IntakeItem.ulNutrients]).
 double amountForUl(NutrientDef def, Iterable<IntakeItem> items) {
   final key = def.ulKey ?? def.id;
   var sum = 0.0;
   for (final it in items) {
-    final counts = switch (def.ulScope) {
-      UlScope.total => true,
-      UlScope.supplement => it.source == IntakeSource.supplement,
-      UlScope.synthetic =>
-        it.source == IntakeSource.supplement || it.source == IntakeSource.fortified,
-    };
-    if (counts) sum += it.amountForUlKey(key);
+    if (isSourceInUlScope(def.ulScope, it.source)) {
+      sum += it.amountForUlKey(key);
+    }
   }
   return sum;
 }

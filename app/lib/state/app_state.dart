@@ -22,6 +22,7 @@ export 'db_session_controller.dart'
 export 'diary_controller.dart'
     show DayJournalData, DiaryController, DoseLogged, DoseLogOutcome, DoseNeedsExpiredChoice, FoodLogFeedback;
 export 'label_food_builder.dart';
+export 'supplement_ingredient_helper.dart';
 export 'supplement_label_parser.dart';
 
 /// Điều phối chung kết hợp [DbSessionController] và [DiaryController].

@@ -3,8 +3,30 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:food_library/food_library.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
+
+/// Tóm tắt dinh dưỡng xem trước cho màn chọn/sửa khẩu phần.
+class FoodPortionPreview {
+  final double kcal;
+  final double protein;
+  final double fat;
+  final double carb;
+  final double addedSugar;
+  final double? totalSugar;
+  final bool sugarKnown;
+
+  const FoodPortionPreview({
+    required this.kcal,
+    required this.protein,
+    required this.fat,
+    required this.carb,
+    required this.addedSugar,
+    this.totalSugar,
+    required this.sugarKnown,
+  });
+}
 
 /// Cách người dùng chọn nhập Folate / Axit folic trên nhãn bao bì.
 enum LabelFolateMode {
@@ -459,5 +481,80 @@ class LabelFoodBuilder {
       }
     }
     return out;
+  }
+
+  static FoodPortionPreview previewFromLines(
+    List<IntakeLine> lines, {
+    required bool sugarKnown,
+    double? totalSugar,
+  }) {
+    var kcal = 0.0;
+    var protein = 0.0;
+    var fat = 0.0;
+    var carb = 0.0;
+    var addedSugar = 0.0;
+    for (final l in lines) {
+      kcal += l.amounts['energyKcal'] ?? 0;
+      protein += l.amounts['protein'] ?? 0;
+      fat += l.amounts['fat'] ?? 0;
+      carb += l.amounts['carbohydrate'] ?? 0;
+      addedSugar += l.amounts['addedSugar'] ?? 0;
+    }
+    return FoodPortionPreview(
+      kcal: kcal,
+      protein: protein,
+      fat: fat,
+      carb: carb,
+      addedSugar: addedSugar,
+      totalSugar: totalSugar,
+      sugarKnown: sugarKnown,
+    );
+  }
+
+  static FoodPortionPreview previewCustomFood(
+    CustomFood cus, {
+    required double qty,
+    required Meal meal,
+    required DateTime at,
+    required ReferencePack pack,
+  }) {
+    final input = entryFromCustomFood(cus, usedQty: qty, meal: meal, at: at, pack: pack);
+    double? totalSugar;
+    for (final cl in cus.lines) {
+      if (cl.nutrientId == 'totalSugar') {
+        totalSugar = (totalSugar ?? 0) + cl.labelAmount * (qty / cus.labelBasisQty);
+      }
+    }
+    return previewFromLines(input.lines, sugarKnown: cus.addedSugarKnown, totalSugar: totalSugar);
+  }
+
+  static FoodPortionPreview previewLibraryFood(
+    FoodDetail f, {
+    required double grams,
+    required ReferencePack pack,
+    FoodLibraryRepository? foodLibrary,
+  }) {
+    final lines = foodLibrary?.computeLines(f, grams, pack: pack) ??
+        computeFoodIntakeLines(f, grams, pack: pack);
+    final rawTs = f.displayAmountPer100g('totalSugar');
+    final totalSugar = rawTs == null ? null : rawTs * (grams / 100.0);
+    return previewFromLines(lines, sugarKnown: f.addedSugarKnown, totalSugar: totalSugar);
+  }
+
+  static double previewEditEntryKcal(
+    FoodEntry entry, {
+    required double qty,
+    required String unitLabel,
+    FoodDetail? libraryDetail,
+  }) {
+    if (libraryDetail != null) {
+      final grams = libraryDetail.gramsForPortion(unitLabel, qty);
+      if (grams != null) {
+        final per100 = libraryDetail.displayAmountPer100g('energyKcal') ?? 0;
+        return per100 * (grams / 100.0);
+      }
+    }
+    final baseKcal = entry.lines.fold<double>(0, (s, l) => s + (l.amounts['energyKcal'] ?? 0));
+    return baseKcal * (qty / entry.portionQty);
   }
 }

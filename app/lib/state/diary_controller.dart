@@ -109,6 +109,11 @@ class DiaryController extends ChangeNotifier {
   bool _saveFailed = false;
   bool _readFailed = false;
   int _loadGen = 0;
+  int _reportDataVersion = 0;
+  int _dailyReportVersion = -1;
+  DailyReport? _cachedDailyReport;
+  int _periodReportVersion = -1;
+  PeriodReport? _cachedPeriodReport7Days;
 
   DiaryController({
     required this.pack,
@@ -165,8 +170,15 @@ class DiaryController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void _invalidateReportCache() {
+    _reportDataVersion++;
+    _cachedDailyReport = null;
+    _cachedPeriodReport7Days = null;
+  }
+
   void clear() {
     _loadGen++;
+    _invalidateReportCache();
     _profile = null;
     _hideCalories = false;
     _caution = false;
@@ -273,6 +285,7 @@ class DiaryController extends ChangeNotifier {
       final actualYestOccsF = repo.occurrencesOn(realYesterdayKey);
       final actualTodayDosesF = repo.dosesOn(realTodayKey);
       final productsF = repo.listProducts();
+      final allIngredientsF = repo.allProductIngredients();
       final dismissedSigF = repo.getUiState('dismissed_schedule_notice_sig');
       final hiddenTipDayF = repo.getUiState('hidden_tip_day');
       final lastBackupRawF = repo.getUiState('last_file_backup_at');
@@ -297,6 +310,7 @@ class DiaryController extends ChangeNotifier {
         actualYestOccsF,
         actualTodayDosesF,
         productsF,
+        allIngredientsF,
         dismissedSigF,
         hiddenTipDayF,
         lastBackupRawF,
@@ -306,10 +320,7 @@ class DiaryController extends ChangeNotifier {
       ]);
       if (gen != _loadGen) return;
       final products = await productsF;
-      final details = await Future.wait([
-        for (final p in products) repo.productDetail(p.product.id),
-      ]);
-      if (gen != _loadGen) return;
+      final allIngredients = await allIngredientsF;
       _profile = await profileF;
       _hideCalories = (await hideCalF) ?? false;
       _caution = (await consentProfileF)?.caution ?? false;
@@ -327,7 +338,7 @@ class DiaryController extends ChangeNotifier {
       _actualTodayDoses = await actualTodayDosesF;
       _allProducts = products;
       _ingredientsByProduct = {
-        for (final d in details) d.product.id: d.ingredients,
+        for (final p in products) p.product.id: allIngredients[p.product.id] ?? const [],
       };
       _dismissedScheduleNoticeSig = await dismissedSigF;
       _hiddenTipDay = await hiddenTipDayF;
@@ -344,6 +355,7 @@ class DiaryController extends ChangeNotifier {
           : DateTime.fromMillisecondsSinceEpoch(lastDriveMs, isUtc: true).toLocal();
       _driveConsent = await driveConsentF;
       _readFailed = false;
+      _invalidateReportCache();
     } on JournalStorageException {
       if (gen == _loadGen) _readFailed = true;
     } on StorageFullException {
@@ -1250,7 +1262,10 @@ class DiaryController extends ChangeNotifier {
   DailyReport? report() {
     final p = _profile;
     if (p == null) return null;
-    return dailyReport(
+    if (_dailyReportVersion == _reportDataVersion && _cachedDailyReport != null) {
+      return _cachedDailyReport;
+    }
+    final res = dailyReport(
       pack,
       p,
       todayItems,
@@ -1258,18 +1273,29 @@ class DiaryController extends ChangeNotifier {
       last7Days: _data.last7,
       workouts7: _data.workouts7,
     );
+    _cachedDailyReport = res;
+    _dailyReportVersion = _reportDataVersion;
+    return res;
   }
 
   PeriodReport? periodReport7Days() {
     final p = _profile;
     if (p == null) return null;
-    return averageReport(
+    if (_periodReportVersion == _reportDataVersion && _cachedPeriodReport7Days != null) {
+      return _cachedPeriodReport7Days;
+    }
+    final res = averageReport(
       pack,
       p,
       _data.last7,
       workouts7: _data.workouts7,
     );
+    _cachedPeriodReport7Days = res;
+    _periodReportVersion = _reportDataVersion;
+    return res;
   }
+
+  Future<FoodEntry?> foodById(int id) async => _repo?.foodById(id);
 
   ActivityLevel suggestedLevel() => suggestActivityLevel(pack, _data.workouts7);
 
@@ -1303,11 +1329,32 @@ class DiaryController extends ChangeNotifier {
       })) ??
       false;
 
-  Future<void> dismissScheduleNotices(String signature) =>
-      _write((repo) => repo.setUiState('dismissed_schedule_notice_sig', signature));
+  Future<void> _writeUiStateOnly(Future<void> Function(JournalRepository repo) fn) async {
+    final repo = _repo;
+    if (repo == null) return;
+    try {
+      await fn(repo);
+      _saveFailed = false;
+    } on StorageFullException {
+      _saveFailed = true;
+    } on JournalStorageException {
+      _saveFailed = true;
+    }
+    notifyListeners();
+  }
 
-  Future<void> hideTipCardForToday() =>
-      _write((repo) => repo.setUiState('hidden_tip_day', dayKey(_day)));
+  Future<void> dismissScheduleNotices(String signature) {
+    _dismissedScheduleNoticeSig = signature;
+    notifyListeners();
+    return _writeUiStateOnly((repo) => repo.setUiState('dismissed_schedule_notice_sig', signature));
+  }
+
+  Future<void> hideTipCardForToday() {
+    final key = dayKey(_day);
+    _hiddenTipDay = key;
+    notifyListeners();
+    return _writeUiStateOnly((repo) => repo.setUiState('hidden_tip_day', key));
+  }
 
   Future<int?> addSchedule(int productId, int timeOfDay, double servings, {required String validFrom}) =>
       _write((repo) => repo.addSchedule(productId, timeOfDay, servings, validFrom: validFrom));

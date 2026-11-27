@@ -986,6 +986,32 @@ class DriftJournalRepository implements JournalRepository {
         return out;
       });
 
+  ProductIngredient _rowToIngredient(Map<String, Object?> r) => ProductIngredient(
+        id: r['id'] as int,
+        productId: r['product_id'] as int,
+        nutrientId: r['nutrient_id'] as String?,
+        freeName: r['free_name'] as String?,
+        form: r['form'] as String,
+        amountPerServing: r['amount_per_serving'] == null ? null : _d(r['amount_per_serving']),
+        unit: r['unit'] as String?,
+        labelAmount: r['label_amount'] == null ? null : _d(r['label_amount']),
+        labelUnit: r['label_unit'] as String?,
+        isCompound: (r['is_compound'] as int? ?? 0) != 0,
+        origin: IngredientOrigin.values.byName(r['origin'] as String),
+        confirmed: (r['confirmed'] as int? ?? 0) != 0,
+      );
+
+  @override
+  Future<Map<int, List<ProductIngredient>>> allProductIngredients() => _guard(() async {
+        final rows = await _select('SELECT * FROM ingredients ORDER BY product_id, id');
+        final out = <int, List<ProductIngredient>>{};
+        for (final r in rows) {
+          final ing = _rowToIngredient(r);
+          (out[ing.productId] ??= []).add(ing);
+        }
+        return out;
+      });
+
   @override
   Future<ProductDetail> productDetail(int productId) => _guard(() async {
     final p = await _product(productId);
@@ -993,25 +1019,7 @@ class DriftJournalRepository implements JournalRepository {
       'SELECT * FROM ingredients WHERE product_id = ? ORDER BY id',
       [productId],
     );
-    final ings = [
-      for (final r in ingRows)
-        ProductIngredient(
-          id: r['id'] as int,
-          productId: r['product_id'] as int,
-          nutrientId: r['nutrient_id'] as String?,
-          freeName: r['free_name'] as String?,
-          form: r['form'] as String,
-          amountPerServing: r['amount_per_serving'] == null
-              ? null
-              : _d(r['amount_per_serving']),
-          unit: r['unit'] as String?,
-          labelAmount: r['label_amount'] == null ? null : _d(r['label_amount']),
-          labelUnit: r['label_unit'] as String?,
-          isCompound: (r['is_compound'] as int? ?? 0) != 0,
-          origin: IngredientOrigin.values.byName(r['origin'] as String),
-          confirmed: (r['confirmed'] as int? ?? 0) != 0,
-        ),
-    ];
+    final ings = [for (final r in ingRows) _rowToIngredient(r)];
     final boxes = await boxesOf(productId);
     return ProductDetail(product: p, ingredients: ings, boxes: boxes);
   });

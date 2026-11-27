@@ -789,6 +789,22 @@ void main() {
         expect((await repo.schedulesOn('2026-11-26')).map((s) => s.id), [sid2]);
         expect(await repo.schedulesOn('2026-11-27'), isEmpty);
 
+        await repo.saveProductIngredients(pid, const [
+          IngredientDraft(
+            nutrientId: 'calcium',
+            form: 'calcium_carbonate',
+            amountPerServing: 500,
+            unit: 'mg',
+            labelAmount: 1250,
+            labelUnit: 'mg',
+            isCompound: true,
+            origin: IngredientOrigin.manual,
+            confirmed: true,
+          ),
+        ]);
+        final allIng = await repo.allProductIngredients();
+        expect(allIng[pid]?.single.nutrientId, 'calcium');
+
         await repo.close();
       }
     });

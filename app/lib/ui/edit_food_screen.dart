@@ -9,6 +9,7 @@ import 'package:journal_db/journal_db.dart';
 
 import '../state/app_scope.dart';
 import '../state/diary_controller.dart';
+import '../state/label_food_builder.dart';
 import 'common/common_widgets.dart';
 import 'labels.dart';
 
@@ -77,18 +78,12 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
     super.dispose();
   }
 
-  double get _currentKcal {
-    final baseKcal = widget.entry.lines.fold<double>(0, (s, l) => s + (l.amounts['energyKcal'] ?? 0));
-    final detail = _libraryDetail;
-    if (detail != null) {
-      final grams = _selectedGrams(detail);
-      if (grams != null) {
-        final per100 = detail.displayAmountPer100g('energyKcal') ?? 0;
-        return per100 * (grams / 100.0);
-      }
-    }
-    return baseKcal * (_qty / widget.entry.portionQty);
-  }
+  double get _currentKcal => LabelFoodBuilder.previewEditEntryKcal(
+        widget.entry,
+        qty: _qty,
+        unitLabel: _unitLabel,
+        libraryDetail: _libraryDetail,
+      );
 
   double? _selectedGrams(FoodDetail detail) => detail.gramsForPortion(_unitLabel, _qty);
 
