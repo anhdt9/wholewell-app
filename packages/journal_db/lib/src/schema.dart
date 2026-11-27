@@ -8,7 +8,7 @@ library;
 import 'package:sqlite3/sqlite3.dart' show Database;
 
 /// Phiên bản lược đồ bản app này biết.
-const currentSchemaVersion = 2;
+const currentSchemaVersion = 3;
 
 /// Các bước di chuyển lược đồ mặc định (từ phiên bản n lên n + 1).
 final Map<int, void Function(Database db)> defaultDbMigrations = {
@@ -18,13 +18,27 @@ final Map<int, void Function(Database db)> defaultDbMigrations = {
       'CREATE INDEX IF NOT EXISTS idx_products_barcode ON products (barcode) WHERE barcode IS NOT NULL',
     );
   },
+  2: (db) {
+    db.execute(
+      'ALTER TABLE settings ADD COLUMN has_breakfast INTEGER NOT NULL DEFAULT 1 CHECK (has_breakfast IN (0, 1))',
+    );
+    db.execute(
+      'ALTER TABLE settings ADD COLUMN has_lunch INTEGER NOT NULL DEFAULT 1 CHECK (has_lunch IN (0, 1))',
+    );
+    db.execute(
+      'ALTER TABLE settings ADD COLUMN has_dinner INTEGER NOT NULL DEFAULT 1 CHECK (has_dinner IN (0, 1))',
+    );
+    db.execute(
+      'ALTER TABLE settings ADD COLUMN reminder_show_details INTEGER NOT NULL DEFAULT 0 CHECK (reminder_show_details IN (0, 1))',
+    );
+  },
 };
 
-/// Các câu tạo lược đồ mới nhất (v2), chạy trong một giao dịch khi tạo CSDL mới.
+/// Các câu tạo lược đồ mới nhất (v3), chạy trong một giao dịch khi tạo CSDL mới.
 List<String> get schemaCurrent => [
-      ...schemaV1.map(
-        (s) => s.contains('CREATE TABLE products (')
-            ? '''
+      ...schemaV1.map((s) {
+        if (s.contains('CREATE TABLE products (')) {
+          return '''
 CREATE TABLE products (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
@@ -34,9 +48,28 @@ CREATE TABLE products (
   barcode TEXT,
   created_at INTEGER NOT NULL,
   archived INTEGER NOT NULL DEFAULT 0 CHECK (archived IN (0, 1))
-)'''
-            : s,
-      ),
+)''';
+        }
+        if (s.contains('CREATE TABLE settings (')) {
+          return '''
+CREATE TABLE settings (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  hide_calories INTEGER CHECK (hide_calories IN (0, 1)),
+  show_tip_card INTEGER NOT NULL DEFAULT 1 CHECK (show_tip_card IN (0, 1)),
+  wake INTEGER NOT NULL DEFAULT 360 CHECK (wake BETWEEN 0 AND 1439),
+  breakfast INTEGER NOT NULL DEFAULT 420 CHECK (breakfast BETWEEN 0 AND 1439),
+  lunch INTEGER NOT NULL DEFAULT 720 CHECK (lunch BETWEEN 0 AND 1439),
+  dinner INTEGER NOT NULL DEFAULT 1140 CHECK (dinner BETWEEN 0 AND 1439),
+  sleep INTEGER NOT NULL DEFAULT 1350 CHECK (sleep BETWEEN 0 AND 1439),
+  day_times_confirmed INTEGER NOT NULL DEFAULT 0 CHECK (day_times_confirmed IN (0, 1)),
+  has_breakfast INTEGER NOT NULL DEFAULT 1 CHECK (has_breakfast IN (0, 1)),
+  has_lunch INTEGER NOT NULL DEFAULT 1 CHECK (has_lunch IN (0, 1)),
+  has_dinner INTEGER NOT NULL DEFAULT 1 CHECK (has_dinner IN (0, 1)),
+  reminder_show_details INTEGER NOT NULL DEFAULT 0 CHECK (reminder_show_details IN (0, 1))
+)''';
+        }
+        return s;
+      }),
       'CREATE INDEX IF NOT EXISTS idx_products_barcode ON products (barcode) WHERE barcode IS NOT NULL',
     ];
 

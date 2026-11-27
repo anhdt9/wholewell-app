@@ -201,28 +201,35 @@ class DiaryController extends ChangeNotifier {
 
   static DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
-  /// Bữa mặc định theo giờ trong ngày (07:00, 12:00, 19:00 ± 1,5 giờ).
-  static Meal defaultMealFor(DateTime now) {
+  /// Bữa mặc định theo giờ trong ngày (theo các bữa chính đang bật, ± 1,5 giờ).
+  static Meal defaultMealFor(DateTime now, [DayTimesSettings? settings]) {
+    final s = settings ?? const DayTimesSettings();
     final mins = now.hour * 60 + now.minute;
-    if ((mins - 7 * 60).abs() <= 90) return Meal.breakfast;
-    if ((mins - 12 * 60).abs() <= 90) return Meal.lunch;
-    if ((mins - 19 * 60).abs() <= 90) return Meal.dinner;
+    if (s.hasBreakfast && (mins - s.breakfast).abs() <= 90) return Meal.breakfast;
+    if (s.hasLunch && (mins - s.lunch).abs() <= 90) return Meal.lunch;
+    if (s.hasDinner && (mins - s.dinner).abs() <= 90) return Meal.dinner;
     return Meal.snack;
   }
 
   /// Giờ mặc định khi ghi cho [day] và [meal]: hôm nay -> giờ hiện tại; ngày cũ -> giờ đại diện bữa.
-  static DateTime defaultAtFor(DateTime day, Meal meal, {DateTime? now}) {
+  static DateTime defaultAtFor(
+    DateTime day,
+    Meal meal, {
+    DateTime? now,
+    DayTimesSettings? settings,
+  }) {
     final current = now ?? DateTime.now();
     if (dayKey(day) == dayKey(current)) {
       return DateTime(day.year, day.month, day.day, current.hour, current.minute, current.second);
     }
-    final (h, m) = switch (meal) {
-      Meal.breakfast => (7, 0),
-      Meal.lunch => (12, 0),
-      Meal.dinner => (19, 0),
-      Meal.snack => (15, 0),
+    final s = settings ?? const DayTimesSettings();
+    final mins = switch (meal) {
+      Meal.breakfast => s.breakfast,
+      Meal.lunch => s.lunch,
+      Meal.dinner => s.dinner,
+      Meal.snack => 15 * 60,
     };
-    return DateTime(day.year, day.month, day.day, h, m);
+    return DateTime(day.year, day.month, day.day, mins ~/ 60, mins % 60);
   }
 
   DateTime atNow() {
@@ -417,17 +424,12 @@ class DiaryController extends ChangeNotifier {
       })) ??
       false;
 
-  Future<bool> saveBodyProfileForOnboarding(Profile p) async =>
+  Future<bool> completeBodyProfileOnboarding(Profile p) async =>
       (await _write((repo) async {
         await repo.saveProfile(p);
-        await repo.saveOnboardingStep(OnboardingStep.calorieDisplay);
-        return true;
-      })) ??
-      false;
-
-  Future<bool> completeCalorieDisplayOnboarding(bool hideCalories) async =>
-      (await _write((repo) async {
-        await repo.saveHideCalories(hideCalories);
+        if (await repo.loadHideCalories() == null) {
+          await repo.saveHideCalories(false);
+        }
         await repo.saveOnboardingStep(OnboardingStep.done);
         return true;
       })) ??
@@ -529,7 +531,7 @@ class DiaryController extends ChangeNotifier {
 
   /// Ghi món gần đây (mở nhanh ≤3 chạm): món thư viện tính lại theo gói, món nhãn giữ nguyên.
   Future<FoodLogFeedback> logRecentFood(FoodEntry sample, {required Meal meal, DateTime? at}) async {
-    final useAt = at ?? defaultAtFor(_day, meal);
+    final useAt = at ?? defaultAtFor(_day, meal, settings: _dayTimesSettings);
     final ref = sample.foodRef;
     if (ref != null && !ref.startsWith('custom:') && _foodLibrary != null && !_foodLibraryBroken) {
       final detail = await _foodLibrary!.getById(ref);
@@ -1359,9 +1361,9 @@ class DiaryController extends ChangeNotifier {
     final scheds = overrideSchedules ?? _todaySchedules;
     if (scheds.isEmpty) return const [];
     final mealTimes = MealTimes(
-      breakfast: _dayTimesSettings.breakfast,
-      lunch: _dayTimesSettings.lunch,
-      dinner: _dayTimesSettings.dinner,
+      breakfast: _dayTimesSettings.hasBreakfast ? _dayTimesSettings.breakfast : null,
+      lunch: _dayTimesSettings.hasLunch ? _dayTimesSettings.lunch : null,
+      dinner: _dayTimesSettings.hasDinner ? _dayTimesSettings.dinner : null,
     );
     final inputs = <ScheduledDoseInput>[];
     for (final s in scheds) {
@@ -1417,10 +1419,18 @@ class DiaryController extends ChangeNotifier {
   }
 
   List<ScheduledReminderSlot> buildReminderSlots() {
+    final prodNames = {for (final p in _allProducts) p.product.id: p.product.name};
     final byTime = <int, List<int>>{};
+    final namesByTime = <int, List<String>>{};
     for (final s in _actualTodaySchedules) {
       (byTime[s.timeOfDay] ??= []).add(s.id);
+      final name = prodNames[s.productId]?.trim();
+      if (name != null && name.isNotEmpty) {
+        final list = namesByTime[s.timeOfDay] ??= [];
+        if (!list.contains(name)) list.add(name);
+      }
     }
+    final showDetails = _dayTimesSettings.reminderShowDetails;
     final times = byTime.keys.toList()..sort();
     return [
       for (final t in times)
@@ -1428,6 +1438,9 @@ class DiaryController extends ChangeNotifier {
           timeOfDayMinutes: t,
           itemCount: byTime[t]!.length,
           scheduleIds: byTime[t]!,
+          detailText: showDetails && (namesByTime[t]?.isNotEmpty ?? false)
+              ? namesByTime[t]!.join(', ')
+              : null,
         ),
     ];
   }

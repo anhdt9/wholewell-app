@@ -725,12 +725,30 @@ void main() {
         expect(s0.breakfast, 420);
         expect(s0.dayTimesConfirmed, isFalse);
         expect(s0.showTipCard, isTrue);
+        expect(s0.hasBreakfast, isTrue);
+        expect(s0.hasLunch, isTrue);
+        expect(s0.hasDinner, isTrue);
+        expect(s0.reminderShowDetails, isFalse);
 
-        await repo.saveDayTimesSettings(s0.copyWith(breakfast: 450, dayTimesConfirmed: true, showTipCard: false));
+        await repo.saveDayTimesSettings(
+          s0.copyWith(
+            breakfast: 450,
+            dayTimesConfirmed: true,
+            showTipCard: false,
+            hasBreakfast: false,
+            hasLunch: false,
+            hasDinner: false,
+            reminderShowDetails: true,
+          ),
+        );
         final s1 = await repo.loadDayTimesSettings();
         expect(s1.breakfast, 450);
         expect(s1.dayTimesConfirmed, isTrue);
         expect(s1.showTipCard, isFalse);
+        expect(s1.hasBreakfast, isFalse);
+        expect(s1.hasLunch, isFalse);
+        expect(s1.hasDinner, isFalse);
+        expect(s1.reminderShowDetails, isTrue);
 
         await repo.saveShowTipCard(true);
         expect((await repo.loadDayTimesSettings()).showTipCard, isTrue);

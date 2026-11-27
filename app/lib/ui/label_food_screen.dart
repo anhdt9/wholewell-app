@@ -8,6 +8,7 @@ import 'package:journal_db/journal_db.dart';
 import '../state/app_scope.dart';
 import '../state/diary_controller.dart';
 import '../state/label_food_builder.dart';
+import 'common/common_widgets.dart';
 import 'common/food_feedback_sheet.dart';
 import 'labels.dart';
 
@@ -200,7 +201,7 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
     final draft = LabelFoodDraft(
       name: _name.text.trim(),
       meal: _meal,
-      at: DiaryController.defaultAtFor(state.day, _meal),
+      at: DiaryController.defaultAtFor(state.day, _meal, settings: state.dayTimesSettings),
       labelBasisQty: basis,
       labelBasisUnit: _basisUnit,
       usedQty: used,
@@ -303,12 +304,7 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
                   ),
                   const SizedBox(height: 12),
                   SegmentedButton<Meal>(
-                    segments: const [
-                      ButtonSegment(value: Meal.breakfast, label: Text('Sáng')),
-                      ButtonSegment(value: Meal.lunch, label: Text('Trưa')),
-                      ButtonSegment(value: Meal.dinner, label: Text('Tối')),
-                      ButtonSegment(value: Meal.snack, label: Text('Phụ')),
-                    ],
+                    segments: enabledMealSegments(state.dayTimesSettings, alwaysInclude: _meal),
                     selected: {_meal},
                     onSelectionChanged: (s) => setState(() => _meal = s.first),
                   ),

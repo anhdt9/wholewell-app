@@ -42,6 +42,10 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
+      _meal = DiaryController.defaultMealFor(
+        DateTime.now(),
+        AppScope.of(context).diary.dayTimesSettings,
+      );
       unawaited(_refreshLists(''));
     }
   }
@@ -151,7 +155,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
         builder: (_) => FoodPortionScreen.library(
           food: detail,
           initialMeal: _meal,
-          initialAt: DiaryController.defaultAtFor(state.day, _meal),
+          initialAt: DiaryController.defaultAtFor(state.day, _meal, settings: state.dayTimesSettings),
         ),
       ),
     );
@@ -165,7 +169,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
         builder: (_) => FoodPortionScreen.custom(
           custom: c,
           initialMeal: _meal,
-          initialAt: DiaryController.defaultAtFor(state.day, _meal),
+          initialAt: DiaryController.defaultAtFor(state.day, _meal, settings: state.dayTimesSettings),
         ),
       ),
     );
@@ -231,12 +235,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
             child: Column(
               children: [
                 SegmentedButton<Meal>(
-                  segments: const [
-                    ButtonSegment(value: Meal.breakfast, label: Text('Sáng')),
-                    ButtonSegment(value: Meal.lunch, label: Text('Trưa')),
-                    ButtonSegment(value: Meal.dinner, label: Text('Tối')),
-                    ButtonSegment(value: Meal.snack, label: Text('Phụ')),
-                  ],
+                  segments: enabledMealSegments(state.dayTimesSettings, alwaysInclude: _meal),
                   selected: {_meal},
                   onSelectionChanged: (s) => setState(() => _meal = s.first),
                 ),

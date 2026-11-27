@@ -27,6 +27,7 @@ WholeWell **không** đọc dữ liệu từ Health Connect, Apple HealthKit, th
 - Toàn bộ dữ liệu của bạn được lưu cục bộ trên thiết bị trong cơ sở dữ liệu SQLite mã hóa bằng SQLite3MultipleCiphers (ChaCha20).
 - Khóa mã hóa riêng của cơ sở dữ liệu được tạo ngẫu nhiên trên máy và bảo vệ bởi kho khóa của hệ điều hành (Android Keystore yêu cầu thiết bị đã mở khóa).
 - Ứng dụng tắt cơ chế sao lưu tự động của hệ điều hành (`allowBackup="false"`, chặn chuyển dữ liệu ngoài ý muốn) để tránh rò rỉ dữ liệu chưa kiểm soát.
+- **Thông báo nhắc giờ trên màn hình khóa:** Mặc định thông báo chỉ hiện `"Đến giờ uống"`, không hiển thị tên sản phẩm, tên chất hay liều lượng. Nếu bạn tự bật tùy chọn `"Hiện tên sản phẩm trên thông báo"` trong `Tôi → Nhắc giờ`, tên sản phẩm bổ sung có thể nhìn thấy trên màn hình khóa (ứng dụng vẫn không hiển thị tên chất hay liều lượng).
 - WholeWell **không** vận hành máy chủ lưu trữ dữ liệu sức khỏe của bạn. Nhà phát triển không thể xem hay truy cập nhật ký của bạn.
 
 ## 4. Quyền của bạn (xem, sửa, xuất, rút đồng ý và xóa)

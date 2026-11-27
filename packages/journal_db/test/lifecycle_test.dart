@@ -91,24 +91,55 @@ void main() {
     expect(DbFiles(dir).preMigrationCopy(currentSchemaVersion).existsSync(), isFalse);
   });
 
-  test('di chuyển v1 -> v2 thêm cột barcode cho bảng products', () async {
+  test('di chuyển v1 -> v3 thêm barcode cho products và cài đặt bữa/thông báo cho settings', () async {
     final dir = tempDir();
     final keys = FakeSecureKeyStore();
     final o = testOpener(dir, keys);
     final repo = await createdRepo(o);
-    // Giả lập tệp CSDL đang ở v1 chưa có cột barcode.
+    // Giả lập tệp CSDL đang ở v1 chưa có cột của v2 & v3.
     await repo.db.customStatement('DROP INDEX IF EXISTS idx_products_barcode');
     await repo.db.customStatement('ALTER TABLE products DROP COLUMN barcode');
+    await repo.db.customStatement('ALTER TABLE settings DROP COLUMN has_breakfast');
+    await repo.db.customStatement('ALTER TABLE settings DROP COLUMN has_lunch');
+    await repo.db.customStatement('ALTER TABLE settings DROP COLUMN has_dinner');
+    await repo.db.customStatement('ALTER TABLE settings DROP COLUMN reminder_show_details');
     await repo.db.customStatement('UPDATE meta SET schema_version = 1');
     await repo.close();
 
     final migrated = await reopened(o);
     final v = await migrated.db.customSelect('SELECT schema_version FROM meta').getSingle();
-    expect(v.data['schema_version'], 2);
+    expect(v.data['schema_version'], currentSchemaVersion);
     final pid = await migrated.addProduct('Canxi D3', CountUnit.tablet, 1, barcode: '8935001');
     final found = await migrated.productByBarcode('8935001');
     expect(found?.id, pid);
     expect(found?.barcode, '8935001');
+    final s = await migrated.loadDayTimesSettings();
+    expect(s.hasBreakfast, isTrue);
+    expect(s.hasLunch, isTrue);
+    expect(s.hasDinner, isTrue);
+    expect(s.reminderShowDetails, isFalse);
+  });
+
+  test('di chuyển v2 -> v3 thêm cột bật/tắt bữa và hiển thị tên thông báo cho settings', () async {
+    final dir = tempDir();
+    final keys = FakeSecureKeyStore();
+    final o = testOpener(dir, keys);
+    final repo = await createdRepo(o);
+    await repo.db.customStatement('ALTER TABLE settings DROP COLUMN has_breakfast');
+    await repo.db.customStatement('ALTER TABLE settings DROP COLUMN has_lunch');
+    await repo.db.customStatement('ALTER TABLE settings DROP COLUMN has_dinner');
+    await repo.db.customStatement('ALTER TABLE settings DROP COLUMN reminder_show_details');
+    await repo.db.customStatement('UPDATE meta SET schema_version = 2');
+    await repo.close();
+
+    final migrated = await reopened(o);
+    final v = await migrated.db.customSelect('SELECT schema_version FROM meta').getSingle();
+    expect(v.data['schema_version'], currentSchemaVersion);
+    final s = await migrated.loadDayTimesSettings();
+    expect(s.hasBreakfast, isTrue);
+    expect(s.hasLunch, isTrue);
+    expect(s.hasDinner, isTrue);
+    expect(s.reminderShowDetails, isFalse);
   });
 
   test('lược đồ mới hơn bản app (cài bản cũ hơn): Cần cập nhật, tệp không đổi', () async {

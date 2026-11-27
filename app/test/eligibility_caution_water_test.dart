@@ -31,7 +31,7 @@ void main() {
       );
 
   group('việc 4: điều kiện, đồng ý, khởi tạo CSDL và tiếp tục bước dở', () {
-    testWidgets('không tạo CSDL/khóa trước khi đồng ý; <18/mang thai vào Chưa dùng được; nối lại 3/4, 4/4',
+    testWidgets('không tạo CSDL/khóa trước khi đồng ý; <18/mang thai vào Chưa dùng được; nối lại 3/3 và vào Hôm nay',
         (tester) async {
       final dir = makeTempDir();
       final keys = FakeSecureKeyStore();
@@ -52,7 +52,8 @@ void main() {
       await tester.tap(find.text('Bắt đầu'));
       await tester.pumpAndSettle();
 
-      // Điều kiện 1/4: tuổi 17 -> Chưa dùng được, không tạo tệp/khóa.
+      // Điều kiện 1/3: tuổi 17 -> Chưa dùng được, không tạo tệp/khóa.
+      expect(find.text('1/3'), findsOneWidget);
       await tester.enterText(find.byType(TextField), '17');
       await tester.tap(find.text('Không').first);
       await tester.tap(find.text('Không').last);
@@ -73,8 +74,8 @@ void main() {
       await tester.tap(find.text('Tiếp tục'));
       await tester.pumpAndSettle();
 
-      // Màn Đồng ý 2/4: bấm Không đồng ý -> vẫn chưa có CSDL.
-      expect(find.text('2/4'), findsOneWidget);
+      // Màn Đồng ý 2/3: bấm Không đồng ý -> vẫn chưa có CSDL.
+      expect(find.text('2/3'), findsOneWidget);
       expect(find.textContaining('xóa ở Tôi → Quyền riêng tư'), findsOneWidget);
       await tester.tap(find.text('Không đồng ý'));
       await tester.pumpAndSettle();
@@ -84,7 +85,7 @@ void main() {
       expect(dir.listSync(), isEmpty);
       expect(keys.key, isNull);
 
-      // Đánh dấu đồng ý -> tạo CSDL với mvp-1 và sang 3/4.
+      // Đánh dấu đồng ý -> tạo CSDL với mvp-1 và sang 3/3.
       await tester.tap(find.byType(CheckboxListTile));
       await tester.pumpAndSettle();
       await tester.runAsync(() async {
@@ -93,12 +94,13 @@ void main() {
       });
       await tester.pumpAndSettle();
 
-      expect(find.text('3/4'), findsOneWidget);
+      expect(find.text('3/3'), findsOneWidget);
+      expect(find.text('Xong'), findsOneWidget);
       expect(keys.key, isNotNull);
       expect(dir.listSync(), isNotEmpty);
       expect((await state.session.repo!.latestHealthConsent())?.contentVersion, mvpConsentVersion);
 
-      // Thoát ở 3/4 rồi mở lại: vào thẳng 3/4.
+      // Thoát ở 3/3 rồi mở lại: vào thẳng 3/3.
       await tester.runAsync(() => state.session.repo!.close());
       final state2 = AppState(pack: pack, opener: opener);
       await tester.runAsync(state2.start);
@@ -108,9 +110,9 @@ void main() {
       });
       await tester.pumpWidget(WholeWellApp(state: state2));
       await tester.pumpAndSettle();
-      expect(find.text('3/4'), findsOneWidget);
+      expect(find.text('3/3'), findsOneWidget);
 
-      // Nhập sai chiều cao (= 0) -> chặn; nhập 110 -> nhắc nhẹ nhưng vẫn qua 4/4.
+      // Nhập sai chiều cao (= 0) -> chặn; nhập 110 -> nhắc nhẹ nhưng bấm Xong vào thẳng Hôm nay (mặc định hiện số calo).
       await tester.tap(find.text('Nữ'));
       await tester.enterText(find.widgetWithText(TextField, 'Chiều cao'), '0');
       await tester.enterText(find.widgetWithText(TextField, 'Cân nặng'), '55');
@@ -125,38 +127,29 @@ void main() {
       await tester.tap(find.text('Vận động nhẹ').last);
       await tester.pumpAndSettle();
       await tester.runAsync(() async {
-        await tester.tap(find.text('Tiếp tục'));
-        await Future<void>.delayed(const Duration(milliseconds: 20));
-      });
-      await tester.pumpAndSettle();
-
-      expect(find.text('4/4'), findsOneWidget);
-
-      // Thoát ở 4/4 rồi mở lại: vào thẳng 4/4, không chọn sẵn, chọn Ẩn số calo -> Hôm nay.
-      await tester.runAsync(() => state2.session.repo!.close());
-      final state3 = AppState(pack: pack, opener: opener);
-      await tester.runAsync(state3.start);
-      addTearDown(() async {
-        await state3.session.repo?.close();
-        state3.dispose();
-      });
-      await tester.pumpWidget(WholeWellApp(state: state3));
-      await tester.pumpAndSettle();
-      expect(find.text('4/4'), findsOneWidget);
-
-      await tester.tap(find.text('Ẩn số calo'));
-      await tester.pumpAndSettle();
-      await tester.runAsync(() async {
         await tester.tap(find.text('Xong'));
         await Future<void>.delayed(const Duration(milliseconds: 20));
       });
       await tester.pumpAndSettle();
 
       expect(find.byType(TodayScreen), findsOneWidget);
-      expect(state3.hideCalories, isTrue);
+      expect(state2.hideCalories, isFalse);
+      expect(find.text('Năng lượng'), findsOneWidget);
+
+      // Mở Tôi -> Hiển thị -> bật Ẩn số calo, rồi tắt lại.
+      await tester.tap(find.text('Tôi'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Hiển thị'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(SwitchListTile, 'Ẩn số calo'));
+      await tester.pumpAndSettle();
+      expect(state2.hideCalories, isTrue);
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Hôm nay'));
+      await tester.pumpAndSettle();
       expect(find.text('Năng lượng'), findsNothing);
 
-      // Mở Tôi -> Hiển thị -> tắt Ẩn số calo.
       await tester.tap(find.text('Tôi'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Hiển thị'));

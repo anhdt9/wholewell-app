@@ -773,7 +773,11 @@ def _clock_diff_minutes(a: int, b: int) -> int:
 def evaluate_schedule_rules(meal_times, scheduled_doses, pack=PACK):
     """Đánh giá toàn bộ scheduleRules trong pack thuần bằng dữ liệu."""
     rules = pack.get("scheduleRules", [])
-    meals = [meal_times["breakfast"], meal_times["lunch"], meal_times["dinner"]]
+    meals = [
+        m
+        for m in (meal_times.get("breakfast"), meal_times.get("lunch"), meal_times.get("dinner"))
+        if m is not None
+    ]
     out = []
 
     for r in rules:
@@ -955,6 +959,36 @@ SCHEDULE_RULE_CASES = [
                 "scheduleId": 5, "productId": 21, "timeOfDay": 1200,  # 20:00 (cùng bữa tối 19:00)
                 "nutrients": [
                     {"nutrientId": "zinc", "form": "unknown", "amount": 15.0},
+                ],
+            },
+        ],
+    ),
+    (
+        "skipped_breakfast_and_all_meals_off",
+        {"breakfast": None, "lunch": 720, "dinner": None},
+        [
+            {
+                "scheduleId": 6, "productId": 30, "timeOfDay": 420,  # 07:00 — bữa sáng đã tắt, phải cảnh báo take_with_meal
+                "nutrients": [
+                    {"nutrientId": "vitD", "form": "unknown", "amount": 25.0},
+                ],
+            },
+            {
+                "scheduleId": 7, "productId": 31, "timeOfDay": 720,  # 12:00 — đúng bữa trưa đang bật
+                "nutrients": [
+                    {"nutrientId": "vitD", "form": "unknown", "amount": 25.0},
+                ],
+            },
+        ],
+    ),
+    (
+        "all_main_meals_off_triggers_take_with_meal",
+        {"breakfast": None, "lunch": None, "dinner": None},
+        [
+            {
+                "scheduleId": 8, "productId": 32, "timeOfDay": 720,
+                "nutrients": [
+                    {"nutrientId": "calcium", "form": "calcium_carbonate", "amount": 300.0},
                 ],
             },
         ],

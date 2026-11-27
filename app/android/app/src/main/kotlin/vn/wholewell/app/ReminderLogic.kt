@@ -7,6 +7,7 @@ data class ReminderSlotMeta(
     val timeOfDayMinutes: Int,
     val itemCount: Int,
     val scheduleIds: List<Int>,
+    val detailText: String? = null,
 )
 
 /** Quy tắc thuần Kotlin cho nhắc giờ (tách khỏi Android SDK để test JVM). */
@@ -23,9 +24,12 @@ object ReminderLogic {
     fun formatNotificationTitle(minutesOfDay: Int): String =
         "WholeWell · ${formatHhMm(minutesOfDay)}"
 
-    /** Không bao giờ chứa tên chất, tên sản phẩm hay liều lượng. */
-    fun formatNotificationBody(itemCount: Int): String =
-        if (itemCount > 1) "Đến giờ uống, $itemCount loại" else "Đến giờ uống"
+    /** Mặc định không kèm tên chất hay liều lượng; chỉ kèm chuỗi tên hiển thị khi bật tùy chọn. */
+    fun formatNotificationBody(itemCount: Int, detailText: String? = null): String {
+        val clean = detailText?.trim().orEmpty()
+        if (clean.isNotEmpty()) return "Đến giờ uống: $clean"
+        return if (itemCount > 1) "Đến giờ uống, $itemCount loại" else "Đến giờ uống"
+    }
 
     fun nextTriggerAtMillis(
         minutesOfDay: Int,
@@ -46,9 +50,53 @@ object ReminderLogic {
         return cal.timeInMillis
     }
 
+    private fun escapeField(raw: String): String {
+        val sb = StringBuilder(raw.length)
+        for (ch in raw) {
+            when (ch) {
+                '\\' -> sb.append("\\\\")
+                ',' -> sb.append("\\,")
+                '\n' -> sb.append("\\n")
+                '\r' -> sb.append("\\r")
+                else -> sb.append(ch)
+            }
+        }
+        return sb.toString()
+    }
+
+    private fun splitEscapedComma(line: String): List<String> {
+        val out = ArrayList<String>()
+        val cur = StringBuilder()
+        var i = 0
+        while (i < line.length) {
+            val ch = line[i]
+            if (ch == '\\' && i + 1 < line.length) {
+                when (line[i + 1]) {
+                    '\\' -> cur.append('\\')
+                    ',' -> cur.append(',')
+                    'n' -> cur.append('\n')
+                    'r' -> cur.append('\r')
+                    else -> cur.append(line[i + 1])
+                }
+                i += 2
+            } else if (ch == ',') {
+                out.add(cur.toString())
+                cur.setLength(0)
+                i += 1
+            } else {
+                cur.append(ch)
+                i += 1
+            }
+        }
+        out.add(cur.toString())
+        return out
+    }
+
     fun encodeSlots(slots: List<ReminderSlotMeta>): String =
         slots.joinToString("\n") { s ->
-            "${s.timeOfDayMinutes},${s.itemCount},${s.scheduleIds.joinToString(";")}"
+            val detail = s.detailText?.trim()?.takeIf { it.isNotEmpty() }
+            val base = "${s.timeOfDayMinutes},${s.itemCount},${s.scheduleIds.joinToString(";")}"
+            if (detail == null) base else "$base,${escapeField(detail)}"
         }
 
     fun decodeSlots(raw: String?): List<ReminderSlotMeta> {
@@ -57,7 +105,7 @@ object ReminderLogic {
         for (line in raw.split('\n')) {
             val trimmed = line.trim()
             if (trimmed.isEmpty()) continue
-            val parts = trimmed.split(',')
+            val parts = splitEscapedComma(trimmed)
             if (parts.size < 2) continue
             val tod = parts[0].toIntOrNull() ?: continue
             val count = parts[1].toIntOrNull() ?: 1
@@ -66,7 +114,12 @@ object ReminderLogic {
             } else {
                 emptyList()
             }
-            out.add(ReminderSlotMeta(tod, count, ids))
+            val detail = if (parts.size >= 4) {
+                parts[3].trim().takeIf { it.isNotEmpty() }
+            } else {
+                null
+            }
+            out.add(ReminderSlotMeta(tod, count, ids, detail))
         }
         return out
     }

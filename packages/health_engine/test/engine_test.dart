@@ -560,9 +560,9 @@ void main() {
       test('scheduleRules: $cname', () {
         final mt = c['mealTimes'] as Map<String, dynamic>;
         final mealTimes = MealTimes(
-          breakfast: (mt['breakfast'] as num).toInt(),
-          lunch: (mt['lunch'] as num).toInt(),
-          dinner: (mt['dinner'] as num).toInt(),
+          breakfast: (mt['breakfast'] as num?)?.toInt(),
+          lunch: (mt['lunch'] as num?)?.toInt(),
+          dinner: (mt['dinner'] as num?)?.toInt(),
         );
         final doses = [
           for (final d in (c['doses'] as List).cast<Map<String, dynamic>>())

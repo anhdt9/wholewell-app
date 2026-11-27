@@ -347,7 +347,8 @@ class DriftJournalRepository implements JournalRepository {
   @override
   Future<DayTimesSettings> loadDayTimesSettings() => _guard(() async {
     final r = (await _select(
-      'SELECT wake, breakfast, lunch, dinner, sleep, day_times_confirmed, show_tip_card '
+      'SELECT wake, breakfast, lunch, dinner, sleep, day_times_confirmed, show_tip_card, '
+      'has_breakfast, has_lunch, has_dinner, reminder_show_details '
       'FROM settings WHERE id = 1',
     )).first;
     return DayTimesSettings(
@@ -358,6 +359,10 @@ class DriftJournalRepository implements JournalRepository {
       sleep: r['sleep'] as int,
       dayTimesConfirmed: r['day_times_confirmed'] == 1,
       showTipCard: r['show_tip_card'] == 1,
+      hasBreakfast: r['has_breakfast'] == 1,
+      hasLunch: r['has_lunch'] == 1,
+      hasDinner: r['has_dinner'] == 1,
+      reminderShowDetails: r['reminder_show_details'] == 1,
     );
   });
 
@@ -366,7 +371,8 @@ class DriftJournalRepository implements JournalRepository {
     write: true,
     () => _update(
       'UPDATE settings SET wake = ?, breakfast = ?, lunch = ?, dinner = ?, sleep = ?, '
-      'day_times_confirmed = ?, show_tip_card = ? WHERE id = 1',
+      'day_times_confirmed = ?, show_tip_card = ?, has_breakfast = ?, has_lunch = ?, '
+      'has_dinner = ?, reminder_show_details = ? WHERE id = 1',
       [
         s.wake,
         s.breakfast,
@@ -375,6 +381,10 @@ class DriftJournalRepository implements JournalRepository {
         s.sleep,
         s.dayTimesConfirmed,
         s.showTipCard,
+        s.hasBreakfast,
+        s.hasLunch,
+        s.hasDinner,
+        s.reminderShowDetails,
       ],
     ),
   );

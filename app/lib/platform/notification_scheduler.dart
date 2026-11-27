@@ -38,17 +38,20 @@ class ScheduledReminderSlot {
   final int timeOfDayMinutes;
   final int itemCount;
   final List<int> scheduleIds;
+  final String? detailText;
 
   const ScheduledReminderSlot({
     required this.timeOfDayMinutes,
     required this.itemCount,
     required this.scheduleIds,
+    this.detailText,
   });
 
   Map<String, Object?> toMap() => {
         'timeOfDayMinutes': timeOfDayMinutes,
         'itemCount': itemCount,
         'scheduleIds': scheduleIds,
+        if (detailText != null && detailText!.isNotEmpty) 'detailText': detailText,
       };
 }
 

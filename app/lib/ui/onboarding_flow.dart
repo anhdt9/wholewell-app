@@ -2,7 +2,6 @@ import 'package:health_engine/health_engine.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
-import '../state/app_state.dart';
 import 'body_metrics_fields.dart';
 import 'common/common_widgets.dart';
 import 'drive_backup_screens.dart';
@@ -108,7 +107,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         final age = _parsedAge();
         final canContinue = age != null && _pregnantOrLactating != null && _caution != null;
         return _EligibilityView(
-          stepLabel: '1/4',
+          stepLabel: '1/3',
           title: null,
           onBack: () => setState(() => _step = _PreDbStep.welcome),
           ageCtl: _ageCtl,
@@ -140,7 +139,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         );
       case _PreDbStep.consent:
         return _ConsentView(
-          stepLabel: '2/4',
+          stepLabel: '2/3',
           title: null,
           onBack: () => setState(() => _step = _PreDbStep.eligibility),
           agreed: _agreed,
@@ -315,7 +314,7 @@ class _UpgradeConsentFlowState extends State<UpgradeConsentFlow> {
   }
 }
 
-/// Bước 3/4: Hồ sơ cơ thể (sau khi đã có consent & tuổi từ bước Điều kiện).
+/// Bước 3/3: Hồ sơ cơ thể (sau khi đã có consent & tuổi từ bước Điều kiện).
 class OnboardingBodyProfileScreen extends StatefulWidget {
   const OnboardingBodyProfileScreen({super.key});
 
@@ -408,8 +407,8 @@ class _OnboardingBodyProfileScreenState extends State<OnboardingBodyProfileScree
         wc.isValid;
 
     return StepScaffold(
-      stepLabel: '3/4',
-      primaryLabel: 'Tiếp tục',
+      stepLabel: '3/3',
+      primaryLabel: 'Xong',
       busy: _saving,
       onPrimary: canSubmit ? _submit : null,
       body: Column(
@@ -427,80 +426,11 @@ class _OnboardingBodyProfileScreenState extends State<OnboardingBodyProfileScree
             onChanged: _revalidate,
             enabled: !_saving,
           ),
-          if (_saveError != null) ...[
-            const SizedBox(height: 12),
-            Text(_saveError!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-/// Bước 4/4: Hiển thị calo (không chọn sẵn).
-class OnboardingCalorieDisplayScreen extends StatefulWidget {
-  const OnboardingCalorieDisplayScreen({super.key});
-
-  @override
-  State<OnboardingCalorieDisplayScreen> createState() => _OnboardingCalorieDisplayScreenState();
-}
-
-class _OnboardingCalorieDisplayScreenState extends State<OnboardingCalorieDisplayScreen> {
-  bool? _hideCalories;
-  bool _saving = false;
-  String? _saveError;
-
-  Future<void> _finish() async {
-    final hide = _hideCalories;
-    if (hide == null) return;
-    setState(() {
-      _saving = true;
-      _saveError = null;
-    });
-    final ok = await AppScope.of(context).completeCalorieDisplayOnboarding(hide);
-    if (!mounted) return;
-    setState(() {
-      _saving = false;
-      if (!ok) _saveError = 'Chưa lưu được. Thử lại';
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final state = AppScope.of(context);
-    final t = Theme.of(context).textTheme;
-    return StepScaffold(
-      stepLabel: '4/4',
-      onBack: () => state.session.setStage(SessionStage.onboardingBodyProfile),
-      primaryLabel: 'Xong',
-      busy: _saving,
-      onPrimary: _hideCalories != null ? _finish : null,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Bạn muốn thấy số calo không?', style: t.titleLarge),
-          const SizedBox(height: 16),
-          RadioGroup<bool>(
-            groupValue: _hideCalories,
-            onChanged: _saving ? (_) {} : (v) => setState(() => _hideCalories = v),
-            child: const Column(
-              children: [
-                RadioListTile<bool>(
-                  value: false,
-                  contentPadding: EdgeInsets.zero,
-                  title: Text('Hiện số calo'),
-                ),
-                RadioListTile<bool>(
-                  value: true,
-                  contentPadding: EdgeInsets.zero,
-                  title: Text('Ẩn số calo'),
-                  subtitle: Text('App vẫn tính, chỉ không hiện con số.'),
-                ),
-              ],
-            ),
+          const SizedBox(height: 12),
+          Text(
+            'Mặc định hiện số calo; bạn có thể tắt trong Tôi → Hiển thị.',
+            style: Theme.of(context).textTheme.bodySmall,
           ),
-          const SizedBox(height: 16),
-          Text('Đổi ở Tôi → Hiển thị.', style: t.bodySmall),
           if (_saveError != null) ...[
             const SizedBox(height: 12),
             Text(_saveError!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
