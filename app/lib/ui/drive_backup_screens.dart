@@ -189,10 +189,12 @@ class _DriveConsentScreenState extends State<DriveConsentScreen> {
         );
       case GoogleAuthCancelled():
         setState(() => _busy = false);
-      case GoogleAuthFailed():
+      case GoogleAuthFailed(:final isNetworkError):
         setState(() {
           _busy = false;
-          _errorText = 'Chưa kết nối được Google Drive. Kiểm tra mạng và thử lại.';
+          _errorText = isNetworkError
+              ? 'Chưa kết nối được Google Drive. Kiểm tra mạng và thử lại.'
+              : 'Không đăng nhập được Google Drive. Kiểm tra tài khoản Google hoặc thử lại.';
         });
     }
   }

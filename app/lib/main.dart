@@ -40,7 +40,7 @@ Future<void> main() async {
     const serverClientId = String.fromEnvironment(
       'GOOGLE_SERVER_CLIENT_ID',
       defaultValue:
-          '387812227388-nlfktq2a2p5eh1tc52l9q07950c47bn5.apps.googleusercontent.com',
+          '387812227388-frfaonnafq9mrct4pcr12pau2vpbpli5.apps.googleusercontent.com',
     );
     final googleAuth = GoogleSignInAuth(
       serverClientId: serverClientId.isEmpty ? null : serverClientId,
