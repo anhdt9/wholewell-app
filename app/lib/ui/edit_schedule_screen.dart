@@ -113,14 +113,11 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
               ],
               const SizedBox(height: 12),
               for (final f in flags) ...[
-                Container(
-                  width: double.infinity,
+                SurfaceCard(
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: cs.errorContainer,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  color: cs.errorContainer,
+                  borderColor: cs.errorContainer,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -219,18 +216,13 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
     if (_saving) return;
     final ex = widget.existingSchedule;
     if (ex == null) return;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Kết thúc lịch uống lúc ${formatMinutesHhMm(ex.timeOfDay)}?'),
-        content: const Text('Lịch sử đã uống trước đó vẫn được giữ.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Xóa lịch')),
-        ],
-      ),
+    final ok = await showConfirmDialog(
+      context,
+      title: 'Kết thúc lịch uống lúc ${formatMinutesHhMm(ex.timeOfDay)}?',
+      message: 'Lịch sử đã uống trước đó vẫn được giữ.',
+      confirmLabel: 'Xóa lịch',
     );
-    if (ok != true || !mounted) return;
+    if (!ok || !mounted) return;
     setState(() => _saving = true);
     try {
       final state = AppScope.of(context);

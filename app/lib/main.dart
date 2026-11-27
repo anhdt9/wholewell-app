@@ -18,6 +18,7 @@ import 'platform/local_food_library_store.dart';
 import 'state/app_scope.dart';
 import 'state/app_state.dart';
 import 'ui/data_status_screen.dart';
+import 'ui/design_system/tokens.dart';
 import 'ui/home_screen.dart';
 import 'ui/onboarding_flow.dart';
 
@@ -134,12 +135,8 @@ class _WholeWellAppState extends State<WholeWellApp> {
         debugShowCheckedModeBanner: false,
         navigatorKey: _navKey,
         scaffoldMessengerKey: _messenger,
-        theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
-        darkTheme: ThemeData(
-          colorSchemeSeed: Colors.teal,
-          brightness: Brightness.dark,
-          useMaterial3: true,
-        ),
+        theme: buildWholeWellTheme(Brightness.light),
+        darkTheme: buildWholeWellTheme(Brightness.dark),
         home: ListenableBuilder(
           listenable: state,
           builder: (context, _) => switch (state.status) {

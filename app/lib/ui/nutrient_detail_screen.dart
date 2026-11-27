@@ -2,7 +2,6 @@
 library;
 
 import 'package:health_engine/health_engine.dart';
-import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';

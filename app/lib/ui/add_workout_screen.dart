@@ -3,6 +3,7 @@ import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
+import 'common/common_widgets.dart';
 import 'labels.dart';
 
 class AddWorkoutScreen extends StatefulWidget {
@@ -56,25 +57,14 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
   Future<void> _delete() async {
     final e = widget.editing;
     if (e == null || _saving) return;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Xóa buổi tập?'),
-        content: const Text('Buổi tập này sẽ bị xóa khỏi nhật ký.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Hủy')),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-              foregroundColor: Theme.of(ctx).colorScheme.onError,
-            ),
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Xóa'),
-          ),
-        ],
-      ),
+    final ok = await showConfirmDialog(
+      context,
+      title: 'Xóa buổi tập?',
+      message: 'Buổi tập này sẽ bị xóa khỏi nhật ký.',
+      confirmLabel: 'Xóa',
+      destructive: true,
     );
-    if (ok != true || !mounted) return;
+    if (!ok || !mounted) return;
     setState(() => _saving = true);
     try {
       await AppScope.of(context).diary.deleteWorkout(e.id);

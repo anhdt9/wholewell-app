@@ -190,9 +190,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
       if (!mounted) return;
       if (found != null) {
         setState(() => _busy = false);
-        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-          const SnackBar(content: Text('Đã tìm thấy sản phẩm đã lưu.')),
-        );
+        AppFeedback.showSnack(context, 'Đã tìm thấy sản phẩm đã lưu.');
         await Navigator.of(context).pushReplacement(
           MaterialPageRoute<void>(builder: (_) => ProductDetailScreen(productId: found.id)),
         );
@@ -521,14 +519,17 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
               ),
             )
           else
-            Container(
+            const SizedBox(
               height: 110,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-                borderRadius: BorderRadius.circular(12),
+              child: SurfaceCard(
+                color: Colors.transparent,
+                child: Center(
+                  child: Text(
+                    'Đưa mã vạch vào khung để tìm sản phẩm đã lưu hoặc trong thư viện nhãn.',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ),
-              child: const Text('Đưa mã vạch vào khung để tìm sản phẩm đã lưu hoặc trong thư viện nhãn.'),
             ),
           const SizedBox(height: 12),
           if (state.dsldLibraryPreparing) ...[

@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
 import '../state/app_state.dart';
+import 'common/common_widgets.dart';
 import 'common/food_feedback_sheet.dart';
 import 'labels.dart';
 import 'product_detail_screen.dart';
@@ -206,9 +207,7 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
     if (_selectedProduct != null) {
       final parsedServings = double.tryParse(_servingsCtrl.text.trim().replaceAll(',', '.'));
       if (parsedServings == null || !parsedServings.isFinite || parsedServings <= 0) {
-        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-          const SnackBar(content: Text('Nhập số khẩu phần lớn hơn 0.')),
-        );
+        AppFeedback.showSnack(context, 'Nhập số khẩu phần lớn hơn 0.');
         return;
       }
       servings = parsedServings;
@@ -219,9 +218,7 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
     } else {
       lines = _buildOneOffLines(state.pack);
       if (lines.isEmpty) {
-        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-          const SnackBar(content: Text('Nhập ít nhất một chất.')),
-        );
+        AppFeedback.showSnack(context, 'Nhập ít nhất một chất.');
         return;
       }
       name = _nameCtrl.text.trim().isEmpty ? 'Bổ sung' : _nameCtrl.text.trim();

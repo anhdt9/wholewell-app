@@ -286,18 +286,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Future<void> _archive() async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Lưu trữ sản phẩm'),
-        content: const Text('Ẩn sản phẩm khỏi danh sách? Dữ liệu lịch sử đã uống vẫn được giữ.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Lưu trữ')),
-        ],
-      ),
+    final ok = await showConfirmDialog(
+      context,
+      title: 'Lưu trữ sản phẩm',
+      message: 'Ẩn sản phẩm khỏi danh sách? Dữ liệu lịch sử đã uống vẫn được giữ.',
+      confirmLabel: 'Lưu trữ',
     );
-    if (ok == true && mounted) {
+    if (ok && mounted) {
       final state = AppScope.of(context);
       await state.diary.archiveProduct(widget.productId);
       await state.syncNotifications();

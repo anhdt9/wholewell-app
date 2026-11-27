@@ -222,18 +222,13 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
     try {
       final saved = await AppScope.of(context).exportReadableJsonFile();
       if (!mounted) return;
-      ScaffoldMessenger.maybeOf(context)
-        ?..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(saved == null ? 'Chưa xuất được dữ liệu.' : 'Đã xuất dữ liệu JSON.'),
-          ),
-        );
+      AppFeedback.showSnack(
+        context,
+        saved == null ? 'Chưa xuất được dữ liệu.' : 'Đã xuất dữ liệu JSON.',
+      );
     } on Object {
       if (!mounted) return;
-      ScaffoldMessenger.maybeOf(context)
-        ?..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(content: Text('Chưa xuất được dữ liệu.')));
+      AppFeedback.showSnack(context, 'Chưa xuất được dữ liệu.');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
