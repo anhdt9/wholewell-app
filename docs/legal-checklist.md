@@ -6,7 +6,7 @@ Cập nhật: 26/11/2026 · Áp dụng cho MVP Android (`wholewell-app`, `mvpCon
 
 | Yêu cầu | Cách WholeWell đáp ứng | Nơi kiểm chứng trong repo | Trạng thái |
 |---|---|---|---|
-| Dữ liệu sức khỏe là dữ liệu nhạy cảm: cần sự đồng ý rõ ràng, không đánh sẵn ô, tách riêng từng mục đích | Ba điểm đồng ý tách biệt, ô tích mặc định `false`: (1) `health_data` ở màn Đồng ý `2/4`, (2) `notifications` ở màn `Nhắc giờ`, (3) `drive` ở `DriveConsentScreen` | `onboarding_flow.dart`, `notification_settings_screen.dart`, `drive_backup_screens.dart` | Đạt (đã có widget test) |
+| Dữ liệu sức khỏe là dữ liệu nhạy cảm: cần sự đồng ý rõ ràng, không đánh sẵn ô, tách riêng từng mục đích | Ba điểm đồng ý tách biệt, ô tích mặc định `false`: (1) `health_data` ở màn Đồng ý `2/3`, (2) `notifications` ở màn `Nhắc giờ`, (3) `drive` ở `DriveConsentScreen` | `onboarding_flow.dart`, `notification_settings_screen.dart`, `drive_backup_screens.dart` | Đạt (đã có widget test) |
 | Lưu bằng chứng đồng ý (phiên bản, thời điểm, loại đồng ý) | Bảng `consents` lưu `kind`, `content_version`, `granted_at`, `withdrawn_at` trong CSDL mã hóa | `packages/journal_db/lib/src/schema.dart`, `drift_repository.dart` | Đạt |
 | Quyền xem, sửa, xuất dữ liệu | Xem/sửa tại `Tôi → Hồ sơ` và `Nhật ký`; xuất JSON tại `Tôi → Quyền riêng tư → Xuất dữ liệu` (kèm cảnh báo không mã hóa) | `profile_screen.dart`, `privacy_screen.dart`, `backup_privacy_test.dart` | Đạt |
 | Quyền rút đồng ý & xóa ngay trên thiết bị, hỗ trợ xóa bản trên Drive | Xóa ngay khóa Keystore + các tệp CSDL khi rút đồng ý/xóa toàn bộ; hộp thoại có ô `"Xóa cả bản sao lưu trên Google Drive"`; mất mạng ghi `FileDrivePendingDeleteStore` ngoài CSDL | `opener.dart`, `privacy_screen.dart`, `app_state.dart`, `backup_privacy_test.dart` | Đạt |
@@ -19,13 +19,13 @@ Cập nhật: 26/11/2026 · Áp dụng cho MVP Android (`wholewell-app`, `mvpCon
 - **Tác động & Biện pháp giảm thiểu rủi ro:**
   - *Rò rỉ từ thiết bị mất/bị truy cập trái phép:* Mã hóa toàn bộ CSDL bằng ChaCha20; khóa chỉ mở khi thiết bị đã mở khóa (`minSdk 28`, `setUnlockedDeviceRequired`).
   - *Rò rỉ qua sao lưu đám mây hệ điều hành:* Tắt `android:allowBackup="false"`, `fullBackupContent="false"`, `dataExtractionRules` chặn cả cloud backup lẫn chuyển máy.
-  - *Rò rỉ qua thông báo màn hình khóa:* `ReminderLogic.kt` chỉ hiển thị số loại đến giờ (`"Đến giờ uống, X loại"`), không ghi tên chất hay tên sản phẩm.
+  - *Rò rỉ qua thông báo màn hình khóa:* Mặc định `ReminderLogic.kt` chỉ hiển thị số loại đến giờ (`"Đến giờ uống, X loại"`), không ghi tên chất hay tên sản phẩm. Tùy chọn `"Hiện tên sản phẩm trên thông báo"` (`reminder_show_details`) tắt mặc định và chỉ kèm tên sản phẩm (không bao giờ hiện tên chất hay liều lượng) khi người dùng tự bật.
   - *Rò rỉ qua Google Drive:* Chỉ dùng phạm vi `drive.appdata` ẩn danh mục, dữ liệu mã hóa Argon2id trước khi rời máy bằng mã do người dùng tự giữ.
 
 ## 2. Nghị định 98/2021/NĐ-CP & Phân định công cụ tham chiếu
 
 - [x] Không chẩn đoán bệnh, không kê đơn, không gợi ý liều dùng cá nhân theo bệnh lý (`AGENTS.md`, `docs/design/README.md`).
-- [x] Màn Điều kiện (`1/4`) chặn dưới 18 tuổi, mang thai, cho con bú; nhóm dùng thuốc theo chỉ định hoặc có bệnh mạn tính dùng ở chế độ thận trọng với thông báo cố định hỏi ý kiến bác sĩ/dược sĩ.
+- [x] Màn Điều kiện (`1/3`) chặn dưới 18 tuổi, mang thai, cho con bú; nhóm dùng thuốc theo chỉ định hoặc có bệnh mạn tính dùng ở chế độ thận trọng với thông báo cố định hỏi ý kiến bác sĩ/dược sĩ.
 - [x] Cảnh báo UL chỉ cung cấp thông tin số, phạm vi tính, mục góp vào và câu `"Hỏi bác sĩ hoặc dược sĩ nếu cần."`; không suy diễn tác hại hay điều trị.
 
 ## 3. Luật Sở hữu trí tuệ (Điều 15) & Nguồn dữ liệu
