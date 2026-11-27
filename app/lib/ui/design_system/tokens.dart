@@ -24,9 +24,9 @@ abstract final class AppRadius {
   // Alias giữ tương thích ngắn hạn với code cũ dùng AppRadius.md.
   static const double md = control;
 
-  static final BorderRadius controlRadius = BorderRadius.circular(control);
-  static final BorderRadius cardRadius = BorderRadius.circular(card);
-  static final BorderRadius pillRadius = BorderRadius.circular(pill);
+  static const BorderRadius controlRadius = BorderRadius.all(Radius.circular(control));
+  static const BorderRadius cardRadius = BorderRadius.all(Radius.circular(card));
+  static const BorderRadius pillRadius = BorderRadius.all(Radius.circular(pill));
   static const BorderRadius sheetTopRadius = BorderRadius.vertical(
     top: Radius.circular(sheet),
   );
@@ -222,14 +222,14 @@ ThemeData buildWholeWellTheme(Brightness brightness) {
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         minimumSize: const Size(64, 48),
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.controlRadius),
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.controlRadius),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(64, 48),
         side: BorderSide(color: ww.outlineSubtle),
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.controlRadius),
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.controlRadius),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
