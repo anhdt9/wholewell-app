@@ -575,6 +575,7 @@ class _RestoreBackupScreenState extends State<RestoreBackupScreen> {
   }
 
   Future<void> _restore() async {
+    if (_busy) return;
     final file = _picked;
     if (file == null || _secretCtl.text.trim().isEmpty) return;
 

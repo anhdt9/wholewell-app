@@ -81,8 +81,9 @@ class DsldIngredientMapper {
     }
 
     final m = _servingNumRe.firstMatch(servingSize.trim());
-    final ups = m == null ? 1.0 : (double.tryParse(m.group(1)!.replaceAll(',', '.')) ?? 1.0);
-    return (unit, ups > 0 ? ups : 1.0);
+    final parsedUps = m == null ? null : double.tryParse(m.group(1)!.replaceAll(',', '.'));
+    final ups = (parsedUps != null && parsedUps.isFinite && parsedUps > 0) ? parsedUps : 1.0;
+    return (unit, ups);
   }
 
   static EditableIngredient? _mapFact(DsldFact f, ReferencePack pack) {
@@ -91,7 +92,8 @@ class DsldIngredientMapper {
     final cat = f.category.trim().toLowerCase();
     // Bỏ qua dòng tiêu đề nhóm / calo / đường tổng nếu không phải vi chất cần theo dõi,
     // nhưng giữ vitamin, mineral, hoặc các chất có số lượng rõ ràng.
-    final amount = double.tryParse(f.amount.trim().replaceAll(',', '.'));
+    final rawAmount = double.tryParse(f.amount.trim().replaceAll(',', '.'));
+    final amount = (rawAmount != null && rawAmount.isFinite && rawAmount >= 0) ? rawAmount : null;
     final unit = _parseUnit(f.unit);
 
     // Tận dụng SupplementLabelParser để ánh xạ tên chất + dạng.

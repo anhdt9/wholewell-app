@@ -74,7 +74,7 @@ class TodayDosesScreen extends StatelessWidget {
   }
 }
 
-class _ScheduleOccurrenceTile extends StatelessWidget {
+class _ScheduleOccurrenceTile extends StatefulWidget {
   final Schedule schedule;
   final String scheduleDay;
   final Product? product;
@@ -92,7 +92,31 @@ class _ScheduleOccurrenceTile extends StatelessWidget {
   });
 
   @override
+  State<_ScheduleOccurrenceTile> createState() => _ScheduleOccurrenceTileState();
+}
+
+class _ScheduleOccurrenceTileState extends State<_ScheduleOccurrenceTile> {
+  bool _busy = false;
+
+  Future<void> _runGuarded(Future<void> Function() action) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      await action();
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final schedule = widget.schedule;
+    final scheduleDay = widget.scheduleDay;
+    final product = widget.product;
+    final occurrence = widget.occurrence;
+    final dose = widget.dose;
+    final now = widget.now;
+
     final diary = AppScope.of(context).diary;
     final phase = classifySchedulePhase(
       schedule: schedule,
@@ -103,13 +127,13 @@ class _ScheduleOccurrenceTile extends StatelessWidget {
     final name = product?.name ?? 'Sản phẩm #${schedule.productId}';
     final doseLabel = product == null
         ? '${fmt(schedule.servings)} khẩu phần'
-        : '${fmt(schedule.servings * product!.unitsPerServing)} ${countUnitLabel(product!.countUnit)}';
+        : '${fmt(schedule.servings * product.unitsPerServing)} ${countUnitLabel(product.countUnit)}';
 
     switch (phase) {
       case ScheduleWindowPhase.taken:
         final timeStr = dose == null
             ? ''
-            : ' ${dose!.at.hour.toString().padLeft(2, '0')}:${dose!.at.minute.toString().padLeft(2, '0')}';
+            : ' ${dose.at.hour.toString().padLeft(2, '0')}:${dose.at.minute.toString().padLeft(2, '0')}';
         return ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.check_circle_outline),
@@ -130,7 +154,9 @@ class _ScheduleOccurrenceTile extends StatelessWidget {
           title: Text('$name · $doseLabel'),
           subtitle: const Text('Đã bỏ qua'),
           trailing: TextButton(
-            onPressed: () => diary.clearOccurrence(OccurrenceRef(schedule.id, scheduleDay)),
+            onPressed: _busy
+                ? null
+                : () => _runGuarded(() => diary.clearOccurrence(OccurrenceRef(schedule.id, scheduleDay))),
             child: const Text('Hủy bỏ qua'),
           ),
         );
@@ -150,36 +176,40 @@ class _ScheduleOccurrenceTile extends StatelessWidget {
                 ),
               ),
               OutlinedButton(
-                onPressed: () async {
-                  final picked = await showTimePicker(
-                    context: context,
-                    initialTime: TimeOfDay(hour: now.hour, minute: now.minute),
-                  );
-                  if (picked == null || !context.mounted) return;
-                  final at = DateTime(
-                    now.year,
-                    now.month,
-                    now.day,
-                    picked.hour,
-                    picked.minute,
-                  );
-                  await markScheduledDoseTaken(
-                    context,
-                    schedule: schedule,
-                    scheduleDay: scheduleDay,
-                    at: at,
-                  );
-                },
+                onPressed: _busy
+                    ? null
+                    : () => _runGuarded(() async {
+                          final picked = await showTimePicker(
+                            context: context,
+                            initialTime: TimeOfDay(hour: now.hour, minute: now.minute),
+                          );
+                          if (picked == null || !context.mounted) return;
+                          final at = DateTime(
+                            now.year,
+                            now.month,
+                            now.day,
+                            picked.hour,
+                            picked.minute,
+                          );
+                          await markScheduledDoseTaken(
+                            context,
+                            schedule: schedule,
+                            scheduleDay: scheduleDay,
+                            at: at,
+                          );
+                        }),
                 child: const Text('Đánh dấu'),
               ),
               const SizedBox(width: 4),
               TextButton(
-                onPressed: () async {
-                  await diary.skipOccurrence(OccurrenceRef(schedule.id, scheduleDay));
-                  if (context.mounted) {
-                    await AppScope.of(context).cancelWindowIfHandled(schedule.timeOfDay);
-                  }
-                },
+                onPressed: _busy
+                    ? null
+                    : () => _runGuarded(() async {
+                          await diary.skipOccurrence(OccurrenceRef(schedule.id, scheduleDay));
+                          if (context.mounted) {
+                            await AppScope.of(context).cancelWindowIfHandled(schedule.timeOfDay);
+                          }
+                        }),
                 child: const Text('Bỏ qua'),
               ),
             ],
@@ -195,22 +225,28 @@ class _ScheduleOccurrenceTile extends StatelessWidget {
                 child: Text('$name · $doseLabel', style: Theme.of(context).textTheme.bodyLarge),
               ),
               FilledButton.tonal(
-                onPressed: () => markScheduledDoseTaken(
-                  context,
-                  schedule: schedule,
-                  scheduleDay: scheduleDay,
-                  at: now,
-                ),
+                onPressed: _busy
+                    ? null
+                    : () => _runGuarded(
+                          () => markScheduledDoseTaken(
+                            context,
+                            schedule: schedule,
+                            scheduleDay: scheduleDay,
+                            at: now,
+                          ),
+                        ),
                 child: const Text('Đã uống'),
               ),
               const SizedBox(width: 4),
               TextButton(
-                onPressed: () async {
-                  await diary.skipOccurrence(OccurrenceRef(schedule.id, scheduleDay));
-                  if (context.mounted) {
-                    await AppScope.of(context).cancelWindowIfHandled(schedule.timeOfDay);
-                  }
-                },
+                onPressed: _busy
+                    ? null
+                    : () => _runGuarded(() async {
+                          await diary.skipOccurrence(OccurrenceRef(schedule.id, scheduleDay));
+                          if (context.mounted) {
+                            await AppScope.of(context).cancelWindowIfHandled(schedule.timeOfDay);
+                          }
+                        }),
                 child: const Text('Bỏ qua'),
               ),
             ],
@@ -226,37 +262,42 @@ class _ScheduleOccurrenceTile extends StatelessWidget {
                 child: Text('$name · $doseLabel', style: Theme.of(context).textTheme.bodyLarge),
               ),
               OutlinedButton(
-                onPressed: () async {
-                  final asExtra = await showDialog<bool>(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: Text('Ghi cho lần ${formatMinutesHhMm(schedule.timeOfDay)} theo lịch hay lần uống thêm?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx, true),
-                          child: const Text('Lần uống thêm'),
-                        ),
-                        FilledButton(
-                          onPressed: () => Navigator.pop(ctx, false),
-                          child: Text('Lần ${formatMinutesHhMm(schedule.timeOfDay)} theo lịch'),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (asExtra == null || !context.mounted) return;
-                  await markScheduledDoseTaken(
-                    context,
-                    schedule: schedule,
-                    scheduleDay: scheduleDay,
-                    at: now,
-                    asExtra: asExtra,
-                  );
-                },
+                onPressed: _busy
+                    ? null
+                    : () => _runGuarded(() async {
+                          final asExtra = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: Text(
+                                  'Ghi cho lần ${formatMinutesHhMm(schedule.timeOfDay)} theo lịch hay lần uống thêm?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, true),
+                                  child: const Text('Lần uống thêm'),
+                                ),
+                                FilledButton(
+                                  onPressed: () => Navigator.pop(ctx, false),
+                                  child: Text('Lần ${formatMinutesHhMm(schedule.timeOfDay)} theo lịch'),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (asExtra == null || !context.mounted) return;
+                          await markScheduledDoseTaken(
+                            context,
+                            schedule: schedule,
+                            scheduleDay: scheduleDay,
+                            at: now,
+                            asExtra: asExtra,
+                          );
+                        }),
                 child: const Text('Uống sớm?'),
               ),
               const SizedBox(width: 4),
               TextButton(
-                onPressed: () => diary.skipOccurrence(OccurrenceRef(schedule.id, scheduleDay)),
+                onPressed: _busy
+                    ? null
+                    : () => _runGuarded(() => diary.skipOccurrence(OccurrenceRef(schedule.id, scheduleDay))),
                 child: const Text('Bỏ qua'),
               ),
             ],

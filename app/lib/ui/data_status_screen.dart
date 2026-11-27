@@ -66,26 +66,30 @@ class DataStatusScreen extends StatelessWidget {
   /// "Bắt đầu lại" hỏi lại và phải gõ XÓA vì dữ liệu cũ bị xóa.
   Future<void> _confirmStartOver(BuildContext context, AppState state) async {
     final c = TextEditingController();
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: const Text('Bắt đầu lại?'),
-          content: Column(mainAxisSize: MainAxisSize.min, children: [
-            const Text('Dữ liệu cũ trên máy sẽ bị xóa. Gõ XÓA để xác nhận.'),
-            TextField(controller: c, autofocus: true, onChanged: (_) => setState(() {})),
-          ]),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
-            TextButton(
-              onPressed: c.text.trim() == 'XÓA' ? () => Navigator.pop(ctx, true) : null,
-              child: const Text('Bắt đầu lại'),
-            ),
-          ],
+    final bool? ok;
+    try {
+      ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => StatefulBuilder(
+          builder: (ctx, setState) => AlertDialog(
+            title: const Text('Bắt đầu lại?'),
+            content: Column(mainAxisSize: MainAxisSize.min, children: [
+              const Text('Dữ liệu cũ trên máy sẽ bị xóa. Gõ XÓA để xác nhận.'),
+              TextField(controller: c, autofocus: true, onChanged: (_) => setState(() {})),
+            ]),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
+              TextButton(
+                onPressed: c.text.trim() == 'XÓA' ? () => Navigator.pop(ctx, true) : null,
+                child: const Text('Bắt đầu lại'),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
-    c.dispose();
+      );
+    } finally {
+      c.dispose();
+    }
     if (ok == true) await state.startOver();
   }
 }

@@ -168,13 +168,15 @@ class SupplementLabelParser {
 
   static double? _parseNumber(String raw) {
     final s = raw.trim();
+    final double? v;
     if (RegExp(r'^\d{1,3}(,\d{3})+$').hasMatch(s)) {
-      return double.tryParse(s.replaceAll(',', ''));
+      v = double.tryParse(s.replaceAll(',', ''));
+    } else if (RegExp(r'^\d{1,3}(\.\d{3})+$').hasMatch(s)) {
+      v = double.tryParse(s.replaceAll('.', ''));
+    } else {
+      v = double.tryParse(s.replaceAll(',', '.'));
     }
-    if (RegExp(r'^\d{1,3}(\.\d{3})+$').hasMatch(s)) {
-      return double.tryParse(s.replaceAll('.', ''));
-    }
-    return double.tryParse(s.replaceAll(',', '.'));
+    return (v != null && v.isFinite) ? v : null;
   }
 
   static String? _matchNutrientId(String lower) {
@@ -246,7 +248,10 @@ class SupplementLabelParser {
           !lower.contains('serving') &&
           !lower.contains('khẩu phần') &&
           !lower.contains('mỗi lần')) {
-        suggestedBoxCount = double.tryParse(countMatch.group(1)!);
+        final rawCount = double.tryParse(countMatch.group(1)!);
+        if (rawCount != null && rawCount.isFinite && rawCount > 0) {
+          suggestedBoxCount = rawCount;
+        }
         final u = countMatch.group(2)!;
         if (u.contains('softgel') || u.contains('mềm')) {
           suggestedUnit = CountUnit.softgel;

@@ -11,6 +11,8 @@ import 'package:wholewell/ui/add_workout_screen.dart';
 import 'package:wholewell/ui/body_metrics_fields.dart';
 import 'package:wholewell/ui/food_portion_screen.dart';
 import 'package:wholewell/ui/label_food_screen.dart';
+import 'package:wholewell/ui/supplements_screen.dart';
+import 'package:wholewell/ui/today_doses_screen.dart';
 import 'package:wholewell/ui/water_log_screen.dart';
 
 class _SlowWorkoutRepo extends InMemoryJournalRepository {
@@ -19,6 +21,43 @@ class _SlowWorkoutRepo extends InMemoryJournalRepository {
     await Future<void>.delayed(const Duration(milliseconds: 80));
     return super.addWorkout(startAt, w);
   }
+
+  @override
+  Future<DoseResult> recordDose(DoseInput d) async {
+    await Future<void>.delayed(const Duration(milliseconds: 80));
+    return super.recordDose(d);
+  }
+}
+
+class _ThrowingBarcodeScanner implements BarcodeScanner {
+  @override
+  Future<String?> scanBarcode() async => throw StateError('scanner failure');
+
+  @override
+  Future<String?> scanBarcodeFromImage(String path) async => throw StateError('image decode failure');
+}
+
+class _ThrowingOcrEngine implements OcrEngine {
+  @override
+  Future<OcrImagePickResult> captureLabelImage() async => throw StateError('camera error');
+
+  @override
+  Future<OcrImagePickResult> pickLabelImageFromGallery() async => const OcrImagePickResult(paths: ['/fake/a.jpg']);
+
+  @override
+  Future<OcrLabelResult> recognizeLabelFromImage(String imagePath) async => throw StateError('ocr error');
+
+  @override
+  Future<OcrLabelResult> recognizeLabelFromImages(List<String> paths) async => throw StateError('ocr error');
+
+  @override
+  Future<String?> extractLabelJsonWithOnDeviceAi(List<String> ocrLines) async => null;
+
+  @override
+  Future<void> openAppSettings() async {}
+
+  @override
+  Future<void> dispose() async {}
 }
 
 class _ThrowingWorkoutAppState extends AppState {
@@ -262,6 +301,91 @@ void main() {
       expect(payload, isNot(contains('Secret')));
       expect(payload, isNot(contains('Vitamin')));
       expect(payload, isNot(contains('1000')));
+    });
+
+    testWidgets('TodayDosesScreen chống double-tap Đã uống khi DB ghi chậm', (tester) async {
+      final slowRepo = _SlowWorkoutRepo();
+      final state = await _makeReadyState(pack, repo: slowRepo);
+      addTearDown(state.dispose);
+
+      final now = DateTime(2026, 11, 27, 8, 30);
+      final pid = await state.diary.createProductWithIngredientsAndBox(
+        name: 'Vitamin D3',
+        countUnit: CountUnit.tablet,
+        unitsPerServing: 1,
+        ingredients: const [
+          IngredientDraft(
+            nutrientId: 'vitD',
+            form: 'unknown',
+            amountPerServing: 25,
+            unit: 'ug',
+            labelAmount: 1000,
+            labelUnit: 'IU',
+            origin: IngredientOrigin.manual,
+            confirmed: true,
+          ),
+        ],
+        initialBoxRemaining: 30,
+      );
+      await state.diary.addSchedule(pid!, 8 * 60, 1, validFrom: dayKey(now));
+
+      await tester.pumpWidget(_wrapWithState(state, TodayDosesScreen(nowOverride: now)));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Đã uống'));
+      await tester.pump();
+      await tester.tap(find.text('Đã uống'), warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      final doses = await slowRepo.dosesBetween(dayKey(now), dayKey(now));
+      expect(doses, hasLength(1));
+    });
+
+    testWidgets('ScanProductScreen nhả _busy khi quét ảnh/OCR ném ngoại lệ', (tester) async {
+      final state = AppState.withRepository(
+        pack: pack,
+        repo: InMemoryJournalRepository(),
+        ocrEngine: _ThrowingOcrEngine(),
+        barcodeScanner: _ThrowingBarcodeScanner(),
+      );
+      await state.start();
+      await state.completeFirstConsent(ageYears: 28, caution: false);
+      await state.saveOnboardingBodyProfile(const Profile(
+        ageYears: 28,
+        sex: Sex.male,
+        heightCm: 172,
+        weightKg: 68,
+        activityLevel: ActivityLevel.active,
+      ));
+      addTearDown(state.dispose);
+
+      await tester.pumpWidget(_wrapWithState(state, const ScanProductScreen()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Chụp ảnh nhãn (tên, thành phần)'));
+      await tester.pumpAndSettle();
+
+      // Sau lỗi, thông báo lỗi hiển thị và nút không bị khóa kẹt.
+      expect(find.text('Chưa chọn hoặc chụp được ảnh. Thử lại.'), findsOneWidget);
+      final cameraBtn = tester.widget<ButtonStyleButton>(
+        find.ancestor(
+          of: find.text('Chụp ảnh nhãn (tên, thành phần)'),
+          matching: find.bySubtype<ButtonStyleButton>(),
+        ),
+      );
+      expect(cameraBtn.onPressed, isNotNull);
+
+      // Thử chọn ảnh từ thư viện -> barcode scanner ném lỗi vẫn phục hồi trạng thái _busy.
+      await tester.tap(find.text('Chọn ảnh từ thư viện'));
+      await tester.pumpAndSettle();
+      expect(find.text('Chưa chọn hoặc chụp được ảnh. Thử lại.'), findsOneWidget);
+      final galleryBtn = tester.widget<ButtonStyleButton>(
+        find.ancestor(
+          of: find.text('Chọn ảnh từ thư viện'),
+          matching: find.bySubtype<ButtonStyleButton>(),
+        ),
+      );
+      expect(galleryBtn.onPressed, isNotNull);
     });
   });
 }

@@ -31,6 +31,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
   Timer? _spinnerDelay;
   bool _loading = false;
   bool _showSpinner = false;
+  bool _loggingRecent = false;
 
   List<FoodEntry> _recents = const [];
   List<CustomFood> _customs = const [];
@@ -135,9 +136,15 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
   }
 
   Future<void> _tapRecent(FoodEntry e) async {
-    final diary = AppScope.of(context).diary;
-    final fb = await diary.logRecentFood(e, meal: _meal);
-    await _finishWithFeedback(fb);
+    if (_loggingRecent) return;
+    _loggingRecent = true;
+    try {
+      final diary = AppScope.of(context).diary;
+      final fb = await diary.logRecentFood(e, meal: _meal);
+      await _finishWithFeedback(fb);
+    } finally {
+      _loggingRecent = false;
+    }
   }
 
   Future<void> _openLibraryDetail(FoodSummary s) async {

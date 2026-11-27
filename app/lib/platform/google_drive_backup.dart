@@ -147,13 +147,15 @@ class _GoogleAuthHttpClient extends http.BaseClient {
 /// Cài đặt [BackupProvider] qua Google Drive API v3 (`spaces: 'appDataFolder'`), giữ tối đa 3 bản.
 class GoogleDriveBackupProvider implements BackupProvider {
   static const int maxRetainedBackups = 3;
+  static const Duration requestTimeout = Duration(seconds: 30);
+  static const Duration transferTimeout = Duration(seconds: 60);
 
   final GoogleAuth auth;
 
   const GoogleDriveBackupProvider({required this.auth});
 
   Future<T> _withDrive<T>(Future<T> Function(drive.DriveApi api) fn) async {
-    final headers = await auth.authHeaders(interactive: false);
+    final headers = await auth.authHeaders(interactive: false).timeout(requestTimeout);
     if (headers == null) {
       throw StateError('Chưa có quyền truy cập Google Drive.');
     }
@@ -174,12 +176,14 @@ class GoogleDriveBackupProvider implements BackupProvider {
 
   @override
   Future<List<CloudBackupInfo>> listBackups() => _withDrive((api) async {
-        final list = await api.files.list(
-          spaces: 'appDataFolder',
-          orderBy: 'modifiedTime desc',
-          pageSize: 10,
-          $fields: 'files(id, name, modifiedTime, size)',
-        );
+        final list = await api.files
+            .list(
+              spaces: 'appDataFolder',
+              orderBy: 'modifiedTime desc',
+              pageSize: 10,
+              $fields: 'files(id, name, modifiedTime, size)',
+            )
+            .timeout(requestTimeout);
         final files = list.files ?? const <drive.File>[];
         return [
           for (final f in files)
@@ -203,29 +207,33 @@ class GoogleDriveBackupProvider implements BackupProvider {
           ..name = fileName
           ..parents = ['appDataFolder']
           ..mimeType = 'application/octet-stream';
-        final created = await api.files.create(
-          meta,
-          uploadMedia: drive.Media(
-            Stream<List<int>>.value(encryptedBackupBytes),
-            encryptedBackupBytes.length,
-          ),
-          $fields: 'id, name, modifiedTime, size',
-        );
+        final created = await api.files
+            .create(
+              meta,
+              uploadMedia: drive.Media(
+                Stream<List<int>>.value(encryptedBackupBytes),
+                encryptedBackupBytes.length,
+              ),
+              $fields: 'id, name, modifiedTime, size',
+            )
+            .timeout(transferTimeout);
 
         // Chỉ giữ tối đa 3 bản gần nhất sau khi đã tải lên thành công bản mới.
-        final list = await api.files.list(
-          spaces: 'appDataFolder',
-          orderBy: 'modifiedTime desc',
-          pageSize: 20,
-          $fields: 'files(id, modifiedTime)',
-        );
+        final list = await api.files
+            .list(
+              spaces: 'appDataFolder',
+              orderBy: 'modifiedTime desc',
+              pageSize: 20,
+              $fields: 'files(id, modifiedTime)',
+            )
+            .timeout(requestTimeout);
         final existing = list.files ?? const <drive.File>[];
         if (existing.length > maxRetainedBackups) {
           for (final old in existing.skip(maxRetainedBackups)) {
             final oldId = old.id;
             if (oldId != null && oldId != created.id) {
               try {
-                await api.files.delete(oldId);
+                await api.files.delete(oldId).timeout(requestTimeout);
               } on Object {
                 // Không làm hỏng thao tác tải lên chính nếu dọn bản thừa thất bại nhẹ.
               }
@@ -237,14 +245,22 @@ class GoogleDriveBackupProvider implements BackupProvider {
 
   @override
   Future<Uint8List> download(String id) => _withDrive((api) async {
-        final media = await api.files.get(
-          id,
-          downloadOptions: drive.DownloadOptions.fullMedia,
-        ) as drive.Media;
-        final builder = BytesBuilder(copy: false);
-        await for (final chunk in media.stream) {
-          builder.add(chunk);
+        final res = await api.files
+            .get(
+              id,
+              downloadOptions: drive.DownloadOptions.fullMedia,
+            )
+            .timeout(transferTimeout);
+        if (res is! drive.Media) {
+          throw StateError('Không tải được dữ liệu tệp sao lưu.');
         }
+        final builder = BytesBuilder(copy: false);
+        await (() async {
+          await for (final chunk in res.stream) {
+            builder.add(chunk);
+          }
+        })()
+            .timeout(transferTimeout);
         return builder.takeBytes();
       });
 
@@ -252,16 +268,18 @@ class GoogleDriveBackupProvider implements BackupProvider {
   Future<void> deleteAll() => _withDrive((api) async {
         String? pageToken;
         do {
-          final list = await api.files.list(
-            spaces: 'appDataFolder',
-            pageSize: 100,
-            pageToken: pageToken,
-            $fields: 'nextPageToken, files(id)',
-          );
+          final list = await api.files
+              .list(
+                spaces: 'appDataFolder',
+                pageSize: 100,
+                pageToken: pageToken,
+                $fields: 'nextPageToken, files(id)',
+              )
+              .timeout(requestTimeout);
           for (final f in list.files ?? const <drive.File>[]) {
             final id = f.id;
             if (id != null) {
-              await api.files.delete(id);
+              await api.files.delete(id).timeout(requestTimeout);
             }
           }
           pageToken = list.nextPageToken;
