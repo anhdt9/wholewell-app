@@ -355,6 +355,13 @@ class EntryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    final hasKcal = kcal != null && kcal! > 0;
+    final metaChildren = [
+      Text(timeText, style: tabularNumberStyle(t.bodySmall)),
+      if (hasKcal) CalorieText(kcal, suffix: ' kcal', style: tabularNumberStyle(t.labelSmall)),
+    ];
+
     return ListTile(
       minTileHeight: 56,
       leading: Icon(leadingIcon),
@@ -366,16 +373,29 @@ class EntryTile extends StatelessWidget {
           if (isEstimate) const EstimateChip(),
         ],
       ),
-      subtitle: Text(subtitle, style: t.bodySmall),
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(timeText, style: t.bodySmall),
-          if (kcal != null && kcal! > 0)
-            CalorieText(kcal, suffix: ' kcal', style: t.labelSmall),
-        ],
-      ),
+      subtitle: textScale >= 1.3
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(subtitle, style: t.bodySmall),
+                const SizedBox(height: AppSpacing.xs),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.xs,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: metaChildren,
+                ),
+              ],
+            )
+          : Text(subtitle, style: t.bodySmall),
+      trailing: textScale >= 1.3
+          ? null
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: metaChildren,
+            ),
       onTap: onTap,
     );
   }

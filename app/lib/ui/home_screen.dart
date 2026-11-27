@@ -175,8 +175,7 @@ class _DaySwitcherPill extends StatelessWidget {
           children: [
             IconButton(
               tooltip: 'Ngày trước',
-              visualDensity: VisualDensity.compact,
-              constraints: const BoxConstraints(minWidth: 36, minHeight: 40),
+              constraints: const BoxConstraints(minWidth: 40, minHeight: 44),
               padding: EdgeInsets.zero,
               icon: Icon(
                 LucideIcons.chevronLeft,
@@ -205,8 +204,7 @@ class _DaySwitcherPill extends StatelessWidget {
             ),
             IconButton(
               tooltip: 'Ngày sau',
-              visualDensity: VisualDensity.compact,
-              constraints: const BoxConstraints(minWidth: 36, minHeight: 40),
+              constraints: const BoxConstraints(minWidth: 40, minHeight: 44),
               padding: EdgeInsets.zero,
               icon: Icon(
                 LucideIcons.chevronRight,

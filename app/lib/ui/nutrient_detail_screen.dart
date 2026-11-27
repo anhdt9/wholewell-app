@@ -383,7 +383,7 @@ class _SourceDotLabel extends StatelessWidget {
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
-        Text(text, style: tabularNumberStyle(t.bodySmall)),
+        Flexible(child: Text(text, style: tabularNumberStyle(t.bodySmall))),
       ],
     );
   }
