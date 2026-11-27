@@ -273,7 +273,6 @@ class _NextDoseCardState extends State<_NextDoseCard> {
       for (final s in diary.todaySchedules)
         if (!occMap.containsKey(s.id)) s,
     ];
-    final cs = Theme.of(context).colorScheme;
     final t = Theme.of(context).textTheme;
 
     if (pending.isEmpty) {
@@ -301,13 +300,8 @@ class _NextDoseCardState extends State<_NextDoseCard> {
       for (final s in slotItems) prodMap[s.productId]?.name ?? 'Sản phẩm #${s.productId}',
     ].join(', ');
 
-    return Container(
+    return SurfaceCard(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: cs.outlineVariant),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -355,14 +349,8 @@ class _AgeBumpedBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
+    return SurfaceCard(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: cs.outlineVariant),
-      ),
       child: Wrap(
         spacing: 8,
         runSpacing: 4,
@@ -689,7 +677,6 @@ class _NutrientRow extends StatelessWidget {
         ? '${fmt(status.totalAmount)}/${fmt(target.value)} $u · ${pct.round()}%'
         : '${fmt(status.totalAmount)} $u';
     final foodAndFort = status.foodAmount + status.fortifiedAmount;
-    final textScale = MediaQuery.textScalerOf(context).scale(1);
     final t = Theme.of(context).textTheme;
 
     return InkWell(
@@ -699,18 +686,10 @@ class _NutrientRow extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (textScale >= 1.3) ...[
-              Text(name, style: t.bodyMedium),
-              const SizedBox(height: 2),
-              Text(valueText, style: t.bodySmall),
-            ] else
-              Row(
-                children: [
-                  Expanded(child: Text(name, style: t.bodyMedium)),
-                  const SizedBox(width: 8),
-                  Text(valueText, style: t.bodySmall),
-                ],
-              ),
+            ResponsiveStatRow(
+              leading: Text(name, style: t.bodyMedium),
+              trailing: Text(valueText, style: t.bodySmall),
+            ),
             const SizedBox(height: 6),
             TwoSegmentProgressBar(
               foodAmount: foodAndFort,

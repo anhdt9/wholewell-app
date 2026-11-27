@@ -47,8 +47,9 @@ class _WaterLogScreenState extends State<WaterLogScreen> {
     super.dispose();
   }
 
-  static String _plainNumber(double v) =>
-      (v - v.roundToDouble()).abs() < 0.05 ? '${v.round()}' : v.toString().replaceAll('.', ',');
+  static String _plainNumber(double v) => (v - v.roundToDouble()).abs() < 0.05
+      ? '${v.round()}'
+      : v.toString().replaceAll('.', ',');
 
   double? _parsedMl() {
     if (_presetMl != null) return _presetMl;
@@ -63,7 +64,8 @@ class _WaterLogScreenState extends State<WaterLogScreen> {
       initialTime: TimeOfDay.fromDateTime(_at),
     );
     if (picked != null && mounted) {
-      setState(() => _at = DateTime(_at.year, _at.month, _at.day, picked.hour, picked.minute));
+      setState(() => _at =
+          DateTime(_at.year, _at.month, _at.day, picked.hour, picked.minute));
     }
   }
 
@@ -86,7 +88,8 @@ class _WaterLogScreenState extends State<WaterLogScreen> {
         final id = await diary.addWater(_at, ml);
         if (!mounted || id == null) return;
         final nav = Navigator.of(context);
-        showUndoWaterSnack(context, ml: ml, onUndo: () => diary.deleteWater(id));
+        showUndoWaterSnack(context,
+            ml: ml, onUndo: () => diary.deleteWater(id));
         nav.pop();
       } else {
         final ok = await diary.updateWater(e.id, at: _at, ml: ml);
@@ -101,24 +104,13 @@ class _WaterLogScreenState extends State<WaterLogScreen> {
     if (_saving) return;
     final e = widget.editing;
     if (e == null) return;
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        content: Text('Xóa lần uống ${fmtWaterMl(e.ml)} ml khỏi nhật ký?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Hủy')),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-              foregroundColor: Theme.of(ctx).colorScheme.onError,
-            ),
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Xóa'),
-          ),
-        ],
-      ),
+    final confirm = await showConfirmDialog(
+      context,
+      message: 'Xóa lần uống ${fmtWaterMl(e.ml)} ml khỏi nhật ký?',
+      confirmLabel: 'Xóa',
+      destructive: true,
     );
-    if (confirm != true || !mounted) return;
+    if (!confirm || !mounted) return;
     setState(() => _saving = true);
     try {
       final ok = await AppScope.of(context).diary.deleteWater(e.id);
@@ -203,7 +195,8 @@ class _WaterLogScreenState extends State<WaterLogScreen> {
           ),
           const SizedBox(height: 24),
           FilledButton(
-            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+            style:
+                FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             onPressed: _saving ? null : _save,
             child: _saving
                 ? const SizedBox(

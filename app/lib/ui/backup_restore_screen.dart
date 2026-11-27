@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../platform/backup_provider.dart';
 import '../state/app_scope.dart';
+import 'common/common_widgets.dart';
 import 'drive_backup_screens.dart';
 
 /// Lỗi nghiệp vụ hiển thị trực tiếp thông điệp tiếng Việt trong [BackupSecretSection].
@@ -89,9 +90,7 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
       final msg = !deleteRemote || cleared
           ? 'Đã ngắt kết nối Google Drive.'
           : 'Chưa xóa được bản trên Google Drive. App sẽ thử lại khi có mạng.';
-      ScaffoldMessenger.maybeOf(context)
-        ?..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(msg)));
+      AppFeedback.showSnack(context, msg);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -285,9 +284,7 @@ class _BackupSecretSectionState extends State<BackupSecretSection> {
   Future<void> _copyKey() async {
     await Clipboard.setData(ClipboardData(text: _recoveryKey));
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(const SnackBar(content: Text('Đã sao chép mã khôi phục.')));
+    AppFeedback.showSnack(context, 'Đã sao chép mã khôi phục.');
   }
 
   Future<void> _handleSubmit() async {
@@ -328,12 +325,9 @@ class _BackupSecretSectionState extends State<BackupSecretSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(12),
-          ),
+        SurfaceCard(
+          color: cs.surfaceContainerHighest,
+          borderColor: cs.surfaceContainerHighest,
           child: Text(widget.noticeText),
         ),
         const SizedBox(height: 16),
@@ -359,12 +353,8 @@ class _BackupSecretSectionState extends State<BackupSecretSection> {
         ),
         const SizedBox(height: 16),
         if (_mode == BackupSecretMode.recoveryKey) ...[
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              border: Border.all(color: cs.outlineVariant),
-              borderRadius: BorderRadius.circular(12),
-            ),
+          SurfaceCard(
+            color: Colors.transparent,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -481,9 +471,7 @@ class CreateBackupScreen extends StatelessWidget {
                 throw const BackupSubmitException('Chưa lưu được tệp sao lưu.');
               }
               if (!context.mounted) return;
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(const SnackBar(content: Text('Đã lưu bản sao lưu mã hóa.')));
+              AppFeedback.showSnack(context, 'Đã lưu bản sao lưu mã hóa.');
               Navigator.of(context).pop();
             },
           ),
@@ -609,9 +597,7 @@ class _RestoreBackupScreenState extends State<RestoreBackupScreen> {
       if (!mounted) return;
       switch (res) {
         case RestoreSucceeded():
-          ScaffoldMessenger.maybeOf(context)
-            ?..hideCurrentSnackBar()
-            ..showSnackBar(const SnackBar(content: Text('Đã khôi phục dữ liệu.')));
+          AppFeedback.showSnack(context, 'Đã khôi phục dữ liệu.');
           Navigator.of(context).popUntil((r) => r.isFirst);
         case RestoreWrongSecret() || RestoreCorrupted() || RestoreNeedsUpdate() || RestoreFailed():
           setState(() {
@@ -669,12 +655,9 @@ class _RestoreBackupScreenState extends State<RestoreBackupScreen> {
           ),
           if (widget.hasExistingData) ...[
             const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: cs.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
-              ),
+            SurfaceCard(
+              color: cs.surfaceContainerHighest,
+              borderColor: cs.surfaceContainerHighest,
               child: const Row(
                 children: [
                   Icon(Icons.info_outline, size: 18),

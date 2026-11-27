@@ -71,10 +71,13 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
 12. **Bộ lọc vi chất & Màn Chi tiết chất (PR #37 đã gộp vào `main`):**
     - Thêm bộ lọc vi chất (`Tất cả`, `Có bổ sung`, `Dưới mức khuyến nghị` / `Dưới mức tham chiếu`) và thanh tiến độ hai đoạn (`TwoSegmentProgressBar`: Thực phẩm vs Bổ sung) trên màn Hôm nay ([today_screen.dart](../app/lib/ui/today_screen.dart)).
     - Tạo màn **Chi tiết chất** ([nutrient_detail_screen.dart](../app/lib/ui/nutrient_detail_screen.dart)): hiện đủ 2 tổng (mức khuyến nghị/ước tính vs giới hạn an toàn đúng phạm vi từng chất), đóng góp hôm nay theo nguồn/dạng, thông tin vitamin C + sắt, chuyển `[Hôm nay | 7 ngày]` với biểu đồ 7 ngày qua có `Semantics` và co giãn cỡ chữ 200% (`nutrient_detail_filter_test.dart`).
-13. **Tối ưu hiệu năng DB/State & Tách logic khỏi UI (`perf/cache-batch-queries-and-domain-helpers`):**
+13. **Tối ưu hiệu năng DB/State & Tách logic khỏi UI (PR #38 đã gộp vào `main`):**
     - Thêm `allProductIngredients()` trong `JournalRepository` để bỏ vòng lặp N+1 `productDetail` trong `DiaryController.reload()`.
     - Memoize `report()` và `periodReport7Days()` theo phiên bản dữ liệu, và dùng `_writeUiStateOnly` cho `dismissScheduleNotices` / `hideTipCardForToday` để tránh bắn lại 22 query `reload()`.
     - Đưa `lineCountsTowardUl` vào `health_engine`, `foodById` vào `DiaryController`, `previewCustomFood`/`previewLibraryFood`/`previewEditEntryKcal` vào `LabelFoodBuilder`, và tách `SupplementIngredientHelper` khỏi UI (`repository_test.dart`, `app_state_test.dart`).
+14. **Chuẩn hóa Design System & Feedback Patterns (`chore/design-system-and-feedback`):**
+    - Thêm [tokens.dart](../app/lib/ui/design_system/tokens.dart) (`AppSpacing`, `AppRadius`, `buildWholeWellTheme` với `filledButtonTheme`, `outlinedButtonTheme`, `cardTheme`) áp dụng cho cả chế độ sáng và tối trong `main.dart`.
+    - Bổ sung `SurfaceCard`, `ResponsiveStatRow`, `AppFeedback.showSnack`, `showConfirmDialog` vào [common_widgets.dart](../app/lib/ui/common/common_widgets.dart) và thay thế các đoạn `Container`/hộp thoại xác nhận/`SnackBar` lặp lại trên toàn giao diện.
 
 ## Để sau MVP (giai đoạn 2)
 

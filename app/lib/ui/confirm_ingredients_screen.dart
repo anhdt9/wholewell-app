@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
 import '../state/app_state.dart';
+import 'common/common_widgets.dart';
 import 'labels.dart';
 
 class EditableIngredient {
@@ -609,9 +610,7 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                     isCompound: _isCompound,
                   );
                   if (!ok) {
-                    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                      const SnackBar(content: Text('Đơn vị này không phù hợp với chất đã chọn.')),
-                    );
+                    AppFeedback.showSnack(context, 'Đơn vị này không phù hợp với chất đã chọn.');
                     return;
                   }
                 }

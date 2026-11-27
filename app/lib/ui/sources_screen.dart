@@ -4,6 +4,7 @@ library;
 import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
+import 'common/common_widgets.dart';
 
 class SourcesScreen extends StatelessWidget {
   final String? highlightRuleId;
@@ -25,16 +26,10 @@ class SourcesScreen extends StatelessWidget {
           Text('Quy tắc lịch uống (NIH ODS)', style: t.titleMedium),
           const SizedBox(height: 8),
           for (final r in pack.scheduleRules)
-            Container(
+            SurfaceCard(
               margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: r.id == highlightRuleId ? cs.secondaryContainer : cs.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: r.id == highlightRuleId ? cs.primary : cs.outlineVariant,
-                ),
-              ),
+              color: r.id == highlightRuleId ? cs.secondaryContainer : cs.surfaceContainerLow,
+              borderColor: r.id == highlightRuleId ? cs.primary : cs.outlineVariant,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

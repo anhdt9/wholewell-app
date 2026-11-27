@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
 import 'body_metrics_fields.dart';
+import 'common/common_widgets.dart';
 import 'privacy_screen.dart';
 
 /// Màn Hồ sơ (mở từ `Tôi -> Hồ sơ` hoặc nút `Sửa` ở dòng nhắc tuổi trên Hôm nay).
@@ -100,9 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (mounted) setState(() => _saving = false);
     }
     if (!mounted || !ok) return;
-    ScaffoldMessenger.maybeOf(context)
-      ?..hideCurrentSnackBar()
-      ..showSnackBar(const SnackBar(content: Text('Đã lưu hồ sơ.')));
+    AppFeedback.showSnack(context, 'Đã lưu hồ sơ.');
     Navigator.of(context).maybePop();
   }
 
@@ -186,13 +185,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 : const Text('Lưu'),
           ),
           const SizedBox(height: 24),
-          Container(
+          SurfaceCard(
             padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: cs.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: cs.outlineVariant),
-            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

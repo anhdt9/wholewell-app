@@ -156,22 +156,13 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
   }
 
   Future<void> _confirmDelete() async {
-    final cs = Theme.of(context).colorScheme;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Xóa “${widget.entry.name}” khỏi nhật ký?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: cs.error),
-            child: const Text('Xóa'),
-          ),
-        ],
-      ),
+    final ok = await showConfirmDialog(
+      context,
+      title: 'Xóa “${widget.entry.name}” khỏi nhật ký?',
+      confirmLabel: 'Xóa',
+      destructive: true,
     );
-    if (ok != true || !mounted) return;
+    if (!ok || !mounted) return;
     await AppScope.of(context).diary.deleteFoodEntry(widget.entry.id);
     if (!mounted) return;
     Navigator.of(context).pop(FoodLogFeedback(summaryText: 'Đã xóa ${widget.entry.name}'));

@@ -150,9 +150,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
     final detail = await state.diary.getLibraryFood(s.id);
     if (!mounted) return;
     if (detail == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Chưa đọc được món này. Thử lại')),
-      );
+      AppFeedback.showSnack(context, 'Chưa đọc được món này. Thử lại');
       return;
     }
     final fb = await Navigator.of(context).push<FoodLogFeedback>(
@@ -195,17 +193,12 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
   }
 
   Future<void> _confirmArchiveCustom(CustomFood c) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Bỏ lưu “${c.name}” khỏi danh sách?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Bỏ lưu')),
-        ],
-      ),
+    final ok = await showConfirmDialog(
+      context,
+      title: 'Bỏ lưu “${c.name}” khỏi danh sách?',
+      confirmLabel: 'Bỏ lưu',
     );
-    if (ok != true || !mounted) return;
+    if (!ok || !mounted) return;
     await AppScope.of(context).diary.archiveCustomFood(c.id);
     if (mounted) unawaited(_refreshLists(_searchCtrl.text));
   }

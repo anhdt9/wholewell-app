@@ -5,7 +5,137 @@ import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../state/app_scope.dart';
+import '../design_system/tokens.dart';
 import '../labels.dart';
+
+export '../design_system/tokens.dart';
+
+/// Khung thẻ viền chuẩn (dùng chung thay vì copy-paste `BoxDecoration` bo góc 12).
+class SurfaceCard extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry? margin;
+  final Color? color;
+  final Color? borderColor;
+
+  const SurfaceCard({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(AppSpacing.md),
+    this.margin,
+    this.color,
+    this.borderColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      margin: margin,
+      padding: padding,
+      decoration: BoxDecoration(
+        color: color ?? cs.surfaceContainerLow,
+        borderRadius: AppRadius.card,
+        border: Border.all(color: borderColor ?? cs.outlineVariant),
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Hàng 2 đầu tự động chuyển sang xếp dọc khi cỡ chữ hệ thống >= 1.3x.
+class ResponsiveStatRow extends StatelessWidget {
+  final Widget leading;
+  final Widget trailing;
+  final double gap;
+
+  const ResponsiveStatRow({
+    super.key,
+    required this.leading,
+    required this.trailing,
+    this.gap = AppSpacing.sm,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    if (textScale >= 1.3) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          leading,
+          SizedBox(height: gap / 2),
+          trailing,
+        ],
+      );
+    }
+    return Row(
+      children: [
+        Expanded(child: leading),
+        SizedBox(width: gap),
+        trailing,
+      ],
+    );
+  }
+}
+
+/// Hiển thị thông báo SnackBar nhất quán trên toàn app.
+abstract final class AppFeedback {
+  static void showSnack(
+    BuildContext context,
+    String message, {
+    Duration duration = const Duration(seconds: 4),
+    SnackBarAction? action,
+  }) {
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          duration: duration,
+          content: Text(message),
+          action: action,
+        ),
+      );
+  }
+}
+
+/// Hộp thoại xác nhận hành động 2 nút chuẩn (`Hủy` / [confirmLabel]).
+Future<bool> showConfirmDialog(
+  BuildContext context, {
+  String? title,
+  String? message,
+  String cancelLabel = 'Hủy',
+  required String confirmLabel,
+  bool destructive = false,
+}) async {
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: title == null ? null : Text(title),
+      content: message == null ? null : Text(message),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(false),
+          child: Text(cancelLabel),
+        ),
+        FilledButton(
+          style: destructive
+              ? FilledButton.styleFrom(
+                  backgroundColor: Theme.of(ctx).colorScheme.error,
+                  foregroundColor: Theme.of(ctx).colorScheme.onError,
+                )
+              : null,
+          onPressed: () => Navigator.of(ctx).pop(true),
+          child: Text(confirmLabel),
+        ),
+      ],
+    ),
+  );
+  return ok == true;
+}
 
 /// Các nút chọn bữa theo cài đặt `Giờ trong ngày` (luôn giữ `Phụ` và [alwaysInclude]).
 List<ButtonSegment<Meal>> enabledMealSegments(
@@ -59,7 +189,7 @@ class EstimateChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.card,
       ),
       child: Text(
         label,
@@ -77,19 +207,12 @@ class SafetyNote extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: cs.outlineVariant),
-      ),
+    return SurfaceCard(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(Icons.info_outline, size: 18, color: cs.onSurfaceVariant),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(message, style: Theme.of(context).textTheme.bodySmall),
           ),
@@ -125,14 +248,7 @@ class _CollapsibleScheduleNoteState extends State<CollapsibleScheduleNote> {
     final t = Theme.of(context).textTheme;
     final showCompact = widget.collapsed && !_manualExpand;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: cs.outlineVariant),
-      ),
+    return SurfaceCard(
       child: showCompact
           ? InkWell(
               onTap: () => setState(() => _manualExpand = true),
@@ -190,16 +306,9 @@ class TipCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final t = Theme.of(context).textTheme;
-    return Container(
-      width: double.infinity,
+    return SurfaceCard(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: cs.outlineVariant),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -480,17 +589,13 @@ void showUndoWaterSnack(
   BuildContext context, {
   required double ml,
   required Future<void> Function() onUndo,
-}) {
-  final messenger = ScaffoldMessenger.maybeOf(context);
-  if (messenger == null) return;
-  messenger
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(
+}) =>
+    AppFeedback.showSnack(
+      context,
+      'Đã ghi ${fmtWaterMl(ml)} ml nước',
       duration: const Duration(seconds: 7),
-      content: Text('Đã ghi ${fmtWaterMl(ml)} ml nước'),
       action: SnackBarAction(label: 'Hoàn tác', onPressed: onUndo),
-    ));
-}
+    );
 
 /// Format giờ phút theo 24 giờ (`07:30`).
 String fmtTime24(DateTime t) =>

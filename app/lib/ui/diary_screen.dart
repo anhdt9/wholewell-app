@@ -24,27 +24,14 @@ class DiaryScreen extends StatefulWidget {
 class _DiaryScreenState extends State<DiaryScreen> {
   _DiaryFilter _filter = _DiaryFilter.all;
 
-  Future<bool> _confirmSwipeDelete(BuildContext context, String itemLabel) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Xóa $itemLabel?'),
-        content: Text('Mục $itemLabel này sẽ bị xóa khỏi nhật ký.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Hủy')),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-              foregroundColor: Theme.of(ctx).colorScheme.onError,
-            ),
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Xóa'),
-          ),
-        ],
-      ),
-    );
-    return ok == true;
-  }
+  Future<bool> _confirmSwipeDelete(BuildContext context, String itemLabel) =>
+      showConfirmDialog(
+        context,
+        title: 'Xóa $itemLabel?',
+        message: 'Mục $itemLabel này sẽ bị xóa khỏi nhật ký.',
+        confirmLabel: 'Xóa',
+        destructive: true,
+      );
 
   @override
   Widget build(BuildContext context) {

@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import '../platform/backup_provider.dart';
 import '../state/app_scope.dart';
 import 'backup_restore_screen.dart';
+import 'common/common_widgets.dart';
 
 /// Sheet chọn nguồn khôi phục khi bấm "Khôi phục từ bản sao lưu" ở Chào mừng hoặc màn lỗi khóa.
 Future<void> showRestoreSourcePicker(
@@ -97,13 +98,8 @@ class _PendingDriveDeleteCardState extends State<PendingDriveDeleteCard> {
     final t = Theme.of(context).textTheme;
     final needsReauth = state.drivePendingDeleteNeedsReauth;
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: cs.outlineVariant),
-      ),
+    return SurfaceCard(
+      color: cs.surfaceContainerHighest,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -306,9 +302,7 @@ class CreateDriveBackupScreen extends StatelessWidget {
                 );
               }
               if (!context.mounted) return;
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(const SnackBar(content: Text('Đã sao lưu lên Google Drive.')));
+              AppFeedback.showSnack(context, 'Đã sao lưu lên Google Drive.');
               Navigator.of(context).pop();
             },
           ),
@@ -442,9 +436,7 @@ class _RestoreDriveBackupScreenState extends State<RestoreDriveBackupScreen> {
       );
       if (!mounted) return;
       if (res is RestoreSucceeded) {
-        ScaffoldMessenger.maybeOf(context)
-          ?..hideCurrentSnackBar()
-          ..showSnackBar(const SnackBar(content: Text('Đã khôi phục dữ liệu.')));
+        AppFeedback.showSnack(context, 'Đã khôi phục dữ liệu.');
         Navigator.of(context).popUntil((r) => r.isFirst);
       } else {
         setState(() {
@@ -540,12 +532,9 @@ class _RestoreDriveBackupScreenState extends State<RestoreDriveBackupScreen> {
               ),
               if (widget.hasExistingData) ...[
                 const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: cs.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                SurfaceCard(
+                  color: cs.surfaceContainerHighest,
+                  borderColor: cs.surfaceContainerHighest,
                   child: const Row(
                     children: [
                       Icon(Icons.info_outline, size: 18),
