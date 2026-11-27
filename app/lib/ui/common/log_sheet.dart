@@ -28,7 +28,7 @@ Future<void> showLogSheet(BuildContext context) {
 
   return showAppModalSheet<void>(
     context: context,
-    builder: (ctx) => Padding(
+    builder: (ctx) => SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.xs, AppSpacing.lg, AppSpacing.lg),
       child: Column(
         mainAxisSize: MainAxisSize.min,

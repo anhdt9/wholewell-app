@@ -192,29 +192,34 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Expanded(
-                                  child: Text(p.name, style: t.titleSmall),
-                                ),
-                                const SizedBox(width: AppSpacing.sm),
-                                Text(
-                                  s.validRemaining > 0
-                                      ? 'Còn ${fmt(s.validRemaining)} $u'
-                                      : 'Kho đã hết',
-                                  style: tabularNumberStyle(
-                                    t.bodyMedium?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: s.validRemaining <= 0
-                                          ? cs.error
-                                          : cs.onSurface,
+                                  child: ResponsiveStatRow(
+                                    leading: Text(p.name, style: t.titleSmall),
+                                    trailing: Text(
+                                      s.validRemaining > 0
+                                          ? 'Còn ${fmt(s.validRemaining)} $u'
+                                          : 'Kho đã hết',
+                                      style: tabularNumberStyle(
+                                        t.bodyMedium?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          color: s.validRemaining <= 0
+                                              ? cs.error
+                                              : cs.onSurface,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
                                 const SizedBox(width: AppSpacing.xs),
-                                Icon(
-                                  LucideIcons.chevronRight,
-                                  size: 18,
-                                  color: cs.onSurfaceVariant,
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 2),
+                                  child: Icon(
+                                    LucideIcons.chevronRight,
+                                    size: 18,
+                                    color: cs.onSurfaceVariant,
+                                  ),
                                 ),
                               ],
                             ),
