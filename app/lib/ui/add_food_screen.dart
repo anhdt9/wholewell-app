@@ -363,7 +363,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
                     title: const Text('Bỏ lưu món này'),
                     onTap: () {
                       Navigator.pop(ctx);
-                      _confirmArchiveCustom(c);
+                      unawaited(_confirmArchiveCustom(c));
                     },
                   ),
                 ),

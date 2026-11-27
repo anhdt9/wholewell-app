@@ -144,9 +144,9 @@ void main() {
     test('parseAiJson đọc JSON từ Gemini Nano và trả null khi JSON lỗi', () {
       expect(SupplementLabelParser.parseAiJson('not-json', const []), isNull);
       final pkg = SupplementLabelParser.parseAiJson(
-        '{"productName":"Sports Research B-Complex","boxCount":120,"servings":2,"unit":"capsule",'
-        '"ingredients":[{"name":"Folate","amount":667,"unit":"ug_dfe","form":"L-5-Methylfolate","elemental":false},'
-        '{"name":"Vitamin B12","amount":500,"unit":"ug","form":"Methylcobalamin","elemental":false}]}',
+        '{"productName":"Sports Research B-Complex","boxCount":120,"servings":2,"unit":"capsule", '
+            '"ingredients":[{"name":"Folate","amount":667,"unit":"ug_dfe","form":"L-5-Methylfolate","elemental":false}, '
+            '{"name":"Vitamin B12","amount":500,"unit":"ug","form":"Methylcobalamin","elemental":false}]}',
         const ['raw'],
       );
       expect(pkg, isNotNull);

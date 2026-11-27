@@ -1,6 +1,8 @@
 /// Màn Sửa mục cho món ăn đã ghi (khẩu phần, bữa, ngày, giờ, xóa).
 library;
 
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:food_library/food_library.dart';
 import 'package:journal_db/journal_db.dart';
@@ -53,7 +55,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_loadingLibrary) {
-      _loadLibraryFood();
+      unawaited(_loadLibraryFood());
     }
   }
 
@@ -140,17 +142,21 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
   Future<void> _save() async {
     if (_saving || _qty <= 0) return;
     setState(() => _saving = true);
-    final diary = AppScope.of(context).diary;
-    final fb = await diary.updateLoggedFood(
-      widget.entry,
-      newQty: _qty,
-      newPortionUnit: _unitLabel,
-      newGramsIfLibrary: _libraryDetail == null ? null : _selectedGrams(_libraryDetail!),
-      newMeal: _meal,
-      newAt: _at,
-    );
+    final FoodLogFeedback fb;
+    try {
+      final diary = AppScope.of(context).diary;
+      fb = await diary.updateLoggedFood(
+        widget.entry,
+        newQty: _qty,
+        newPortionUnit: _unitLabel,
+        newGramsIfLibrary: _libraryDetail == null ? null : _selectedGrams(_libraryDetail!),
+        newMeal: _meal,
+        newAt: _at,
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
     if (!mounted) return;
-    setState(() => _saving = false);
     Navigator.of(context).pop(fb);
   }
 

@@ -173,6 +173,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
   }
 
   Future<void> _save() async {
+    if (_saving) return;
     final servings = _parsedServings;
     if (servings == null) {
       setState(() => _error = 'Số khẩu phần phải lớn hơn 0.');
@@ -183,38 +184,39 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
       _saving = true;
     });
 
-    final state = AppScope.of(context);
-    final diary = state.diary;
-    final preview = _previewSchedules(diary);
-    final ulFlags = diary.scheduledUlFlags(overrideSchedules: preview);
-    if (ulFlags.isNotEmpty) {
-      final keep = await _showScheduleUlWarningDialog(context, state, ulFlags, preview);
-      if (!mounted) return;
-      if (keep != true) {
-        setState(() => _saving = false);
-        return;
+    try {
+      final state = AppScope.of(context);
+      final diary = state.diary;
+      final preview = _previewSchedules(diary);
+      final ulFlags = diary.scheduledUlFlags(overrideSchedules: preview);
+      if (ulFlags.isNotEmpty) {
+        final keep = await _showScheduleUlWarningDialog(context, state, ulFlags, preview);
+        if (!mounted || keep != true) return;
       }
-    }
 
-    final todayStr = dayKey(DateTime.now());
-    final ex = widget.existingSchedule;
-    if (ex == null) {
-      await diary.addSchedule(widget.product.id, _timeOfDay, servings, validFrom: todayStr);
-    } else {
-      await diary.updateSchedule(ex.id, timeOfDay: _timeOfDay, servings: servings, today: todayStr);
-    }
-    await state.syncNotifications();
-    if (!mounted) return;
+      final todayStr = dayKey(DateTime.now());
+      final ex = widget.existingSchedule;
+      if (ex == null) {
+        await diary.addSchedule(widget.product.id, _timeOfDay, servings, validFrom: todayStr);
+      } else {
+        await diary.updateSchedule(ex.id, timeOfDay: _timeOfDay, servings: servings, today: todayStr);
+      }
+      await state.syncNotifications();
+      if (!mounted) return;
 
-    if (!diary.notificationsEnabled) {
-      await Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => const NotificationSettingsScreen(firstSetupFlow: true)),
-      );
+      if (!diary.notificationsEnabled) {
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const NotificationSettingsScreen(firstSetupFlow: true)),
+        );
+      }
+      if (mounted) Navigator.of(context).pop(true);
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
-    if (mounted) Navigator.of(context).pop(true);
   }
 
   Future<void> _delete() async {
+    if (_saving) return;
     final ex = widget.existingSchedule;
     if (ex == null) return;
     final ok = await showDialog<bool>(
@@ -230,10 +232,14 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
     );
     if (ok != true || !mounted) return;
     setState(() => _saving = true);
-    final state = AppScope.of(context);
-    await state.diary.endSchedule(ex.id, today: dayKey(DateTime.now()));
-    await state.syncNotifications();
-    if (mounted) Navigator.of(context).pop(true);
+    try {
+      final state = AppScope.of(context);
+      await state.diary.endSchedule(ex.id, today: dayKey(DateTime.now()));
+      await state.syncNotifications();
+      if (mounted) Navigator.of(context).pop(true);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   @override

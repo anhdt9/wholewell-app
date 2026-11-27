@@ -66,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    _notifSub?.cancel();
+    unawaited(_notifSub?.cancel());
     super.dispose();
   }
 
@@ -90,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   firstDate: DateTime(2020),
                   lastDate: DateTime.now(),
                 );
-                if (picked != null) state.setDay(picked);
+                if (picked != null) unawaited(state.setDay(picked));
               },
             ),
         ],

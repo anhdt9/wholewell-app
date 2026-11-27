@@ -1,6 +1,8 @@
 /// Tab Bổ sung và màn Quét mã vạch / Chụp ảnh nhãn để thêm sản phẩm mới.
 library;
 
+import 'dart:async';
+
 import 'package:dsld_library/dsld_library.dart';
 import 'package:flutter/foundation.dart';
 import 'package:journal_db/journal_db.dart';
@@ -33,7 +35,7 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _load();
+    unawaited(_load());
   }
 
   Future<void> _load() async {
@@ -102,8 +104,7 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                   : Text(
                       [
                         for (final s in schedules)
-                          '${occMap[s.id]?.status == OccurrenceStatus.taken ? "✓" : occMap[s.id]?.status == OccurrenceStatus.skipped ? "—" : "○"} '
-                              '${formatMinutesHhMm(s.timeOfDay)} ${prodMap[s.productId]?.name ?? ""}',
+                          '${occMap[s.id]?.status == OccurrenceStatus.taken ? "✓" : occMap[s.id]?.status == OccurrenceStatus.skipped ? "—" : "○"} ${formatMinutesHhMm(s.timeOfDay)} ${prodMap[s.productId]?.name ?? ""}',
                       ].join(' · '),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -474,7 +475,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
                   onDetect: (capture) {
                     final code = capture.barcodes.firstOrNull?.rawValue;
                     if (code != null && _barcode == null) {
-                      _handleBarcode(code);
+                      unawaited(_handleBarcode(code));
                     }
                   },
                 ),

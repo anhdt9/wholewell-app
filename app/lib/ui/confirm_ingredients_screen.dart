@@ -274,10 +274,13 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
   Future<void> _submit() async {
     if (!_allConfirmed || _saving) return;
     setState(() => _saving = true);
-    final pack = AppScope.of(context).pack;
-    final drafts = [for (final l in _lines) _toDraft(l, pack)];
-    await widget.onConfirmed(context, drafts);
-    if (mounted) setState(() => _saving = false);
+    try {
+      final pack = AppScope.of(context).pack;
+      final drafts = [for (final l in _lines) _toDraft(l, pack)];
+      await widget.onConfirmed(context, drafts);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   @override
@@ -332,7 +335,7 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
           ],
           const SizedBox(height: 12),
           OutlinedButton.icon(
-            onPressed: () => _editOrAddLine(),
+            onPressed: _editOrAddLine,
             icon: const Icon(Icons.add),
             label: const Text('Thêm dòng thành phần'),
           ),

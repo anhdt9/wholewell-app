@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -290,7 +292,9 @@ class CreateDriveBackupScreen extends StatelessWidget {
                   iterations: iterations,
                 );
               } on Object {
-                throw 'Chưa tải được bản sao lưu lên Google Drive. Kiểm tra mạng và thử lại.';
+                throw const BackupSubmitException(
+                  'Chưa tải được bản sao lưu lên Google Drive. Kiểm tra mạng và thử lại.',
+                );
               }
               if (!context.mounted) return;
               ScaffoldMessenger.of(context)
@@ -332,7 +336,7 @@ class _RestoreDriveBackupScreenState extends State<RestoreDriveBackupScreen> {
     _inited = true;
     final state = AppScope.of(context);
     if (state.driveAccount != null) {
-      _loadBackups();
+      unawaited(_loadBackups());
     }
   }
 
@@ -458,7 +462,7 @@ class _RestoreDriveBackupScreenState extends State<RestoreDriveBackupScreen> {
             const SizedBox(height: 16),
             FilledButton.icon(
               style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-              onPressed: _loadingList ? null : () => _signInAndLoad(),
+              onPressed: _loadingList ? null : _signInAndLoad,
               icon: const Icon(Icons.login),
               label: const Text('Đăng nhập Google'),
             ),

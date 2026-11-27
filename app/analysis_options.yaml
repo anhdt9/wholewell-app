@@ -2,4 +2,32 @@ analyzer:
   exclude:
     - build/**
     - android/**
-include: package:flutter_lints/flutter.yaml
+include: package:very_good_analysis/analysis_options.yaml
+linter:
+  rules:
+    # Giữ tất cả rule phát hiện bug tiềm ẩn (unawaited_futures, discarded_futures,
+    # use_build_context_synchronously, cast_nullable_to_non_nullable, only_throw_errors, v.v.)
+    # và chỉ tắt các rule thuần định dạng/cú pháp để tránh nhiễu.
+    always_put_required_named_parameters_first: false
+    always_use_package_imports: false
+    async_return_with_no_await: false
+    avoid_catching_errors: false
+    avoid_redundant_argument_values: false
+    avoid_slow_async_io: false
+    cascade_invocations: false
+    combinators_ordering: false
+    directives_ordering: false
+    leading_newlines_in_multiline_strings: false
+    lines_longer_than_80_chars: false
+    omit_local_variable_types: false
+    prefer_constructors_over_static_methods: false
+    prefer_foreach: false
+    prefer_if_elements_to_conditional_expressions: false
+    prefer_int_literals: false
+    public_member_api_docs: false
+    require_trailing_commas: false
+    sort_constructors_first: false
+    sort_pub_dependencies: false
+    specify_nonobvious_property_types: false
+    unnecessary_raw_strings: false
+    use_setters_to_change_properties: false

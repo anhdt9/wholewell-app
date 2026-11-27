@@ -1,6 +1,8 @@
 /// Màn Ghi bổ sung (từ sản phẩm có sẵn hoặc Ghi một lần) và Sửa lần uống.
 library;
 
+import 'dart:async';
+
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
@@ -40,6 +42,7 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
   List<ProductSummary> _products = const [];
   ProductDetail? _selectedProduct;
   bool _oneOffMode = false;
+  bool _inited = false;
   bool _loading = true;
   bool _saving = false;
 
@@ -70,7 +73,10 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_loading) _initLoad();
+    if (!_inited) {
+      _inited = true;
+      unawaited(_initLoad());
+    }
   }
 
   Future<void> _initLoad() async {
@@ -235,31 +241,34 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
 
     setState(() => _saving = true);
     final DoseLogOutcome outcome;
-    if (_isEditing) {
-      outcome = await state.diary.updateSupplementDose(
-        doseId: widget.existingDose!.id,
-        productId: productId,
-        name: name,
-        servings: servings,
-        at: at,
-        lines: lines,
-        expiredBoxes: expiredChoice,
-        summaryLabel: summaryLabel,
-      );
-    } else {
-      outcome = await state.diary.recordSupplementDose(
-        productId: productId,
-        name: name,
-        servings: servings,
-        at: at,
-        lines: lines,
-        expiredBoxes: expiredChoice,
-        summaryLabel: summaryLabel,
-      );
+    try {
+      if (_isEditing) {
+        outcome = await state.diary.updateSupplementDose(
+          doseId: widget.existingDose!.id,
+          productId: productId,
+          name: name,
+          servings: servings,
+          at: at,
+          lines: lines,
+          expiredBoxes: expiredChoice,
+          summaryLabel: summaryLabel,
+        );
+      } else {
+        outcome = await state.diary.recordSupplementDose(
+          productId: productId,
+          name: name,
+          servings: servings,
+          at: at,
+          lines: lines,
+          expiredBoxes: expiredChoice,
+          summaryLabel: summaryLabel,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
 
     if (!mounted) return;
-    setState(() => _saving = false);
 
     if (outcome is DoseNeedsExpiredChoice) {
       final choice = await showDialog<ExpiredBoxChoice>(

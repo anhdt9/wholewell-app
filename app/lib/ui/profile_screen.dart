@@ -80,23 +80,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _heightCheck = hc;
       _weightCheck = wc;
     });
-    if (ageErr != null || !hc.isValid || !wc.isValid) return;
+    if (_saving || ageErr != null || !hc.isValid || !wc.isValid) return;
 
     final age = int.parse(_ageCtl.text.trim());
     setState(() => _saving = true);
-    final ok = await state.saveProfileFromSettings(
-      Profile(
-        ageYears: age,
-        sex: _sex,
-        heightCm: hc.value!,
-        weightKg: wc.value!,
-        activityLevel: _level,
-      ),
-      caution: _caution,
-    );
-    if (!mounted) return;
-    setState(() => _saving = false);
-    if (!ok) return;
+    final bool ok;
+    try {
+      ok = await state.saveProfileFromSettings(
+        Profile(
+          ageYears: age,
+          sex: _sex,
+          heightCm: hc.value!,
+          weightKg: wc.value!,
+          activityLevel: _level,
+        ),
+        caution: _caution,
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+    if (!mounted || !ok) return;
     ScaffoldMessenger.maybeOf(context)
       ?..hideCurrentSnackBar()
       ..showSnackBar(const SnackBar(content: Text('Đã lưu hồ sơ.')));
