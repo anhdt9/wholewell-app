@@ -1,6 +1,9 @@
 /// Màn Hôm nay: cảnh báo giới hạn an toàn, nhắc lịch, năng lượng & đa lượng, đường, nước và vi chất.
 library;
 
+import 'dart:async';
+
+import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
@@ -132,6 +135,7 @@ class _TodayScreenState extends State<TodayScreen> {
             final ml = state.lastWaterMl;
             final id = await state.diary.quickAddWater();
             if (id != null && context.mounted) {
+              unawaited(HapticFeedback.selectionClick());
               showUndoWaterSnack(
                 context,
                 ml: ml,
@@ -453,11 +457,15 @@ class _WaterCard extends StatelessWidget {
             children: [
               Text('Nước uống', style: t.titleSmall),
               const SizedBox(height: 2),
-              Text(
-                hasEntries ? 'Đã uống ${fmtWaterMl(totalMl)} ml' : 'Chưa ghi nước hôm nay',
-                style: tabularNumberStyle(
-                  t.bodyMedium?.copyWith(
-                    color: hasEntries ? cs.onSurface : cs.onSurfaceVariant,
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: Text(
+                  hasEntries ? 'Đã uống ${fmtWaterMl(totalMl)} ml' : 'Chưa ghi nước hôm nay',
+                  key: ValueKey('${hasEntries}_${totalMl.round()}'),
+                  style: tabularNumberStyle(
+                    t.bodyMedium?.copyWith(
+                      color: hasEntries ? cs.onSurface : cs.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ),
@@ -724,7 +732,14 @@ class _StatLine extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
-        Text(value, style: tabularNumberStyle(t.titleMedium)),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: Text(
+            value,
+            key: ValueKey(value),
+            style: tabularNumberStyle(t.titleMedium),
+          ),
+        ),
       ],
     );
   }

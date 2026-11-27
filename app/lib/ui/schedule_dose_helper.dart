@@ -1,6 +1,9 @@
 /// Hàm dùng chung ghi lần uống theo lịch (có hỏi hộp hết hạn, phản hồi UL, Sheet Xác nhận từ thông báo).
 library;
 
+import 'dart:async';
+
+import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -103,6 +106,7 @@ Future<void> markScheduledDoseTaken(
   }
 
   final fb = (outcome as DoseLogged).feedback;
+  unawaited(HapticFeedback.lightImpact());
   if (!asExtra) {
     await state.cancelWindowIfHandled(schedule.timeOfDay);
   }

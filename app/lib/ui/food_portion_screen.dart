@@ -1,9 +1,12 @@
 /// Màn Chọn khẩu phần cho món từ thư viện hoặc Món bạn đã lưu.
 library;
 
-import 'package:material_ui/material_ui.dart';
+import 'dart:async';
+
+import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:food_library/food_library.dart';
 import 'package:journal_db/journal_db.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
 import '../state/diary_controller.dart';
@@ -183,6 +186,7 @@ class _FoodPortionScreenState extends State<FoodPortionScreen> {
       return;
     }
 
+    unawaited(HapticFeedback.lightImpact());
     // Đóng màn Chọn khẩu phần và Ghi món về màn trước, rồi hiện đúng 1 phản hồi.
     final nav = Navigator.of(context);
     nav.pop(fb);
@@ -192,9 +196,13 @@ class _FoodPortionScreenState extends State<FoodPortionScreen> {
   Widget build(BuildContext context) {
     final state = AppScope.of(context);
     final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
     final lib = widget.libraryFood;
     final cus = widget.customFood;
     final title = lib?.nameVi ?? cus!.name;
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final scrollWholePage = textScale >= 1.5 && screenHeight < 760;
 
     // Tính tóm tắt dinh dưỡng tức thì qua domain helper dùng chung.
     final preview = cus != null
@@ -211,159 +219,242 @@ class _FoodPortionScreenState extends State<FoodPortionScreen> {
             pack: state.pack,
             foodLibrary: state.foodLibrary,
           );
-    final kcal = preview.kcal;
-    final protein = preview.protein;
-    final fat = preview.fat;
-    final carb = preview.carb;
-    final addedSugar = preview.addedSugar;
-    final totalSugar = preview.totalSugar;
-    final sugarKnown = preview.sugarKnown;
+
+    final summaryCard = _NutritionPreviewCard(
+      kcal: preview.kcal,
+      protein: preview.protein,
+      fat: preview.fat,
+      carb: preview.carb,
+      addedSugar: preview.addedSugar,
+      totalSugar: preview.totalSugar,
+      sugarKnown: preview.sugarKnown,
+      summaryKey: '${_qty.toStringAsFixed(2)}-$_selectedUnitId-${preview.kcal.round()}',
+    );
+
+    final formWidgets = <Widget>[
+      Wrap(
+        spacing: AppSpacing.sm,
+        runSpacing: AppSpacing.xs,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(title, style: t.titleLarge),
+          if (lib != null && lib.isEstimate) const EstimateChip(),
+          if (_isCustom) const EstimateChip(label: 'tự nhập'),
+        ],
+      ),
+      if (lib?.nameEn != null && lib!.nameEn!.isNotEmpty) ...[
+        const SizedBox(height: 2),
+        Text(
+          lib.nameEn!,
+          style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+        ),
+      ],
+      const SizedBox(height: AppSpacing.lg),
+      Text('Khẩu phần', style: t.titleSmall),
+      const SizedBox(height: AppSpacing.sm),
+      if (_isCustom)
+        Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.sm,
+          children: [
+            ChoiceChip(
+              label: Text(cus!.labelBasisUnit),
+              selected: true,
+              materialTapTargetSize: MaterialTapTargetSize.padded,
+              onSelected: (_) {},
+            ),
+          ],
+        )
+      else
+        Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.sm,
+          children: [
+            for (final p in lib!.portions)
+              ChoiceChip(
+                label: Text(p.labelVi),
+                selected: _selectedUnitId == p.id,
+                materialTapTargetSize: MaterialTapTargetSize.padded,
+                onSelected: (_) => _selectUnit(p.id),
+              ),
+            ChoiceChip(
+              label: const Text('Gram'),
+              selected: _selectedUnitId == _gramId,
+              materialTapTargetSize: MaterialTapTargetSize.padded,
+              onSelected: (_) => _selectUnit(_gramId),
+            ),
+          ],
+        ),
+      const SizedBox(height: AppSpacing.lg),
+      Text('Số lượng', style: t.titleSmall),
+      const SizedBox(height: AppSpacing.sm),
+      Row(
+        children: [
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: OutlinedButton(
+              onPressed: () => _stepQty(-1),
+              style: OutlinedButton.styleFrom(padding: EdgeInsets.zero),
+              child: const Icon(LucideIcons.minus),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: TextField(
+              controller: _qtyCtrl,
+              textAlign: TextAlign.center,
+              style: tabularNumberStyle(t.bodyLarge),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
+                suffixText: _isCustom || _selectedUnitId == _gramId ? _unitLabel : null,
+              ),
+              onChanged: _onQtyTextChanged,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: OutlinedButton(
+              onPressed: () => _stepQty(1),
+              style: OutlinedButton.styleFrom(padding: EdgeInsets.zero),
+              child: const Icon(LucideIcons.plus),
+            ),
+          ),
+        ],
+      ),
+      if (!_isCustom && _selectedUnitId != _gramId) ...[
+        const SizedBox(height: 6),
+        Text('(= ${fmt(_grams)} g)', style: tabularNumberStyle(t.bodySmall)),
+      ],
+      if (!preview.sugarKnown) ...[
+        const SizedBox(height: AppSpacing.md),
+        const SafetyNote(message: 'Chưa rõ đường bổ sung (nguồn dữ liệu không tách riêng).'),
+      ],
+      if (lib != null && lib.folateUnseparated) ...[
+        const SizedBox(height: AppSpacing.sm),
+        const SafetyNote(message: 'Folate tổng, chưa tách riêng phần tăng cường.'),
+      ],
+      if (lib != null && lib.niacinFortifiedUnseparated) ...[
+        const SizedBox(height: AppSpacing.sm),
+        const SafetyNote(message: 'Niacin tăng cường chưa tách riêng khỏi thực phẩm.'),
+      ],
+    ];
 
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: Column(
         children: [
+          if (!scrollWholePage)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
+              child: summaryCard,
+            ),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               children: [
-                Wrap(
-                  spacing: 8,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(title, style: t.titleLarge),
-                    if (lib != null && lib.isEstimate) const EstimateChip(),
-                    if (_isCustom) const EstimateChip(label: 'tự nhập'),
-                  ],
-                ),
-                if (lib?.nameEn != null && lib!.nameEn!.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Text(lib.nameEn!, style: t.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                if (scrollWholePage) ...[
+                  summaryCard,
+                  const SizedBox(height: AppSpacing.lg),
                 ],
-                const SizedBox(height: 16),
-                Text('Khẩu phần', style: t.titleSmall),
-                const SizedBox(height: 8),
-                if (_isCustom)
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      ChoiceChip(
-                        label: Text(cus!.labelBasisUnit),
-                        selected: true,
-                        onSelected: (_) {},
-                      ),
-                    ],
-                  )
-                else
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final p in lib!.portions)
-                        ChoiceChip(
-                          label: Text(p.labelVi),
-                          selected: _selectedUnitId == p.id,
-                          onSelected: (_) => _selectUnit(p.id),
-                        ),
-                      ChoiceChip(
-                        label: const Text('Gram'),
-                        selected: _selectedUnitId == _gramId,
-                        onSelected: (_) => _selectUnit(_gramId),
-                      ),
-                    ],
-                  ),
-                const SizedBox(height: 16),
-                Text('Số lượng', style: t.titleSmall),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 48,
-                      height: 48,
-                      child: OutlinedButton(
-                        onPressed: () => _stepQty(-1),
-                        style: OutlinedButton.styleFrom(padding: EdgeInsets.zero),
-                        child: const Icon(LucideIcons.minus),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextField(
-                        controller: _qtyCtrl,
-                        textAlign: TextAlign.center,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: InputDecoration(
-                          border: const OutlineInputBorder(),
-                          suffixText: _isCustom || _selectedUnitId == _gramId ? _unitLabel : null,
-                        ),
-                        onChanged: _onQtyTextChanged,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    SizedBox(
-                      width: 48,
-                      height: 48,
-                      child: OutlinedButton(
-                        onPressed: () => _stepQty(1),
-                        style: OutlinedButton.styleFrom(padding: EdgeInsets.zero),
-                        child: const Icon(LucideIcons.plus),
-                      ),
-                    ),
-                  ],
-                ),
-                if (!_isCustom && _selectedUnitId != _gramId) ...[
-                  const SizedBox(height: 6),
-                  Text('(= ${fmt(_grams)} g)', style: t.bodySmall),
-                ],
-                const SizedBox(height: 20),
-                CalorieText(
-                  kcal,
-                  prefix: 'Khoảng ',
-                  suffix: ' kcal',
-                  style: t.titleMedium,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Đạm ${fmt(protein)} g · Béo ${fmt(fat)} g · Bột đường ${fmt(carb)} g',
-                  style: t.bodyMedium,
-                ),
-                const SizedBox(height: 4),
-                if (sugarKnown)
-                  Text('Đường bổ sung: ${fmt(addedSugar)} g', style: t.bodyMedium),
-                if (totalSugar != null && (!sugarKnown || (totalSugar - addedSugar).abs() > 0.05))
-                  Text('Đường tổng: ${fmt(totalSugar)} g', style: t.bodySmall),
-                if (!sugarKnown) ...[
-                  const SizedBox(height: 12),
-                  const SafetyNote(message: 'Chưa rõ đường bổ sung (nguồn dữ liệu không tách riêng).'),
-                ],
-                if (lib != null && lib.folateUnseparated) ...[
-                  const SizedBox(height: 8),
-                  const SafetyNote(message: 'Folate tổng, chưa tách riêng phần tăng cường.'),
-                ],
-                if (lib != null && lib.niacinFortifiedUnseparated) ...[
-                  const SizedBox(height: 8),
-                  const SafetyNote(message: 'Niacin tăng cường chưa tách riêng khỏi thực phẩm.'),
-                ],
+                ...formWidgets,
               ],
             ),
           ),
           SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.lg),
               child: SizedBox(
                 width: double.infinity,
                 height: 48,
                 child: FilledButton(
                   onPressed: _saving || _qty <= 0 ? null : _save,
                   child: _saving
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
                       : const Text('Lưu'),
                 ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _NutritionPreviewCard extends StatelessWidget {
+  final double kcal;
+  final double protein;
+  final double fat;
+  final double carb;
+  final double addedSugar;
+  final double? totalSugar;
+  final bool sugarKnown;
+  final String summaryKey;
+
+  const _NutritionPreviewCard({
+    required this.kcal,
+    required this.protein,
+    required this.fat,
+    required this.carb,
+    required this.addedSugar,
+    required this.totalSugar,
+    required this.sugarKnown,
+    required this.summaryKey,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final ww = context.wwColors;
+    final hideCalories = AppScope.of(context).hideCalories;
+
+    return SurfaceCard(
+      color: ww.subtleSurface,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        child: Column(
+          key: ValueKey('${summaryKey}_$hideCalories'),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!hideCalories) ...[
+              CalorieText(
+                kcal,
+                prefix: 'Khoảng ',
+                suffix: ' kcal',
+                style: tabularNumberStyle(t.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+            ],
+            Text(
+              'Đạm ${fmt(protein)} g · Béo ${fmt(fat)} g · Bột đường ${fmt(carb)} g',
+              style: tabularNumberStyle(t.bodyMedium),
+            ),
+            if (sugarKnown) ...[
+              const SizedBox(height: 2),
+              Text(
+                'Đường bổ sung: ${fmt(addedSugar)} g',
+                style: tabularNumberStyle(t.bodyMedium),
+              ),
+            ],
+            if (totalSugar != null && (!sugarKnown || (totalSugar! - addedSugar).abs() > 0.05)) ...[
+              const SizedBox(height: 2),
+              Text(
+                'Đường tổng: ${fmt(totalSugar!)} g',
+                style: tabularNumberStyle(t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

@@ -451,7 +451,25 @@ class _WelcomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final ww = context.wwColors;
     final state = AppScope.of(context);
+
+    const commitments = [
+      (
+        icon: LucideIcons.shieldCheck,
+        text: 'Chỉ để tham khảo, không thay lời khuyên của bác sĩ',
+      ),
+      (
+        icon: LucideIcons.smartphone,
+        text: 'Dữ liệu chỉ nằm trên máy này, không gửi đi đâu',
+      ),
+      (
+        icon: LucideIcons.wifiOff,
+        text: 'Không cần mạng',
+      ),
+    ];
+
     return StepScaffold(
       primaryLabel: 'Bắt đầu',
       onPrimary: onStart,
@@ -460,26 +478,125 @@ class _WelcomeView extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 24),
-          Text('WholeWell', style: t.headlineMedium),
-          const SizedBox(height: 16),
-          const Text(
-            'So lượng vi chất bạn nạp từ bữa ăn và thực phẩm bổ sung với mức khuyến nghị.',
+          const SizedBox(height: AppSpacing.md),
+          SizedBox(
+            width: 64,
+            height: 64,
+            child: CustomPaint(
+              painter: _WelcomeEmblemPainter(
+                dropColor: cs.primaryContainer,
+                leafColor: ww.foodSource,
+                accentColor: cs.primary,
+              ),
+            ),
           ),
-          const SizedBox(height: 16),
-          const Text('• Chỉ để tham khảo, không thay lời khuyên của bác sĩ'),
-          const SizedBox(height: 8),
-          const Text('• Dữ liệu chỉ nằm trên máy này, không gửi đi đâu'),
-          const SizedBox(height: 8),
-          const Text('• Không cần mạng'),
+          const SizedBox(height: AppSpacing.lg),
+          Text('WholeWell', style: t.headlineMedium?.copyWith(fontWeight: FontWeight.w700)),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'So lượng vi chất bạn nạp từ bữa ăn và thực phẩm bổ sung với mức khuyến nghị.',
+            style: t.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          SurfaceCard(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var i = 0; i < commitments.length; i++) ...[
+                  if (i > 0) const SizedBox(height: AppSpacing.md),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: ww.subtleSurface,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(commitments[i].icon, size: 16, color: cs.primary),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 5),
+                          child: Text(commitments[i].text, style: t.bodyMedium),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
           if (state.drivePendingDeleteActive) ...[
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.lg),
             const PendingDriveDeleteCard(),
           ],
         ],
       ),
     );
   }
+}
+
+class _WelcomeEmblemPainter extends CustomPainter {
+  final Color dropColor;
+  final Color leafColor;
+  final Color accentColor;
+
+  const _WelcomeEmblemPainter({
+    required this.dropColor,
+    required this.leafColor,
+    required this.accentColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    final bgPaint = Paint()..color = dropColor;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(0, 0, w, h), const Radius.circular(18)),
+      bgPaint,
+    );
+
+    // Hình giọt mềm phía trái.
+    final dropPath = Path()
+      ..moveTo(w * 0.42, h * 0.20)
+      ..cubicTo(w * 0.24, h * 0.44, w * 0.22, h * 0.62, w * 0.34, h * 0.74)
+      ..cubicTo(w * 0.42, h * 0.82, w * 0.56, h * 0.80, w * 0.60, h * 0.68)
+      ..cubicTo(w * 0.64, h * 0.54, w * 0.52, h * 0.34, w * 0.42, h * 0.20)
+      ..close();
+    canvas.drawPath(dropPath, Paint()..color = accentColor.withValues(alpha: 0.26));
+
+    // Chiếc lá sage teal vươn lên bên phải.
+    final leafPath = Path()
+      ..moveTo(w * 0.44, h * 0.74)
+      ..cubicTo(w * 0.42, h * 0.48, w * 0.56, h * 0.28, w * 0.78, h * 0.24)
+      ..cubicTo(w * 0.76, h * 0.50, w * 0.66, h * 0.70, w * 0.44, h * 0.74)
+      ..close();
+    canvas.drawPath(leafPath, Paint()..color = leafColor);
+
+    final veinPaint = Paint()
+      ..color = dropColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    canvas.drawPath(
+      Path()
+        ..moveTo(w * 0.46, h * 0.70)
+        ..quadraticBezierTo(w * 0.58, h * 0.50, w * 0.72, h * 0.32),
+      veinPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _WelcomeEmblemPainter oldDelegate) =>
+      dropColor != oldDelegate.dropColor ||
+      leafColor != oldDelegate.leafColor ||
+      accentColor != oldDelegate.accentColor;
 }
 
 class _EligibilityView extends StatelessWidget {
@@ -526,9 +643,9 @@ class _EligibilityView extends StatelessWidget {
           TextField(
             controller: ageCtl,
             keyboardType: TextInputType.number,
+            style: tabularNumberStyle(null),
             decoration: InputDecoration(
               labelText: 'Tuổi',
-              border: const OutlineInputBorder(),
               errorText: ageError,
             ),
             onChanged: onAgeChanged,
@@ -655,19 +772,18 @@ class _ConsentView extends StatelessWidget {
   });
 
   void _showFullDetails(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (ctx) => const SafeArea(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(20, 4, 20, 24),
+    unawaited(
+      showAppModalSheet<void>(
+        context: context,
+        builder: (ctx) => Padding(
+          padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.xs, AppSpacing.xl, AppSpacing.xl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Thông tin xử lý dữ liệu sức khỏe', style: TextStyle(fontWeight: FontWeight.bold)),
-              SizedBox(height: 12),
-              Text(
+              Text('Thông tin xử lý dữ liệu sức khỏe', style: Theme.of(ctx).textTheme.titleMedium),
+              const SizedBox(height: AppSpacing.md),
+              const Text(
                 '• Dữ liệu bạn nhập (tuổi, giới tính sinh học, chiều cao, cân nặng, mức vận động, '
                 'bữa ăn, nước uống, buổi tập, thực phẩm bổ sung) chỉ dùng để so sánh với mức tham chiếu trên máy.\n'
                 '• Toàn bộ được lưu trong CSDL mã hóa trên máy này; không gửi tới máy chủ hay bên thứ ba.\n'

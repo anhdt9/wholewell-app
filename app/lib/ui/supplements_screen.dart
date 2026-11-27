@@ -63,9 +63,38 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
     await _load();
   }
 
+  static double _stockBarRatio(ProductSummary s) {
+    if (s.validRemaining <= 0) return 0;
+    if (s.estimatedDaysLeft != null) {
+      return (s.estimatedDaysLeft! / 30.0).clamp(0.06, 1.0);
+    }
+    final servings = s.validRemaining / s.product.unitsPerServing;
+    return (servings / 30.0).clamp(0.06, 1.0);
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final ww = context.wwColors;
+
+    if (_loading) {
+      return const Padding(
+        padding: EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            LoadingSkeletonBox(height: 76, borderRadius: AppRadius.cardRadius),
+            SizedBox(height: AppSpacing.lg),
+            LoadingSkeletonBox(height: 20, width: 80),
+            SizedBox(height: AppSpacing.sm),
+            LoadingSkeletonBox(height: 84, borderRadius: AppRadius.cardRadius),
+            SizedBox(height: AppSpacing.sm),
+            LoadingSkeletonBox(height: 84, borderRadius: AppRadius.cardRadius),
+          ],
+        ),
+      );
+    }
     if (_error != null) {
       return ErrorState(
         message: 'Không tải được danh sách sản phẩm.',
@@ -93,12 +122,19 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
 
     return Scaffold(
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
+        padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 88),
         children: [
           Card(
-            margin: const EdgeInsets.only(bottom: 12),
+            margin: const EdgeInsets.only(bottom: AppSpacing.lg),
+            clipBehavior: Clip.antiAlias,
             child: ListTile(
-              title: const Text('Lần uống hôm nay'),
+              minTileHeight: 60,
+              leading: CircleAvatar(
+                radius: 20,
+                backgroundColor: ww.subtleSurface,
+                child: Icon(LucideIcons.clock, size: 20, color: cs.primary),
+              ),
+              title: Text('Lần uống hôm nay', style: t.titleSmall),
               subtitle: schedules.isEmpty
                   ? const Text('Chưa có lịch uống. Mở một sản phẩm để đặt lịch.')
                   : Text(
@@ -108,6 +144,7 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                       ].join(' · '),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
+                      style: tabularNumberStyle(t.bodySmall),
                     ),
               trailing: const Icon(LucideIcons.chevronRight),
               onTap: () => Navigator.of(context).push(
@@ -115,39 +152,141 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
               ),
             ),
           ),
-          Text('Kho', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 4),
-          for (var i = 0; i < _items.length; i++) ...[
-            if (i > 0) const Divider(height: 1),
-            Builder(builder: (ctx) {
-              final s = _items[i];
-              final p = s.product;
-              final u = countUnitLabel(p.countUnit);
-              final parts = <String>[
-                s.validRemaining > 0 ? 'Còn ${fmt(s.validRemaining)} $u' : 'Kho đã hết',
-                if (s.isLowStock) 'Sắp hết',
-                if (s.nearestExpiryMonth != null) 'HSD ${fmtExpiryMonth(s.nearestExpiryMonth!)}',
-                if (s.expiredRemaining > 0) 'Đã hết hạn: ${fmt(s.expiredRemaining)} $u',
-              ];
-              final hasUl = schedFlags.isNotEmpty &&
-                  schedules.any((sc) => sc.productId == p.id);
-              final hasNotice = schedNotices.any((n) => n.productIds.contains(p.id));
-              if (hasNotice) parts.add('ⓘ Lưu ý lịch');
-              if (hasUl) parts.add('⚠ Lịch vượt giới hạn');
-              return ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(p.name),
-                subtitle: Text(parts.join(' · ')),
-                trailing: const Icon(LucideIcons.chevronRight),
-                onTap: () async {
-                  await Navigator.of(context).push(
-                    MaterialPageRoute<void>(builder: (_) => ProductDetailScreen(productId: p.id)),
-                  );
-                  await _load();
-                },
-              );
-            }),
-          ],
+          Text('Kho', style: t.titleMedium),
+          const SizedBox(height: AppSpacing.sm),
+          Card(
+            margin: EdgeInsets.zero,
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                for (var i = 0; i < _items.length; i++) ...[
+                  if (i > 0)
+                    Divider(
+                      height: 1,
+                      color: ww.outlineSubtle.withValues(alpha: 0.5),
+                    ),
+                  Builder(builder: (ctx) {
+                    final s = _items[i];
+                    final p = s.product;
+                    final u = countUnitLabel(p.countUnit);
+                    final hasUl = schedFlags.isNotEmpty &&
+                        schedules.any((sc) => sc.productId == p.id);
+                    final hasNotice = schedNotices.any((n) => n.productIds.contains(p.id));
+                    final ratio = _stockBarRatio(s);
+                    final barColor = s.isLowStock || s.validRemaining <= 0
+                        ? ww.warningBorder
+                        : ww.foodSource;
+
+                    return InkWell(
+                      onTap: () async {
+                        await Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => ProductDetailScreen(productId: p.id),
+                          ),
+                        );
+                        await _load();
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(p.name, style: t.titleSmall),
+                                ),
+                                const SizedBox(width: AppSpacing.sm),
+                                Text(
+                                  s.validRemaining > 0
+                                      ? 'Còn ${fmt(s.validRemaining)} $u'
+                                      : 'Kho đã hết',
+                                  style: tabularNumberStyle(
+                                    t.bodyMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: s.validRemaining <= 0
+                                          ? cs.error
+                                          : cs.onSurface,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: AppSpacing.xs),
+                                Icon(
+                                  LucideIcons.chevronRight,
+                                  size: 18,
+                                  color: cs.onSurfaceVariant,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            Semantics(
+                              label: s.validRemaining > 0
+                                  ? 'Còn ${fmt(s.validRemaining)} $u'
+                                  : 'Kho đã hết',
+                              child: ClipRRect(
+                                borderRadius: AppRadius.pillRadius,
+                                child: LinearProgressIndicator(
+                                  value: ratio,
+                                  minHeight: 4,
+                                  backgroundColor: ww.subtleSurface,
+                                  valueColor: AlwaysStoppedAnimation<Color>(barColor),
+                                ),
+                              ),
+                            ),
+                            if (s.isLowStock ||
+                                s.nearestExpiryMonth != null ||
+                                s.expiredRemaining > 0 ||
+                                hasNotice ||
+                                hasUl) ...[
+                              const SizedBox(height: AppSpacing.sm),
+                              Wrap(
+                                spacing: AppSpacing.xs,
+                                runSpacing: AppSpacing.xs,
+                                children: [
+                                  if (s.isLowStock)
+                                    _StockStatusPill(
+                                      label: 'Sắp hết',
+                                      backgroundColor: ww.warningContainer,
+                                      foregroundColor: ww.onWarningContainer,
+                                      borderColor: ww.warningBorder,
+                                    ),
+                                  if (s.nearestExpiryMonth != null)
+                                    _StockStatusPill(
+                                      label: 'HSD ${fmtExpiryMonth(s.nearestExpiryMonth!)}',
+                                      backgroundColor: ww.subtleSurface,
+                                      foregroundColor: cs.onSurfaceVariant,
+                                    ),
+                                  if (s.expiredRemaining > 0)
+                                    _StockStatusPill(
+                                      label: 'Đã hết hạn: ${fmt(s.expiredRemaining)} $u',
+                                      backgroundColor: cs.errorContainer,
+                                      foregroundColor: cs.onErrorContainer,
+                                    ),
+                                  if (hasNotice)
+                                    _StockStatusPill(
+                                      label: 'Lưu ý lịch',
+                                      backgroundColor: ww.subtleSurface,
+                                      foregroundColor: cs.onSurfaceVariant,
+                                    ),
+                                  if (hasUl)
+                                    _StockStatusPill(
+                                      label: 'Lịch vượt giới hạn',
+                                      backgroundColor: ww.warningContainer,
+                                      foregroundColor: ww.onWarningContainer,
+                                      borderColor: ww.warningBorder,
+                                    ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -155,6 +294,42 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
         onPressed: _addProduct,
         icon: const Icon(LucideIcons.plus),
         label: const Text('Thêm sản phẩm'),
+      ),
+    );
+  }
+}
+
+class _StockStatusPill extends StatelessWidget {
+  final String label;
+  final Color backgroundColor;
+  final Color foregroundColor;
+  final Color? borderColor;
+
+  const _StockStatusPill({
+    required this.label,
+    required this.backgroundColor,
+    required this.foregroundColor,
+    this.borderColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: AppRadius.pillRadius,
+        border: borderColor == null ? null : Border.all(color: borderColor!),
+      ),
+      child: Text(
+        label,
+        style: tabularNumberStyle(
+          t.labelSmall?.copyWith(
+            color: foregroundColor,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
     );
   }

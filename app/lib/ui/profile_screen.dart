@@ -129,7 +129,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
               labelText: 'Tuổi',
-              border: const OutlineInputBorder(),
               errorText: _ageError,
             ),
             onChanged: (_) => setState(() => _ageError = _validateAge(minAge)),

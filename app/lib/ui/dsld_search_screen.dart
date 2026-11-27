@@ -5,7 +5,7 @@ import 'package:dsld_library/dsld_library.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';
-import 'design_system/tokens.dart';
+import 'common/common_widgets.dart';
 
 class DsldSearchScreen extends StatefulWidget {
   const DsldSearchScreen({super.key});
@@ -78,7 +78,6 @@ class _DsldSearchScreenState extends State<DsldSearchScreen> {
               onChanged: _onQueryChanged,
             ),
           ),
-          if (_loading) const LinearProgressIndicator(),
           Expanded(
             child: lib == null
                 ? const Center(
@@ -87,7 +86,20 @@ class _DsldSearchScreenState extends State<DsldSearchScreen> {
                       child: Text('Thư viện nhãn tạm thời không khả dụng, vẫn dùng được chụp nhãn.'),
                     ),
                   )
-                : !_searched
+                : _loading
+                    ? const Padding(
+                        padding: EdgeInsets.all(AppSpacing.lg),
+                        child: Column(
+                          children: [
+                            LoadingSkeletonBox(height: 56),
+                            SizedBox(height: AppSpacing.sm),
+                            LoadingSkeletonBox(height: 56),
+                            SizedBox(height: AppSpacing.sm),
+                            LoadingSkeletonBox(height: 56),
+                          ],
+                        ),
+                      )
+                    : !_searched
                     ? const Center(
                         child: Padding(
                           padding: EdgeInsets.all(24),

@@ -596,9 +596,20 @@ class StepScaffold extends StatelessWidget {
     this.onSecondary,
   });
 
+  static ({int current, int total})? _parseStepProgress(String? label) {
+    if (label == null) return null;
+    final m = RegExp(r'^(\d+)\s*/\s*(\d+)$').firstMatch(label.trim());
+    if (m == null) return null;
+    final cur = int.tryParse(m.group(1)!);
+    final tot = int.tryParse(m.group(2)!);
+    if (cur == null || tot == null || tot <= 1 || cur < 1 || cur > tot) return null;
+    return (current: cur, total: tot);
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
+    final progress = _parseStepProgress(stepLabel);
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -614,13 +625,17 @@ class StepScaffold extends StatelessWidget {
           if (stepLabel != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Center(child: Text(stepLabel!, style: t.titleSmall)),
+              child: Center(
+                child: Text(stepLabel!, style: tabularNumberStyle(t.titleSmall)),
+              ),
             ),
         ],
       ),
       body: SafeArea(
         child: Column(
           children: [
+            if (progress != null)
+              _StepProgressBar(current: progress.current, total: progress.total),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
@@ -662,6 +677,42 @@ class StepScaffold extends StatelessWidget {
   }
 }
 
+/// Thanh tiến độ nhiều đoạn mảnh cho các bước thiết lập (`1/3`, `2/3`, `3/3`).
+class _StepProgressBar extends StatelessWidget {
+  final int current;
+  final int total;
+  const _StepProgressBar({required this.current, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final ww = context.wwColors;
+    return Semantics(
+      label: 'Bước $current trên $total',
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+        child: Row(
+          children: [
+            for (var i = 1; i <= total; i++) ...[
+              if (i > 1) const SizedBox(width: AppSpacing.xs),
+              Expanded(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: i <= current ? cs.primary : ww.subtleSurface,
+                    borderRadius: AppRadius.pillRadius,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Hộp thoại xác nhận gõ `XÓA` khi rút đồng ý hoặc xóa toàn bộ dữ liệu trên máy.
 Future<bool> showWipeConfirmDialog(
   BuildContext context, {
@@ -691,7 +742,6 @@ Future<bool> showWipeConfirmDialog(
                 autofocus: true,
                 textCapitalization: TextCapitalization.characters,
                 decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
                   hintText: 'XÓA',
                 ),
                 onChanged: (v) => setState(() => typed = v),

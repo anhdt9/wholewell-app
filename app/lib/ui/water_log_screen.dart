@@ -170,7 +170,6 @@ class _WaterLogScreenState extends State<WaterLogScreen> {
             decoration: InputDecoration(
               labelText: 'Số khác',
               suffixText: 'ml',
-              border: const OutlineInputBorder(),
               errorText: _errorText,
             ),
             onChanged: (v) {

@@ -192,6 +192,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Tôi'));
       await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Quyền riêng tư'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Quyền riêng tư'));
       await tester.pumpAndSettle();
 
