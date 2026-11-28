@@ -1,7 +1,7 @@
 /// Toàn văn Chính sách quyền riêng tư nhúng tĩnh trong app (khớp 100% với docs/privacy-policy.md).
 const String kPrivacyPolicyMarkdown = r'''# Chính sách quyền riêng tư — WholeWell
 
-Cập nhật lần cuối: 26/11/2026  
+Cập nhật lần cuối: 29/11/2026  
 Nhà phát triển: Đặng Thế Anh  
 Email liên hệ: wholewell.apps@gmail.com
 
@@ -20,7 +20,7 @@ WholeWell **không** phải thiết bị y tế, **không** chẩn đoán, **kh�
 - **Thực phẩm bổ sung & lịch uống:** tên sản phẩm, thành phần dinh dưỡng đã được bạn xác nhận, số lượng hộp/hạn dùng, lịch uống và trạng thái đã uống/bỏ qua.
 - **Bằng chứng đồng ý:** loại đồng ý (`health_data`, `notifications`, `drive`), phiên bản nội dung và thời điểm bạn xác nhận đồng ý.
 
-WholeWell **không** đọc dữ liệu từ Health Connect, Apple HealthKit, thiết bị đeo, danh bạ hay vị trí của bạn. Camera chỉ dùng khi bạn chủ động chọn quét mã vạch hoặc chụp ảnh nhãn sản phẩm bổ sung; hình ảnh được nhận dạng trực tiếp trên máy bằng ML Kit và thành phần chỉ được lưu sau khi bạn kiểm tra, xác nhận.
+WholeWell **không** đọc dữ liệu từ Health Connect, Apple HealthKit, thiết bị đeo, danh bạ hay vị trí của bạn. Camera chỉ dùng khi bạn chủ động chọn quét mã vạch hoặc chụp ảnh nhãn sản phẩm bổ sung; hình ảnh được nhận dạng trực tiếp trên máy bằng ML Kit. Nếu máy đã có sẵn mô hình AI của hệ điều hành (Gemini Nano qua Android AICore), ứng dụng dùng mô hình đó ngay trên máy để gợi ý tách các dòng thành phần từ chữ đọc được trên nhãn; ứng dụng không tự tải mô hình, và ảnh, chữ trên nhãn không được gửi ra khỏi thiết bị. Thành phần chỉ được lưu sau khi bạn kiểm tra, xác nhận từng dòng; mọi con số và cảnh báo do ứng dụng tính theo bộ chuẩn, không do AI quyết định.
 
 ## 3. Lưu trữ mã hóa trên thiết bị
 
