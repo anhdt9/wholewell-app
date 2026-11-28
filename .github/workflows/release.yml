@@ -52,12 +52,13 @@ jobs:
           cache: gradle
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version-file: .fvmrc
           cache: true
+      - name: Lấy phụ thuộc workspace (một lần ở gốc, đúng pubspec.lock đã commit)
+        run: flutter pub get --enforce-lockfile
       - name: Đóng gói APK và App Bundle phát hành
         working-directory: app
         run: |
-          flutter pub get
           flutter build apk --release --target-platform android-arm64
           flutter build appbundle --release
       - name: Gom tệp phát hành

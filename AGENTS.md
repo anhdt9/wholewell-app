@@ -66,21 +66,29 @@ app/                      app Flutter (dùng package:material_ui, không dùng p
 
 ## Lệnh
 
+Repo là **Pub Workspace** (`pubspec.yaml` gốc, một `pubspec.lock` chung ở gốc, commit vào repo). Flutter ghim trong `.fvmrc` (3.50.1); máy dev dùng FVM (`fvm flutter …`, `fvm dart …`) hoặc Flutter đúng bản đó. Package thuần Dart cũng dùng `dart` đi kèm Flutter, không dùng Dart SDK riêng.
+
 ```bash
+# Phụ thuộc: chạy MỘT lần ở gốc repo, không chạy `dart pub get` trong từng package
+flutter pub get
+
 # Gói dữ liệu (chạy mỗi khi sửa tools/ hoặc logic engine)
 python tools/build_pack.py && python tools/verify_pack.py && python tools/reference_engine.py
 
-# CSDL mã hóa (test cần SQLite3MultipleCiphers qua build hook; CI chạy)
-cd packages/journal_db && dart pub get && dart analyze && dart test
+# Định dạng (CI chạy --set-exit-if-changed; độ rộng 120 khai trong analysis_options.yaml)
+dart format app packages
 
-# Engine
-cd packages/health_engine && dart pub get && dart analyze && dart test
+# Engine, CSDL mã hóa (test cần SQLite3MultipleCiphers qua build hook), thư viện món, thư viện DSLD
+cd packages/health_engine && dart analyze && dart test
+cd packages/journal_db && dart analyze && dart test
+cd packages/food_library && dart analyze && dart test
+cd packages/dsld_library && dart analyze && dart test
 
 # App
-cd app && flutter pub get && flutter analyze && flutter test && flutter run
+cd app && flutter analyze && flutter test && flutter run
 ```
 
-`flutter analyze` trong CI thất bại cả với mức info (vd. API đã ngừng dùng), nên phải sạch hoàn toàn.
+`flutter analyze` trong CI thất bại cả với mức info (vd. API đã ngừng dùng), nên phải sạch hoàn toàn. Đổi phụ thuộc thì chạy lại `flutter pub get` ở gốc và commit `pubspec.lock`; CI dùng `--enforce-lockfile`.
 
 ## Quy tắc khi sửa code
 

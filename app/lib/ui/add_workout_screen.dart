@@ -99,55 +99,55 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
               onPressed: _saving ? null : _delete,
             ),
           TextButton(
-            onPressed: _saving || selected == null || minutes <= 0
-                ? null
-                : () => _save(selected, minutes),
+            onPressed: _saving || selected == null || minutes <= 0 ? null : () => _save(selected, minutes),
             child: const Text('Lưu'),
           ),
         ],
       ),
-      body: Column(children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(children: [
-            Expanded(
-              child: TextField(
-                decoration: const InputDecoration(labelText: 'Tìm hoạt động', prefixIcon: Icon(LucideIcons.search)),
-                onChanged: (s) => setState(() => _query = s),
-              ),
-            ),
-            const SizedBox(width: 12),
-            SizedBox(
-              width: 90,
-              child: TextField(
-                controller: _minutes,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Phút'),
-                onChanged: (_) => setState(() {}),
-              ),
-            ),
-          ]),
-        ),
-        if (selected != null && !state.hideCalories)
+      body: Column(
+        children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text('${selected.nameVi}: MET ${fmt(selected.met)}, khoảng ${kcal!.round()} kcal'),
-          ),
-        Expanded(
-          child: RadioGroup<String>(
-            groupValue: _code,
-            onChanged: (v) => setState(() => _code = v),
-            child: ListView(children: [
-              for (final a in acts)
-                RadioListTile<String>(
-                  value: a.code,
-                  title: Text(a.nameVi),
-                  subtitle: Text('MET ${fmt(a.met)}'),
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: const InputDecoration(labelText: 'Tìm hoạt động', prefixIcon: Icon(LucideIcons.search)),
+                    onChanged: (s) => setState(() => _query = s),
+                  ),
                 ),
-            ]),
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: 90,
+                  child: TextField(
+                    controller: _minutes,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Phút'),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ]),
+          if (selected != null && !state.hideCalories)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text('${selected.nameVi}: MET ${fmt(selected.met)}, khoảng ${kcal!.round()} kcal'),
+            ),
+          Expanded(
+            child: RadioGroup<String>(
+              groupValue: _code,
+              onChanged: (v) => setState(() => _code = v),
+              child: ListView(
+                children: [
+                  for (final a in acts)
+                    RadioListTile<String>(value: a.code, title: Text(a.nameVi), subtitle: Text('MET ${fmt(a.met)}')),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -19,11 +19,7 @@ import 'package:wholewell/ui/nutrient_detail_screen.dart';
 import 'package:wholewell/ui/onboarding_flow.dart';
 import 'package:wholewell/ui/supplements_screen.dart';
 
-Future<AppState> _makeState(
-  ReferencePack pack, {
-  bool caution = false,
-  bool hideCalories = false,
-}) async {
+Future<AppState> _makeState(ReferencePack pack, {bool caution = false, bool hideCalories = false}) async {
   final repo = InMemoryJournalRepository();
   final state = AppState.withRepository(pack: pack, repo: repo);
   await state.start();
@@ -51,10 +47,7 @@ Widget _wrapA11y(
   double textScale = 2.0,
 }) {
   return MediaQuery(
-    data: MediaQueryData(
-      size: size,
-      textScaler: TextScaler.linear(textScale),
-    ),
+    data: MediaQueryData(size: size, textScaler: TextScaler.linear(textScale)),
     child: AppScope(
       state: state,
       child: MaterialApp(
@@ -77,13 +70,12 @@ void _usePhoneViewport(WidgetTester tester, {Size size = const Size(360, 800)}) 
 }
 
 void main() {
-  final pack = ReferencePack.fromJsonString(
-    File('assets/reference_pack.json').readAsStringSync(),
-  );
+  final pack = ReferencePack.fromJsonString(File('assets/reference_pack.json').readAsStringSync());
 
   group('PR 5 A11y 200% & Dark Mode', () {
-    testWidgets('HomeScreen DaySwitcher >= 40x44 và TodayScreen trống không tràn ở 360dp 200% Light & Dark',
-        (tester) async {
+    testWidgets('HomeScreen DaySwitcher >= 40x44 và TodayScreen trống không tràn ở 360dp 200% Light & Dark', (
+      tester,
+    ) async {
       _usePhoneViewport(tester);
       final state = await _makeState(pack);
       addTearDown(state.dispose);
@@ -102,8 +94,9 @@ void main() {
       }
     });
 
-    testWidgets('TodayScreen đủ dữ liệu (UL, thận trọng, đường > 10g, lịch, nước, ẩn calo) không tràn ở Dark 200%',
-        (tester) async {
+    testWidgets('TodayScreen đủ dữ liệu (UL, thận trọng, đường > 10g, lịch, nước, ẩn calo) không tràn ở Dark 200%', (
+      tester,
+    ) async {
       _usePhoneViewport(tester);
       final state = await _makeState(pack, caution: true, hideCalories: false);
       addTearDown(state.dispose);
@@ -124,17 +117,14 @@ void main() {
           },
         ),
       );
-      await state.recordDose(
-        'Magie Citrate liều cao',
-        const [
-          IntakeLine(
-            nutrientId: 'magnesium',
-            source: IntakeSource.supplement,
-            form: 'magnesium_citrate',
-            amounts: {'magnesium': 400},
-          ),
-        ],
-      );
+      await state.recordDose('Magie Citrate liều cao', const [
+        IntakeLine(
+          nutrientId: 'magnesium',
+          source: IntakeSource.supplement,
+          form: 'magnesium_citrate',
+          amounts: {'magnesium': 400},
+        ),
+      ]);
       await state.diary.addWater(state.day, 250);
       final pid = await state.diary.createProductWithIngredientsAndBox(
         name: 'Vitamin D3 1000 IU',
@@ -158,23 +148,21 @@ void main() {
       expect(find.byType(EnergyArcGauge), findsNothing);
     });
 
-    testWidgets('NutrientDetailScreen (Hôm nay & 7 ngày) ở 360dp 200% Dark Mode với nhãn đầy đủ không tràn',
-        (tester) async {
+    testWidgets('NutrientDetailScreen (Hôm nay & 7 ngày) ở 360dp 200% Dark Mode với nhãn đầy đủ không tràn', (
+      tester,
+    ) async {
       _usePhoneViewport(tester);
       final state = await _makeState(pack, caution: true);
       addTearDown(state.dispose);
 
-      await state.recordDose(
-        'Magie bổ sung',
-        const [
-          IntakeLine(
-            nutrientId: 'magnesium',
-            source: IntakeSource.supplement,
-            form: 'magnesium_citrate',
-            amounts: {'magnesium': 280},
-          ),
-        ],
-      );
+      await state.recordDose('Magie bổ sung', const [
+        IntakeLine(
+          nutrientId: 'magnesium',
+          source: IntakeSource.supplement,
+          form: 'magnesium_citrate',
+          amounts: {'magnesium': 280},
+        ),
+      ]);
 
       await tester.pumpWidget(
         _wrapA11y(state, const NutrientDetailScreen(nutrientId: 'magnesium'), brightness: Brightness.dark),
@@ -187,11 +175,7 @@ void main() {
       await tester.tap(find.text('7 ngày'));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-      await tester.dragUntilVisible(
-        find.text('7 ngày qua'),
-        find.byType(ListView),
-        const Offset(0, -300),
-      );
+      await tester.dragUntilVisible(find.text('7 ngày qua'), find.byType(ListView), const Offset(0, -300));
       await tester.pumpAndSettle();
       expect(find.text('7 ngày qua'), findsOneWidget);
       await tester.dragUntilVisible(
@@ -205,8 +189,7 @@ void main() {
       expect(find.textContaining('Giới hạn an toàn (350 mg)'), findsOneWidget);
     });
 
-    testWidgets('FoodPortionScreen ở màn thấp 360x640 và 200% Dark Mode cuộn toàn trang không tràn',
-        (tester) async {
+    testWidgets('FoodPortionScreen ở màn thấp 360x640 và 200% Dark Mode cuộn toàn trang không tràn', (tester) async {
       const smallPhone = Size(360, 640);
       _usePhoneViewport(tester, size: smallPhone);
       final state = await _makeState(pack);
@@ -222,9 +205,7 @@ void main() {
         niacinFortifiedUnseparated: false,
         folateUnseparated: false,
         defaultPortionId: 'bowl',
-        portions: [
-          FoodPortion(id: 'bowl', labelVi: '1 tô vừa', grams: 500),
-        ],
+        portions: [FoodPortion(id: 'bowl', labelVi: '1 tô vừa', grams: 500)],
         nutrientsPer100g: [
           FoodNutrientPer100g(nutrientId: 'energyKcal', source: IntakeSource.food, amount: 90, unit: 'kcal'),
           FoodNutrientPer100g(nutrientId: 'protein_g', source: IntakeSource.food, amount: 6, unit: 'g'),
@@ -236,11 +217,7 @@ void main() {
       await tester.pumpWidget(
         _wrapA11y(
           state,
-          FoodPortionScreen.library(
-            food: food,
-            initialMeal: Meal.breakfast,
-            initialAt: DateTime(2026, 11, 27, 7, 30),
-          ),
+          FoodPortionScreen.library(food: food, initialMeal: Meal.breakfast, initialAt: DateTime(2026, 11, 27, 7, 30)),
           brightness: Brightness.dark,
           size: smallPhone,
         ),
@@ -253,8 +230,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('DiaryScreen, LogSheet, SupplementsScreen & ConfirmIngredientsScreen không tràn ở 360dp 200% Dark',
-        (tester) async {
+    testWidgets('DiaryScreen, LogSheet, SupplementsScreen & ConfirmIngredientsScreen không tràn ở 360dp 200% Dark', (
+      tester,
+    ) async {
       _usePhoneViewport(tester);
       final state = await _makeState(pack);
       addTearDown(state.dispose);
@@ -305,9 +283,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // SupplementsScreen (kiểm tra tên sản phẩm xếp dọc trên số còn lại ở 200%)
-      await tester.pumpWidget(
-        _wrapA11y(state, const Scaffold(body: SupplementsScreen()), brightness: Brightness.dark),
-      );
+      await tester.pumpWidget(_wrapA11y(state, const Scaffold(body: SupplementsScreen()), brightness: Brightness.dark));
       await tester.pump(const Duration(milliseconds: 120));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
@@ -345,10 +321,7 @@ void main() {
 
     testWidgets('OnboardingFlow và MeScreen không tràn ở 360dp 200% Light & Dark', (tester) async {
       _usePhoneViewport(tester);
-      final onboardingState = AppState.withRepository(
-        pack: pack,
-        repo: InMemoryJournalRepository(),
-      );
+      final onboardingState = AppState.withRepository(pack: pack, repo: InMemoryJournalRepository());
       await onboardingState.start();
       addTearDown(onboardingState.dispose);
 

@@ -10,8 +10,7 @@ const engineSupportsUlAmounts = true;
 
 /// Lỗi khi gặp `ulAmounts` mà engine chưa hỗ trợ (giữ lại cho tương thích kiểu).
 class UlAmountsNotSupported extends UnsupportedError {
-  UlAmountsNotSupported()
-      : super('Lượng tính giới hạn riêng chưa dùng được: cần sửa engine (việc 2) trước');
+  UlAmountsNotSupported() : super('Lượng tính giới hạn riêng chưa dùng được: cần sửa engine (việc 2) trước');
 }
 
 bool _hasUl(IntakeLine l) => l.ulAmounts != null && l.ulAmounts!.isNotEmpty;
@@ -22,11 +21,11 @@ void checkLinesWritable(Iterable<IntakeLine> lines) {
 }
 
 MealSlot mealSlotOf(FoodEntry f) => switch (f.meal) {
-      Meal.breakfast => MealSlot.breakfast,
-      Meal.lunch => MealSlot.lunch,
-      Meal.dinner => MealSlot.dinner,
-      Meal.snack => MealSlot.snack,
-    };
+  Meal.breakfast => MealSlot.breakfast,
+  Meal.lunch => MealSlot.lunch,
+  Meal.dinner => MealSlot.dinner,
+  Meal.snack => MealSlot.snack,
+};
 
 List<IntakeItem> _group(
   String label,
@@ -42,8 +41,7 @@ List<IntakeItem> _group(
     (bySource[l.source] ??= []).add(l);
   }
   return [
-    for (final entry in bySource.entries)
-      _buildItem(label, entry.key, meal, at, addedSugarKnown, entryId, entry.value),
+    for (final entry in bySource.entries) _buildItem(label, entry.key, meal, at, addedSugarKnown, entryId, entry.value),
   ];
 }
 
@@ -69,8 +67,7 @@ IntakeItem _buildItem(
   Map<String, double>? ulNutrients;
   if (ulKeys.isNotEmpty) {
     ulNutrients = {
-      for (final k in ulKeys)
-        k: groupLines.fold(0.0, (s, l) => s + (l.ulAmounts?[k] ?? l.amounts[k] ?? 0.0)),
+      for (final k in ulKeys) k: groupLines.fold(0.0, (s, l) => s + (l.ulAmounts?[k] ?? l.amounts[k] ?? 0.0)),
     };
   }
   return IntakeItem(
@@ -107,6 +104,6 @@ List<IntakeItem> intakeItemsOfDose(DoseEntry d) =>
 
 /// Mọi `IntakeItem` của một ngày.
 List<IntakeItem> intakeItemsFor(Iterable<FoodEntry> foods, Iterable<DoseEntry> doses) => [
-      for (final f in foods) ...intakeItemsOfFood(f),
-      for (final d in doses) ...intakeItemsOfDose(d),
-    ];
+  for (final f in foods) ...intakeItemsOfFood(f),
+  for (final d in doses) ...intakeItemsOfDose(d),
+];

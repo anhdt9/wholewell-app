@@ -71,11 +71,10 @@ double? ulFor(ReferencePack pack, Profile p, String nutrientId) {
 
 /// Kiểm tra nguồn nạp có nằm trong phạm vi UL của chất hay không.
 bool isSourceInUlScope(UlScope scope, IntakeSource source) => switch (scope) {
-      UlScope.total => true,
-      UlScope.supplement => source == IntakeSource.supplement,
-      UlScope.synthetic =>
-        source == IntakeSource.supplement || source == IntakeSource.fortified,
-    };
+  UlScope.total => true,
+  UlScope.supplement => source == IntakeSource.supplement,
+  UlScope.synthetic => source == IntakeSource.supplement || source == IntakeSource.fortified,
+};
 
 /// Kiểm tra một dòng nạp có đóng góp (> 0) vào giới hạn an toàn của [def] hay không,
 /// dùng chung một quy tắc duy nhất với [amountForUl].
@@ -113,14 +112,7 @@ class UlFlag {
   final UlScope scope;
   final int? dayCount;
 
-  const UlFlag(
-    this.nutrientId,
-    this.kind,
-    this.amount,
-    this.ul,
-    this.scope, [
-    this.dayCount,
-  ]);
+  const UlFlag(this.nutrientId, this.kind, this.amount, this.ul, this.scope, [this.dayCount]);
 
   double get excess => amount - ul;
   double get percentOver => excess / ul * 100;
@@ -133,8 +125,10 @@ List<UlFlag> checkUlDay(ReferencePack pack, Profile p, List<IntakeItem> day) =>
     _checkUl(pack, p, [day], UlFlagKind.daily);
 
 /// Kiểm tra UL theo trung bình các ngày có ghi (tự lọc bỏ ngày rỗng).
-List<UlFlag> checkUlAverage(ReferencePack pack, Profile p, List<List<IntakeItem>> loggedDays) =>
-    _checkUl(pack, p, [for (final d in loggedDays) if (d.isNotEmpty) d], UlFlagKind.sevenDayAverage);
+List<UlFlag> checkUlAverage(ReferencePack pack, Profile p, List<List<IntakeItem>> loggedDays) => _checkUl(pack, p, [
+  for (final d in loggedDays)
+    if (d.isNotEmpty) d,
+], UlFlagKind.sevenDayAverage);
 
 /// Kiểm tra UL cho một ngày điển hình theo lịch uống.
 List<UlFlag> checkUlSchedule(ReferencePack pack, Profile p, List<IntakeItem> scheduledDailyItems) =>
@@ -154,14 +148,7 @@ List<UlFlag> _checkUl(ReferencePack pack, Profile p, List<List<IntakeItem>> days
     }
     final amount = total / days.length;
     if (amount > ul) {
-      flags.add(UlFlag(
-        def.id,
-        kind,
-        amount,
-        ul,
-        def.ulScope,
-        kind == UlFlagKind.sevenDayAverage ? days.length : null,
-      ));
+      flags.add(UlFlag(def.id, kind, amount, ul, def.ulScope, kind == UlFlagKind.sevenDayAverage ? days.length : null));
     }
   }
   sortUlFlags(flags);

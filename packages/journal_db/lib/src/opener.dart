@@ -149,8 +149,8 @@ class DbOpener {
     this.retryDelay = const Duration(milliseconds: 500),
     this.extraFilesToWipe = const [],
     DateTime Function()? now,
-  })  : migrations = migrations ?? defaultDbMigrations,
-        now = now ?? DateTime.now;
+  }) : migrations = migrations ?? defaultDbMigrations,
+       now = now ?? DateTime.now;
 
   /// Mở app (luồng 2). Chỉ gọi khi giao diện đã hiện; mã chạy nền không gọi.
   Future<OpenOutcome> open() async {
@@ -289,8 +289,7 @@ class DbOpener {
   /// Còn bản `.pre-v{n}` (lần di chuyển trước lỗi hoặc bị ngắt, chưa có lần ghi
   /// nào sau đó): bỏ tệp hiện tại cùng `-wal`, `-shm`, khôi phục bản sao.
   OpenOutcome? _restorePreMigrationCopy() {
-    final copies = files.preMigrationCopies()
-      ..sort((a, b) => _copyVersion(a).compareTo(_copyVersion(b)));
+    final copies = files.preMigrationCopies()..sort((a, b) => _copyVersion(a).compareTo(_copyVersion(b)));
     if (copies.isEmpty) return null;
     try {
       for (final f in [files.db, files.wal, files.shm]) {
@@ -475,20 +474,24 @@ class DbOpener {
       for (final s in schemaCurrent) {
         db.execute(s);
       }
-      db.execute("INSERT INTO meta (id, schema_version, created_at, onboarding_step) VALUES (1, ?, ?, 'body_profile')",
-          [currentSchemaVersion, ms]);
+      db.execute(
+        "INSERT INTO meta (id, schema_version, created_at, onboarding_step) VALUES (1, ?, ?, 'body_profile')",
+        [currentSchemaVersion, ms],
+      );
       db.execute('INSERT INTO settings (id) VALUES (1)');
       db.execute('COMMIT');
       // Chưa có dữ liệu người dùng: kiểm tệp thật sự được mã hóa trước khi ghi.
       verifyFileEncrypted(db, files.creating);
       db.execute('BEGIN');
+      db.execute("INSERT INTO consents (kind, content_version, granted_at) VALUES ('health_data', ?, ?)", [
+        consent.contentVersion,
+        ms,
+      ]);
       db.execute(
-          "INSERT INTO consents (kind, content_version, granted_at) VALUES ('health_data', ?, ?)",
-          [consent.contentVersion, ms]);
-      db.execute(
-          'INSERT INTO profile (id, age_years, age_entered_on, caution, caution_answered_on, updated_at) '
-          'VALUES (1, ?, ?, ?, ?, ?)',
-          [consent.ageYears, today, consent.caution ? 1 : 0, today, ms]);
+        'INSERT INTO profile (id, age_years, age_entered_on, caution, caution_answered_on, updated_at) '
+        'VALUES (1, ?, ?, ?, ?, ?)',
+        [consent.ageYears, today, consent.caution ? 1 : 0, today, ms],
+      );
       db.execute('COMMIT');
       db.execute('PRAGMA wal_checkpoint(TRUNCATE)');
     } on DbOpenException catch (e) {

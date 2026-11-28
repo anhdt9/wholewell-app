@@ -1,0 +1,21 @@
+# Workspace gốc (Pub Workspaces, docs/refactor-plan.md ADR 10): một pubspec.lock chung, commit vào repo.
+# Chạy `flutter pub get` một lần ở đây; Flutter ghim trong .fvmrc.
+name: _
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+workspace:
+  - app
+  - packages/dsld_library
+  - packages/food_library
+  - packages/health_engine
+  - packages/journal_db
+
+# CSDL mã hóa: dùng SQLite3MultipleCiphers thay SQLite gốc (docs/specs/encrypted-db.md).
+# Trong workspace, pub chỉ đọc hooks.user_defines ở pubspec gốc.
+hooks:
+  user_defines:
+    sqlite3:
+      source: sqlite3mc

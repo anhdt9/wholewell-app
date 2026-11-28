@@ -151,24 +151,20 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
     return _lines.every((l) => l.confirmed && _reviewReason(l, pack) == null);
   }
 
-  IngredientDraft _toDraft(EditableIngredient l, ReferencePack pack) =>
-      SupplementIngredientHelper.toDraft(
-        pack,
-        nutrientId: l.nutrientId,
-        freeName: l.freeName,
-        form: l.form,
-        labelAmount: l.labelAmount,
-        // `_allConfirmed` bảo đảm mọi dòng đã có đơn vị trước khi gửi.
-        labelUnit: l.labelUnit!,
-        isCompound: l.isCompound,
-        origin: l.origin,
-        confirmed: l.confirmed,
-      );
+  IngredientDraft _toDraft(EditableIngredient l, ReferencePack pack) => SupplementIngredientHelper.toDraft(
+    pack,
+    nutrientId: l.nutrientId,
+    freeName: l.freeName,
+    form: l.form,
+    labelAmount: l.labelAmount,
+    // `_allConfirmed` bảo đảm mọi dòng đã có đơn vị trước khi gửi.
+    labelUnit: l.labelUnit!,
+    isCompound: l.isCompound,
+    origin: l.origin,
+    confirmed: l.confirmed,
+  );
 
-  ({IngredientSanityResult sanity, bool unitIncompatible}) _sanity(
-    EditableIngredient l,
-    AppState state,
-  ) =>
+  ({IngredientSanityResult sanity, bool unitIncompatible}) _sanity(EditableIngredient l, AppState state) =>
       SupplementIngredientHelper.checkSanity(
         state.pack,
         profile: state.profile,
@@ -220,10 +216,7 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
         borderRadius: AppRadius.controlRadius,
         border: error ? null : Border.all(color: ww.warningBorder),
       ),
-      child: Text(
-        '⚠ $text',
-        style: t.bodySmall?.copyWith(color: error ? cs.onErrorContainer : ww.onWarningContainer),
-      ),
+      child: Text('⚠ $text', style: t.bodySmall?.copyWith(color: error ? cs.onErrorContainer : ww.onWarningContainer)),
     );
   }
 
@@ -236,9 +229,7 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
     final reviewCount = _reviewCount(pack);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.editingProductId != null ? 'Sửa thành phần' : 'Xác nhận thành phần'),
-      ),
+      appBar: AppBar(title: Text(widget.editingProductId != null ? 'Sửa thành phần' : 'Xác nhận thành phần')),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
         children: [
@@ -246,8 +237,8 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
             widget.editingProductId != null
                 ? 'Thay đổi thành phần chỉ áp dụng cho lần uống mới.'
                 : widget.fromDsld
-                    ? 'Điền sẵn từ thư viện nhãn Mỹ (NIH DSLD). Kiểm tra lại trước khi lưu.'
-                    : 'Kiểm tra và đánh dấu xác nhận từng dòng trước khi lưu.',
+                ? 'Điền sẵn từ thư viện nhãn Mỹ (NIH DSLD). Kiểm tra lại trước khi lưu.'
+                : 'Kiểm tra và đánh dấu xác nhận từng dòng trước khi lưu.',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           if (widget.showAiNote) ...[
@@ -333,12 +324,7 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
     );
   }
 
-  Widget _buildLineTile(
-    int index,
-    EditableIngredient l,
-    AppState state,
-    ReferencePack pack,
-  ) {
+  Widget _buildLineTile(int index, EditableIngredient l, AppState state, ReferencePack pack) {
     final t = Theme.of(context).textTheme;
     final def = l.nutrientId == null ? null : pack.nutrients[l.nutrientId!];
     final title = def?.nameVi ?? (l.freeName ?? 'Chưa chọn chất');
@@ -372,14 +358,14 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
       _ReviewReason.noAmount => _note('Chưa có lượng. Bấm Sửa và nhập theo nhãn.'),
       _ReviewReason.noUnit => _note('Chưa đọc được đơn vị. Bấm Sửa và chọn đơn vị theo nhãn.'),
       _ReviewReason.unitIncompatible => _note(
-          'Đơn vị "${unitLabel(unit!.name)}" chưa phù hợp với chất này. Bấm Sửa để chọn lại.',
-          error: true,
-        ),
-      _ReviewReason.notOnImage =>
-        _note('Chưa thấy số này trong chữ đọc từ ảnh. Bấm Sửa để so với nhãn.'),
-      null => (sanity?.hasWarning ?? false)
-          ? _note('Số này khá lớn so với mức thông thường, hãy kiểm lại đơn vị mg/µg trên nhãn.')
-          : null,
+        'Đơn vị "${unitLabel(unit!.name)}" chưa phù hợp với chất này. Bấm Sửa để chọn lại.',
+        error: true,
+      ),
+      _ReviewReason.notOnImage => _note('Chưa thấy số này trong chữ đọc từ ảnh. Bấm Sửa để so với nhãn.'),
+      null =>
+        (sanity?.hasWarning ?? false)
+            ? _note('Số này khá lớn so với mức thông thường, hãy kiểm lại đơn vị mg/µg trên nhãn.')
+            : null,
     };
 
     final checkbox = Checkbox(
@@ -392,24 +378,18 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (reason == null)
-            checkbox
-          else
-            Semantics(label: 'Cần kiểm, bấm Sửa', child: checkbox),
+          if (reason == null) checkbox else Semantics(label: 'Cần kiểm, bấm Sửa', child: checkbox),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: t.titleSmall),
                 if (subtitle.isNotEmpty) Text(subtitle, style: tabularNumberStyle(t.bodySmall)),
-                if (note != null) note,
+                ?note,
               ],
             ),
           ),
-          TextButton(
-            onPressed: () => _editOrAddLine(index),
-            child: const Text('Sửa'),
-          ),
+          TextButton(onPressed: () => _editOrAddLine(index), child: const Text('Sửa')),
           IconButton(
             tooltip: 'Xóa dòng',
             icon: const Icon(LucideIcons.trash2),
@@ -476,22 +456,22 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
       'vitD' => const [LabelUnit.ug, LabelUnit.iu, LabelUnit.mg],
       'vitE' => const [LabelUnit.mg, LabelUnit.iu],
       _ => switch (widget.pack.nutrients[nid]?.unit) {
-          'g' => const [LabelUnit.g, LabelUnit.mg],
-          'ug' => const [LabelUnit.ug, LabelUnit.mg],
-          _ => const [LabelUnit.mg, LabelUnit.ug, LabelUnit.g],
-        },
+        'g' => const [LabelUnit.g, LabelUnit.mg],
+        'ug' => const [LabelUnit.ug, LabelUnit.mg],
+        _ => const [LabelUnit.mg, LabelUnit.ug, LabelUnit.g],
+      },
     };
   }
 
   String _unitDisplay(LabelUnit u) => switch (u) {
-        LabelUnit.mg => 'mg',
-        LabelUnit.ug => 'µg',
-        LabelUnit.iu => 'IU',
-        LabelUnit.g => 'g',
-        LabelUnit.ugDfe => 'µg DFE',
-        LabelUnit.ugRae => 'µg RAE',
-        LabelUnit.mgNe => 'mg NE',
-      };
+    LabelUnit.mg => 'mg',
+    LabelUnit.ug => 'µg',
+    LabelUnit.iu => 'IU',
+    LabelUnit.g => 'g',
+    LabelUnit.ugDfe => 'µg DFE',
+    LabelUnit.ugRae => 'µg RAE',
+    LabelUnit.mgNe => 'mg NE',
+  };
 
   void _dropUnitIfNotAllowed() {
     final unit = _unit;
@@ -502,9 +482,7 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final nutrients = widget.pack.nutrients.values
-        .where((d) => d.group != 'macro' && d.id != 'retinol')
-        .toList();
+    final nutrients = widget.pack.nutrients.values.where((d) => d.group != 'macro' && d.id != 'retinol').toList();
     final compounds = _nutrientId == null ? null : widget.pack.compounds[_nutrientId!];
     final compoundMeta = _nutrientId == null ? null : widget.pack.compoundMeta[_nutrientId!];
     final allowedUnits = _allowedUnitsFor(_nutrientId, _isFree);
@@ -512,9 +490,7 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
     final t = Theme.of(context).textTheme;
 
     return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.sizeOf(context).height * 0.85,
-      ),
+      constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.85),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -532,10 +508,7 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                 children: [
                   if (widget.initial.needsCheck) ...[
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.sm,
-                        vertical: AppSpacing.xs,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
                       decoration: BoxDecoration(
                         color: ww.warningContainer,
                         borderRadius: AppRadius.controlRadius,
@@ -624,8 +597,7 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                               isDense: true,
                               hint: const Text('Chọn'),
                               items: [
-                                for (final u in allowedUnits)
-                                  DropdownMenuItem(value: u, child: Text(_unitDisplay(u))),
+                                for (final u in allowedUnits) DropdownMenuItem(value: u, child: Text(_unitDisplay(u))),
                               ],
                               onChanged: (u) {
                                 if (u != null) {
@@ -699,10 +671,7 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                           : NutrientForm.unknown,
                       decoration: const InputDecoration(labelText: 'Dạng vitamin A'),
                       items: const [
-                        DropdownMenuItem(
-                          value: NutrientForm.retinol,
-                          child: Text('Retinol / Retinyl (tính giới hạn)'),
-                        ),
+                        DropdownMenuItem(value: NutrientForm.retinol, child: Text('Retinol / Retinyl (tính giới hạn)')),
                         DropdownMenuItem(
                           value: NutrientForm.betaCarotene,
                           child: Text('Beta-caroten (không tính giới hạn)'),
@@ -722,10 +691,7 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
             child: SizedBox(
               width: double.infinity,
               height: 48,
-              child: FilledButton(
-                onPressed: _submitLine,
-                child: const Text('Xác nhận dòng này'),
-              ),
+              child: FilledButton(onPressed: _submitLine, child: const Text('Xác nhận dòng này')),
             ),
           ),
         ],

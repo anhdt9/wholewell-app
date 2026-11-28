@@ -7,33 +7,23 @@ import 'package:material_ui/material_ui.dart';
 import 'package:wholewell/main.dart';
 import 'package:wholewell/state/app_state.dart';
 
-Future<AppState> _makeReadyState({
-  required ReferencePack pack,
-  FakeNotificationScheduler? scheduler,
-}) async {
+Future<AppState> _makeReadyState({required ReferencePack pack, FakeNotificationScheduler? scheduler}) async {
   final repo = InMemoryJournalRepository();
-  final state = AppState.withRepository(
-    pack: pack,
-    repo: repo,
-    notificationScheduler: scheduler,
-  );
+  final state = AppState.withRepository(pack: pack, repo: repo, notificationScheduler: scheduler);
   await state.start();
   await state.completeFirstConsent(ageYears: 30, caution: false);
-  await state.saveOnboardingBodyProfile(const Profile(
-    ageYears: 30,
-    sex: Sex.male,
-    heightCm: 170,
-    weightKg: 65,
-    activityLevel: ActivityLevel.active,
-  ));
+  await state.saveOnboardingBodyProfile(
+    const Profile(ageYears: 30, sex: Sex.male, heightCm: 170, weightKg: 65, activityLevel: ActivityLevel.active),
+  );
   return state;
 }
 
 void main() {
   final pack = ReferencePack.fromJsonString(File('assets/reference_pack.json').readAsStringSync());
 
-  testWidgets('Đặt lịch lần đầu -> Giờ trong ngày -> Bảng cảnh báo lịch -> Đồng ý Nhắc giờ -> Xóa lịch',
-      (tester) async {
+  testWidgets('Đặt lịch lần đầu -> Giờ trong ngày -> Bảng cảnh báo lịch -> Đồng ý Nhắc giờ -> Xóa lịch', (
+    tester,
+  ) async {
     final scheduler = FakeNotificationScheduler();
     final state = await _makeReadyState(pack: pack, scheduler: scheduler);
 
@@ -107,8 +97,9 @@ void main() {
     expect(state.diary.todaySchedules, isEmpty);
   });
 
-  testWidgets('Hôm nay hiện SafetyNote lưu ý lịch thu gọn được, TipCard Bạn có biết & công tắc Tôi -> Hiển thị',
-      (tester) async {
+  testWidgets('Hôm nay hiện SafetyNote lưu ý lịch thu gọn được, TipCard Bạn có biết & công tắc Tôi -> Hiển thị', (
+    tester,
+  ) async {
     final state = await _makeReadyState(pack: pack);
     // Xác nhận sẵn Giờ trong ngày và bật đồng ý thông báo.
     await state.diary.saveDayTimesSettings(const DayTimesSettings(dayTimesConfirmed: true));
@@ -194,8 +185,9 @@ void main() {
     expect(find.text('Bạn có biết'), findsNothing);
   });
 
-  testWidgets('Cold start từ nút Đã uống trên thông báo -> Sheet xác nhận -> Hỏi hộp hết hạn -> Báo UL',
-      (tester) async {
+  testWidgets('Cold start từ nút Đã uống trên thông báo -> Sheet xác nhận -> Hỏi hộp hết hạn -> Báo UL', (
+    tester,
+  ) async {
     final repo = InMemoryJournalRepository();
     final scheduler = FakeNotificationScheduler(
       pendingAction: const NotificationAction(
@@ -204,20 +196,12 @@ void main() {
         scheduleIds: [4],
       ),
     );
-    final state = AppState.withRepository(
-      pack: pack,
-      repo: repo,
-      notificationScheduler: scheduler,
-    );
+    final state = AppState.withRepository(pack: pack, repo: repo, notificationScheduler: scheduler);
     await state.start();
     await state.completeFirstConsent(ageYears: 30, caution: false);
-    await state.saveOnboardingBodyProfile(const Profile(
-      ageYears: 30,
-      sex: Sex.male,
-      heightCm: 170,
-      weightKg: 65,
-      activityLevel: ActivityLevel.active,
-    ));
+    await state.saveOnboardingBodyProfile(
+      const Profile(ageYears: 30, sex: Sex.male, heightCm: 170, weightKg: 65, activityLevel: ActivityLevel.active),
+    );
 
     // Sản phẩm chỉ còn hộp ĐÃ HẾT HẠN và vượt UL Magie (400 mg > 350 mg).
     final createdPid = await repo.addProduct('Magie Hết Hạn', CountUnit.tablet, 1);
@@ -262,8 +246,9 @@ void main() {
     expect(scheduler.canceledWindows, [480]);
   });
 
-  testWidgets('startOver, archiveProduct xóa/đồng bộ lịch nhắc và xem ngày hôm qua vẫn ghi đúng hôm nay',
-      (tester) async {
+  testWidgets('startOver, archiveProduct xóa/đồng bộ lịch nhắc và xem ngày hôm qua vẫn ghi đúng hôm nay', (
+    tester,
+  ) async {
     final scheduler = FakeNotificationScheduler();
     final state = await _makeReadyState(pack: pack, scheduler: scheduler);
     await state.diary.grantNotificationConsent('notif-1');

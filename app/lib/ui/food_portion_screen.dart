@@ -26,16 +26,16 @@ class FoodPortionScreen extends StatefulWidget {
     required FoodDetail food,
     required this.initialMeal,
     required this.initialAt,
-  })  : libraryFood = food,
-        customFood = null;
+  }) : libraryFood = food,
+       customFood = null;
 
   const FoodPortionScreen.custom({
     super.key,
     required CustomFood custom,
     required this.initialMeal,
     required this.initialAt,
-  })  : customFood = custom,
-        libraryFood = null;
+  }) : customFood = custom,
+       libraryFood = null;
 
   @override
   State<FoodPortionScreen> createState() => _FoodPortionScreenState();
@@ -215,19 +215,12 @@ class _FoodPortionScreenState extends State<FoodPortionScreen> {
               at: widget.initialAt,
               pack: state.pack,
             )
-          : LabelFoodBuilder.previewLibraryFood(
-              lib!,
-              grams: _grams,
-              pack: state.pack,
-              foodLibrary: state.foodLibrary,
-            );
+          : LabelFoodBuilder.previewLibraryFood(lib!, grams: _grams, pack: state.pack, foodLibrary: state.foodLibrary);
     } on FormatException {
       // Món đã lưu có đơn vị không đọc được (chỉ khi dữ liệu hỏng): báo lỗi, không đoán đơn vị.
       return Scaffold(
         appBar: AppBar(title: Text(title)),
-        body: const ErrorState(
-          message: 'Không đọc được số liệu của món đã lưu này. Hãy nhập lại món theo nhãn.',
-        ),
+        body: const ErrorState(message: 'Không đọc được số liệu của món đã lưu này. Hãy nhập lại món theo nhãn.'),
         bottomNavigationBar: const SafeArea(
           child: Padding(
             padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.lg),
@@ -265,10 +258,7 @@ class _FoodPortionScreenState extends State<FoodPortionScreen> {
       ),
       if (lib?.nameEn != null && lib!.nameEn!.isNotEmpty) ...[
         const SizedBox(height: 2),
-        Text(
-          lib.nameEn!,
-          style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-        ),
+        Text(lib.nameEn!, style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
       ],
       const SizedBox(height: AppSpacing.lg),
       Text('Khẩu phần', style: t.titleSmall),
@@ -327,9 +317,7 @@ class _FoodPortionScreenState extends State<FoodPortionScreen> {
               textAlign: TextAlign.center,
               style: tabularNumberStyle(t.bodyLarge),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(
-                suffixText: _isCustom || _selectedUnitId == _gramId ? _unitLabel : null,
-              ),
+              decoration: InputDecoration(suffixText: _isCustom || _selectedUnitId == _gramId ? _unitLabel : null),
               onChanged: _onQtyTextChanged,
             ),
           ),
@@ -376,10 +364,7 @@ class _FoodPortionScreenState extends State<FoodPortionScreen> {
             child: ListView(
               padding: const EdgeInsets.all(AppSpacing.lg),
               children: [
-                if (scrollWholePage) ...[
-                  summaryCard,
-                  const SizedBox(height: AppSpacing.lg),
-                ],
+                if (scrollWholePage) ...[summaryCard, const SizedBox(height: AppSpacing.lg)],
                 ...formWidgets,
               ],
             ),
@@ -394,11 +379,7 @@ class _FoodPortionScreenState extends State<FoodPortionScreen> {
                 child: FilledButton(
                   onPressed: _saving || _qty <= 0 ? null : _save,
                   child: _saving
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                       : const Text('Lưu'),
                 ),
               ),
@@ -462,10 +443,7 @@ class _NutritionPreviewCard extends StatelessWidget {
             ),
             if (sugarKnown) ...[
               const SizedBox(height: 2),
-              Text(
-                'Đường bổ sung: ${fmt(addedSugar)} g',
-                style: tabularNumberStyle(t.bodyMedium),
-              ),
+              Text('Đường bổ sung: ${fmt(addedSugar)} g', style: tabularNumberStyle(t.bodyMedium)),
             ],
             if (totalSugar != null && (!sugarKnown || (totalSugar! - addedSugar).abs() > 0.05)) ...[
               const SizedBox(height: 2),

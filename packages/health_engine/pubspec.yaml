@@ -3,8 +3,10 @@ description: Engine thuần Dart tính đối chiếu dinh dưỡng theo RDA/AI,
 version: 0.1.0
 publish_to: none
 
+resolution: workspace
+
 environment:
-  sdk: ^3.4.0
+  sdk: ^3.13.0
 
 dev_dependencies:
   test: ^1.25.0

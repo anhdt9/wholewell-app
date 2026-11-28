@@ -16,11 +16,7 @@ class EditScheduleScreen extends StatefulWidget {
   final Product product;
   final Schedule? existingSchedule;
 
-  const EditScheduleScreen({
-    super.key,
-    required this.product,
-    this.existingSchedule,
-  });
+  const EditScheduleScreen({super.key, required this.product, this.existingSchedule});
 
   @override
   State<EditScheduleScreen> createState() => _EditScheduleScreenState();
@@ -75,14 +71,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
       if (ex != null && cur.id == ex.id) continue;
       list.add(cur);
     }
-    list.add(Schedule(
-      ex?.id ?? -1,
-      widget.product.id,
-      _timeOfDay,
-      s,
-      dayKey(DateTime.now()),
-      null,
-    ));
+    list.add(Schedule(ex?.id ?? -1, widget.product.id, _timeOfDay, s, dayKey(DateTime.now()), null));
     return list;
   }
 
@@ -107,10 +96,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('⚠ Lịch này vượt giới hạn an toàn', style: t.titleMedium),
-              if (state.caution) ...[
-                const SizedBox(height: 8),
-                const SafetyNote(message: cautionBannerMessage),
-              ],
+              if (state.caution) ...[const SizedBox(height: 8), const SafetyNote(message: cautionBannerMessage)],
               const SizedBox(height: 12),
               for (final f in flags) ...[
                 SurfaceCard(
@@ -150,16 +136,10 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: FilledButton(
-                      onPressed: () => Navigator.pop(ctx, false),
-                      child: const Text('Sửa lịch'),
-                    ),
+                    child: FilledButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Sửa lịch')),
                   ),
                   const SizedBox(width: 12),
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx, true),
-                    child: const Text('Vẫn lưu'),
-                  ),
+                  TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Vẫn lưu')),
                 ],
               ),
             ],
@@ -202,9 +182,8 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
       if (!mounted) return;
 
       if (!diary.notificationsEnabled) {
-        await Navigator.of(context).push(
-          MaterialPageRoute<void>(builder: (_) => const NotificationSettingsScreen(firstSetupFlow: true)),
-        );
+        await Navigator.of(context)
+            .push(MaterialPageRoute<void>(builder: (_) => const NotificationSettingsScreen(firstSetupFlow: true)));
       }
       if (mounted) Navigator.of(context).pop(true);
     } finally {
@@ -245,8 +224,14 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
       for (final n in allNotices)
         if (n.productIds.contains(widget.product.id)) n,
     ];
-    final notices = [for (final n in relevantNotices) if (n.severity == 'notice') n];
-    final suggestions = [for (final n in relevantNotices) if (n.severity == 'suggestion') n];
+    final notices = [
+      for (final n in relevantNotices)
+        if (n.severity == 'notice') n,
+    ];
+    final suggestions = [
+      for (final n in relevantNotices)
+        if (n.severity == 'suggestion') n,
+    ];
 
     return Scaffold(
       appBar: AppBar(title: Text('Đặt lịch: ${widget.product.name}')),
@@ -297,30 +282,19 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
             onChanged: (_) => setState(() {}),
             decoration: InputDecoration(
               labelText: 'Số khẩu phần mỗi lần *',
-              helperText: '1 khẩu phần = ${fmt(widget.product.unitsPerServing)} ${countUnitLabel(widget.product.countUnit)}',
+              helperText:
+                  '1 khẩu phần = ${fmt(widget.product.unitsPerServing)} ${countUnitLabel(widget.product.countUnit)}',
               errorText: _error,
             ),
           ),
           const SizedBox(height: 16),
-          for (final n in notices) ...[
-            SafetyNote(message: n.messageVi),
-            const SizedBox(height: 8),
-          ],
-          for (final s in suggestions) ...[
-            SafetyNote(message: 'Gợi ý: ${s.messageVi}'),
-            const SizedBox(height: 8),
-          ],
+          for (final n in notices) ...[SafetyNote(message: n.messageVi), const SizedBox(height: 8)],
+          for (final s in suggestions) ...[SafetyNote(message: 'Gợi ý: ${s.messageVi}'), const SizedBox(height: 8)],
           const SizedBox(height: 12),
-          FilledButton(
-            onPressed: _saving ? null : _save,
-            child: const Text('Lưu lịch'),
-          ),
+          FilledButton(onPressed: _saving ? null : _save, child: const Text('Lưu lịch')),
           if (_isEdit) ...[
             const SizedBox(height: 8),
-            TextButton(
-              onPressed: _saving ? null : _delete,
-              child: const Text('Xóa lịch này'),
-            ),
+            TextButton(onPressed: _saving ? null : _delete, child: const Text('Xóa lịch này')),
           ],
         ],
       ),

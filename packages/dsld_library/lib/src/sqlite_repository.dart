@@ -45,10 +45,7 @@ class SqliteDsldLibraryRepository implements DsldLibraryRepository {
     required String libraryVersion,
     required String expectedSha256,
   }) async {
-    final path = await store.prepareDatabaseFile(
-      libraryVersion: libraryVersion,
-      expectedSha256: expectedSha256,
-    );
+    final path = await store.prepareDatabaseFile(libraryVersion: libraryVersion, expectedSha256: expectedSha256);
     return openVerifiedPath(path: path, expectedSha256: expectedSha256);
   }
 
@@ -59,9 +56,7 @@ class SqliteDsldLibraryRepository implements DsldLibraryRepository {
   }) async {
     final actual = await computeDsldFileSha256(path);
     if (actual.toLowerCase() != expectedSha256.toLowerCase()) {
-      throw DsldLibraryIntegrityException(
-        'Sai SHA-256 thư viện nhãn (kỳ vọng $expectedSha256, thực tế $actual)',
-      );
+      throw DsldLibraryIntegrityException('Sai SHA-256 thư viện nhãn (kỳ vọng $expectedSha256, thực tế $actual)');
     }
     late final Database db;
     try {
@@ -92,16 +87,13 @@ class SqliteDsldLibraryRepository implements DsldLibraryRepository {
     final variants = FakeDsldLibraryRepository.barcodeVariants(barcode).toList();
     if (variants.isEmpty) return const [];
     final placeholders = List.filled(variants.length, '?').join(',');
-    final rows = _db.select(
-      '''
+    final rows = _db.select('''
       SELECT dsld_id, barcode, product_name, brand_name, serving_size,
              supplement_form, net_contents, suggested_use, other_ingredients
       FROM products
       WHERE barcode IN ($placeholders)
       ORDER BY dsld_id DESC
-      ''',
-      variants,
-    );
+      ''', variants);
     return [for (final r in rows) _detailFromRow(r)];
   }
 

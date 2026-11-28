@@ -18,10 +18,7 @@ class FlutterFoodLibraryAssetStore implements FoodLibraryAssetStore {
   }) : bundle = bundle ?? rootBundle;
 
   @override
-  Future<String> prepareDatabaseFile({
-    required String libraryVersion,
-    required String expectedSha256,
-  }) async {
+  Future<String> prepareDatabaseFile({required String libraryVersion, required String expectedSha256}) async {
     try {
       await supportDir.create(recursive: true);
       final targetName = 'food_library_$libraryVersion.db';
@@ -45,10 +42,7 @@ class FlutterFoodLibraryAssetStore implements FoodLibraryAssetStore {
 
       final bytes = await bundle.load(assetPath);
       final tmp = File('${targetFile.path}.tmp');
-      await tmp.writeAsBytes(
-        bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
-        flush: true,
-      );
+      await tmp.writeAsBytes(bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes), flush: true);
       if (await targetFile.exists()) await targetFile.delete();
       await tmp.rename(targetFile.path);
       return targetFile.path;

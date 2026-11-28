@@ -1,6 +1,6 @@
 # Kế hoạch tái cấu trúc theo chuẩn Flutter
 
-Trạng thái: Nháp, bản 15 (28/11/2026). Chủ dự án duyệt mục 2 (quyết định kiến trúc) và mục 5 (lộ trình) trước khi bắt đầu giai đoạn 0.
+Trạng thái: Đã duyệt (28/11/2026), bản 15. Chủ dự án duyệt mục 2 (quyết định kiến trúc), mục 5 (lộ trình) và các quyết định ở mục 7.
 
 ## 1. Mục tiêu
 
@@ -14,7 +14,7 @@ Trạng thái: Nháp, bản 15 (28/11/2026). Chủ dự án duyệt mục 2 (quy
 
 Ràng buộc của `AGENTS.md` giữ nguyên: không máy chủ, không SDK phân tích hay báo lỗi, không quảng cáo, không Remote Config, dữ liệu mã hóa trên máy.
 
-## 2. Quyết định kiến trúc (ADR, chờ duyệt)
+## 2. Quyết định kiến trúc (ADR, đã duyệt 28/11/2026)
 
 Mỗi lớp chọn **một** giải pháp. Sau khi duyệt, mỗi dòng thành một tệp `docs/adr/NNNN-<tên>.md`.
 
@@ -307,14 +307,14 @@ Bảng xếp theo **thứ tự làm**. PR 1 làm ngay sau 0a, trước phần c�
 - **Hai cache song song từ PR 5a-3 tới 6.9** (repository mới và `DiaryController`): `DiaryController` nghe stream cố định của `JournalDbService` và reload, để màn chưa chuyển không hiện số cũ (ví dụ sửa hồ sơ ở `me` đã chuyển, báo cáo trên Hôm nay chưa chuyển). Lần ghi của chính nó vẫn `await reload()` như hiện nay, vì phản hồi sau khi ghi cần số mới, và bỏ sự kiện của chính lần ghi đó theo quy tắc `seq` ở 3.4, nên không chạy 23 truy vấn hai lần.
 - Mỗi PR: CI xanh, `flutter analyze` sạch, không đổi hành vi hay chữ hiển thị (trừ 3 ngoại lệ ở mục 1), cập nhật `docs/status.md`. PR chạm hiệu năng thì dán bảng số đo trước và sau (từ `docs/perf/`) vào mô tả PR.
 
-## 7. Cần chủ dự án quyết định
+## 7. Quyết định của chủ dự án (28/11/2026)
 
-1. Duyệt 15 ADR ở mục 2.
-2. Lời mới cho quy tắc AI trong `AGENTS.md`:
+1. **Đã duyệt** 15 ADR ở mục 2.
+2. **Đồng ý** lời mới cho quy tắc AI trong `AGENTS.md` (sửa ở PR 0d):
    > AI tạo sinh chỉ chạy trên máy (Gemini Nano qua Android AICore) để gợi ý tách thành phần từ chữ OCR trên nhãn; không gửi dữ liệu ra ngoài; người dùng xác nhận từng dòng; engine quyết định mọi số và cảnh báo.
-3. Có viết lại lịch sử git để xóa hẳn APK cũ không (mặc định: không).
-4. Tạo keystore phát hành và các Android OAuth client trong cùng dự án Google Cloud (chủ dự án tự làm): `vn.wholewell.app` với SHA-1 của upload key (sau này thêm SHA-1 của khóa Play App Signing), và `vn.wholewell.app.dev`.
-5. GĐ8: tách khung thành repo template riêng, hay để trong repo này.
+3. **Không** viết lại lịch sử git; PR 0a chỉ gỡ APK khỏi git từ nay về sau.
+4. **Chủ dự án tự làm, cần trước PR 0f:** tạo keystore phát hành và các Android OAuth client trong cùng dự án Google Cloud (chủ dự án tự làm): `vn.wholewell.app` với SHA-1 của upload key (sau này thêm SHA-1 của khóa Play App Signing), và `vn.wholewell.app.dev`.
+5. GĐ8: tách khung thành repo template riêng, hay để trong repo này: **quyết sau**, trước GĐ8.
 
 ## 8. Lịch sử bản
 

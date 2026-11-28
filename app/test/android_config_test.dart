@@ -5,8 +5,15 @@ import 'package:flutter_test/flutter_test.dart';
 // Cấu hình Android và phụ thuộc của CSDL mã hóa (docs/specs/encrypted-db.md, Tiêu chí đạt).
 void main() {
   const domains = [
-    'root', 'file', 'database', 'sharedpref', 'external',
-    'device_root', 'device_file', 'device_database', 'device_sharedpref',
+    'root',
+    'file',
+    'database',
+    'sharedpref',
+    'external',
+    'device_root',
+    'device_file',
+    'device_database',
+    'device_sharedpref',
   ];
 
   test('AndroidManifest tắt sao lưu tự động, dùng quy tắc loại khỏi sao lưu và chuyển máy', () {
@@ -40,6 +47,11 @@ void main() {
     final pubspec = File('pubspec.yaml').readAsStringSync();
     expect(pubspec, isNot(contains('flutter_secure_storage')));
     expect(pubspec, isNot(contains('sqlite3_flutter_libs')));
-    expect(RegExp(r'sqlite3:\s*\n\s*source: sqlite3mc').hasMatch(pubspec), isTrue);
+    // Workspace: pub chỉ đọc hooks.user_defines ở pubspec gốc; lock chung cũng ở gốc.
+    final root = File('../pubspec.yaml').readAsStringSync();
+    expect(RegExp(r'sqlite3:\s*\n\s*source: sqlite3mc').hasMatch(root), isTrue);
+    final lock = File('../pubspec.lock').readAsStringSync();
+    expect(lock, isNot(contains('flutter_secure_storage')));
+    expect(lock, isNot(contains('sqlite3_flutter_libs')));
   });
 }

@@ -97,18 +97,14 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
                 ),
                 if (target != null) ...[
                   const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    _targetLine(activeStatus, target, u, cl),
-                    style: tabularNumberStyle(t.bodyMedium),
-                  ),
+                  Text(_targetLine(activeStatus, target, u, cl), style: tabularNumberStyle(t.bodyMedium)),
                   const SizedBox(height: AppSpacing.md),
                   TwoSegmentProgressBar(
                     foodAmount: foodAndFortified,
                     supplementAmount: activeStatus.supplementAmount,
                     targetAmount: target.value,
                     overLimit: ulExceeded,
-                    semanticsLabel:
-                        '${def.nameVi}, ${fmt(activeStatus.totalAmount)} trên ${fmt(target.value)} $u',
+                    semanticsLabel: '${def.nameVi}, ${fmt(activeStatus.totalAmount)} trên ${fmt(target.value)} $u',
                   ),
                   if (target.isEstimate) ...[
                     const SizedBox(height: AppSpacing.sm),
@@ -123,10 +119,7 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
                   spacing: AppSpacing.lg,
                   runSpacing: AppSpacing.xs,
                   children: [
-                    _SourceDotLabel(
-                      color: ww.foodSource,
-                      text: 'Thực phẩm ${fmt(foodAndFortified)} $u',
-                    ),
+                    _SourceDotLabel(color: ww.foodSource, text: 'Thực phẩm ${fmt(foodAndFortified)} $u'),
                     _SourceDotLabel(
                       color: ww.supplementSource,
                       text: 'Bổ sung ${fmt(activeStatus.supplementAmount)} $u',
@@ -145,17 +138,12 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
                       Text(
                         '${fmt(activeStatus.ulAmount)} / ${fmt(activeStatus.ul!)} $u',
                         style: tabularNumberStyle(
-                          t.titleMedium?.copyWith(
-                            color: ulExceeded ? ww.onWarningContainer : cs.onSurface,
-                          ),
+                          t.titleMedium?.copyWith(color: ulExceeded ? ww.onWarningContainer : cs.onSurface),
                         ),
                       ),
                       if (ulExceeded)
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: 2,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
                           decoration: BoxDecoration(
                             color: ww.warningContainer,
                             borderRadius: AppRadius.pillRadius,
@@ -163,10 +151,7 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
                           ),
                           child: Text(
                             'Vượt giới hạn an toàn',
-                            style: t.labelSmall?.copyWith(
-                              color: ww.onWarningContainer,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: t.labelSmall?.copyWith(color: ww.onWarningContainer, fontWeight: FontWeight.w600),
                           ),
                         ),
                     ],
@@ -188,9 +173,7 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
           ),
           if (def.id == 'iron') ...[
             const SizedBox(height: AppSpacing.md),
-            const SafetyNote(
-              message: 'Vitamin C hỗ trợ hấp thu sắt không heme (sắt từ nguồn thực vật).',
-            ),
+            const SafetyNote(message: 'Vitamin C hỗ trợ hấp thu sắt không heme (sắt từ nguồn thực vật).'),
           ],
           const SizedBox(height: AppSpacing.lg),
           if (!_sevenDayMode) ...[
@@ -205,18 +188,11 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
               )
             else
               SurfaceCard(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.xs,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
                 child: Column(
                   children: [
                     for (var i = 0; i < contribs.length; i++) ...[
-                      if (i > 0)
-                        Divider(
-                          height: 1,
-                          color: ww.outlineSubtle.withValues(alpha: 0.5),
-                        ),
+                      if (i > 0) Divider(height: 1, color: ww.outlineSubtle.withValues(alpha: 0.5)),
                       ListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(contribs[i].title),
@@ -224,15 +200,10 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
                           [
                             if (contribs[i].detail != null) contribs[i].detail!,
                             if (hasScopedUl)
-                              contribs[i].countsTowardUl
-                                  ? 'tính vào giới hạn'
-                                  : 'không tính vào giới hạn',
+                              contribs[i].countsTowardUl ? 'tính vào giới hạn' : 'không tính vào giới hạn',
                           ].join(' · '),
                         ),
-                        trailing: Text(
-                          '${fmt(contribs[i].amount)} $u',
-                          style: tabularNumberStyle(t.titleSmall),
-                        ),
+                        trailing: Text('${fmt(contribs[i].amount)} $u', style: tabularNumberStyle(t.titleSmall)),
                       ),
                     ],
                   ],
@@ -256,9 +227,8 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
           Align(
             alignment: Alignment.centerLeft,
             child: TextButton(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const SourcesScreen()),
-              ),
+              onPressed: () =>
+                  Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const SourcesScreen())),
               child: const Text('Nguồn số liệu ›'),
             ),
           ),
@@ -282,10 +252,10 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
       'vitA' => 'Chỉ tính retinol (bổ sung, thực phẩm tăng cường, nguồn động vật), không tính beta-caroten.',
       'folate' => 'Chỉ tính axit folic (bổ sung, thực phẩm tăng cường), không tính folate tự nhiên.',
       _ => switch (def.ulScope) {
-          UlScope.total => 'Tính mọi nguồn (thực phẩm, tăng cường, bổ sung).',
-          UlScope.supplement => 'Chỉ tính bổ sung bạn ghi, không tính thức ăn.',
-          UlScope.synthetic => 'Chỉ tính từ bổ sung và thực phẩm tăng cường.',
-        },
+        UlScope.total => 'Tính mọi nguồn (thực phẩm, tăng cường, bổ sung).',
+        UlScope.supplement => 'Chỉ tính bổ sung bạn ghi, không tính thức ăn.',
+        UlScope.synthetic => 'Chỉ tính từ bổ sung và thực phẩm tăng cường.',
+      },
     };
   }
 
@@ -308,29 +278,22 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
       for (final l in d.lines) {
         final amt = l.amounts[def.id] ?? 0;
         if (amt <= 0) continue;
-        final countsUl = lineCountsTowardUl(
-          def,
-          source: l.source,
-          amounts: l.amounts,
-          ulAmounts: l.ulAmounts,
-        );
+        final countsUl = lineCountsTowardUl(def, source: l.source, amounts: l.amounts, ulAmounts: l.ulAmounts);
         final formName = l.form != null && l.form != NutrientForm.unknown
             ? (pack.compoundMeta[def.id]?[l.form!]?.nameVi ?? l.form!)
             : (l.uncertain ? 'chưa rõ dạng' : null);
         final origLabel = (l.labelAmount != null && l.labelUnit != null)
             ? 'nhãn ${fmt(l.labelAmount!)} ${unitLabel(l.labelUnit!)}'
             : null;
-        final parts = [
-          'bổ sung',
-          if (formName != null) 'dạng $formName',
-          if (origLabel != null) origLabel,
-        ];
-        list.add(_NutrientContribution(
-          title: '${d.name ?? 'Bổ sung'} · ${fmt(d.servings)} lần',
-          detail: parts.join(' · '),
-          amount: amt,
-          countsTowardUl: countsUl,
-        ));
+        final parts = ['bổ sung', if (formName != null) 'dạng $formName', ?origLabel];
+        list.add(
+          _NutrientContribution(
+            title: '${d.name ?? 'Bổ sung'} · ${fmt(d.servings)} lần',
+            detail: parts.join(' · '),
+            amount: amt,
+            countsTowardUl: countsUl,
+          ),
+        );
       }
     }
 
@@ -339,12 +302,7 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
       var countsUl = false;
       var anyFortified = false;
       for (final l in f.lines) {
-        if (lineCountsTowardUl(
-          def,
-          source: l.source,
-          amounts: l.amounts,
-          ulAmounts: l.ulAmounts,
-        )) {
+        if (lineCountsTowardUl(def, source: l.source, amounts: l.amounts, ulAmounts: l.ulAmounts)) {
           countsUl = true;
         }
         final amt = l.amounts[def.id] ?? 0;
@@ -353,12 +311,14 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
         if (l.source == IntakeSource.fortified) anyFortified = true;
       }
       if (sum <= 0) continue;
-      list.add(_NutrientContribution(
-        title: '${f.name} · ${fmt(f.portionQty)} ${f.portionUnit}',
-        detail: anyFortified ? 'thực phẩm tăng cường' : 'thực phẩm',
-        amount: sum,
-        countsTowardUl: countsUl,
-      ));
+      list.add(
+        _NutrientContribution(
+          title: '${f.name} · ${fmt(f.portionQty)} ${f.portionUnit}',
+          detail: anyFortified ? 'thực phẩm tăng cường' : 'thực phẩm',
+          amount: sum,
+          countsTowardUl: countsUl,
+        ),
+      );
     }
 
     list.sort((a, b) => b.amount.compareTo(a.amount));
@@ -395,12 +355,7 @@ class _NutrientContribution {
   final double amount;
   final bool countsTowardUl;
 
-  const _NutrientContribution({
-    required this.title,
-    this.detail,
-    required this.amount,
-    required this.countsTowardUl,
-  });
+  const _NutrientContribution({required this.title, this.detail, required this.amount, required this.countsTowardUl});
 }
 
 class _SevenDayChartCard extends StatelessWidget {
@@ -431,11 +386,7 @@ class _SevenDayChartCard extends StatelessWidget {
     final t = Theme.of(context).textTheme;
 
     final values = [
-      for (final d in days)
-        (
-          day: d.day,
-          amount: d.items.fold<double>(0, (s, it) => s + it.amount(nutrientId)),
-        ),
+      for (final d in days) (day: d.day, amount: d.items.fold<double>(0, (s, it) => s + it.amount(nutrientId))),
     ];
     final maxData = values.fold<double>(0, (m, v) => v.amount > m ? v.amount : m);
     final showUlLine = ulValue != null && ulValue! > 0 && maxData >= 0.7 * ulValue!;
@@ -505,10 +456,7 @@ class _SevenDayChartCard extends StatelessWidget {
                     text: '$targetLabel (${fmt(targetValue!)} $unit)',
                   ),
                 if (showUlLine)
-                  _DashedLegendItem(
-                    color: ww.warningBorder,
-                    text: 'Giới hạn an toàn (${fmt(ulValue!)} $unit)',
-                  ),
+                  _DashedLegendItem(color: ww.warningBorder, text: 'Giới hạn an toàn (${fmt(ulValue!)} $unit)'),
               ],
             ),
           ],
@@ -581,9 +529,7 @@ class _SevenDayColumnsPainter extends CustomPainter {
         topRight: const Radius.circular(6),
       );
       final isLatest = i == amounts.length - 1;
-      final color = ratio == 0
-          ? trackColor
-          : (isLatest ? latestBarColor : pastBarColor);
+      final color = ratio == 0 ? trackColor : (isLatest ? latestBarColor : pastBarColor);
       canvas.drawRRect(rrect, Paint()..color = color);
     }
 

@@ -32,13 +32,13 @@ class DbFiles {
   File get wipeMarker => File(p.join(dir.path, 'wholewell.wiping'));
 
   List<File> backupRestoreTempFiles() => [
-        backupTmp,
-        File('${backupTmp.path}-wal'),
-        File('${backupTmp.path}-shm'),
-        restoreTmp,
-        File('${restoreTmp.path}-wal'),
-        File('${restoreTmp.path}-shm'),
-      ];
+    backupTmp,
+    File('${backupTmp.path}-wal'),
+    File('${backupTmp.path}-shm'),
+    restoreTmp,
+    File('${restoreTmp.path}-wal'),
+    File('${restoreTmp.path}-shm'),
+  ];
 
   List<File> preMigrationCopies() {
     if (!dir.existsSync()) return const [];
@@ -51,15 +51,15 @@ class DbFiles {
 
   /// Mọi tệp thuộc CSDL (kể cả `-wal`, `-shm`, bản sao, tệp đang tạo, tệp tạm sao lưu/khôi phục).
   List<File> allDataFiles() => [
-        db,
-        wal,
-        shm,
-        creating,
-        File('${creating.path}-wal'),
-        File('${creating.path}-shm'),
-        ...backupRestoreTempFiles(),
-        ...preMigrationCopies(),
-      ];
+    db,
+    wal,
+    shm,
+    creating,
+    File('${creating.path}-wal'),
+    File('${creating.path}-shm'),
+    ...backupRestoreTempFiles(),
+    ...preMigrationCopies(),
+  ];
 
   static void deleteIfExists(File f) {
     if (f.existsSync()) f.deleteSync();

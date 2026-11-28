@@ -28,93 +28,85 @@ Future<AppState> _makeReadyState({
   );
   await state.start();
   await state.completeFirstConsent(ageYears: 30, caution: false);
-  await state.saveOnboardingBodyProfile(const Profile(
-    ageYears: 30,
-    sex: Sex.male,
-    heightCm: 170,
-    weightKg: 65,
-    activityLevel: ActivityLevel.active,
-  ));
+  await state.saveOnboardingBodyProfile(
+    const Profile(ageYears: 30, sex: Sex.male, heightCm: 170, weightKg: 65, activityLevel: ActivityLevel.active),
+  );
   return state;
 }
 
 DsldLibraryRepository _fakeDsld() => FakeDsldLibraryRepository(
-      products: const [
-        DsldProductDetail(
-          dsldId: 268234,
-          barcode: '023249012344',
-          productName: 'Vitamin D3 + K2',
-          brandName: 'Sports Research',
-          servingSize: '1 Liquid Veggie Softgel',
-          supplementForm: 'Softgel',
-          netContents: '60 Softgels',
-          suggestedUse: 'Take 1 veggie softgel daily with food.',
-          otherIngredients: 'Coconut oil, tapioca starch, vegetable glycerin.',
-          facts: [
-            DsldFact(
-              ingredient: 'Vitamin D3 (cholecalciferol)',
-              category: 'vitamin',
-              amount: '125',
-              unit: 'mcg',
-              dvPercent: '625',
-              dvGroup: 'Adults',
-            ),
-          ],
-        ),
-        DsldProductDetail(
-          dsldId: 318254,
-          barcode: '023249010111',
-          productName: 'Tart Cherry Fruit Complex 800 mg',
-          brandName: 'Sports Research',
-          servingSize: '1 Softgel(s)',
-          supplementForm: 'Softgel',
-          netContents: '60 Softgels',
-          suggestedUse: 'Take 1 softgel daily.',
-          otherIngredients: 'Rice bran oil, gelatin.',
-          facts: [
-            DsldFact(
-              ingredient: 'Vitamin C',
-              category: 'vitamin',
-              amount: '60',
-              unit: 'mg',
-              dvPercent: '67',
-              dvGroup: 'Adults',
-            ),
-          ],
-        ),
-        DsldProductDetail(
-          dsldId: 326285,
-          barcode: '023249010111',
-          productName: 'Tart Cherry Fruit Complex',
-          brandName: 'Sports Research',
-          servingSize: '1 Softgel(s)',
-          supplementForm: 'Softgel',
-          netContents: '60 Softgels',
-          suggestedUse: 'Take 1 softgel daily.',
-          otherIngredients: 'Rice bran oil.',
-          facts: [
-            DsldFact(
-              ingredient: 'Vitamin C',
-              category: 'vitamin',
-              amount: '60',
-              unit: 'mg',
-              dvPercent: '67',
-              dvGroup: 'Adults',
-            ),
-          ],
+  products: const [
+    DsldProductDetail(
+      dsldId: 268234,
+      barcode: '023249012344',
+      productName: 'Vitamin D3 + K2',
+      brandName: 'Sports Research',
+      servingSize: '1 Liquid Veggie Softgel',
+      supplementForm: 'Softgel',
+      netContents: '60 Softgels',
+      suggestedUse: 'Take 1 veggie softgel daily with food.',
+      otherIngredients: 'Coconut oil, tapioca starch, vegetable glycerin.',
+      facts: [
+        DsldFact(
+          ingredient: 'Vitamin D3 (cholecalciferol)',
+          category: 'vitamin',
+          amount: '125',
+          unit: 'mcg',
+          dvPercent: '625',
+          dvGroup: 'Adults',
         ),
       ],
-    );
+    ),
+    DsldProductDetail(
+      dsldId: 318254,
+      barcode: '023249010111',
+      productName: 'Tart Cherry Fruit Complex 800 mg',
+      brandName: 'Sports Research',
+      servingSize: '1 Softgel(s)',
+      supplementForm: 'Softgel',
+      netContents: '60 Softgels',
+      suggestedUse: 'Take 1 softgel daily.',
+      otherIngredients: 'Rice bran oil, gelatin.',
+      facts: [
+        DsldFact(
+          ingredient: 'Vitamin C',
+          category: 'vitamin',
+          amount: '60',
+          unit: 'mg',
+          dvPercent: '67',
+          dvGroup: 'Adults',
+        ),
+      ],
+    ),
+    DsldProductDetail(
+      dsldId: 326285,
+      barcode: '023249010111',
+      productName: 'Tart Cherry Fruit Complex',
+      brandName: 'Sports Research',
+      servingSize: '1 Softgel(s)',
+      supplementForm: 'Softgel',
+      netContents: '60 Softgels',
+      suggestedUse: 'Take 1 softgel daily.',
+      otherIngredients: 'Rice bran oil.',
+      facts: [
+        DsldFact(
+          ingredient: 'Vitamin C',
+          category: 'vitamin',
+          amount: '60',
+          unit: 'mg',
+          dvPercent: '67',
+          dvGroup: 'Adults',
+        ),
+      ],
+    ),
+  ],
+);
 
 void main() {
   final pack = ReferencePack.fromJsonString(File('assets/reference_pack.json').readAsStringSync());
 
   testWidgets('Quét mã vạch khớp DSLD điền sẵn, Xác nhận tất cả, lưu và hiện tá dược', (tester) async {
-    final state = await _makeReadyState(
-      pack: pack,
-      dsld: _fakeDsld(),
-      scanBarcodeResult: '0 23249 01234 4',
-    );
+    final state = await _makeReadyState(pack: pack, dsld: _fakeDsld(), scanBarcodeResult: '0 23249 01234 4');
     await tester.pumpWidget(WholeWellApp(state: state));
     await tester.pumpAndSettle();
 
@@ -142,11 +134,7 @@ void main() {
   });
 
   testWidgets('Quét mã vạch có nhiều bản ghi DSLD mở sheet Chọn phiên bản nhãn', (tester) async {
-    final state = await _makeReadyState(
-      pack: pack,
-      dsld: _fakeDsld(),
-      scanBarcodeResult: '023249010111',
-    );
+    final state = await _makeReadyState(pack: pack, dsld: _fakeDsld(), scanBarcodeResult: '023249010111');
     await tester.pumpWidget(WholeWellApp(state: state));
     await tester.pumpAndSettle();
 
@@ -165,11 +153,7 @@ void main() {
   });
 
   testWidgets('Tìm theo tên sản phẩm trong thư viện DSLD và không khớp mã vạch', (tester) async {
-    final state = await _makeReadyState(
-      pack: pack,
-      dsld: _fakeDsld(),
-      scanBarcodeResult: '023249094012',
-    );
+    final state = await _makeReadyState(pack: pack, dsld: _fakeDsld(), scanBarcodeResult: '023249094012');
     await tester.pumpWidget(WholeWellApp(state: state));
     await tester.pumpAndSettle();
 

@@ -52,12 +52,7 @@ class ResponsiveStatRow extends StatelessWidget {
   final Widget trailing;
   final double gap;
 
-  const ResponsiveStatRow({
-    super.key,
-    required this.leading,
-    required this.trailing,
-    this.gap = AppSpacing.sm,
-  });
+  const ResponsiveStatRow({super.key, required this.leading, required this.trailing, this.gap = AppSpacing.sm});
 
   @override
   Widget build(BuildContext context) {
@@ -94,13 +89,7 @@ abstract final class AppFeedback {
     if (messenger == null) return;
     messenger
       ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          duration: duration,
-          content: Text(message),
-          action: action,
-        ),
-      );
+      ..showSnackBar(SnackBar(duration: duration, content: Text(message), action: action));
   }
 }
 
@@ -119,10 +108,7 @@ Future<bool> showConfirmDialog(
       title: title == null ? null : Text(title),
       content: message == null ? null : Text(message),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(ctx).pop(false),
-          child: Text(cancelLabel),
-        ),
+        TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(cancelLabel)),
         FilledButton(
           style: destructive
               ? FilledButton.styleFrom(
@@ -140,19 +126,13 @@ Future<bool> showConfirmDialog(
 }
 
 /// Các nút chọn bữa theo cài đặt `Giờ trong ngày` (luôn giữ `Phụ` và [alwaysInclude]).
-List<ButtonSegment<Meal>> enabledMealSegments(
-  DayTimesSettings settings, {
-  Meal? alwaysInclude,
-}) =>
-    [
-      if (settings.hasBreakfast || alwaysInclude == Meal.breakfast)
-        const ButtonSegment(value: Meal.breakfast, label: Text('Sáng')),
-      if (settings.hasLunch || alwaysInclude == Meal.lunch)
-        const ButtonSegment(value: Meal.lunch, label: Text('Trưa')),
-      if (settings.hasDinner || alwaysInclude == Meal.dinner)
-        const ButtonSegment(value: Meal.dinner, label: Text('Tối')),
-      const ButtonSegment(value: Meal.snack, label: Text('Phụ')),
-    ];
+List<ButtonSegment<Meal>> enabledMealSegments(DayTimesSettings settings, {Meal? alwaysInclude}) => [
+  if (settings.hasBreakfast || alwaysInclude == Meal.breakfast)
+    const ButtonSegment(value: Meal.breakfast, label: Text('Sáng')),
+  if (settings.hasLunch || alwaysInclude == Meal.lunch) const ButtonSegment(value: Meal.lunch, label: Text('Trưa')),
+  if (settings.hasDinner || alwaysInclude == Meal.dinner) const ButtonSegment(value: Meal.dinner, label: Text('Tối')),
+  const ButtonSegment(value: Meal.snack, label: Text('Phụ')),
+];
 
 /// Hiển thị số kcal; biến mất hoàn toàn (không chiếm chỗ) khi bật "Ẩn số calo".
 class CalorieText extends StatelessWidget {
@@ -162,14 +142,7 @@ class CalorieText extends StatelessWidget {
   final TextStyle? style;
   final bool? hideOverride;
 
-  const CalorieText(
-    this.kcal, {
-    super.key,
-    this.prefix = '',
-    this.suffix = ' kcal',
-    this.style,
-    this.hideOverride,
-  });
+  const CalorieText(this.kcal, {super.key, this.prefix = '', this.suffix = ' kcal', this.style, this.hideOverride});
 
   @override
   Widget build(BuildContext context) {
@@ -189,14 +162,8 @@ class EstimateChip extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
-        borderRadius: AppRadius.pillRadius,
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant),
-      ),
+      decoration: BoxDecoration(color: cs.surfaceContainerHighest, borderRadius: AppRadius.pillRadius),
+      child: Text(label, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
     );
   }
 }
@@ -215,9 +182,7 @@ class SafetyNote extends StatelessWidget {
         children: [
           Icon(LucideIcons.info, size: 18, color: cs.onSurfaceVariant),
           const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(message, style: Theme.of(context).textTheme.bodySmall),
-          ),
+          Expanded(child: Text(message, style: Theme.of(context).textTheme.bodySmall)),
         ],
       ),
     );
@@ -258,9 +223,7 @@ class _CollapsibleScheduleNoteState extends State<CollapsibleScheduleNote> {
                 children: [
                   Icon(LucideIcons.info, size: 18, color: cs.onSurfaceVariant),
                   const SizedBox(width: 8),
-                  Expanded(
-                    child: Text('Lưu ý lịch (${widget.messages.length})', style: t.bodySmall),
-                  ),
+                  Expanded(child: Text('Lưu ý lịch (${widget.messages.length})', style: t.bodySmall)),
                   const Icon(LucideIcons.chevronRight, size: 18),
                 ],
               ),
@@ -299,12 +262,7 @@ class TipCard extends StatelessWidget {
   final VoidCallback onViewSource;
   final VoidCallback onHide;
 
-  const TipCard({
-    super.key,
-    required this.text,
-    required this.onViewSource,
-    required this.onHide,
-  });
+  const TipCard({super.key, required this.text, required this.onViewSource, required this.onHide});
 
   @override
   Widget build(BuildContext context) {
@@ -427,11 +385,7 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 44,
-              color: cs.onSurfaceVariant.withValues(alpha: 0.72),
-            ),
+            Icon(icon, size: 44, color: cs.onSurfaceVariant.withValues(alpha: 0.72)),
             const SizedBox(height: AppSpacing.md),
             if (title != null) ...[
               Text(title!, style: t.titleMedium, textAlign: TextAlign.center),
@@ -459,13 +413,7 @@ class ErrorState extends StatelessWidget {
   final String? actionLabel;
   final VoidCallback? onAction;
 
-  const ErrorState({
-    super.key,
-    this.title,
-    required this.message,
-    this.actionLabel,
-    this.onAction,
-  });
+  const ErrorState({super.key, this.title, required this.message, this.actionLabel, this.onAction});
 
   @override
   Widget build(BuildContext context) {
@@ -513,10 +461,7 @@ Future<T?> showAppModalSheet<T>({
     shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheetTopRadius),
     builder: (ctx) => Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
-      child: SafeArea(
-        top: false,
-        child: builder(ctx),
-      ),
+      child: SafeArea(top: false, child: builder(ctx)),
     ),
   );
 }
@@ -527,29 +472,20 @@ class LoadingSkeletonBox extends StatefulWidget {
   final double height;
   final BorderRadiusGeometry borderRadius;
 
-  const LoadingSkeletonBox({
-    super.key,
-    this.width,
-    required this.height,
-    this.borderRadius = AppRadius.controlRadius,
-  });
+  const LoadingSkeletonBox({super.key, this.width, required this.height, this.borderRadius = AppRadius.controlRadius});
 
   @override
   State<LoadingSkeletonBox> createState() => _LoadingSkeletonBoxState();
 }
 
-class _LoadingSkeletonBoxState extends State<LoadingSkeletonBox>
-    with SingleTickerProviderStateMixin {
+class _LoadingSkeletonBoxState extends State<LoadingSkeletonBox> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   bool _animating = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 280),
-    );
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 280));
   }
 
   @override
@@ -581,10 +517,7 @@ class _LoadingSkeletonBoxState extends State<LoadingSkeletonBox>
         return Container(
           width: widget.width ?? double.infinity,
           height: widget.height,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: widget.borderRadius,
-          ),
+          decoration: BoxDecoration(color: color, borderRadius: widget.borderRadius),
         );
       },
     );
@@ -635,32 +568,22 @@ class StepScaffold extends StatelessWidget {
         automaticallyImplyLeading: false,
         leading: onBack == null
             ? null
-            : IconButton(
-                tooltip: 'Quay lại',
-                icon: const Icon(LucideIcons.arrowLeft),
-                onPressed: busy ? null : onBack,
-              ),
+            : IconButton(tooltip: 'Quay lại', icon: const Icon(LucideIcons.arrowLeft), onPressed: busy ? null : onBack),
         title: title != null ? Text(title!) : null,
         actions: [
           if (stepLabel != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Center(
-                child: Text(stepLabel!, style: tabularNumberStyle(t.titleSmall)),
-              ),
+              child: Center(child: Text(stepLabel!, style: tabularNumberStyle(t.titleSmall))),
             ),
         ],
       ),
       body: SafeArea(
         child: Column(
           children: [
-            if (progress != null)
-              _StepProgressBar(current: progress.current, total: progress.total),
+            if (progress != null) _StepProgressBar(current: progress.current, total: progress.total),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-                child: body,
-              ),
+              child: SingleChildScrollView(padding: const EdgeInsets.fromLTRB(20, 12, 20, 24), child: body),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
@@ -672,11 +595,7 @@ class StepScaffold extends StatelessWidget {
                     style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
                     onPressed: busy ? null : onPrimary,
                     child: busy
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                         : Text(primaryLabel),
                   ),
                   if (secondaryLabel != null) ...[
@@ -737,8 +656,7 @@ class _StepProgressBar extends StatelessWidget {
 Future<bool> showWipeConfirmDialog(
   BuildContext context, {
   String title = 'Xóa toàn bộ dữ liệu?',
-  String message =
-      'Mọi dữ liệu trên máy này sẽ bị xóa và không lấy lại được, trừ khi bạn có bản sao lưu.',
+  String message = 'Mọi dữ liệu trên máy này sẽ bị xóa và không lấy lại được, trừ khi bạn có bản sao lưu.',
   String actionLabel = 'Xóa toàn bộ',
 }) async {
   var typed = '';
@@ -761,23 +679,15 @@ Future<bool> showWipeConfirmDialog(
               TextField(
                 autofocus: true,
                 textCapitalization: TextCapitalization.characters,
-                decoration: const InputDecoration(
-                  hintText: 'XÓA',
-                ),
+                decoration: const InputDecoration(hintText: 'XÓA'),
                 onChanged: (v) => setState(() => typed = v),
               ),
             ],
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Hủy'),
-            ),
+            TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Hủy')),
             FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: cs.error,
-                foregroundColor: cs.onError,
-              ),
+              style: FilledButton.styleFrom(backgroundColor: cs.error, foregroundColor: cs.onError),
               onPressed: canConfirm ? () => Navigator.of(ctx).pop(true) : null,
               child: Text(actionLabel),
             ),
@@ -790,11 +700,7 @@ Future<bool> showWipeConfirmDialog(
 }
 
 /// Thông báo ngắn 7 giây sau khi ghi nước, kèm nút Hoàn tác.
-void showUndoWaterSnack(
-  BuildContext context, {
-  required double ml,
-  required Future<void> Function() onUndo,
-}) =>
+void showUndoWaterSnack(BuildContext context, {required double ml, required Future<void> Function() onUndo}) =>
     AppFeedback.showSnack(
       context,
       'Đã ghi ${fmtWaterMl(ml)} ml nước',
@@ -803,8 +709,7 @@ void showUndoWaterSnack(
     );
 
 /// Format giờ phút theo 24 giờ (`07:30`).
-String fmtTime24(DateTime t) =>
-    '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+String fmtTime24(DateTime t) => '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
 /// Nhãn ngày ngắn gọn ("Hôm nay", "Hôm qua", "23/11").
 String fmtShortDay(DateTime d, {DateTime? now}) {

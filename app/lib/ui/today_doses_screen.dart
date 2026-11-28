@@ -39,10 +39,7 @@ class TodayDosesScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Lần uống hôm nay')),
       body: schedules.isEmpty
-          ? const EmptyState(
-              icon: LucideIcons.clock,
-              message: 'Chưa có lịch uống. Mở một sản phẩm để đặt lịch.',
-            )
+          ? const EmptyState(icon: LucideIcons.clock, message: 'Chưa có lịch uống. Mở một sản phẩm để đặt lịch.')
           : ListView(
               padding: const EdgeInsets.all(AppSpacing.lg),
               children: [
@@ -98,21 +95,12 @@ class _TimelineSlotGroup extends StatelessWidget {
 
     final phases = [
       for (final s in schedules)
-        classifySchedulePhase(
-          schedule: s,
-          scheduleDay: scheduleDay,
-          now: now,
-          occurrence: occMap[s.id],
-        ),
+        classifySchedulePhase(schedule: s, scheduleDay: scheduleDay, now: now, occurrence: occMap[s.id]),
     ];
 
     final allTaken = phases.every((p) => p == ScheduleWindowPhase.taken);
-    final allHandled = phases.every(
-      (p) => p == ScheduleWindowPhase.taken || p == ScheduleWindowPhase.skipped,
-    );
-    final anyActive = phases.any(
-      (p) => p == ScheduleWindowPhase.inWindow || p == ScheduleWindowPhase.overdue,
-    );
+    final allHandled = phases.every((p) => p == ScheduleWindowPhase.taken || p == ScheduleWindowPhase.skipped);
+    final anyActive = phases.any((p) => p == ScheduleWindowPhase.inWindow || p == ScheduleWindowPhase.overdue);
 
     final Color badgeBg;
     final Color badgeFg;
@@ -145,9 +133,7 @@ class _TimelineSlotGroup extends StatelessWidget {
               children: [
                 Text(
                   formatMinutesHhMm(timeOfDay),
-                  style: tabularNumberStyle(
-                    t.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-                  ),
+                  style: tabularNumberStyle(t.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Container(
@@ -156,9 +142,7 @@ class _TimelineSlotGroup extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: badgeBg,
                     shape: BoxShape.circle,
-                    border: allTaken || anyActive
-                        ? null
-                        : Border.all(color: ww.outlineSubtle),
+                    border: allTaken || anyActive ? null : Border.all(color: ww.outlineSubtle),
                   ),
                   child: Icon(statusIcon, size: 16, color: badgeFg),
                 ),
@@ -186,11 +170,7 @@ class _TimelineSlotGroup extends StatelessWidget {
                     child: Column(
                       children: [
                         for (var i = 0; i < schedules.length; i++) ...[
-                          if (i > 0)
-                            Divider(
-                              height: 1,
-                              color: ww.outlineSubtle.withValues(alpha: 0.5),
-                            ),
+                          if (i > 0) Divider(height: 1, color: ww.outlineSubtle.withValues(alpha: 0.5)),
                           _ScheduleOccurrenceTile(
                             schedule: schedules[i],
                             scheduleDay: scheduleDay,
@@ -205,10 +185,7 @@ class _TimelineSlotGroup extends StatelessWidget {
                       ],
                     ),
                   ),
-                  for (final msg in notices) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    SafetyNote(message: msg),
-                  ],
+                  for (final msg in notices) ...[const SizedBox(height: AppSpacing.sm), SafetyNote(message: msg)],
                 ],
               ),
             ),
@@ -266,12 +243,7 @@ class _ScheduleOccurrenceTileState extends State<_ScheduleOccurrenceTile> {
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final ww = context.wwColors;
-    final phase = classifySchedulePhase(
-      schedule: schedule,
-      scheduleDay: scheduleDay,
-      now: now,
-      occurrence: occurrence,
-    );
+    final phase = classifySchedulePhase(schedule: schedule, scheduleDay: scheduleDay, now: now, occurrence: occurrence);
     final name = product?.name ?? 'Sản phẩm #${schedule.productId}';
     final doseLabel = product == null
         ? '${fmt(schedule.servings)} khẩu phần'
@@ -289,11 +261,9 @@ class _ScheduleOccurrenceTileState extends State<_ScheduleOccurrenceTile> {
           trailing: dose == null ? null : const Icon(LucideIcons.chevronRight),
           onTap: dose == null
               ? null
-              : () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => AddSupplementScreen(existingDose: dose),
-                    ),
-                  ),
+              : () =>
+                    Navigator.of(context)
+                        .push(MaterialPageRoute<void>(builder: (_) => AddSupplementScreen(existingDose: dose))),
         );
 
       case ScheduleWindowPhase.skipped:
@@ -304,9 +274,7 @@ class _ScheduleOccurrenceTileState extends State<_ScheduleOccurrenceTile> {
           trailing: TextButton(
             onPressed: _busy
                 ? null
-                : () => _runGuarded(
-                      () => diary.clearOccurrence(OccurrenceRef(schedule.id, scheduleDay)),
-                    ),
+                : () => _runGuarded(() => diary.clearOccurrence(OccurrenceRef(schedule.id, scheduleDay))),
             child: const Text('Hủy bỏ qua'),
           ),
         );
@@ -322,36 +290,25 @@ class _ScheduleOccurrenceTileState extends State<_ScheduleOccurrenceTile> {
             onPressed: _busy
                 ? null
                 : () => _runGuarded(() async {
-                      final picked = await showTimePicker(
-                        context: context,
-                        initialTime: TimeOfDay(hour: now.hour, minute: now.minute),
-                      );
-                      if (picked == null || !context.mounted) return;
-                      final at = DateTime(
-                        now.year,
-                        now.month,
-                        now.day,
-                        picked.hour,
-                        picked.minute,
-                      );
-                      await markScheduledDoseTaken(
-                        context,
-                        schedule: schedule,
-                        scheduleDay: scheduleDay,
-                        at: at,
-                      );
-                    }),
+                    final picked = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay(hour: now.hour, minute: now.minute),
+                    );
+                    if (picked == null || !context.mounted) return;
+                    final at = DateTime(now.year, now.month, now.day, picked.hour, picked.minute);
+                    await markScheduledDoseTaken(context, schedule: schedule, scheduleDay: scheduleDay, at: at);
+                  }),
             child: const Text('Đánh dấu'),
           ),
           skipAction: TextButton(
             onPressed: _busy
                 ? null
                 : () => _runGuarded(() async {
-                      await diary.skipOccurrence(OccurrenceRef(schedule.id, scheduleDay));
-                      if (context.mounted) {
-                        await AppScope.of(context).cancelWindowIfHandled(schedule.timeOfDay);
-                      }
-                    }),
+                    await diary.skipOccurrence(OccurrenceRef(schedule.id, scheduleDay));
+                    if (context.mounted) {
+                      await AppScope.of(context).cancelWindowIfHandled(schedule.timeOfDay);
+                    }
+                  }),
             child: const Text('Bỏ qua'),
           ),
         );
@@ -369,12 +326,7 @@ class _ScheduleOccurrenceTileState extends State<_ScheduleOccurrenceTile> {
                     unawaited(HapticFeedback.selectionClick());
                     unawaited(
                       _runGuarded(
-                        () => markScheduledDoseTaken(
-                          context,
-                          schedule: schedule,
-                          scheduleDay: scheduleDay,
-                          at: now,
-                        ),
+                        () => markScheduledDoseTaken(context, schedule: schedule, scheduleDay: scheduleDay, at: now),
                       ),
                     );
                   },
@@ -384,11 +336,11 @@ class _ScheduleOccurrenceTileState extends State<_ScheduleOccurrenceTile> {
             onPressed: _busy
                 ? null
                 : () => _runGuarded(() async {
-                      await diary.skipOccurrence(OccurrenceRef(schedule.id, scheduleDay));
-                      if (context.mounted) {
-                        await AppScope.of(context).cancelWindowIfHandled(schedule.timeOfDay);
-                      }
-                    }),
+                    await diary.skipOccurrence(OccurrenceRef(schedule.id, scheduleDay));
+                    if (context.mounted) {
+                      await AppScope.of(context).cancelWindowIfHandled(schedule.timeOfDay);
+                    }
+                  }),
             child: const Text('Bỏ qua'),
           ),
         );
@@ -403,41 +355,36 @@ class _ScheduleOccurrenceTileState extends State<_ScheduleOccurrenceTile> {
             onPressed: _busy
                 ? null
                 : () => _runGuarded(() async {
-                      final asExtra = await showDialog<bool>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: Text(
-                            'Ghi cho lần ${formatMinutesHhMm(schedule.timeOfDay)} theo lịch hay lần uống thêm?',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx, true),
-                              child: const Text('Lần uống thêm'),
-                            ),
-                            FilledButton(
-                              onPressed: () => Navigator.pop(ctx, false),
-                              child: Text('Lần ${formatMinutesHhMm(schedule.timeOfDay)} theo lịch'),
-                            ),
-                          ],
+                    final asExtra = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text(
+                          'Ghi cho lần ${formatMinutesHhMm(schedule.timeOfDay)} theo lịch hay lần uống thêm?',
                         ),
-                      );
-                      if (asExtra == null || !context.mounted) return;
-                      await markScheduledDoseTaken(
-                        context,
-                        schedule: schedule,
-                        scheduleDay: scheduleDay,
-                        at: now,
-                        asExtra: asExtra,
-                      );
-                    }),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Lần uống thêm')),
+                          FilledButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: Text('Lần ${formatMinutesHhMm(schedule.timeOfDay)} theo lịch'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (asExtra == null || !context.mounted) return;
+                    await markScheduledDoseTaken(
+                      context,
+                      schedule: schedule,
+                      scheduleDay: scheduleDay,
+                      at: now,
+                      asExtra: asExtra,
+                    );
+                  }),
             child: const Text('Uống sớm?'),
           ),
           skipAction: TextButton(
             onPressed: _busy
                 ? null
-                : () => _runGuarded(
-                      () => diary.skipOccurrence(OccurrenceRef(schedule.id, scheduleDay)),
-                    ),
+                : () => _runGuarded(() => diary.skipOccurrence(OccurrenceRef(schedule.id, scheduleDay))),
             child: const Text('Bỏ qua'),
           ),
         );
@@ -458,11 +405,7 @@ class _ScheduleOccurrenceTileState extends State<_ScheduleOccurrenceTile> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title, style: tabularNumberStyle(textTheme.bodyLarge)),
-        if (subtitle != null)
-          Text(
-            subtitle,
-            style: textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-          ),
+        if (subtitle != null) Text(subtitle, style: textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
       ],
     );
 
@@ -474,11 +417,7 @@ class _ScheduleOccurrenceTileState extends State<_ScheduleOccurrenceTile> {
           children: [
             titleBlock,
             const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: AppSpacing.xs,
-              runSpacing: AppSpacing.xs,
-              children: [primaryAction, skipAction],
-            ),
+            Wrap(spacing: AppSpacing.xs, runSpacing: AppSpacing.xs, children: [primaryAction, skipAction]),
           ],
         ),
       );

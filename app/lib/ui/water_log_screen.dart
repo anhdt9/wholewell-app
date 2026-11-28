@@ -47,9 +47,8 @@ class _WaterLogScreenState extends State<WaterLogScreen> {
     super.dispose();
   }
 
-  static String _plainNumber(double v) => (v - v.roundToDouble()).abs() < 0.05
-      ? '${v.round()}'
-      : v.toString().replaceAll('.', ',');
+  static String _plainNumber(double v) =>
+      (v - v.roundToDouble()).abs() < 0.05 ? '${v.round()}' : v.toString().replaceAll('.', ',');
 
   double? _parsedMl() {
     if (_presetMl != null) return _presetMl;
@@ -59,13 +58,9 @@ class _WaterLogScreenState extends State<WaterLogScreen> {
   }
 
   Future<void> _pickTime() async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(_at),
-    );
+    final picked = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(_at));
     if (picked != null && mounted) {
-      setState(() => _at =
-          DateTime(_at.year, _at.month, _at.day, picked.hour, picked.minute));
+      setState(() => _at = DateTime(_at.year, _at.month, _at.day, picked.hour, picked.minute));
     }
   }
 
@@ -88,8 +83,7 @@ class _WaterLogScreenState extends State<WaterLogScreen> {
         final id = await diary.addWater(_at, ml);
         if (!mounted || id == null) return;
         final nav = Navigator.of(context);
-        showUndoWaterSnack(context,
-            ml: ml, onUndo: () => diary.deleteWater(id));
+        showUndoWaterSnack(context, ml: ml, onUndo: () => diary.deleteWater(id));
         nav.pop();
       } else {
         final ok = await diary.updateWater(e.id, at: _at, ml: ml);
@@ -155,10 +149,10 @@ class _WaterLogScreenState extends State<WaterLogScreen> {
                   onSelected: _saving
                       ? null
                       : (_) => setState(() {
-                            _presetMl = preset;
-                            _customCtl.clear();
-                            _errorText = null;
-                          }),
+                          _presetMl = preset;
+                          _customCtl.clear();
+                          _errorText = null;
+                        }),
                 ),
             ],
           ),
@@ -167,11 +161,7 @@ class _WaterLogScreenState extends State<WaterLogScreen> {
             controller: _customCtl,
             enabled: !_saving,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              labelText: 'Số khác',
-              suffixText: 'ml',
-              errorText: _errorText,
-            ),
+            decoration: InputDecoration(labelText: 'Số khác', suffixText: 'ml', errorText: _errorText),
             onChanged: (v) {
               setState(() {
                 if (v.trim().isNotEmpty) _presetMl = null;
@@ -194,24 +184,16 @@ class _WaterLogScreenState extends State<WaterLogScreen> {
           ),
           const SizedBox(height: 24),
           FilledButton(
-            style:
-                FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Lưu'),
           ),
           if (isEditing) ...[
             const SizedBox(height: 12),
             TextButton(
-              style: TextButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-                foregroundColor: cs.error,
-              ),
+              style: TextButton.styleFrom(minimumSize: const Size.fromHeight(48), foregroundColor: cs.error),
               onPressed: _saving ? null : _delete,
               child: const Text('Xóa khỏi nhật ký'),
             ),

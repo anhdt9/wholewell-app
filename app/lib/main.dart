@@ -24,12 +24,10 @@ import 'ui/onboarding_flow.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final pack = ReferencePack.fromJsonString(
-      await rootBundle.loadString('assets/reference_pack.json'));
-  final manifest = jsonDecode(
-      await rootBundle.loadString('assets/food_library_manifest.json')) as Map<String, dynamic>;
-  final dsldManifest = jsonDecode(
-      await rootBundle.loadString('assets/dsld_library_manifest.json')) as Map<String, dynamic>;
+  final pack = ReferencePack.fromJsonString(await rootBundle.loadString('assets/reference_pack.json'));
+  final manifest = jsonDecode(await rootBundle.loadString('assets/food_library_manifest.json')) as Map<String, dynamic>;
+  final dsldManifest =
+      jsonDecode(await rootBundle.loadString('assets/dsld_library_manifest.json')) as Map<String, dynamic>;
   final AppState state;
   if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
     // Android: filesDir (không vào sao lưu tự động, xem AndroidManifest).
@@ -40,15 +38,10 @@ Future<void> main() async {
     final dsldSha = dsldManifest['dbSha256'] as String;
     const serverClientId = String.fromEnvironment(
       'GOOGLE_SERVER_CLIENT_ID',
-      defaultValue:
-          '387812227388-frfaonnafq9mrct4pcr12pau2vpbpli5.apps.googleusercontent.com',
+      defaultValue: '387812227388-frfaonnafq9mrct4pcr12pau2vpbpli5.apps.googleusercontent.com',
     );
-    final googleAuth = GoogleSignInAuth(
-      serverClientId: serverClientId.isEmpty ? null : serverClientId,
-    );
-    final pendingDeleteStore = FileDrivePendingDeleteStore(
-      File('${dir.path}/drive_pending_delete.json'),
-    );
+    final googleAuth = GoogleSignInAuth(serverClientId: serverClientId.isEmpty ? null : serverClientId);
+    final pendingDeleteStore = FileDrivePendingDeleteStore(File('${dir.path}/drive_pending_delete.json'));
     state = AppState(
       pack: pack,
       opener: DbOpener(files: DbFiles(dir), keys: const AndroidDbKeyStore()),
@@ -111,10 +104,12 @@ class _WholeWellAppState extends State<WholeWellApp> {
     }
     if (s.readFailed) {
       s.clearReadFailed();
-      _messenger.currentState?.showSnackBar(SnackBar(
-        content: const Text('Chưa đọc được dữ liệu.'),
-        action: SnackBarAction(label: 'Thử lại', onPressed: s.reload),
-      ));
+      _messenger.currentState?.showSnackBar(
+        SnackBar(
+          content: const Text('Chưa đọc được dữ liệu.'),
+          action: SnackBarAction(label: 'Thử lại', onPressed: s.reload),
+        ),
+      );
     }
   }
 
@@ -142,11 +137,11 @@ class _WholeWellAppState extends State<WholeWellApp> {
           builder: (context, _) => switch (state.status) {
             DataStatus.welcome => const OnboardingFlow(),
             DataStatus.ready => switch (state.stage) {
-                SessionStage.welcome => const OnboardingFlow(),
-                SessionStage.upgradeRequired => const UpgradeConsentFlow(),
-                SessionStage.onboardingBodyProfile => const OnboardingBodyProfileScreen(),
-                SessionStage.ready => const HomeScreen(),
-              },
+              SessionStage.welcome => const OnboardingFlow(),
+              SessionStage.upgradeRequired => const UpgradeConsentFlow(),
+              SessionStage.onboardingBodyProfile => const OnboardingBodyProfileScreen(),
+              SessionStage.ready => const HomeScreen(),
+            },
             final s => DataStatusScreen(status: s),
           },
         ),

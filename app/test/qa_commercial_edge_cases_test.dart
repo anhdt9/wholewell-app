@@ -82,20 +82,16 @@ Future<AppState> _makeReadyState(
   );
   await state.start();
   await state.completeFirstConsent(ageYears: 28, caution: false);
-  await state.saveOnboardingBodyProfile(const Profile(
-    ageYears: 28,
-    sex: Sex.male,
-    heightCm: 172,
-    weightKg: 68,
-    activityLevel: ActivityLevel.active,
-  ));
+  await state.saveOnboardingBodyProfile(
+    const Profile(ageYears: 28, sex: Sex.male, heightCm: 172, weightKg: 68, activityLevel: ActivityLevel.active),
+  );
   return state;
 }
 
 Widget _wrapWithState(AppState state, Widget child) => AppScope(
-      state: state,
-      child: MaterialApp(home: child),
-    );
+  state: state,
+  child: MaterialApp(home: child),
+);
 
 void main() {
   late ReferencePack pack;
@@ -165,18 +161,13 @@ void main() {
       expect(state.todayWorkouts.single.minutes, 45);
     });
 
-    testWidgets('AddWorkoutScreen nhả _saving trong finally nếu addWorkout ném ngoại lệ',
-        (tester) async {
+    testWidgets('AddWorkoutScreen nhả _saving trong finally nếu addWorkout ném ngoại lệ', (tester) async {
       final state = _ThrowingWorkoutAppState(pack: pack, repo: InMemoryJournalRepository());
       await state.start();
       await state.completeFirstConsent(ageYears: 28, caution: false);
-      await state.saveOnboardingBodyProfile(const Profile(
-        ageYears: 28,
-        sex: Sex.male,
-        heightCm: 172,
-        weightKg: 68,
-        activityLevel: ActivityLevel.active,
-      ));
+      await state.saveOnboardingBodyProfile(
+        const Profile(ageYears: 28, sex: Sex.male, heightCm: 172, weightKg: 68, activityLevel: ActivityLevel.active),
+      );
       addTearDown(state.dispose);
 
       await tester.pumpWidget(_wrapWithState(state, const AddWorkoutScreen()));
@@ -200,8 +191,7 @@ void main() {
       expect(tester.widget<TextButton>(find.widgetWithText(TextButton, 'Lưu')).onPressed, isNotNull);
     });
 
-    testWidgets('FoodPortionScreen xóa trống hoặc nhập 0/NaN sẽ khóa nút Lưu thay vì lưu số cũ',
-        (tester) async {
+    testWidgets('FoodPortionScreen xóa trống hoặc nhập 0/NaN sẽ khóa nút Lưu thay vì lưu số cũ', (tester) async {
       final state = await _makeReadyState(pack);
       addTearDown(state.dispose);
 
@@ -214,23 +204,20 @@ void main() {
         createdAt: DateTime(2026, 11, 27),
         archived: false,
         lines: const [
-          CustomFoodLine(
-            nutrientId: 'energyKcal',
-            labelAmount: 60,
-            labelUnit: 'kcal',
-            source: IntakeSource.food,
-          ),
+          CustomFoodLine(nutrientId: 'energyKcal', labelAmount: 60, labelUnit: 'kcal', source: IntakeSource.food),
         ],
       );
 
-      await tester.pumpWidget(_wrapWithState(
-        state,
-        FoodPortionScreen.custom(
-          custom: custom,
-          initialMeal: Meal.breakfast,
-          initialAt: DateTime(2026, 11, 27, 7, 0),
+      await tester.pumpWidget(
+        _wrapWithState(
+          state,
+          FoodPortionScreen.custom(
+            custom: custom,
+            initialMeal: Meal.breakfast,
+            initialAt: DateTime(2026, 11, 27, 7, 0),
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       final qtyField = find.byType(TextField);
@@ -247,10 +234,9 @@ void main() {
       final state = await _makeReadyState(pack);
       addTearDown(state.dispose);
 
-      await tester.pumpWidget(_wrapWithState(
-        state,
-        const LabelFoodScreen(initialMeal: Meal.snack, initialName: 'Bánh thử'),
-      ));
+      await tester.pumpWidget(
+        _wrapWithState(state, const LabelFoodScreen(initialMeal: Meal.snack, initialName: 'Bánh thử')),
+      );
       await tester.pumpAndSettle();
 
       final kcalField = find.widgetWithText(TextFormField, 'Năng lượng (kcal)');
@@ -350,13 +336,9 @@ void main() {
       );
       await state.start();
       await state.completeFirstConsent(ageYears: 28, caution: false);
-      await state.saveOnboardingBodyProfile(const Profile(
-        ageYears: 28,
-        sex: Sex.male,
-        heightCm: 172,
-        weightKg: 68,
-        activityLevel: ActivityLevel.active,
-      ));
+      await state.saveOnboardingBodyProfile(
+        const Profile(ageYears: 28, sex: Sex.male, heightCm: 172, weightKg: 68, activityLevel: ActivityLevel.active),
+      );
       addTearDown(state.dispose);
 
       await tester.pumpWidget(_wrapWithState(state, const ScanProductScreen()));
@@ -368,10 +350,7 @@ void main() {
       // Sau lỗi, thông báo lỗi hiển thị và nút không bị khóa kẹt.
       expect(find.text('Chưa chọn hoặc chụp được ảnh. Thử lại.'), findsOneWidget);
       final cameraBtn = tester.widget<ButtonStyleButton>(
-        find.ancestor(
-          of: find.text('Chụp ảnh nhãn (tên, thành phần)'),
-          matching: find.bySubtype<ButtonStyleButton>(),
-        ),
+        find.ancestor(of: find.text('Chụp ảnh nhãn (tên, thành phần)'), matching: find.bySubtype<ButtonStyleButton>()),
       );
       expect(cameraBtn.onPressed, isNotNull);
 
@@ -380,10 +359,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Chưa chọn hoặc chụp được ảnh. Thử lại.'), findsOneWidget);
       final galleryBtn = tester.widget<ButtonStyleButton>(
-        find.ancestor(
-          of: find.text('Chọn ảnh từ thư viện'),
-          matching: find.bySubtype<ButtonStyleButton>(),
-        ),
+        find.ancestor(of: find.text('Chọn ảnh từ thư viện'), matching: find.bySubtype<ButtonStyleButton>()),
       );
       expect(galleryBtn.onPressed, isNotNull);
     });

@@ -36,18 +36,18 @@ String? buildSafeFts5MatchQuery(String raw) {
 }
 
 FoodKind _kindOf(String s) => switch (s) {
-      'usda_foundation' => FoodKind.usdaFoundation,
-      'usda_sr' => FoodKind.usdaSr,
-      'usda_fndds' => FoodKind.usdaFndds,
-      'recipe' => FoodKind.recipe,
-      _ => throw FoodLibraryIntegrityException('Loại món không hợp lệ: $s'),
-    };
+  'usda_foundation' => FoodKind.usdaFoundation,
+  'usda_sr' => FoodKind.usdaSr,
+  'usda_fndds' => FoodKind.usdaFndds,
+  'recipe' => FoodKind.recipe,
+  _ => throw FoodLibraryIntegrityException('Loại món không hợp lệ: $s'),
+};
 
 IntakeSource _foodSourceOf(String s) => switch (s) {
-      'food' => IntakeSource.food,
-      'fortified' => IntakeSource.fortified,
-      _ => throw FoodLibraryIntegrityException('Nguồn món không hợp lệ: $s'),
-    };
+  'food' => IntakeSource.food,
+  'fortified' => IntakeSource.fortified,
+  _ => throw FoodLibraryIntegrityException('Nguồn món không hợp lệ: $s'),
+};
 
 class SqliteFoodLibraryRepository implements FoodLibraryRepository {
   final Database _db;
@@ -62,10 +62,7 @@ class SqliteFoodLibraryRepository implements FoodLibraryRepository {
     required String libraryVersion,
     required String expectedSha256,
   }) async {
-    final path = await store.prepareDatabaseFile(
-      libraryVersion: libraryVersion,
-      expectedSha256: expectedSha256,
-    );
+    final path = await store.prepareDatabaseFile(libraryVersion: libraryVersion, expectedSha256: expectedSha256);
     return openVerifiedPath(path: path, expectedSha256: expectedSha256);
   }
 
@@ -76,9 +73,7 @@ class SqliteFoodLibraryRepository implements FoodLibraryRepository {
   }) async {
     final actual = await computeFileSha256(path);
     if (actual.toLowerCase() != expectedSha256.toLowerCase()) {
-      throw FoodLibraryIntegrityException(
-        'Sai SHA-256 thư viện món (kỳ vọng $expectedSha256, thực tế $actual)',
-      );
+      throw FoodLibraryIntegrityException('Sai SHA-256 thư viện món (kỳ vọng $expectedSha256, thực tế $actual)');
     }
     late final Database db;
     try {
@@ -167,15 +162,10 @@ class SqliteFoodLibraryRepository implements FoodLibraryRepository {
     if (rows.isEmpty) return null;
     final r = rows.first;
     final portions = [
-      for (final p in _db.select(
-        'SELECT id, label_vi, grams FROM food_portions WHERE food_id = ? ORDER BY rowid',
-        [foodRef],
-      ))
-        FoodPortion(
-          id: p['id'] as String,
-          labelVi: p['label_vi'] as String,
-          grams: (p['grams'] as num).toDouble(),
-        ),
+      for (final p in _db.select('SELECT id, label_vi, grams FROM food_portions WHERE food_id = ? ORDER BY rowid', [
+        foodRef,
+      ]))
+        FoodPortion(id: p['id'] as String, labelVi: p['label_vi'] as String, grams: (p['grams'] as num).toDouble()),
     ];
     final nutrients = [
       for (final n in _db.select(

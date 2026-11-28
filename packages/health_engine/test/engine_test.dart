@@ -20,68 +20,62 @@ ReferencePack buildExtendedPack() {
 final ReferencePack extendedPack = buildExtendedPack();
 
 Profile profileOf(Map<String, dynamic> j) => Profile(
-      ageYears: j['age'] as int,
-      sex: j['sex'] == 'male' ? Sex.male : Sex.female,
-      heightCm: (j['height'] as num).toDouble(),
-      weightKg: (j['weight'] as num).toDouble(),
-      stage: switch (j['stage'] as String? ?? 'none') {
-        'pregnant' => LifeStage.pregnant,
-        'lactating' => LifeStage.lactating,
-        _ => LifeStage.none,
-      },
-      gestationWeek: j['gestWeek'] as int?,
-      monthsPostpartum: j['monthsPostpartum'] as int?,
-      prePregnancyBmi: switch (j['bmi'] as String?) {
-        'underweight' => BmiClass.underweight,
-        'normal' => BmiClass.normal,
-        'overweight' => BmiClass.overweight,
-        'obese' => BmiClass.obese,
-        _ => null,
-      },
-      activityLevel: ActivityLevel.values.byName(j['level'] as String? ?? 'inactive'),
-    );
+  ageYears: j['age'] as int,
+  sex: j['sex'] == 'male' ? Sex.male : Sex.female,
+  heightCm: (j['height'] as num).toDouble(),
+  weightKg: (j['weight'] as num).toDouble(),
+  stage: switch (j['stage'] as String? ?? 'none') {
+    'pregnant' => LifeStage.pregnant,
+    'lactating' => LifeStage.lactating,
+    _ => LifeStage.none,
+  },
+  gestationWeek: j['gestWeek'] as int?,
+  monthsPostpartum: j['monthsPostpartum'] as int?,
+  prePregnancyBmi: switch (j['bmi'] as String?) {
+    'underweight' => BmiClass.underweight,
+    'normal' => BmiClass.normal,
+    'overweight' => BmiClass.overweight,
+    'obese' => BmiClass.obese,
+    _ => null,
+  },
+  activityLevel: ActivityLevel.values.byName(j['level'] as String? ?? 'inactive'),
+);
 
 List<IntakeItem> dayOf(List<dynamic> j) => [
-      for (final it in j.cast<Map<String, dynamic>>())
-        IntakeItem(
-          label: it['label'] as String,
-          source: IntakeSource.values.byName(it['source'] as String),
-          meal: it['meal'] == null ? null : MealSlot.values.byName(it['meal'] as String),
-          at: it['at'] == null ? null : DateTime.parse(it['at'] as String),
-          addedSugarKnown: it['addedSugarKnown'] as bool? ?? true,
-          entryId: it['entryId'] as String?,
-          nutrients: {
-            for (final e in (it['n'] as Map<String, dynamic>).entries)
-              e.key: (e.value as num).toDouble(),
-          },
-          ulNutrients: it['ulN'] == null
-              ? null
-              : {
-                  for (final e in (it['ulN'] as Map<String, dynamic>).entries)
-                    e.key: (e.value as num).toDouble(),
-                },
-        ),
-    ];
+  for (final it in j.cast<Map<String, dynamic>>())
+    IntakeItem(
+      label: it['label'] as String,
+      source: IntakeSource.values.byName(it['source'] as String),
+      meal: it['meal'] == null ? null : MealSlot.values.byName(it['meal'] as String),
+      at: it['at'] == null ? null : DateTime.parse(it['at'] as String),
+      addedSugarKnown: it['addedSugarKnown'] as bool? ?? true,
+      entryId: it['entryId'] as String?,
+      nutrients: {for (final e in (it['n'] as Map<String, dynamic>).entries) e.key: (e.value as num).toDouble()},
+      ulNutrients: it['ulN'] == null
+          ? null
+          : {for (final e in (it['ulN'] as Map<String, dynamic>).entries) e.key: (e.value as num).toDouble()},
+    ),
+];
 
 List<WorkoutEntry> workoutsOf(List<dynamic> j) => [
-      for (final w in j.cast<Map<String, dynamic>>())
-        WorkoutEntry(
-          activityCode: w['code'] as String,
-          minutes: (w['minutes'] as num).toDouble(),
-          day: w['day'] as String?,
-        ),
-    ];
+  for (final w in j.cast<Map<String, dynamic>>())
+    WorkoutEntry(
+      activityCode: w['code'] as String,
+      minutes: (w['minutes'] as num).toDouble(),
+      day: w['day'] as String?,
+    ),
+];
 
 IntakeLineInput lineInputOf(Map<String, dynamic> j) => IntakeLineInput(
-      nutrientId: j['nutrientId'] as String?,
-      freeName: j['freeName'] as String?,
-      source: IntakeSource.values.byName(j['source'] as String),
-      form: j['form'] as String? ?? NutrientForm.unknown,
-      amount: (j['amount'] as num).toDouble(),
-      unit: LabelUnit.values.byName(j['unit'] as String),
-      compoundKind: CompoundKind.values.byName(j['compoundKind'] as String? ?? 'elemental'),
-      secondaryFolicAcidUg: (j['secondaryFolicAcidUg'] as num?)?.toDouble(),
-    );
+  nutrientId: j['nutrientId'] as String?,
+  freeName: j['freeName'] as String?,
+  source: IntakeSource.values.byName(j['source'] as String),
+  form: j['form'] as String? ?? NutrientForm.unknown,
+  amount: (j['amount'] as num).toDouble(),
+  unit: LabelUnit.values.byName(j['unit'] as String),
+  compoundKind: CompoundKind.values.byName(j['compoundKind'] as String? ?? 'elemental'),
+  secondaryFolicAcidUg: (j['secondaryFolicAcidUg'] as num?)?.toDouble(),
+);
 
 void expectFlagsMatch(List<UlFlag> got, List<dynamic> rawWant) {
   final want = rawWant.cast<Map<String, dynamic>>();
@@ -149,10 +143,7 @@ void main() {
     });
 
     test('từ chối schema cũ', () {
-      expect(
-        () => ReferencePack.fromJson({...rawPack, 'schema': 1}),
-        throwsFormatException,
-      );
+      expect(() => ReferencePack.fromJson({...rawPack, 'schema': 1}), throwsFormatException);
     });
 
     test('nhóm tham chiếu hoàn toàn dữ liệu: thêm nhóm trẻ em không cần sửa engine', () {
@@ -274,10 +265,7 @@ void main() {
         dayOf(days['balanced']!),
         for (var i = 0; i < 5; i++) <IntakeItem>[],
       ];
-      expectFlagsMatch(
-        checkUlAverage(pack, man30, sparse),
-        (expect_['ulAvg'] as Map)['man30|sparse2of7'] as List,
-      );
+      expectFlagsMatch(checkUlAverage(pack, man30, sparse), (expect_['ulAvg'] as Map)['man30|sparse2of7'] as List);
       expect(checkUlAverage(pack, man30, const [[], []]), isEmpty);
     });
 
@@ -366,14 +354,15 @@ void main() {
 
     test('kcal buổi chạy: 60 kg, MET 9,3, 30 phút ≈ 279', () {
       final p = profileOf(profiles['man30']!).copyWith(weightKg: 60);
-      expect(workoutKcal(pack, p, const WorkoutEntry(activityCode: '12050', minutes: 30)),
-          closeTo(279, 1e-9));
+      expect(workoutKcal(pack, p, const WorkoutEntry(activityCode: '12050', minutes: 30)), closeTo(279, 1e-9));
     });
 
     test('mã hoạt động lạ', () {
       final p = profileOf(profiles['man30']!);
-      expect(() => workoutKcal(pack, p, const WorkoutEntry(activityCode: 'x', minutes: 10)),
-          throwsA(isA<NotComputed>()));
+      expect(
+        () => workoutKcal(pack, p, const WorkoutEntry(activityCode: 'x', minutes: 10)),
+        throwsA(isA<NotComputed>()),
+      );
     });
   });
 
@@ -387,9 +376,7 @@ void main() {
       final name = c['name'] as String;
       final useExt = c['extended'] as bool;
       test(name, () {
-        final got = (useExt ? extConv : conv).convertIntakeLine(
-          lineInputOf(c['input'] as Map<String, dynamic>),
-        );
+        final got = (useExt ? extConv : conv).convertIntakeLine(lineInputOf(c['input'] as Map<String, dynamic>));
         final w = expectConv[name] as Map<String, dynamic>;
         final wAmounts = (w['amounts'] as Map<String, dynamic>);
         expect(got.amounts.keys.toSet(), wAmounts.keys.toSet());
@@ -416,22 +403,26 @@ void main() {
       final missingJson = jsonDecode(jsonEncode(rawPack)) as Map<String, dynamic>;
       (missingJson['unitConversions'] as Map<String, dynamic>)['vitA_food_betacarotene_IU_to_ug_RAE'] = null;
       final missingConv = UnitConverter(ReferencePack.fromJson(missingJson));
-      final r5b = missingConv.convertIntakeLine(const IntakeLineInput(
-        nutrientId: 'vitA',
-        source: IntakeSource.food,
-        form: NutrientForm.betaCarotene,
-        amount: 5000,
-        unit: LabelUnit.iu,
-      ));
+      final r5b = missingConv.convertIntakeLine(
+        const IntakeLineInput(
+          nutrientId: 'vitA',
+          source: IntakeSource.food,
+          form: NutrientForm.betaCarotene,
+          amount: 5000,
+          unit: LabelUnit.iu,
+        ),
+      );
       expect(r5b.amounts, isEmpty);
       expect(r5b.amountsNotComputed, NotComputedReason.missingFoodBetaCaroteneFactor);
-      final r8 = missingConv.convertIntakeLine(const IntakeLineInput(
-        nutrientId: 'vitA',
-        source: IntakeSource.food,
-        form: NutrientForm.unknown,
-        amount: 3000,
-        unit: LabelUnit.iu,
-      ));
+      final r8 = missingConv.convertIntakeLine(
+        const IntakeLineInput(
+          nutrientId: 'vitA',
+          source: IntakeSource.food,
+          form: NutrientForm.unknown,
+          amount: 3000,
+          unit: LabelUnit.iu,
+        ),
+      );
       expect(r8.amounts, isEmpty);
       expect(r8.ulAmounts, {'retinol': closeTo(900.0, 1e-9)});
       expect(r8.uncertain, isTrue);
@@ -440,22 +431,21 @@ void main() {
 
     test('từ chối lượng âm và secondaryFolicAcidUg âm', () {
       expect(
-        () => conv.convertIntakeLine(const IntakeLineInput(
-          nutrientId: 'vitC',
-          source: IntakeSource.supplement,
-          amount: -1,
-          unit: LabelUnit.mg,
-        )),
+        () => conv.convertIntakeLine(
+          const IntakeLineInput(nutrientId: 'vitC', source: IntakeSource.supplement, amount: -1, unit: LabelUnit.mg),
+        ),
         throwsArgumentError,
       );
       expect(
-        () => conv.convertIntakeLine(const IntakeLineInput(
-          nutrientId: 'folate',
-          source: IntakeSource.fortified,
-          amount: 400,
-          unit: LabelUnit.ugDfe,
-          secondaryFolicAcidUg: -10,
-        )),
+        () => conv.convertIntakeLine(
+          const IntakeLineInput(
+            nutrientId: 'folate',
+            source: IntakeSource.fortified,
+            amount: 400,
+            unit: LabelUnit.ugDfe,
+            secondaryFolicAcidUg: -10,
+          ),
+        ),
         throwsArgumentError,
       );
     });
@@ -489,10 +479,10 @@ void main() {
       expect(r.eerKcal, w['eerKcal']);
       expect(r.loggedDaysCount, w['loggedDaysCount']);
       expectFlagsMatch(r.ulFlags, w['ulFlags'] as List);
-      expect(
-        r.ulFlags.where((f) => f.nutrientId == 'vitE').map((f) => f.kind).toSet(),
-        {UlFlagKind.daily, UlFlagKind.sevenDayAverage},
-      );
+      expect(r.ulFlags.where((f) => f.nutrientId == 'vitE').map((f) => f.kind).toSet(), {
+        UlFlagKind.daily,
+        UlFlagKind.sevenDayAverage,
+      });
       expectStatusesMatch(r.nutrients, w['nutrients'] as List);
       expect(r.activity7Days.strengthDays, (w['activity7Days'] as Map)['strengthDays']);
     });
@@ -581,8 +571,7 @@ void main() {
             ),
         ];
         final got = evaluateScheduleRules(pack, mealTimes, doses);
-        final want = ((expect_['scheduleRules'] as Map<String, dynamic>)[cname] as List)
-            .cast<Map<String, dynamic>>();
+        final want = ((expect_['scheduleRules'] as Map<String, dynamic>)[cname] as List).cast<Map<String, dynamic>>();
         expect(got.length, want.length);
         for (var i = 0; i < want.length; i++) {
           expect(got[i].ruleId, want[i]['ruleId']);

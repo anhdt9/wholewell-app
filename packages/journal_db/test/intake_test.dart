@@ -10,20 +10,20 @@ final _pack = ReferencePack.fromJsonString(File('../health_engine/assets/referen
 const _adult = Profile(ageYears: 35, sex: Sex.female, heightCm: 160, weightKg: 55);
 
 FoodEntry _food(int id, Meal meal, List<IntakeLine> lines, {bool addedSugarKnown = true}) => FoodEntry(
-      id: id,
-      at: DateTime(2026, 11, 24, 12),
-      day: '2026-11-24',
-      meal: meal,
-      name: 'Món $id',
-      foodRef: null,
-      portionUnit: 'bát',
-      portionQty: 1,
-      labelBasisQty: null,
-      labelBasisUnit: null,
-      addedSugarKnown: addedSugarKnown,
-      packVersion: 'p',
-      lines: lines,
-    );
+  id: id,
+  at: DateTime(2026, 11, 24, 12),
+  day: '2026-11-24',
+  meal: meal,
+  name: 'Món $id',
+  foodRef: null,
+  portionUnit: 'bát',
+  portionQty: 1,
+  labelBasisQty: null,
+  labelBasisUnit: null,
+  addedSugarKnown: addedSugarKnown,
+  packVersion: 'p',
+  lines: lines,
+);
 
 void main() {
   test('gộp dòng theo nguồn: món tăng cường giữ chung entryId và đúng bữa', () {
@@ -65,23 +65,30 @@ void main() {
   test('engine hỗ trợ ulAmounts: gộp chung nguồn cả dòng thường và dòng có ulAmounts', () async {
     expect(engineSupportsUlAmounts, isTrue);
     final repo = InMemoryJournalRepository();
-    await repo.recordDose(DoseInput(
-      at: DateTime(2026, 11, 24),
-      name: 'Hỗn hợp E',
-      kind: DoseKind.oneOff,
-      servings: 1,
-      packVersion: 'p',
-      lines: const [
-        IntakeLine(nutrientId: 'vitE', source: IntakeSource.supplement, form: NutrientForm.natural2r, amounts: {'vitE': 100}),
-        IntakeLine(
-          nutrientId: 'vitE',
-          source: IntakeSource.supplement,
-          form: NutrientForm.synthetic2r,
-          amounts: {'vitE': 450},
-          ulAmounts: {'vitE': 909.0909},
-        ),
-      ],
-    ));
+    await repo.recordDose(
+      DoseInput(
+        at: DateTime(2026, 11, 24),
+        name: 'Hỗn hợp E',
+        kind: DoseKind.oneOff,
+        servings: 1,
+        packVersion: 'p',
+        lines: const [
+          IntakeLine(
+            nutrientId: 'vitE',
+            source: IntakeSource.supplement,
+            form: NutrientForm.natural2r,
+            amounts: {'vitE': 100},
+          ),
+          IntakeLine(
+            nutrientId: 'vitE',
+            source: IntakeSource.supplement,
+            form: NutrientForm.synthetic2r,
+            amounts: {'vitE': 450},
+            ulAmounts: {'vitE': 909.0909},
+          ),
+        ],
+      ),
+    );
     final doses = await repo.dosesOn('2026-11-24');
     final items = intakeItemsFor(const [], doses);
     expect(items.single.nutrients['vitE'], closeTo(550, 1e-9));

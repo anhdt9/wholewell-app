@@ -69,20 +69,28 @@ void main() {
     await repo.close();
 
     final nextVer = currentSchemaVersion + 1;
-    final broken = testOpener(dir, keys, schemaVersion: nextVer, migrations: {
-      currentSchemaVersion: (db) {
-        db.execute('CREATE TABLE extra (x)');
-        throw StateError('lỗi giả của bản app');
+    final broken = testOpener(
+      dir,
+      keys,
+      schemaVersion: nextVer,
+      migrations: {
+        currentSchemaVersion: (db) {
+          db.execute('CREATE TABLE extra (x)');
+          throw StateError('lỗi giả của bản app');
+        },
       },
-    });
+    );
     expect(await broken.open(), isA<NeedsUpdate>());
     expect(DbFiles(dir).db.existsSync(), isTrue);
     expect(DbFiles(dir).preMigrationCopy(currentSchemaVersion).existsSync(), isTrue);
     expect(await broken.open(), isA<NeedsUpdate>());
 
-    final fixed = testOpener(dir, keys, schemaVersion: nextVer, migrations: {
-      currentSchemaVersion: (db) => db.execute('CREATE TABLE extra (x)'),
-    });
+    final fixed = testOpener(
+      dir,
+      keys,
+      schemaVersion: nextVer,
+      migrations: {currentSchemaVersion: (db) => db.execute('CREATE TABLE extra (x)')},
+    );
     final r = await reopened(fixed);
     expect(await r.loadHideCalories(), isTrue);
     final v = await r.db.customSelect('SELECT schema_version FROM meta').getSingle();

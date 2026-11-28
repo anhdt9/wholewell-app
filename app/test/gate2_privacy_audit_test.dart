@@ -51,12 +51,13 @@ void main() {
         expect(manifest.contains(forbiddenPerm), isFalse, reason: 'Không xin quyền $forbiddenPerm');
       }
 
-      final kotlinFiles = Directory('android/app/src/main/kotlin')
-          .listSync(recursive: true)
-          .whereType<File>()
-          .where((f) => f.path.endsWith('.kt'))
-          .toList()
-        ..sort((a, b) => a.path.compareTo(b.path));
+      final kotlinFiles =
+          Directory('android/app/src/main/kotlin')
+              .listSync(recursive: true)
+              .whereType<File>()
+              .where((f) => f.path.endsWith('.kt'))
+              .toList()
+            ..sort((a, b) => a.path.compareTo(b.path));
       final basenames = kotlinFiles.map((f) => f.uri.pathSegments.last).toSet();
       expect(
         basenames,
@@ -98,11 +99,7 @@ void main() {
           'read_contacts',
           'read_phone_state',
         ]) {
-          expect(
-            codeOnly.contains(forbidden),
-            isFalse,
-            reason: '${file.path} không được chứa $forbidden',
-          );
+          expect(codeOnly.contains(forbidden), isFalse, reason: '${file.path} không được chứa $forbidden');
         }
 
         for (final match in logLinePattern.allMatches(content)) {
@@ -115,71 +112,66 @@ void main() {
         }
       }
 
-      final reminderLogic =
-          File('android/app/src/main/kotlin/vn/wholewell/app/ReminderLogic.kt').readAsStringSync();
+      final reminderLogic = File('android/app/src/main/kotlin/vn/wholewell/app/ReminderLogic.kt').readAsStringSync();
       expect(reminderLogic, contains('Đến giờ uống'));
       expect(reminderLogic.toLowerCase(), isNot(contains('productname')));
       expect(reminderLogic.toLowerCase(), isNot(contains('nutrient')));
 
-      final dbKeyStore =
-          File('android/app/src/main/kotlin/vn/wholewell/app/DbKeyStore.kt').readAsStringSync();
+      final dbKeyStore = File('android/app/src/main/kotlin/vn/wholewell/app/DbKeyStore.kt').readAsStringSync();
       expect(dbKeyStore, contains('setUnlockedDeviceRequired(true)'));
       expect(dbKeyStore, contains('noBackupFilesDir'));
     });
 
-    testWidgets('Màn Đồng ý (2/3) dùng đúng chữ "Tôi → Quyền riêng tư" và mở tức thì Chính sách quyền riêng tư offline',
-        (tester) async {
-      final pack = ReferencePack.fromJsonString(File('assets/reference_pack.json').readAsStringSync());
-      final dir = Directory.systemTemp.createTempSync('ww_gate2_consent_');
-      addTearDown(() {
-        if (dir.existsSync()) dir.deleteSync(recursive: true);
-      });
-      final opener = DbOpener(
-        files: DbFiles(dir),
-        keys: FakeSecureKeyStore(),
-        executorFactory: sameIsolateExecutor,
-        retryDelay: Duration.zero,
-      );
-      final state = AppState(pack: pack, opener: opener);
-      await tester.runAsync(state.start);
-      addTearDown(() async {
-        await state.session.repo?.close();
-        state.dispose();
-      });
+    testWidgets(
+      'Màn Đồng ý (2/3) dùng đúng chữ "Tôi → Quyền riêng tư" và mở tức thì Chính sách quyền riêng tư offline',
+      (tester) async {
+        final pack = ReferencePack.fromJsonString(File('assets/reference_pack.json').readAsStringSync());
+        final dir = Directory.systemTemp.createTempSync('ww_gate2_consent_');
+        addTearDown(() {
+          if (dir.existsSync()) dir.deleteSync(recursive: true);
+        });
+        final opener = DbOpener(
+          files: DbFiles(dir),
+          keys: FakeSecureKeyStore(),
+          executorFactory: sameIsolateExecutor,
+          retryDelay: Duration.zero,
+        );
+        final state = AppState(pack: pack, opener: opener);
+        await tester.runAsync(state.start);
+        addTearDown(() async {
+          await state.session.repo?.close();
+          state.dispose();
+        });
 
-      await tester.pumpWidget(WholeWellApp(state: state));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(WholeWellApp(state: state));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Bắt đầu'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Bắt đầu'));
+        await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField), '25');
-      await tester.tap(find.text('Không').first);
-      await tester.tap(find.text('Không').last);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Tiếp tục'));
-      await tester.pumpAndSettle();
+        await tester.enterText(find.byType(TextField), '25');
+        await tester.tap(find.text('Không').first);
+        await tester.tap(find.text('Không').last);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Tiếp tục'));
+        await tester.pumpAndSettle();
 
-      expect(find.textContaining('xóa ở Tôi → Quyền riêng tư'), findsOneWidget);
-      await tester.tap(find.text('Chính sách quyền riêng tư'));
-      await tester.pumpAndSettle();
+        expect(find.textContaining('xóa ở Tôi → Quyền riêng tư'), findsOneWidget);
+        await tester.tap(find.text('Chính sách quyền riêng tư'));
+        await tester.pumpAndSettle();
 
-      expect(find.byType(PrivacyPolicyScreen), findsOneWidget);
-      expect(find.byType(CircularProgressIndicator), findsNothing);
-      expect(find.textContaining('wholewell.apps@gmail.com'), findsOneWidget);
-    });
+        expect(find.byType(PrivacyPolicyScreen), findsOneWidget);
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+        expect(find.textContaining('wholewell.apps@gmail.com'), findsOneWidget);
+      },
+    );
 
-    testWidgets('Tôi -> Quyền riêng tư -> Chính sách quyền riêng tư mở tức thì đọc toàn văn offline',
-        (tester) async {
+    testWidgets('Tôi -> Quyền riêng tư -> Chính sách quyền riêng tư mở tức thì đọc toàn văn offline', (tester) async {
       final pack = ReferencePack.fromJsonString(File('assets/reference_pack.json').readAsStringSync());
       final repo = InMemoryJournalRepository();
-      await repo.saveProfile(const Profile(
-        ageYears: 30,
-        sex: Sex.female,
-        heightCm: 160,
-        weightKg: 54,
-        activityLevel: ActivityLevel.active,
-      ));
+      await repo.saveProfile(
+        const Profile(ageYears: 30, sex: Sex.female, heightCm: 160, weightKg: 54, activityLevel: ActivityLevel.active),
+      );
       await repo.saveHideCalories(false);
       final state = AppState.withRepository(pack: pack, repo: repo);
       await tester.runAsync(state.reload);
@@ -208,13 +200,9 @@ void main() {
       expect(find.textContaining('Đặng Thế Anh'), findsWidgets);
     });
 
-    testWidgets('Mọi dòng OCR chưa confirmed không bao giờ được lưu vào ingredients hay dose_entries',
-        (tester) async {
+    testWidgets('Mọi dòng OCR chưa confirmed không bao giờ được lưu vào ingredients hay dose_entries', (tester) async {
       final pack = ReferencePack.fromJsonString(File('assets/reference_pack.json').readAsStringSync());
-      final parsed = SupplementLabelParser.parsePackage(const [
-        'Vitamin C 500 mg',
-        'Zinc Gluconate 50 mg',
-      ]);
+      final parsed = SupplementLabelParser.parsePackage(const ['Vitamin C 500 mg', 'Zinc Gluconate 50 mg']);
       expect(parsed.ingredients, hasLength(2));
       for (final line in parsed.ingredients) {
         expect(EditableIngredient.fromParsed(line).confirmed, isFalse);
@@ -222,13 +210,7 @@ void main() {
 
       final repo = InMemoryJournalRepository();
       await repo.saveProfileWithCaution(
-        const Profile(
-          ageYears: 30,
-          sex: Sex.male,
-          heightCm: 170,
-          weightKg: 65,
-          activityLevel: ActivityLevel.inactive,
-        ),
+        const Profile(ageYears: 30, sex: Sex.male, heightCm: 170, weightKg: 65, activityLevel: ActivityLevel.inactive),
         caution: false,
       );
       await repo.saveHideCalories(false);
@@ -236,10 +218,7 @@ void main() {
 
       final ocr = FakeOcrEngine(
         nextGalleryResult: const OcrImagePickResult(paths: ['/fake/label.jpg']),
-        nextOcrResult: const OcrLabelResult(lines: [
-          'Vitamin C 500 mg',
-          'Zinc Gluconate 50 mg',
-        ]),
+        nextOcrResult: const OcrLabelResult(lines: ['Vitamin C 500 mg', 'Zinc Gluconate 50 mg']),
       );
       final state = AppState.withRepository(
         pack: pack,
@@ -269,8 +248,8 @@ void main() {
       expect(find.byType(ConfirmIngredientsScreen), findsOneWidget);
       expect(find.text('Tiếp tục (0/2 đã xác nhận)'), findsOneWidget);
       FilledButton continueBtn() => tester.widget<FilledButton>(
-            find.ancestor(of: find.textContaining('Tiếp tục ('), matching: find.byType(FilledButton)),
-          );
+        find.ancestor(of: find.textContaining('Tiếp tục ('), matching: find.byType(FilledButton)),
+      );
       expect(continueBtn().onPressed, isNull);
 
       // Xác nhận mới 1/2 dòng -> nút Tiếp tục vẫn khóa.
@@ -284,9 +263,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final savedProducts = await tester.runAsync(() => repo.listProducts(includeArchived: true));
-      final savedDoses = await tester.runAsync(
-        () => repo.dosesBetween('2020-01-01', '2030-12-31'),
-      );
+      final savedDoses = await tester.runAsync(() => repo.dosesBetween('2020-01-01', '2030-12-31'));
       expect(savedProducts, isEmpty);
       expect(savedDoses, isEmpty);
     });

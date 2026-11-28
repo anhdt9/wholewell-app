@@ -23,9 +23,7 @@ ScheduleWindowPhase classifySchedulePhase({
   Occurrence? occurrence,
 }) {
   if (occurrence != null) {
-    return occurrence.status == OccurrenceStatus.taken
-        ? ScheduleWindowPhase.taken
-        : ScheduleWindowPhase.skipped;
+    return occurrence.status == OccurrenceStatus.taken ? ScheduleWindowPhase.taken : ScheduleWindowPhase.skipped;
   }
   final p = scheduleDay.split('-');
   final schedAt = DateTime(
@@ -65,9 +63,7 @@ Future<void> markScheduledDoseTaken(
     expiredBoxes: expiredChoice,
     occurrence: asExtra ? null : OccurrenceRef(schedule.id, scheduleDay),
     skipAutoMatch: asExtra,
-    summaryLabel: asExtra
-        ? 'lần uống thêm'
-        : 'lần uống ${formatMinutesHhMm(schedule.timeOfDay)} theo lịch',
+    summaryLabel: asExtra ? 'lần uống thêm' : 'lần uống ${formatMinutesHhMm(schedule.timeOfDay)} theo lịch',
   );
   if (!context.mounted) return;
 
@@ -80,14 +76,8 @@ Future<void> markScheduledDoseTaken(
           'Sản phẩm này không còn hộp còn hạn. Bạn muốn trừ vào hộp đã hết hạn hay chỉ ghi lần uống?',
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, ExpiredBoxChoice.skip),
-            child: const Text('Không trừ'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, ExpiredBoxChoice.deduct),
-            child: const Text('Trừ'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx, ExpiredBoxChoice.skip), child: const Text('Không trừ')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, ExpiredBoxChoice.deduct), child: const Text('Trừ')),
         ],
       ),
     );
@@ -119,9 +109,9 @@ Future<void> markScheduledDoseTaken(
     feedback: fb,
     pack: state.pack,
     onUndo: fb.savedDoseId == null ? null : () => diary.deleteDoseEntry(fb.savedDoseId!),
-    onAddBox: () => Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => ProductBoxesScreen(product: detail.product)),
-    ),
+    onAddBox: () =>
+        Navigator.of(context)
+            .push(MaterialPageRoute<void>(builder: (_) => ProductBoxesScreen(product: detail.product))),
   );
 }
 
@@ -216,10 +206,7 @@ Future<void> showReminderQuickConfirmSheet(
                   ),
                 ),
                 Center(
-                  child: TextButton(
-                    onPressed: () => Navigator.pop(ctx, false),
-                    child: const Text('Để sau'),
-                  ),
+                  child: TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Để sau')),
                 ),
               ],
             ),

@@ -46,8 +46,7 @@ class NutrientStatus {
   });
 
   double get amount => totalAmount;
-  double? get percentOfTarget =>
-      target == null || target!.value == 0 ? null : totalAmount / target!.value * 100;
+  double? get percentOfTarget => target == null || target!.value == 0 ? null : totalAmount / target!.value * 100;
 }
 
 class MealSugarAlert {
@@ -57,13 +56,7 @@ class MealSugarAlert {
   final DateTime? endAt;
   final List<String> labels;
 
-  const MealSugarAlert({
-    required this.meal,
-    required this.grams,
-    this.startAt,
-    this.endAt,
-    required this.labels,
-  });
+  const MealSugarAlert({required this.meal, required this.grams, this.startAt, this.endAt, required this.labels});
 }
 
 class SugarCheck {
@@ -74,12 +67,7 @@ class SugarCheck {
   final List<MealSugarAlert> mealsOverLimit;
   final List<String> unknownSugarFoods;
 
-  const SugarCheck(
-    this.addedSugarG,
-    this.percentEnergy,
-    this.mealsOverLimit, [
-    this.unknownSugarFoods = const [],
-  ]);
+  const SugarCheck(this.addedSugarG, this.percentEnergy, this.mealsOverLimit, [this.unknownSugarFoods = const []]);
 }
 
 class DailyReport {
@@ -136,8 +124,7 @@ class PeriodReport {
   });
 }
 
-double _sum(Iterable<IntakeItem> items, String key) =>
-    items.fold(0.0, (s, it) => s + it.amount(key));
+double _sum(Iterable<IntakeItem> items, String key) => items.fold(0.0, (s, it) => s + it.amount(key));
 
 (int?, NotComputedReason?) _computeEer(ReferencePack pack, Profile p) {
   try {
@@ -147,16 +134,11 @@ double _sum(Iterable<IntakeItem> items, String key) =>
   }
 }
 
-List<MacroShare> _computeMacros(ReferencePack pack, Profile p, List<List<IntakeItem>> days,
-    {required bool average}) {
+List<MacroShare> _computeMacros(ReferencePack pack, Profile p, List<List<IntakeItem>> days, {required bool average}) {
   final gDef = driGroupDefFor(pack, p);
   final amdr = pack.amdr[gDef.amdrKey]!;
   final flat = [for (final d in days) ...d];
-  final g = {
-    'protein': _sum(flat, 'protein'),
-    'fat': _sum(flat, 'fat'),
-    'carbohydrate': _sum(flat, 'carbohydrate'),
-  };
+  final g = {'protein': _sum(flat, 'protein'), 'fat': _sum(flat, 'fat'), 'carbohydrate': _sum(flat, 'carbohydrate')};
   final kcal = {for (final e in g.entries) e.key: e.value * pack.energyPerGram[e.key]!};
   final total = kcal.values.fold(0.0, (a, b) => a + b);
   final divisor = average && days.isNotEmpty ? days.length.toDouble() : 1.0;
@@ -217,18 +199,20 @@ List<NutrientStatus> _computeNutrientStatuses(
     } else if (average && nDays == 0) {
       food = fort = supp = ulAmt = 0.0;
     }
-    out.add(NutrientStatus(
-      nutrientId: def.id,
-      totalAmount: food + fort + supp,
-      foodAmount: food,
-      fortifiedAmount: fort,
-      supplementAmount: supp,
-      target: t,
-      ul: ul,
-      ulAmount: ulAmt,
-      ulScope: ulDef.ulScope,
-      ulNutrientId: ul == null ? null : ulDef.id,
-    ));
+    out.add(
+      NutrientStatus(
+        nutrientId: def.id,
+        totalAmount: food + fort + supp,
+        foodAmount: food,
+        fortifiedAmount: fort,
+        supplementAmount: supp,
+        target: t,
+        ul: ul,
+        ulAmount: ulAmt,
+        ulScope: ulDef.ulScope,
+        ulNutrientId: ul == null ? null : ulDef.id,
+      ),
+    );
   }
   return out;
 }
@@ -252,13 +236,7 @@ List<_SugarEntry> _groupSugarEntries(List<IntakeItem> day) {
       g.sugar += it.amount('addedSugar');
       if (!it.addedSugarKnown) g.known = false;
     } else {
-      final g = _SugarEntry(
-        it.label,
-        it.meal,
-        it.at,
-        it.amount('addedSugar'),
-        it.addedSugarKnown,
-      );
+      final g = _SugarEntry(it.label, it.meal, it.at, it.amount('addedSugar'), it.addedSugarKnown);
       out.add(g);
       if (eid != null) byEid[eid] = g;
     }
@@ -286,17 +264,28 @@ SugarCheck sugarCheck(ReferencePack pack, List<IntakeItem> day) {
   final alerts = <MealSugarAlert>[];
 
   for (final m in const [MealSlot.breakfast, MealSlot.lunch, MealSlot.dinner]) {
-    final ms = [for (final g in entries) if (g.meal == m) g];
+    final ms = [
+      for (final g in entries)
+        if (g.meal == m) g,
+    ];
     final sum = ms.fold(0.0, (s, g) => s + g.sugar);
     if (sum > limit) {
       alerts.add(MealSugarAlert(meal: m, grams: sum, labels: [for (final g in ms) g.label]));
     }
   }
 
-  final snacks = [for (final g in entries) if (g.meal == MealSlot.snack) g];
-  final timed = [for (final g in snacks) if (g.at != null) g]
-    ..sort((a, b) => a.at!.compareTo(b.at!));
-  final untimed = [for (final g in snacks) if (g.at == null) g];
+  final snacks = [
+    for (final g in entries)
+      if (g.meal == MealSlot.snack) g,
+  ];
+  final timed = [
+    for (final g in snacks)
+      if (g.at != null) g,
+  ]..sort((a, b) => a.at!.compareTo(b.at!));
+  final untimed = [
+    for (final g in snacks)
+      if (g.at == null) g,
+  ];
 
   final clusters = <_SnackCluster>[];
   for (final g in timed) {
@@ -315,17 +304,16 @@ SugarCheck sugarCheck(ReferencePack pack, List<IntakeItem> day) {
   }
   for (final c in clusters) {
     if (c.grams > limit) {
-      alerts.add(MealSugarAlert(
-        meal: MealSlot.snack,
-        grams: c.grams,
-        startAt: c.startAt,
-        endAt: c.endAt,
-        labels: c.labels,
-      ));
+      alerts.add(
+        MealSugarAlert(meal: MealSlot.snack, grams: c.grams, startAt: c.startAt, endAt: c.endAt, labels: c.labels),
+      );
     }
   }
 
-  final unknown = [for (final g in entries) if (!g.known) g.label];
+  final unknown = [
+    for (final g in entries)
+      if (!g.known) g.label,
+  ];
   return SugarCheck(totalSugar, pct, alerts, unknown);
 }
 
@@ -339,11 +327,11 @@ DailyReport dailyReport(
   List<WorkoutEntry> workouts7 = const [],
 }) {
   final (eer, why) = _computeEer(pack, p);
-  final nonEmpty = [for (final d in last7Days) if (d.isNotEmpty) d];
-  final flags = <UlFlag>[
-    ...checkUlDay(pack, p, today),
-    ...checkUlAverage(pack, p, nonEmpty),
+  final nonEmpty = [
+    for (final d in last7Days)
+      if (d.isNotEmpty) d,
   ];
+  final flags = <UlFlag>[...checkUlDay(pack, p, today), ...checkUlAverage(pack, p, nonEmpty)];
   sortUlFlags(flags);
 
   return DailyReport(
@@ -367,7 +355,10 @@ PeriodReport averageReport(
   List<List<IntakeItem>> loggedDays, {
   List<WorkoutEntry> workouts7 = const [],
 }) {
-  final nonEmpty = [for (final d in loggedDays) if (d.isNotEmpty) d];
+  final nonEmpty = [
+    for (final d in loggedDays)
+      if (d.isNotEmpty) d,
+  ];
   final n = nonEmpty.length;
   final (eer, why) = _computeEer(pack, p);
   final flat = [for (final d in nonEmpty) ...d];

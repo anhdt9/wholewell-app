@@ -12,11 +12,7 @@ class NotificationAction {
   final int? timeOfDayMinutes;
   final List<int> scheduleIds;
 
-  const NotificationAction({
-    required this.kind,
-    this.timeOfDayMinutes,
-    this.scheduleIds = const [],
-  });
+  const NotificationAction({required this.kind, this.timeOfDayMinutes, this.scheduleIds = const []});
 
   factory NotificationAction.fromMap(Map<Object?, Object?> map) {
     final kindStr = map['kind'] as String? ?? 'openTodayDoses';
@@ -48,11 +44,11 @@ class ScheduledReminderSlot {
   });
 
   Map<String, Object?> toMap() => {
-        'timeOfDayMinutes': timeOfDayMinutes,
-        'itemCount': itemCount,
-        'scheduleIds': scheduleIds,
-        if (detailText != null && detailText!.isNotEmpty) 'detailText': detailText,
-      };
+    'timeOfDayMinutes': timeOfDayMinutes,
+    'itemCount': itemCount,
+    'scheduleIds': scheduleIds,
+    if (detailText != null && detailText!.isNotEmpty) 'detailText': detailText,
+  };
 }
 
 abstract interface class NotificationScheduler {
@@ -88,20 +84,16 @@ class AndroidNotificationScheduler implements NotificationScheduler {
   }
 
   @override
-  Future<bool> hasPermission() async =>
-      await _channel.invokeMethod<bool>('hasPermission') ?? true;
+  Future<bool> hasPermission() async => await _channel.invokeMethod<bool>('hasPermission') ?? true;
 
   @override
-  Future<bool> requestPermission() async =>
-      await _channel.invokeMethod<bool>('requestPermission') ?? false;
+  Future<bool> requestPermission() async => await _channel.invokeMethod<bool>('requestPermission') ?? false;
 
   @override
-  Future<bool> canScheduleExactAlarms() async =>
-      await _channel.invokeMethod<bool>('canScheduleExactAlarms') ?? true;
+  Future<bool> canScheduleExactAlarms() async => await _channel.invokeMethod<bool>('canScheduleExactAlarms') ?? true;
 
   @override
-  Future<void> openNotificationSettings() =>
-      _channel.invokeMethod<void>('openNotificationSettings');
+  Future<void> openNotificationSettings() => _channel.invokeMethod<void>('openNotificationSettings');
 
   @override
   Future<void> syncSchedules(List<ScheduledReminderSlot> slots) =>
@@ -112,8 +104,7 @@ class AndroidNotificationScheduler implements NotificationScheduler {
       _channel.invokeMethod<void>('cancelWindow', {'timeOfDayMinutes': timeOfDayMinutes});
 
   @override
-  Future<void> showUlAlertNotice() =>
-      _channel.invokeMethod<void>('showUlAlertNotice');
+  Future<void> showUlAlertNotice() => _channel.invokeMethod<void>('showUlAlertNotice');
 
   @override
   Stream<NotificationAction> get onNotificationAction => _ctrl.stream;
@@ -146,11 +137,7 @@ class FakeNotificationScheduler implements NotificationScheduler {
   int openedSettingsCount = 0;
   final _ctrl = StreamController<NotificationAction>.broadcast();
 
-  FakeNotificationScheduler({
-    this.granted = true,
-    this.exactAlarmsGranted = true,
-    this.pendingAction,
-  });
+  FakeNotificationScheduler({this.granted = true, this.exactAlarmsGranted = true, this.pendingAction});
 
   void emitAction(NotificationAction action) {
     if (_ctrl.hasListener) {

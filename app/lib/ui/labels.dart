@@ -4,38 +4,38 @@ import 'package:journal_db/journal_db.dart';
 
 /// Nhãn tiếng Việt. Dùng lời thường, không hiện tên viết tắt của chuẩn.
 String levelLabel(ActivityLevel l) => switch (l) {
-      ActivityLevel.inactive => 'Ít vận động',
-      ActivityLevel.lowActive => 'Vận động nhẹ',
-      ActivityLevel.active => 'Vận động vừa',
-      ActivityLevel.veryActive => 'Vận động nhiều',
-    };
+  ActivityLevel.inactive => 'Ít vận động',
+  ActivityLevel.lowActive => 'Vận động nhẹ',
+  ActivityLevel.active => 'Vận động vừa',
+  ActivityLevel.veryActive => 'Vận động nhiều',
+};
 
 String bmiLabel(BmiClass b) => switch (b) {
-      BmiClass.underweight => 'Thiếu cân',
-      BmiClass.normal => 'Bình thường',
-      BmiClass.overweight => 'Thừa cân',
-      BmiClass.obese => 'Béo phì',
-    };
+  BmiClass.underweight => 'Thiếu cân',
+  BmiClass.normal => 'Bình thường',
+  BmiClass.overweight => 'Thừa cân',
+  BmiClass.obese => 'Béo phì',
+};
 
 String stageLabel(LifeStage s) => switch (s) {
-      LifeStage.none => 'Không',
-      LifeStage.pregnant => 'Đang mang thai',
-      LifeStage.lactating => 'Đang cho con bú',
-    };
+  LifeStage.none => 'Không',
+  LifeStage.pregnant => 'Đang mang thai',
+  LifeStage.lactating => 'Đang cho con bú',
+};
 
 String mealLabel(MealSlot m) => switch (m) {
-      MealSlot.breakfast => 'sáng',
-      MealSlot.lunch => 'trưa',
-      MealSlot.dinner => 'tối',
-      MealSlot.snack => 'phụ',
-    };
+  MealSlot.breakfast => 'sáng',
+  MealSlot.lunch => 'trưa',
+  MealSlot.dinner => 'tối',
+  MealSlot.snack => 'phụ',
+};
 
 String macroLabel(String m) => switch (m) {
-      'protein' => 'Đạm',
-      'fat' => 'Béo',
-      'carbohydrate' => 'Bột đường',
-      _ => m,
-    };
+  'protein' => 'Đạm',
+  'fat' => 'Béo',
+  'carbohydrate' => 'Bột đường',
+  _ => m,
+};
 
 const cautionBannerMessage =
     'Các mức trong app dành cho người khỏe mạnh. Với tình trạng của bạn, mức phù hợp có thể khác; hãy hỏi bác sĩ.';
@@ -63,8 +63,7 @@ class CautionLabels {
   String get under19NoCalorieGoal =>
       caution ? 'Chưa có mức calo tham chiếu cho người 18 tuổi.' : 'Chưa có mục tiêu calo cho người 18 tuổi.';
 
-  String recommendedGrams(String grams) =>
-      caution ? 'mức tham chiếu $grams' : 'mức khuyến nghị $grams';
+  String recommendedGrams(String grams) => caution ? 'mức tham chiếu $grams' : 'mức khuyến nghị $grams';
 
   String percentTarget(int pct, [String? amount]) {
     final base = caution ? '$pct% mức tham chiếu' : '$pct% mức khuyến nghị';
@@ -73,28 +72,29 @@ class CautionLabels {
 }
 
 String reasonLabel(NotComputedReason r, {bool caution = false}) => switch (r) {
-      NotComputedReason.eerUnderAge19 => CautionLabels(caution: caution).under19NoCalorieGoal,
-      NotComputedReason.missingGestationWeek =>
-        caution ? 'Nhập tuần thai để tính mức calo tham chiếu.' : 'Nhập tuần thai để tính mục tiêu calo.',
-      NotComputedReason.missingPrePregnancyBmi => caution
-          ? 'Chọn cân nặng trước khi mang thai (thiếu cân, bình thường…) để tính mức calo tham chiếu.'
-          : 'Chọn cân nặng trước khi mang thai (thiếu cân, bình thường…) để tính mục tiêu calo.',
-      NotComputedReason.ageUnsupported => 'App dành cho người từ 18 tuổi.',
-      NotComputedReason.unknownActivity => 'Hoạt động không có trong danh sách.',
-      NotComputedReason.missingFoodBetaCaroteneFactor => 'Chưa có hệ số beta-caroten trong thức ăn.',
-      NotComputedReason.missingEsterRatio => 'Chưa có tỷ lệ tocopherol của este vitamin E.',
-      NotComputedReason.missingCompoundRatio => 'Chưa có tỷ lệ nguyên tố của hợp chất.',
-      NotComputedReason.missingNutrientInPack => 'Chất này chưa có trong gói dữ liệu tham chiếu.',
-    };
+  NotComputedReason.eerUnderAge19 => CautionLabels(caution: caution).under19NoCalorieGoal,
+  NotComputedReason.missingGestationWeek =>
+    caution ? 'Nhập tuần thai để tính mức calo tham chiếu.' : 'Nhập tuần thai để tính mục tiêu calo.',
+  NotComputedReason.missingPrePregnancyBmi =>
+    caution
+        ? 'Chọn cân nặng trước khi mang thai (thiếu cân, bình thường…) để tính mức calo tham chiếu.'
+        : 'Chọn cân nặng trước khi mang thai (thiếu cân, bình thường…) để tính mục tiêu calo.',
+  NotComputedReason.ageUnsupported => 'App dành cho người từ 18 tuổi.',
+  NotComputedReason.unknownActivity => 'Hoạt động không có trong danh sách.',
+  NotComputedReason.missingFoodBetaCaroteneFactor => 'Chưa có hệ số beta-caroten trong thức ăn.',
+  NotComputedReason.missingEsterRatio => 'Chưa có tỷ lệ tocopherol của este vitamin E.',
+  NotComputedReason.missingCompoundRatio => 'Chưa có tỷ lệ nguyên tố của hợp chất.',
+  NotComputedReason.missingNutrientInPack => 'Chất này chưa có trong gói dữ liệu tham chiếu.',
+};
 
 String unitLabel(String u) => switch (u) {
-      'ug' => 'µg',
-      'iu' => 'IU',
-      'ug_RAE' || 'ugRae' => 'µg RAE',
-      'ug_DFE' || 'ugDfe' => 'µg DFE',
-      'mg_NE' || 'mgNe' => 'mg NE',
-      _ => u,
-    };
+  'ug' => 'µg',
+  'iu' => 'IU',
+  'ug_RAE' || 'ugRae' => 'µg RAE',
+  'ug_DFE' || 'ugDfe' => 'µg DFE',
+  'mg_NE' || 'mgNe' => 'mg NE',
+  _ => u,
+};
 
 String fmt(double v) {
   if (v >= 100) return v.round().toString();
@@ -118,14 +118,14 @@ String fmtWaterMl(double ml) {
 }
 
 String countUnitLabel(CountUnit u) => switch (u) {
-      CountUnit.tablet => 'viên',
-      CountUnit.capsule => 'viên nang',
-      CountUnit.softgel => 'viên nang mềm',
-      CountUnit.sachet => 'gói',
-      CountUnit.drop => 'giọt',
-      CountUnit.ml => 'ml',
-      CountUnit.g => 'g',
-    };
+  CountUnit.tablet => 'viên',
+  CountUnit.capsule => 'viên nang',
+  CountUnit.softgel => 'viên nang mềm',
+  CountUnit.sachet => 'gói',
+  CountUnit.drop => 'giọt',
+  CountUnit.ml => 'ml',
+  CountUnit.g => 'g',
+};
 
 String fmtExpiryMonth(String yyyyMm) {
   final parts = yyyyMm.split('-');
@@ -154,7 +154,10 @@ class ExpiryMonthInputFormatter extends TextInputFormatter {
     } else {
       text = '${digits.substring(0, 2)}/${digits.substring(2)}';
     }
-    return TextEditingValue(text: text, selection: TextSelection.collapsed(offset: text.length));
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
   }
 }
 

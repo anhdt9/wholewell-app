@@ -39,18 +39,18 @@ void main() {
     await s.start();
     expect(s.report(), isNull);
     await s.saveProfile(profile);
-    await s.addItem(const IntakeItem(
-      label: 'Viên magie',
-      source: IntakeSource.supplement,
-      nutrients: {'magnesium': 500},
-    ));
+    await s.addItem(
+      const IntakeItem(label: 'Viên magie', source: IntakeSource.supplement, nutrients: {'magnesium': 500}),
+    );
     await s.addWorkout(const WorkoutEntry(activityCode: '17200', minutes: 30));
     await s.addWorkout(const WorkoutEntry(activityCode: '02054', minutes: 20));
     final r = s.report()!;
     expect(r.eerKcal, 2450);
     expect(r.loggedDaysCount, 1);
-    expect(r.ulFlags.where((f) => f.nutrientId == 'magnesium').map((f) => f.kind).toSet(),
-        {UlFlagKind.daily, UlFlagKind.sevenDayAverage});
+    expect(r.ulFlags.where((f) => f.nutrientId == 'magnesium').map((f) => f.kind).toSet(), {
+      UlFlagKind.daily,
+      UlFlagKind.sevenDayAverage,
+    });
     expect(r.energyOutWorkoutKcal, closeTo((4.8 * 30 + 3.5 * 20) * 65 / 60, 1e-9));
     expect(r.activity7Days.strengthDays, 1);
   });
@@ -59,13 +59,15 @@ void main() {
     final s = AppState.withRepository(pack: pack, repo: InMemoryJournalRepository());
     await s.start();
     await s.saveProfile(profile);
-    final conv = UnitConverter(pack).convertIntakeLine(const IntakeLineInput(
-      nutrientId: 'vitE',
-      source: IntakeSource.supplement,
-      form: NutrientForm.synthetic2r,
-      amount: 1200,
-      unit: LabelUnit.iu,
-    ));
+    final conv = UnitConverter(pack).convertIntakeLine(
+      const IntakeLineInput(
+        nutrientId: 'vitE',
+        source: IntakeSource.supplement,
+        form: NutrientForm.synthetic2r,
+        amount: 1200,
+        unit: LabelUnit.iu,
+      ),
+    );
     await s.recordDose('VitE 1200 IU', [
       IntakeLine(
         nutrientId: 'vitE',
@@ -87,12 +89,14 @@ void main() {
     await a.start();
     await a.saveProfile(profile);
     await a.setHideCalories(true);
-    await a.addItem(const IntakeItem(
-      label: 'Cơm',
-      source: IntakeSource.food,
-      meal: MealSlot.lunch,
-      nutrients: {'energyKcal': 200, 'protein': 4},
-    ));
+    await a.addItem(
+      const IntakeItem(
+        label: 'Cơm',
+        source: IntakeSource.food,
+        meal: MealSlot.lunch,
+        nutrients: {'energyKcal': 200, 'protein': 4},
+      ),
+    );
     final b = AppState.withRepository(pack: pack, repo: repo);
     await b.start();
     expect(b.hideCalories, isTrue);
@@ -104,7 +108,9 @@ void main() {
   test('xóa mục theo vị trí trong danh sách', () async {
     final s = AppState.withRepository(pack: pack, repo: InMemoryJournalRepository());
     await s.start();
-    await s.addItem(const IntakeItem(label: 'A', source: IntakeSource.food, meal: MealSlot.breakfast, nutrients: {'protein': 1}));
+    await s.addItem(
+      const IntakeItem(label: 'A', source: IntakeSource.food, meal: MealSlot.breakfast, nutrients: {'protein': 1}),
+    );
     await s.addItem(const IntakeItem(label: 'B', source: IntakeSource.supplement, nutrients: {'zinc': 5}));
     expect(s.todayItems.map((i) => i.label), ['A', 'B']);
     await s.removeItem(1);
@@ -132,7 +138,14 @@ void main() {
     final s = AppState.withRepository(pack: pack, repo: repo);
     await s.start();
     final today = s.day;
-    await s.addItem(const IntakeItem(label: 'Hôm nay', source: IntakeSource.food, meal: MealSlot.breakfast, nutrients: {'protein': 1}));
+    await s.addItem(
+      const IntakeItem(
+        label: 'Hôm nay',
+        source: IntakeSource.food,
+        meal: MealSlot.breakfast,
+        nutrients: {'protein': 1},
+      ),
+    );
     final yesterday = today.subtract(const Duration(days: 1));
     repo.slowDay = dayKey(yesterday);
     final a = s.setDay(yesterday);
@@ -158,7 +171,10 @@ void main() {
     final dir = Directory.systemTemp.createTempSync('wholewell_app_');
     addTearDown(() => dir.deleteSync(recursive: true));
     final keys = FakeSecureKeyStore();
-    final s = AppState(pack: pack, opener: DbOpener(files: DbFiles(dir), keys: keys, retryDelay: Duration.zero));
+    final s = AppState(
+      pack: pack,
+      opener: DbOpener(files: DbFiles(dir), keys: keys, retryDelay: Duration.zero),
+    );
     await Future.wait([s.start(), s.start()]);
     expect(keys.reads, 1);
     expect(s.status, DataStatus.welcome);
@@ -193,11 +209,7 @@ void main() {
     expect(s.diary.dismissedScheduleNoticeSig, 'sig1');
 
     // Ghi dữ liệu mới -> invalidate cache.
-    await s.addItem(const IntakeItem(
-      label: 'Phở',
-      source: IntakeSource.food,
-      nutrients: {'energyKcal': 400},
-    ));
+    await s.addItem(const IntakeItem(label: 'Phở', source: IntakeSource.food, nutrients: {'energyKcal': 400}));
     final r3 = s.report();
     expect(identical(r1, r3), isFalse);
   });
@@ -206,38 +218,10 @@ void main() {
     final vitA = pack.nutrients['vitA']!;
     final mag = pack.nutrients['magnesium']!;
 
-    expect(
-      lineCountsTowardUl(
-        vitA,
-        source: IntakeSource.food,
-        amounts: const {'vitA': 500, 'retinol': 500},
-      ),
-      isTrue,
-    );
-    expect(
-      lineCountsTowardUl(
-        vitA,
-        source: IntakeSource.food,
-        amounts: const {'vitA': 500},
-      ),
-      isFalse,
-    );
-    expect(
-      lineCountsTowardUl(
-        mag,
-        source: IntakeSource.food,
-        amounts: const {'magnesium': 200},
-      ),
-      isFalse,
-    );
-    expect(
-      lineCountsTowardUl(
-        mag,
-        source: IntakeSource.supplement,
-        amounts: const {'magnesium': 200},
-      ),
-      isTrue,
-    );
+    expect(lineCountsTowardUl(vitA, source: IntakeSource.food, amounts: const {'vitA': 500, 'retinol': 500}), isTrue);
+    expect(lineCountsTowardUl(vitA, source: IntakeSource.food, amounts: const {'vitA': 500}), isFalse);
+    expect(lineCountsTowardUl(mag, source: IntakeSource.food, amounts: const {'magnesium': 200}), isFalse);
+    expect(lineCountsTowardUl(mag, source: IntakeSource.supplement, amounts: const {'magnesium': 200}), isTrue);
   });
 }
 

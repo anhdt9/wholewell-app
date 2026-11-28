@@ -17,21 +17,14 @@ import 'package:wholewell/ui/onboarding_flow.dart';
 import 'package:wholewell/ui/supplements_screen.dart';
 import 'package:wholewell/ui/today_doses_screen.dart';
 
-Future<AppState> _makeReadyState(
-  ReferencePack pack, {
-  bool hideCalories = false,
-}) async {
+Future<AppState> _makeReadyState(ReferencePack pack, {bool hideCalories = false}) async {
   final repo = InMemoryJournalRepository();
   final state = AppState.withRepository(pack: pack, repo: repo);
   await state.start();
   await state.completeFirstConsent(ageYears: 30, caution: false);
-  await state.saveOnboardingBodyProfile(const Profile(
-    ageYears: 30,
-    sex: Sex.female,
-    heightCm: 160,
-    weightKg: 55,
-    activityLevel: ActivityLevel.active,
-  ));
+  await state.saveOnboardingBodyProfile(
+    const Profile(ageYears: 30, sex: Sex.female, heightCm: 160, weightKg: 55, activityLevel: ActivityLevel.active),
+  );
   await state.setHideCalories(hideCalories);
   return state;
 }
@@ -39,20 +32,16 @@ Future<AppState> _makeReadyState(
 Widget _wrapWithAppTheme(AppState state, Widget child, {Brightness brightness = Brightness.light}) {
   return AppScope(
     state: state,
-    child: MaterialApp(
-      theme: buildWholeWellTheme(brightness),
-      home: child,
-    ),
+    child: MaterialApp(theme: buildWholeWellTheme(brightness), home: child),
   );
 }
 
 void main() {
-  final pack = ReferencePack.fromJsonString(
-    File('assets/reference_pack.json').readAsStringSync(),
-  );
+  final pack = ReferencePack.fromJsonString(File('assets/reference_pack.json').readAsStringSync());
 
-  testWidgets('FoodPortionScreen ghim thẻ tóm tắt, đổi số với AnimatedSwitcher và ẩn kcal khi bật Ẩn số calo',
-      (tester) async {
+  testWidgets('FoodPortionScreen ghim thẻ tóm tắt, đổi số với AnimatedSwitcher và ẩn kcal khi bật Ẩn số calo', (
+    tester,
+  ) async {
     final state = await _makeReadyState(pack, hideCalories: false);
     addTearDown(state.dispose);
 
@@ -66,56 +55,24 @@ void main() {
       niacinFortifiedUnseparated: false,
       folateUnseparated: false,
       defaultPortionId: 'bowl',
-      portions: [
-        FoodPortion(id: 'bowl', labelVi: '1 bát vừa', grams: 150),
-      ],
+      portions: [FoodPortion(id: 'bowl', labelVi: '1 bát vừa', grams: 150)],
       nutrientsPer100g: [
-        FoodNutrientPer100g(
-          nutrientId: 'energyKcal',
-          source: IntakeSource.food,
-          amount: 130,
-          unit: 'kcal',
-        ),
-        FoodNutrientPer100g(
-          nutrientId: 'protein_g',
-          source: IntakeSource.food,
-          amount: 2.7,
-          unit: 'g',
-        ),
-        FoodNutrientPer100g(
-          nutrientId: 'fat_g',
-          source: IntakeSource.food,
-          amount: 0.3,
-          unit: 'g',
-        ),
-        FoodNutrientPer100g(
-          nutrientId: 'carb_g',
-          source: IntakeSource.food,
-          amount: 28,
-          unit: 'g',
-        ),
+        FoodNutrientPer100g(nutrientId: 'energyKcal', source: IntakeSource.food, amount: 130, unit: 'kcal'),
+        FoodNutrientPer100g(nutrientId: 'protein_g', source: IntakeSource.food, amount: 2.7, unit: 'g'),
+        FoodNutrientPer100g(nutrientId: 'fat_g', source: IntakeSource.food, amount: 0.3, unit: 'g'),
+        FoodNutrientPer100g(nutrientId: 'carb_g', source: IntakeSource.food, amount: 28, unit: 'g'),
       ],
     );
 
     await tester.pumpWidget(
       _wrapWithAppTheme(
         state,
-        FoodPortionScreen.library(
-          food: food,
-          initialMeal: Meal.lunch,
-          initialAt: DateTime(2026, 11, 27, 12, 0),
-        ),
+        FoodPortionScreen.library(food: food, initialMeal: Meal.lunch, initialAt: DateTime(2026, 11, 27, 12, 0)),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(
-      find.descendant(
-        of: find.byType(SurfaceCard),
-        matching: find.byType(AnimatedSwitcher),
-      ),
-      findsOneWidget,
-    );
+    expect(find.descendant(of: find.byType(SurfaceCard), matching: find.byType(AnimatedSwitcher)), findsOneWidget);
     expect(find.textContaining('kcal'), findsOneWidget);
 
     await state.setHideCalories(true);
@@ -175,8 +132,9 @@ void main() {
     expect(find.text('Buổi tập'), findsAtLeastNWidgets(1));
   });
 
-  testWidgets('SupplementsScreen hiện LoadingSkeletonBox khi đang tải, sau đó hiện thanh kho & pill trạng thái',
-      (tester) async {
+  testWidgets('SupplementsScreen hiện LoadingSkeletonBox khi đang tải, sau đó hiện thanh kho & pill trạng thái', (
+    tester,
+  ) async {
     final state = await _makeReadyState(pack);
     addTearDown(state.dispose);
 
@@ -264,8 +222,9 @@ void main() {
     expect(find.bySemanticsLabel('Bước 1 trên 3'), findsOneWidget);
   });
 
-  testWidgets('TodayDosesScreen ở màn 360dp và cỡ chữ 200% xếp dọc nút trong overdue/inWindow/early không tràn',
-      (tester) async {
+  testWidgets('TodayDosesScreen ở màn 360dp và cỡ chữ 200% xếp dọc nút trong overdue/inWindow/early không tràn', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(360, 800);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
@@ -292,10 +251,7 @@ void main() {
 
     await tester.pumpWidget(
       MediaQuery(
-        data: const MediaQueryData(
-          size: Size(360, 800),
-          textScaler: TextScaler.linear(2.0),
-        ),
+        data: const MediaQueryData(size: Size(360, 800), textScaler: TextScaler.linear(2.0)),
         child: _wrapWithAppTheme(state, TodayDosesScreen(nowOverride: now)),
       ),
     );

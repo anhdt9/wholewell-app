@@ -15,21 +15,15 @@ Future<AppState> _makeState(ReferencePack pack, {bool hideCalories = false}) asy
   final state = AppState.withRepository(pack: pack, repo: repo);
   await state.start();
   await state.completeFirstConsent(ageYears: 30, caution: false);
-  await state.saveOnboardingBodyProfile(const Profile(
-    ageYears: 30,
-    sex: Sex.female,
-    heightCm: 160,
-    weightKg: 55,
-    activityLevel: ActivityLevel.active,
-  ));
+  await state.saveOnboardingBodyProfile(
+    const Profile(ageYears: 30, sex: Sex.female, heightCm: 160, weightKg: 55, activityLevel: ActivityLevel.active),
+  );
   await state.setHideCalories(hideCalories);
   return state;
 }
 
 void main() {
-  final pack = ReferencePack.fromJsonString(
-    File('assets/reference_pack.json').readAsStringSync(),
-  );
+  final pack = ReferencePack.fromJsonString(File('assets/reference_pack.json').readAsStringSync());
 
   testWidgets('HomeScreen DaySwitcher pill chuyển ngày trước/sau và không tràn ở cỡ chữ 200%', (tester) async {
     final state = await _makeState(pack);
@@ -86,17 +80,14 @@ void main() {
     addTearDown(state.dispose);
 
     // UL magie bổ sung = 350 mg; 260 mg > 70% UL (245 mg).
-    await state.recordDose(
-      'Magie 260',
-      const [
-        IntakeLine(
-          nutrientId: 'magnesium',
-          source: IntakeSource.supplement,
-          form: 'magnesium_citrate',
-          amounts: {'magnesium': 260},
-        ),
-      ],
-    );
+    await state.recordDose('Magie 260', const [
+      IntakeLine(
+        nutrientId: 'magnesium',
+        source: IntakeSource.supplement,
+        form: 'magnesium_citrate',
+        amounts: {'magnesium': 260},
+      ),
+    ]);
 
     await tester.pumpWidget(
       AppScope(

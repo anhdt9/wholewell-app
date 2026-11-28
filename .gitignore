@@ -1,6 +1,6 @@
 .dart_tool/
 .packages
-pubspec.lock
+# pubspec.lock của workspace ở gốc được commit; thành viên workspace không có lock riêng.
 .idea/
 *.iml
 .claude/settings.local.json

@@ -56,10 +56,10 @@ abstract final class NutrientForm {
 
   /// `true` cho este nguồn tự nhiên (`d-`), `false` cho tổng hợp (`dl-`), `null` nếu không thuộc tập cố định.
   static bool? vitaminEEsterIsNatural(String form) => switch (form) {
-        dAlphaTocopherylAcetate || dAlphaTocopherylSuccinate => true,
-        dlAlphaTocopherylAcetate || dlAlphaTocopherylSuccinate => false,
-        _ => null,
-      };
+    dAlphaTocopherylAcetate || dAlphaTocopherylSuccinate => true,
+    dlAlphaTocopherylAcetate || dlAlphaTocopherylSuccinate => false,
+    _ => null,
+  };
 }
 
 class Profile {
@@ -103,18 +103,17 @@ class Profile {
     BmiClass? prePregnancyBmi,
     int? monthsPostpartum,
     ActivityLevel? activityLevel,
-  }) =>
-      Profile(
-        ageYears: ageYears ?? this.ageYears,
-        sex: sex ?? this.sex,
-        heightCm: heightCm ?? this.heightCm,
-        weightKg: weightKg ?? this.weightKg,
-        stage: stage ?? this.stage,
-        gestationWeek: gestationWeek ?? this.gestationWeek,
-        prePregnancyBmi: prePregnancyBmi ?? this.prePregnancyBmi,
-        monthsPostpartum: monthsPostpartum ?? this.monthsPostpartum,
-        activityLevel: activityLevel ?? this.activityLevel,
-      );
+  }) => Profile(
+    ageYears: ageYears ?? this.ageYears,
+    sex: sex ?? this.sex,
+    heightCm: heightCm ?? this.heightCm,
+    weightKg: weightKg ?? this.weightKg,
+    stage: stage ?? this.stage,
+    gestationWeek: gestationWeek ?? this.gestationWeek,
+    prePregnancyBmi: prePregnancyBmi ?? this.prePregnancyBmi,
+    monthsPostpartum: monthsPostpartum ?? this.monthsPostpartum,
+    activityLevel: activityLevel ?? this.activityLevel,
+  );
 }
 
 /// Một món ăn, đồ uống hoặc liều bổ sung đã ghi.

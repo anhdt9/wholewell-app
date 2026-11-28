@@ -51,9 +51,7 @@ class _DayTimesScreenState extends State<DayTimesScreen> {
     setState(() => _saving = true);
     final bool ok;
     try {
-      ok = await AppScope.of(context).diary.saveDayTimesSettings(
-            _settings.copyWith(dayTimesConfirmed: true),
-          );
+      ok = await AppScope.of(context).diary.saveDayTimesSettings(_settings.copyWith(dayTimesConfirmed: true));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -121,10 +119,7 @@ class _DayTimesScreenState extends State<DayTimesScreen> {
         children: [
           Expanded(child: Text(label, style: Theme.of(context).textTheme.bodyLarge)),
           if (enabled) ...[
-            OutlinedButton(
-              onPressed: () => _pickTime(mins, onPicked),
-              child: Text(formatMinutesHhMm(mins)),
-            ),
+            OutlinedButton(onPressed: () => _pickTime(mins, onPicked), child: Text(formatMinutesHhMm(mins))),
             const SizedBox(width: 8),
           ],
           Switch(value: enabled, onChanged: _saving ? null : onToggle),
@@ -137,10 +132,7 @@ class _DayTimesScreenState extends State<DayTimesScreen> {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(label),
-      trailing: OutlinedButton(
-        onPressed: () => _pickTime(mins, onChanged),
-        child: Text(formatMinutesHhMm(mins)),
-      ),
+      trailing: OutlinedButton(onPressed: () => _pickTime(mins, onChanged), child: Text(formatMinutesHhMm(mins))),
     );
   }
 }

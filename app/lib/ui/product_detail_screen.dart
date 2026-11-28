@@ -145,9 +145,7 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
     }
     final nav = Navigator.of(context);
     nav.popUntil((r) => r.isFirst);
-    nav.push(
-      MaterialPageRoute<void>(builder: (_) => ProductDetailScreen(productId: pid)),
-    );
+    nav.push(MaterialPageRoute<void>(builder: (_) => ProductDetailScreen(productId: pid)));
   }
 
   @override
@@ -170,10 +168,7 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
           DropdownButtonFormField<CountUnit>(
             initialValue: _countUnit,
             decoration: const InputDecoration(labelText: 'Đơn vị đếm'),
-            items: [
-              for (final u in CountUnit.values)
-                DropdownMenuItem(value: u, child: Text(countUnitLabel(u))),
-            ],
+            items: [for (final u in CountUnit.values) DropdownMenuItem(value: u, child: Text(countUnitLabel(u)))],
             onChanged: (v) {
               if (v != null) setState(() => _countUnit = v);
             },
@@ -203,10 +198,7 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
                     controller: _boxExpiry,
                     keyboardType: TextInputType.number,
                     inputFormatters: const [ExpiryMonthInputFormatter()],
-                    decoration: const InputDecoration(
-                      labelText: 'Hạn dùng',
-                      hintText: 'MM/YYYY',
-                    ),
+                    decoration: const InputDecoration(labelText: 'Hạn dùng', hintText: 'MM/YYYY'),
                   ),
                 ),
               ],
@@ -217,10 +209,7 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
             Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
           ],
           const SizedBox(height: 20),
-          FilledButton(
-            onPressed: _saving ? null : _save,
-            child: const Text('Lưu sản phẩm'),
-          ),
+          FilledButton(onPressed: _saving ? null : _save, child: const Text('Lưu sản phẩm')),
         ],
       ),
     );
@@ -274,9 +263,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       MaterialPageRoute<void>(
         builder: (_) => ConfirmIngredientsScreen(
           editingProductId: detail.product.id,
-          initialLines: [
-            for (final i in detail.ingredients) EditableIngredient.fromSaved(i),
-          ],
+          initialLines: [for (final i in detail.ingredients) EditableIngredient.fromSaved(i)],
           onConfirmed: (ctx, drafts) async {
             final ok = await AppScope.of(ctx).diary.saveProductIngredients(detail.product.id, drafts);
             if (ok && ctx.mounted) Navigator.pop(ctx);
@@ -314,7 +301,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
 
     final p = detail.product;
-    final summary = _summary ??
+    final summary =
+        _summary ??
         summarizeProduct(
           product: p,
           boxes: detail.boxes,
@@ -323,12 +311,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           now: DateTime.now(),
         );
     final unit = countUnitLabel(p.countUnit);
-    final stockText = summary.validRemaining > 0
-        ? 'Còn ${fmt(summary.validRemaining)} $unit'
-        : 'Kho đã hết';
-    final hsdText = summary.nearestExpiryMonth == null
-        ? ''
-        : ' · HSD ${fmtExpiryMonth(summary.nearestExpiryMonth!)}';
+    final stockText = summary.validRemaining > 0 ? 'Còn ${fmt(summary.validRemaining)} $unit' : 'Kho đã hết';
+    final hsdText = summary.nearestExpiryMonth == null ? '' : ' · HSD ${fmtExpiryMonth(summary.nearestExpiryMonth!)}';
 
     return Scaffold(
       appBar: AppBar(
@@ -337,9 +321,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           PopupMenuButton<String>(
             onSelected: (v) async {
               if (v == 'edit') {
-                final changed = await Navigator.of(context).push<bool>(
-                  MaterialPageRoute<bool>(builder: (_) => ProductInfoScreen(editingProduct: p)),
-                );
+                final changed = await Navigator.of(context)
+                    .push<bool>(MaterialPageRoute<bool>(builder: (_) => ProductInfoScreen(editingProduct: p)));
                 if (changed == true) await _load();
               } else if (v == 'archive') {
                 await _archive();
@@ -365,9 +348,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   : Text('${detail.boxes.length} hộp · Chạm để xem / thêm hộp'),
               trailing: const Icon(LucideIcons.chevronRight),
               onTap: () async {
-                await Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => ProductBoxesScreen(product: p)),
-                );
+                await Navigator.of(context)
+                    .push(MaterialPageRoute<void>(builder: (_) => ProductBoxesScreen(product: p)));
                 await _load();
               },
             ),
@@ -391,8 +373,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ing.amountPerServing != null && ing.unit != null
                     ? '${fmt(ing.amountPerServing!)} ${unitLabel(ing.unit!)}'
                     : (ing.labelAmount != null && ing.labelUnit != null
-                        ? '${fmt(ing.labelAmount!)} ${unitLabel(ing.labelUnit!)}'
-                        : ''),
+                          ? '${fmt(ing.labelAmount!)} ${unitLabel(ing.labelUnit!)}'
+                          : ''),
                 style: Theme.of(context).textTheme.titleSmall,
               ),
             ),
@@ -406,10 +388,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(_dsldMatch!.suggestedUse),
-                    ),
+                    child: Align(alignment: Alignment.centerLeft, child: Text(_dsldMatch!.suggestedUse)),
                   ),
                 ],
               ),
@@ -420,86 +399,74 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(_dsldMatch!.otherIngredients),
-                    ),
+                    child: Align(alignment: Alignment.centerLeft, child: Text(_dsldMatch!.otherIngredients)),
                   ),
                 ],
               ),
             const SizedBox(height: 8),
           ],
-          OutlinedButton(
-            onPressed: _editIngredients,
-            child: const Text('Sửa thành phần'),
-          ),
+          OutlinedButton(onPressed: _editIngredients, child: const Text('Sửa thành phần')),
           const SizedBox(height: 12),
-          Builder(builder: (ctx) {
-            final diary = state.diary;
-            final prodSchedules = [
-              for (final s in diary.actualTodaySchedules)
-                if (s.productId == p.id) s,
-            ];
-            final prodNotices = [
-              for (final n in diary.scheduleNotices(overrideSchedules: diary.actualTodaySchedules))
-                if (n.severity == 'notice' && n.productIds.contains(p.id)) n,
-            ];
-            Future<void> openSchedule([Schedule? existing]) async {
-              final nav = Navigator.of(context);
-              if (!diary.dayTimesSettings.dayTimesConfirmed) {
-                final confirmed = await nav.push<bool>(
-                  MaterialPageRoute<bool>(
-                    builder: (_) => const DayTimesScreen(onboardingFlow: true),
+          Builder(
+            builder: (ctx) {
+              final diary = state.diary;
+              final prodSchedules = [
+                for (final s in diary.actualTodaySchedules)
+                  if (s.productId == p.id) s,
+              ];
+              final prodNotices = [
+                for (final n in diary.scheduleNotices(overrideSchedules: diary.actualTodaySchedules))
+                  if (n.severity == 'notice' && n.productIds.contains(p.id)) n,
+              ];
+              Future<void> openSchedule([Schedule? existing]) async {
+                final nav = Navigator.of(context);
+                if (!diary.dayTimesSettings.dayTimesConfirmed) {
+                  final confirmed = await nav.push<bool>(
+                    MaterialPageRoute<bool>(builder: (_) => const DayTimesScreen(onboardingFlow: true)),
+                  );
+                  if (confirmed != true || !mounted) return;
+                }
+                await nav.push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => EditScheduleScreen(product: p, existingSchedule: existing),
                   ),
                 );
-                if (confirmed != true || !mounted) return;
+                await _load();
               }
-              await nav.push(
-                MaterialPageRoute<void>(
-                  builder: (_) => EditScheduleScreen(product: p, existingSchedule: existing),
-                ),
-              );
-              await _load();
-            }
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (prodSchedules.isEmpty)
-                  const ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text('Lịch uống'),
-                    subtitle: Text('Chưa có lịch uống'),
-                  )
-                else
-                  for (final s in prodSchedules)
-                    ListTile(
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (prodSchedules.isEmpty)
+                    const ListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        'Lịch: mỗi ngày ${fmt(s.servings * p.unitsPerServing)} $unit lúc ${formatMinutesHhMm(s.timeOfDay)}',
+                      title: Text('Lịch uống'),
+                      subtitle: Text('Chưa có lịch uống'),
+                    )
+                  else
+                    for (final s in prodSchedules)
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          'Lịch: mỗi ngày ${fmt(s.servings * p.unitsPerServing)} $unit lúc ${formatMinutesHhMm(s.timeOfDay)}',
+                        ),
+                        trailing: const Icon(LucideIcons.chevronRight),
+                        onTap: () => openSchedule(s),
                       ),
-                      trailing: const Icon(LucideIcons.chevronRight),
-                      onTap: () => openSchedule(s),
-                    ),
-                for (final n in prodNotices) ...[
-                  SafetyNote(message: n.messageVi),
-                  const SizedBox(height: 8),
+                  for (final n in prodNotices) ...[SafetyNote(message: n.messageVi), const SizedBox(height: 8)],
+                  OutlinedButton(
+                    onPressed: openSchedule,
+                    child: Text(prodSchedules.isEmpty ? 'Đặt lịch' : 'Thêm lịch'),
+                  ),
                 ],
-                OutlinedButton(
-                  onPressed: openSchedule,
-                  child: Text(prodSchedules.isEmpty ? 'Đặt lịch' : 'Thêm lịch'),
-                ),
-              ],
-            );
-          }),
+              );
+            },
+          ),
           const SizedBox(height: 8),
           FilledButton(
             onPressed: () async {
-              await Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => AddSupplementScreen(initialProductId: p.id),
-                ),
-              );
+              await Navigator.of(context)
+                  .push(MaterialPageRoute<void>(builder: (_) => AddSupplementScreen(initialProductId: p.id)));
               await _load();
             },
             child: const Text('Ghi lần uống'),
@@ -555,9 +522,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
   Future<void> _editBox([StockBox? box]) async {
     final diary = AppScope.of(context).diary;
     final remCtrl = TextEditingController(text: box == null ? '' : fmt(box.remaining));
-    final expCtrl = TextEditingController(
-      text: box?.expiryMonth == null ? '' : fmtExpiryMonth(box!.expiryMonth!),
-    );
+    final expCtrl = TextEditingController(text: box?.expiryMonth == null ? '' : fmtExpiryMonth(box!.expiryMonth!));
     String? err;
     var saving = false;
     final bool? saved;
@@ -574,9 +539,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                   controller: remCtrl,
                   enabled: !saving,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: InputDecoration(
-                    labelText: 'Số còn lại (${countUnitLabel(widget.product.countUnit)})',
-                  ),
+                  decoration: InputDecoration(labelText: 'Số còn lại (${countUnitLabel(widget.product.countUnit)})'),
                 ),
                 const SizedBox(height: 8),
                 TextField(
@@ -584,10 +547,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                   enabled: !saving,
                   keyboardType: TextInputType.number,
                   inputFormatters: const [ExpiryMonthInputFormatter()],
-                  decoration: const InputDecoration(
-                    labelText: 'Hạn dùng (tùy chọn)',
-                    hintText: 'MM/YYYY',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Hạn dùng (tùy chọn)', hintText: 'MM/YYYY'),
                 ),
                 if (err != null) ...[
                   const SizedBox(height: 8),
@@ -616,10 +576,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                         },
                   child: Text('Xóa', style: TextStyle(color: Theme.of(ctx).colorScheme.error)),
                 ),
-              TextButton(
-                onPressed: saving ? null : () => Navigator.pop(ctx, false),
-                child: const Text('Hủy'),
-              ),
+              TextButton(onPressed: saving ? null : () => Navigator.pop(ctx, false), child: const Text('Hủy')),
               FilledButton(
                 onPressed: saving
                     ? null
@@ -640,17 +597,9 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                         });
                         try {
                           if (box == null) {
-                            await diary.addProductBox(
-                              widget.product.id,
-                              remaining: rem,
-                              expiryMonth: parsed.yyyyMm,
-                            );
+                            await diary.addProductBox(widget.product.id, remaining: rem, expiryMonth: parsed.yyyyMm);
                           } else {
-                            await diary.updateProductBox(
-                              box.id,
-                              remaining: rem,
-                              expiryMonth: parsed.yyyyMm,
-                            );
+                            await diary.updateProductBox(box.id, remaining: rem, expiryMonth: parsed.yyyyMm);
                           }
                           if (ctx.mounted) Navigator.pop(ctx, true);
                         } on Object {
@@ -694,35 +643,35 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _boxes.isEmpty
-              ? const Center(child: Text('Chưa có hộp nào.'))
-              : ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    if (valid.isNotEmpty) ...[
-                      Text('Còn hạn', style: Theme.of(context).textTheme.titleSmall),
-                      for (final b in valid)
-                        ListTile(
-                          title: Text('Còn ${fmt(b.remaining)} $unit'),
-                          subtitle: Text(b.expiryMonth == null
-                              ? 'Không ghi hạn dùng'
-                              : 'HSD ${fmtExpiryMonth(b.expiryMonth!)}'),
-                          trailing: const Icon(LucideIcons.chevronRight),
-                          onTap: () => _editBox(b),
-                        ),
-                    ],
-                    if (expired.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      Text('Đã hết hạn', style: Theme.of(context).textTheme.titleSmall),
-                      for (final b in expired)
-                        ListTile(
-                          title: Text('Còn ${fmt(b.remaining)} $unit'),
-                          subtitle: Text('HSD ${fmtExpiryMonth(b.expiryMonth!)}'),
-                          trailing: const Icon(LucideIcons.chevronRight),
-                          onTap: () => _editBox(b),
-                        ),
-                    ],
-                  ],
-                ),
+          ? const Center(child: Text('Chưa có hộp nào.'))
+          : ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                if (valid.isNotEmpty) ...[
+                  Text('Còn hạn', style: Theme.of(context).textTheme.titleSmall),
+                  for (final b in valid)
+                    ListTile(
+                      title: Text('Còn ${fmt(b.remaining)} $unit'),
+                      subtitle: Text(
+                        b.expiryMonth == null ? 'Không ghi hạn dùng' : 'HSD ${fmtExpiryMonth(b.expiryMonth!)}',
+                      ),
+                      trailing: const Icon(LucideIcons.chevronRight),
+                      onTap: () => _editBox(b),
+                    ),
+                ],
+                if (expired.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text('Đã hết hạn', style: Theme.of(context).textTheme.titleSmall),
+                  for (final b in expired)
+                    ListTile(
+                      title: Text('Còn ${fmt(b.remaining)} $unit'),
+                      subtitle: Text('HSD ${fmtExpiryMonth(b.expiryMonth!)}'),
+                      trailing: const Icon(LucideIcons.chevronRight),
+                      onTap: () => _editBox(b),
+                    ),
+                ],
+              ],
+            ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _editBox,
         icon: const Icon(LucideIcons.plus),

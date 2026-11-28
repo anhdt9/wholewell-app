@@ -91,18 +91,8 @@ void main() {
               form: NutrientForm.folicAcid,
               folateMode: LabelFolateMode.folateGeneral,
             ),
-            LabelMicroEntry(
-              nutrientId: 'vitA',
-              labelAmount: 600,
-              unit: LabelUnit.ug,
-              form: NutrientForm.betaCarotene,
-            ),
-            LabelMicroEntry(
-              nutrientId: 'vitE',
-              labelAmount: 15,
-              unit: LabelUnit.mg,
-              form: NutrientForm.natural2r,
-            ),
+            LabelMicroEntry(nutrientId: 'vitA', labelAmount: 600, unit: LabelUnit.ug, form: NutrientForm.betaCarotene),
+            LabelMicroEntry(nutrientId: 'vitE', labelAmount: 15, unit: LabelUnit.mg, form: NutrientForm.natural2r),
           ],
         ),
         pack: pack,
@@ -262,10 +252,7 @@ void main() {
       await tester.pumpAndSettle();
       state.diary.setFoodLibrary(repository: null, broken: true);
       await tester.pumpAndSettle();
-      expect(
-        find.text('Không đọc được thư viện món ăn. Hãy cài lại WholeWell từ cửa hàng ứng dụng.'),
-        findsOneWidget,
-      );
+      expect(find.text('Không đọc được thư viện món ăn. Hãy cài lại WholeWell từ cửa hàng ứng dụng.'), findsOneWidget);
       await tester.tap(find.text('Nhập theo nhãn'));
       await tester.pumpAndSettle();
       expect(find.byType(LabelFoodScreen), findsOneWidget);
@@ -320,12 +307,7 @@ void main() {
         usedQty: 100,
         addedSugarG: 0,
         micros: const [
-          LabelMicroEntry(
-            nutrientId: 'vitA',
-            labelAmount: 3200,
-            unit: LabelUnit.ug,
-            form: NutrientForm.retinol,
-          ),
+          LabelMicroEntry(nutrientId: 'vitA', labelAmount: 3200, unit: LabelUnit.ug, form: NutrientForm.retinol),
         ],
       ),
       saveForReuse: false,

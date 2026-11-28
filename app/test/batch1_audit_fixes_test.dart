@@ -12,24 +12,12 @@ import 'package:wholewell/ui/product_detail_screen.dart';
 import 'package:wholewell/ui/profile_screen.dart';
 import 'package:wholewell/ui/today_screen.dart';
 
-Future<AppState> _readyState(
-  ReferencePack pack, {
-  JournalRepository? repo,
-}) async {
-  final state = AppState.withRepository(
-    pack: pack,
-    repo: repo ?? InMemoryJournalRepository(),
-  );
+Future<AppState> _readyState(ReferencePack pack, {JournalRepository? repo}) async {
+  final state = AppState.withRepository(pack: pack, repo: repo ?? InMemoryJournalRepository());
   await state.start();
   await state.completeFirstConsent(ageYears: 30, caution: false);
   await state.saveOnboardingBodyProfile(
-    const Profile(
-      ageYears: 30,
-      sex: Sex.female,
-      heightCm: 160,
-      weightKg: 55,
-      activityLevel: ActivityLevel.lowActive,
-    ),
+    const Profile(ageYears: 30, sex: Sex.female, heightCm: 160, weightKg: 55, activityLevel: ActivityLevel.lowActive),
   );
   return state;
 }
@@ -113,8 +101,7 @@ void main() {
     expect(find.byType(ProductInfoScreen), findsNothing);
   });
 
-  testWidgets('P1: chạm lại tab Hôm nay và onResume nền > 5 phút đưa ngày đang xem về hôm nay',
-      (tester) async {
+  testWidgets('P1: chạm lại tab Hôm nay và onResume nền > 5 phút đưa ngày đang xem về hôm nay', (tester) async {
     final state = await _readyState(pack);
     final yesterday = DateTime.now().subtract(const Duration(days: 1));
     await state.setDay(yesterday);
@@ -132,23 +119,16 @@ void main() {
     await state.setDay(yesterday);
     final baseTime = DateTime.now();
     state.onAppBackgrounded(now: baseTime);
-    await state.onAppResume(
-      atRootScreen: false,
-      now: baseTime.add(const Duration(minutes: 6)),
-    );
+    await state.onAppResume(atRootScreen: false, now: baseTime.add(const Duration(minutes: 6)));
     expect(state.diary.isViewingToday, isFalse);
 
     // Quay lại nền > 5 phút khi ở root (atRootScreen: true) -> tự về hôm nay.
     state.onAppBackgrounded(now: baseTime);
-    await state.onAppResume(
-      atRootScreen: true,
-      now: baseTime.add(const Duration(minutes: 6)),
-    );
+    await state.onAppResume(atRootScreen: true, now: baseTime.add(const Duration(minutes: 6)));
     expect(state.diary.isViewingToday, isTrue);
   });
 
-  testWidgets('P1: chạm để sửa buổi tập và vuốt xóa có hộp thoại xác nhận trong Nhật ký',
-      (tester) async {
+  testWidgets('P1: chạm để sửa buổi tập và vuốt xóa có hộp thoại xác nhận trong Nhật ký', (tester) async {
     final state = await _readyState(pack);
     await state.addWorkout(WorkoutEntry(activityCode: pack.activities.keys.first, minutes: 30));
 
@@ -190,11 +170,7 @@ void main() {
     await tester.pumpWidget(_wrap(state, const ProfileScreen()));
     await tester.pumpAndSettle();
 
-    await tester.scrollUntilVisible(
-      find.text('Xóa toàn bộ dữ liệu'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
+    await tester.scrollUntilVisible(find.text('Xóa toàn bộ dữ liệu'), 300, scrollable: find.byType(Scrollable).first);
     await tester.tap(find.text('Xóa toàn bộ dữ liệu'));
     await tester.pumpAndSettle();
 
@@ -218,11 +194,7 @@ void main() {
       _wrap(
         state,
         const Scaffold(body: TodayScreen()),
-        theme: ThemeData(
-          colorSchemeSeed: Colors.teal,
-          brightness: Brightness.dark,
-          useMaterial3: true,
-        ),
+        theme: ThemeData(colorSchemeSeed: Colors.teal, brightness: Brightness.dark, useMaterial3: true),
         textScale: 2.0,
       ),
     );

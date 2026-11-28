@@ -33,10 +33,7 @@ class BackupSchemaTooNewException implements Exception {
 class DecryptedBackupSnapshot {
   final Uint8List plainSqliteBytes;
   final int schemaVersion;
-  const DecryptedBackupSnapshot({
-    required this.plainSqliteBytes,
-    required this.schemaVersion,
-  });
+  const DecryptedBackupSnapshot({required this.plainSqliteBytes, required this.schemaVersion});
 }
 
 /// Định dạng nhị phân `.wwbackup`:
@@ -70,9 +67,7 @@ class BackupCodec {
   static String generateRecoveryKey() {
     final rng = Random.secure();
     final chars = List<String>.generate(24, (_) => _alphabet[rng.nextInt(_alphabet.length)]);
-    final groups = <String>[
-      for (var i = 0; i < 24; i += 4) chars.sublist(i, i + 4).join(),
-    ];
+    final groups = <String>[for (var i = 0; i < 24; i += 4) chars.sublist(i, i + 4).join()];
     return groups.join('-');
   }
 
@@ -92,29 +87,27 @@ class BackupCodec {
     final salt = Uint8List.fromList(List<int>.generate(_saltLength, (_) => rng.nextInt(256)));
     final nonce = Uint8List.fromList(List<int>.generate(_nonceLength, (_) => rng.nextInt(256)));
 
-    return Isolate.run(() => _encryptInIsolate(
-          compressedPayload: compressed,
-          schemaVersion: schemaVersion,
-          secretBytes: Uint8List.fromList(utf8.encode(secret)),
-          memoryKiB: memoryKiB,
-          iterations: iterations,
-          parallelism: parallelism,
-          salt: salt,
-          nonce: nonce,
-        ));
+    return Isolate.run(
+      () => _encryptInIsolate(
+        compressedPayload: compressed,
+        schemaVersion: schemaVersion,
+        secretBytes: Uint8List.fromList(utf8.encode(secret)),
+        memoryKiB: memoryKiB,
+        iterations: iterations,
+        parallelism: parallelism,
+        salt: salt,
+        nonce: nonce,
+      ),
+    );
   }
 
-  static Future<DecryptedBackupSnapshot> decryptSnapshot({
-    required Uint8List backupBytes,
-    required String secret,
-  }) {
+  static Future<DecryptedBackupSnapshot> decryptSnapshot({required Uint8List backupBytes, required String secret}) {
     if (secret.isEmpty) {
       return Future.error(const BackupWrongSecretException());
     }
-    return Isolate.run(() => _decryptInIsolate(
-          backupBytes: backupBytes,
-          secretBytes: Uint8List.fromList(utf8.encode(secret)),
-        ));
+    return Isolate.run(
+      () => _decryptInIsolate(backupBytes: backupBytes, secretBytes: Uint8List.fromList(utf8.encode(secret))),
+    );
   }
 
   static Future<Uint8List> _encryptInIsolate({
@@ -138,25 +131,12 @@ class BackupCodec {
     header.setRange(22, 38, salt);
     header.setRange(38, 50, nonce);
 
-    final kdf = Argon2id(
-      memory: memoryKiB,
-      iterations: iterations,
-      parallelism: parallelism,
-      hashLength: 32,
-    );
-    final key = await kdf.deriveKey(
-      secretKey: SecretKey(secretBytes),
-      nonce: salt,
-    );
+    final kdf = Argon2id(memory: memoryKiB, iterations: iterations, parallelism: parallelism, hashLength: 32);
+    final key = await kdf.deriveKey(secretKey: SecretKey(secretBytes), nonce: salt);
     secretBytes.fillRange(0, secretBytes.length, 0);
 
     final aead = Chacha20.poly1305Aead();
-    final box = await aead.encrypt(
-      compressedPayload,
-      secretKey: key,
-      nonce: nonce,
-      aad: header,
-    );
+    final box = await aead.encrypt(compressedPayload, secretKey: key, nonce: nonce, aad: header);
     final out = Uint8List(headerLength + box.cipherText.length + _macLength);
     out.setRange(0, headerLength, header);
     out.setRange(headerLength, headerLength + box.cipherText.length, box.cipherText);
@@ -195,16 +175,8 @@ class BackupCodec {
     final cipherText = Uint8List.sublistView(backupBytes, headerLength, cipherEnd);
     final macBytes = Uint8List.sublistView(backupBytes, cipherEnd);
 
-    final kdf = Argon2id(
-      memory: memoryKiB,
-      iterations: iterations,
-      parallelism: parallelism,
-      hashLength: 32,
-    );
-    final key = await kdf.deriveKey(
-      secretKey: SecretKey(secretBytes),
-      nonce: salt,
-    );
+    final kdf = Argon2id(memory: memoryKiB, iterations: iterations, parallelism: parallelism, hashLength: 32);
+    final key = await kdf.deriveKey(secretKey: SecretKey(secretBytes), nonce: salt);
     secretBytes.fillRange(0, secretBytes.length, 0);
 
     final aead = Chacha20.poly1305Aead();

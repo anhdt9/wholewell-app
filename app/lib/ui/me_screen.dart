@@ -33,15 +33,13 @@ class MeScreen extends StatelessWidget {
     final profileSummary = p == null
         ? 'Chưa có thông tin'
         : '${p.sex == Sex.female ? 'Nữ' : 'Nam'} · ${p.ageYears} tuổi · '
-            '${p.heightCm.round()} cm · ${p.weightKg.round()} kg';
+              '${p.heightCm.round()} cm · ${p.weightKg.round()} kg';
     final lastBackup = state.lastFileBackupAt;
     final backupSummary = lastBackup == null
         ? 'Chưa sao lưu qua tệp'
         : 'Lần gần nhất: ${fmtBackupDateTime(lastBackup)}';
 
-    void push(Widget screen) => Navigator.of(context).push(
-          MaterialPageRoute<void>(builder: (_) => screen),
-        );
+    void push(Widget screen) => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => screen));
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.xl),
@@ -105,16 +103,8 @@ class MeScreen extends StatelessWidget {
           textTheme: t,
           cs: cs,
           items: [
-            _MeItem(
-              icon: LucideIcons.lock,
-              title: 'Quyền riêng tư',
-              onTap: () => push(const PrivacyScreen()),
-            ),
-            _MeItem(
-              icon: LucideIcons.bookOpen,
-              title: 'Nguồn số liệu',
-              onTap: () => push(const SourcesScreen()),
-            ),
+            _MeItem(icon: LucideIcons.lock, title: 'Quyền riêng tư', onTap: () => push(const PrivacyScreen())),
+            _MeItem(icon: LucideIcons.bookOpen, title: 'Nguồn số liệu', onTap: () => push(const SourcesScreen())),
           ],
         ),
       ],
@@ -128,12 +118,7 @@ class _MeItem {
   final String? subtitle;
   final VoidCallback onTap;
 
-  const _MeItem({
-    required this.icon,
-    required this.title,
-    this.subtitle,
-    required this.onTap,
-  });
+  const _MeItem({required this.icon, required this.title, this.subtitle, required this.onTap});
 }
 
 class _MeGroupCard extends StatelessWidget {
@@ -142,12 +127,7 @@ class _MeGroupCard extends StatelessWidget {
   final TextTheme textTheme;
   final ColorScheme cs;
 
-  const _MeGroupCard({
-    required this.header,
-    required this.items,
-    required this.textTheme,
-    required this.cs,
-  });
+  const _MeGroupCard({required this.header, required this.items, required this.textTheme, required this.cs});
 
   @override
   Widget build(BuildContext context) {
@@ -157,10 +137,7 @@ class _MeGroupCard extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: AppSpacing.xs, bottom: AppSpacing.xs),
-          child: Text(
-            header,
-            style: textTheme.labelLarge?.copyWith(color: cs.onSurfaceVariant),
-          ),
+          child: Text(header, style: textTheme.labelLarge?.copyWith(color: cs.onSurfaceVariant)),
         ),
         Card(
           margin: EdgeInsets.zero,
@@ -168,11 +145,7 @@ class _MeGroupCard extends StatelessWidget {
           child: Column(
             children: [
               for (var i = 0; i < items.length; i++) ...[
-                if (i > 0)
-                  Divider(
-                    height: 1,
-                    color: ww.outlineSubtle.withValues(alpha: 0.5),
-                  ),
+                if (i > 0) Divider(height: 1, color: ww.outlineSubtle.withValues(alpha: 0.5)),
                 ListTile(
                   minTileHeight: 56,
                   leading: CircleAvatar(

@@ -19,11 +19,7 @@ class AddSupplementScreen extends StatefulWidget {
   final int? initialProductId;
   final DoseEntry? existingDose;
 
-  const AddSupplementScreen({
-    super.key,
-    this.initialProductId,
-    this.existingDose,
-  });
+  const AddSupplementScreen({super.key, this.initialProductId, this.existingDose});
 
   @override
   State<AddSupplementScreen> createState() => _AddSupplementScreenState();
@@ -153,11 +149,7 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
       builder: (ctx) => ListView(
         children: [
           for (final d in options)
-            ListTile(
-              title: Text(d.nameVi),
-              trailing: Text(unitLabel(d.unit)),
-              onTap: () => Navigator.pop(ctx, d.id),
-            ),
+            ListTile(title: Text(d.nameVi), trailing: Text(unitLabel(d.unit)), onTap: () => Navigator.pop(ctx, d.id)),
         ],
       ),
     );
@@ -170,8 +162,7 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
       final raw = double.tryParse(l.amount.text.trim().replaceAll(',', '.'));
       if (raw == null || !raw.isFinite || raw <= 0) continue;
       final def = pack.nutrients[l.nutrientId]!;
-      final labelUnit =
-          l.unit == _Unit.iu ? LabelUnit.iu : SupplementIngredientHelper.labelUnitForPackUnit(def.unit);
+      final labelUnit = l.unit == _Unit.iu ? LabelUnit.iu : SupplementIngredientHelper.labelUnitForPackUnit(def.unit);
       // Danh sách chọn đã bỏ chất không có đơn vị tương ứng; không đoán đơn vị.
       if (labelUnit == null) continue;
       final form = switch (l.nutrientId) {
@@ -265,14 +256,8 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
             'Sản phẩm này không còn hộp còn hạn. Bạn muốn trừ vào hộp đã hết hạn hay chỉ ghi lần uống?',
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, ExpiredBoxChoice.skip),
-              child: const Text('Không trừ'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(ctx, ExpiredBoxChoice.deduct),
-              child: const Text('Trừ'),
-            ),
+            TextButton(onPressed: () => Navigator.pop(ctx, ExpiredBoxChoice.skip), child: const Text('Không trừ')),
+            FilledButton(onPressed: () => Navigator.pop(ctx, ExpiredBoxChoice.deduct), child: const Text('Trừ')),
           ],
         ),
       );
@@ -293,16 +278,10 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
       rootCtx,
       feedback: feedback,
       pack: state.pack,
-      onUndo: feedback.savedDoseId == null
-          ? null
-          : () => state.diary.deleteDoseEntry(feedback.savedDoseId!),
+      onUndo: feedback.savedDoseId == null ? null : () => state.diary.deleteDoseEntry(feedback.savedDoseId!),
       onAddBox: productForBox == null
           ? null
-          : () => navigator.push(
-                MaterialPageRoute<void>(
-                  builder: (_) => ProductBoxesScreen(product: productForBox),
-                ),
-              ),
+          : () => navigator.push(MaterialPageRoute<void>(builder: (_) => ProductBoxesScreen(product: productForBox))),
     );
   }
 
@@ -346,10 +325,7 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
                 ),
               const Divider(),
             ] else
-              const Padding(
-                padding: EdgeInsets.only(bottom: 12),
-                child: Text('Chưa có sản phẩm nào trong tủ.'),
-              ),
+              const Padding(padding: EdgeInsets.only(bottom: 12), child: Text('Chưa có sản phẩm nào trong tủ.')),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(LucideIcons.filePenLine),
@@ -362,14 +338,11 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
       );
     }
 
-    final timeStr =
-        '${_time.hour.toString().padLeft(2, '0')}:${_time.minute.toString().padLeft(2, '0')}';
+    final timeStr = '${_time.hour.toString().padLeft(2, '0')}:${_time.minute.toString().padLeft(2, '0')}';
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing
-            ? 'Sửa lần uống'
-            : (_selectedProduct?.product.name ?? 'Ghi một lần')),
+        title: Text(_isEditing ? 'Sửa lần uống' : (_selectedProduct?.product.name ?? 'Ghi một lần')),
         actions: [
           if (_isEditing)
             IconButton(
@@ -443,14 +416,8 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
                 DropdownButton<VitaminEForm>(
                   value: l.eForm,
                   items: const [
-                    DropdownMenuItem(
-                      value: VitaminEForm.natural,
-                      child: Text('Dạng tự nhiên (d-alpha)'),
-                    ),
-                    DropdownMenuItem(
-                      value: VitaminEForm.synthetic,
-                      child: Text('Dạng tổng hợp (dl-alpha)'),
-                    ),
+                    DropdownMenuItem(value: VitaminEForm.natural, child: Text('Dạng tự nhiên (d-alpha)')),
+                    DropdownMenuItem(value: VitaminEForm.synthetic, child: Text('Dạng tổng hợp (dl-alpha)')),
                   ],
                   onChanged: (f) => setState(() => l.eForm = f!),
                 ),
@@ -471,10 +438,7 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
             ),
           ],
           const SizedBox(height: 20),
-          FilledButton(
-            onPressed: _saving ? null : _save,
-            child: const Text('Lưu'),
-          ),
+          FilledButton(onPressed: _saving ? null : _save, child: const Text('Lưu')),
         ],
       ),
     );

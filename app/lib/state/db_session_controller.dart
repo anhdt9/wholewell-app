@@ -49,12 +49,12 @@ class DbSessionController extends ChangeNotifier {
   Future<void>? _starting;
 
   DbSessionController({DbOpener? opener, JournalRepository? repo, DataStatus? initialStatus})
-      : _opener = opener,
-        _repo = repo,
-        _status = initialStatus ?? (opener != null ? DataStatus.loading : DataStatus.ready),
-        _stage = (initialStatus ?? (opener != null ? DataStatus.loading : DataStatus.ready)) == DataStatus.ready
-            ? SessionStage.ready
-            : SessionStage.welcome;
+    : _opener = opener,
+      _repo = repo,
+      _status = initialStatus ?? (opener != null ? DataStatus.loading : DataStatus.ready),
+      _stage = (initialStatus ?? (opener != null ? DataStatus.loading : DataStatus.ready)) == DataStatus.ready
+          ? SessionStage.ready
+          : SessionStage.welcome;
 
   JournalRepository? get repo => _repo;
   DataStatus get status => _status;
@@ -107,10 +107,7 @@ class DbSessionController extends ChangeNotifier {
     }
   }
 
-  Future<bool> ensureCreatedForConsent(
-    ConsentInput input, {
-    required Future<void> Function() onAlreadyExists,
-  }) async {
+  Future<bool> ensureCreatedForConsent(ConsentInput input, {required Future<void> Function() onAlreadyExists}) async {
     final o = _opener;
     if (_repo != null || o == null || _status != DataStatus.welcome) return true;
     try {
@@ -129,11 +126,7 @@ class DbSessionController extends ChangeNotifier {
   Future<bool> upgradeHealthConsent({required int ageYears, required bool caution}) async {
     final r = _repo;
     if (r == null) return false;
-    await r.upgradeHealthConsent(
-      contentVersion: mvpConsentVersion,
-      ageYears: ageYears,
-      caution: caution,
-    );
+    await r.upgradeHealthConsent(contentVersion: mvpConsentVersion, ageYears: ageYears, caution: caution);
     await _syncStageFromRepo();
     // Nếu người dùng khung tạm đã có đủ hồ sơ và tùy chọn calo thì cho vào thẳng app.
     if (_stage != SessionStage.ready) {
@@ -183,11 +176,7 @@ class DbSessionController extends ChangeNotifier {
     if (o == null) {
       throw StateError('Chưa có kho lưu trữ CSDL trên thiết bị.');
     }
-    final outcome = await o.restoreFromBackup(
-      backupBytes: backupBytes,
-      secret: secret,
-      openRepository: _repo,
-    );
+    final outcome = await o.restoreFromBackup(backupBytes: backupBytes, secret: secret, openRepository: _repo);
     if (outcome is RestoreSucceeded) {
       _repo = null;
       _apply(outcome.openOutcome);

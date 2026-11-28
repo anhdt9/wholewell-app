@@ -107,17 +107,11 @@ class _TwoSegmentPainter extends CustomPainter {
       canvas.clipRRect(trackRRect);
 
       if (foodW > 0) {
-        canvas.drawRect(
-          Rect.fromLTWH(0, 0, foodW, size.height),
-          Paint()..color = foodColor,
-        );
+        canvas.drawRect(Rect.fromLTWH(0, 0, foodW, size.height), Paint()..color = foodColor);
       }
       if (suppW > 0) {
         final suppLeft = foodW + gap;
-        canvas.drawRect(
-          Rect.fromLTWH(suppLeft, 0, suppW, size.height),
-          Paint()..color = supplementColor,
-        );
+        canvas.drawRect(Rect.fromLTWH(suppLeft, 0, suppW, size.height), Paint()..color = supplementColor);
       }
 
       // Khi tổng vượt mức khuyến nghị/tham chiếu (> 0), vẽ vạch 2 px tại mốc 100%.
@@ -196,30 +190,22 @@ class EnergyArcGauge extends StatelessWidget {
     final safeTarget = targetKcal.isFinite ? math.max(0.0, targetKcal) : 0.0;
     final rawRatio = safeTarget <= 0 ? 0.0 : (safeConsumed / safeTarget).clamp(0.0, 1.0);
 
-    final innerContent = centerChild ??
+    final innerContent =
+        centerChild ??
         Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               '${safeConsumed.round()}',
               style: tabularNumberStyle(
-                t.headlineMedium?.copyWith(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w600,
-                  height: 1.1,
-                  color: cs.onSurface,
-                ),
+                t.headlineMedium?.copyWith(fontSize: 28, fontWeight: FontWeight.w600, height: 1.1, color: cs.onSurface),
               ),
             ),
             const SizedBox(height: 2),
             Text(
               safeTarget > 0 ? '/ ${safeTarget.round()} kcal' : 'kcal',
               style: tabularNumberStyle(
-                t.bodySmall?.copyWith(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: cs.onSurfaceVariant,
-                ),
+                t.bodySmall?.copyWith(fontSize: 13, fontWeight: FontWeight.w500, color: cs.onSurfaceVariant),
               ),
             ),
           ],
@@ -250,10 +236,7 @@ class EnergyArcGauge extends StatelessWidget {
           child: Padding(
             padding: EdgeInsets.all(strokeWidth + AppSpacing.md),
             child: Center(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: innerContent,
-              ),
+              child: FittedBox(fit: BoxFit.scaleDown, child: innerContent),
             ),
           ),
         ),
@@ -345,9 +328,7 @@ class TargetRangeBar extends StatelessWidget {
     final inRange = safePct >= safeMin && safePct <= safeMax;
 
     final baseAccent = activeColor ?? ww.inRange;
-    final dotColor = inRange
-        ? baseAccent
-        : (safePct > safeMax ? ww.warningBorder : ww.belowTarget);
+    final dotColor = inRange ? baseAccent : (safePct > safeMax ? ww.warningBorder : ww.belowTarget);
 
     final bar = SizedBox(
       width: double.infinity,
@@ -366,8 +347,8 @@ class TargetRangeBar extends StatelessWidget {
       ),
     );
 
-    final label = semanticsLabel ??
-        '${safePct.round()}%, khoảng khuyến nghị ${safeMin.round()} đến ${safeMax.round()}%';
+    final label =
+        semanticsLabel ?? '${safePct.round()}%, khoảng khuyến nghị ${safeMin.round()} đến ${safeMax.round()}%';
     return Semantics(label: label, child: bar);
   }
 }
@@ -415,36 +396,17 @@ class _TargetRangePainter extends CustomPainter {
 
     if (maxX > minX) {
       final bandRect = Rect.fromLTRB(minX, trackTop - 1, maxX, trackTop + trackHeight + 1);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(bandRect, const Radius.circular(3)),
-        Paint()..color = bandColor,
-      );
+      canvas.drawRRect(RRect.fromRectAndRadius(bandRect, const Radius.circular(3)), Paint()..color = bandColor);
       final tickPaint = Paint()
         ..color = bandTickColor
         ..strokeWidth = 1.5;
-      canvas.drawLine(
-        Offset(minX, trackTop - 2),
-        Offset(minX, trackTop + trackHeight + 2),
-        tickPaint,
-      );
-      canvas.drawLine(
-        Offset(maxX, trackTop - 2),
-        Offset(maxX, trackTop + trackHeight + 2),
-        tickPaint,
-      );
+      canvas.drawLine(Offset(minX, trackTop - 2), Offset(minX, trackTop + trackHeight + 2), tickPaint);
+      canvas.drawLine(Offset(maxX, trackTop - 2), Offset(maxX, trackTop + trackHeight + 2), tickPaint);
     }
 
     final dotX = xFor(percent);
-    canvas.drawCircle(
-      Offset(dotX, cy),
-      dotRadius + 1.5,
-      Paint()..color = dotHaloColor,
-    );
-    canvas.drawCircle(
-      Offset(dotX, cy),
-      dotRadius,
-      Paint()..color = dotColor,
-    );
+    canvas.drawCircle(Offset(dotX, cy), dotRadius + 1.5, Paint()..color = dotHaloColor);
+    canvas.drawCircle(Offset(dotX, cy), dotRadius, Paint()..color = dotColor);
   }
 
   @override

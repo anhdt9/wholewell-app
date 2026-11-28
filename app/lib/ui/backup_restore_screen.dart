@@ -22,12 +22,11 @@ String fmtBackupDateTime(DateTime t) {
 }
 
 String restoreOutcomeMessage(RestoreOutcome res) => switch (res) {
-      RestoreSucceeded() => 'Đã khôi phục dữ liệu.',
-      RestoreWrongSecret() || RestoreCorrupted() => 'Mã khôi phục không đúng hoặc tệp đã bị hỏng.',
-      RestoreNeedsUpdate() =>
-        'Tệp sao lưu được tạo bởi phiên bản WholeWell mới hơn. Hãy cập nhật app trước khi khôi phục.',
-      RestoreFailed() => 'Chưa khôi phục được dữ liệu. Thử lại.',
-    };
+  RestoreSucceeded() => 'Đã khôi phục dữ liệu.',
+  RestoreWrongSecret() || RestoreCorrupted() => 'Mã khôi phục không đúng hoặc tệp đã bị hỏng.',
+  RestoreNeedsUpdate() => 'Tệp sao lưu được tạo bởi phiên bản WholeWell mới hơn. Hãy cập nhật app trước khi khôi phục.',
+  RestoreFailed() => 'Chưa khôi phục được dữ liệu. Thử lại.',
+};
 
 /// Màn Sao lưu và khôi phục (`Tôi -> Sao lưu và khôi phục`).
 class BackupRestoreScreen extends StatefulWidget {
@@ -67,10 +66,7 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
             actions: [
               TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Hủy')),
               FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: cs.error,
-                  foregroundColor: cs.onError,
-                ),
+                style: FilledButton.styleFrom(backgroundColor: cs.error, foregroundColor: cs.onError),
                 onPressed: () => Navigator.of(ctx).pop(true),
                 child: const Text('Ngắt kết nối'),
               ),
@@ -83,9 +79,7 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
 
     setState(() => _busy = true);
     try {
-      final cleared = await AppScope.of(context).disconnectGoogleDrive(
-        deleteRemoteBackups: deleteRemote,
-      );
+      final cleared = await AppScope.of(context).disconnectGoogleDrive(deleteRemoteBackups: deleteRemote);
       if (!mounted) return;
       final msg = !deleteRemote || cleared
           ? 'Đã ngắt kết nối Google Drive.'
@@ -102,18 +96,14 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final last = state.lastFileBackupAt;
-    final statusText = last == null
-        ? 'Chưa sao lưu qua tệp'
-        : 'Lần gần nhất: ${fmtBackupDateTime(last)}';
+    final statusText = last == null ? 'Chưa sao lưu qua tệp' : 'Lần gần nhất: ${fmtBackupDateTime(last)}';
 
     final lastDrive = state.lastDriveBackupAt;
     final driveEmail = state.driveAccount?.email;
     final driveStatus = state.driveEnabled
         ? [
             if (driveEmail != null) 'Tài khoản: $driveEmail',
-            lastDrive == null
-                ? 'Chưa sao lưu lên Drive'
-                : 'Lần gần nhất: ${fmtBackupDateTime(lastDrive)}',
+            lastDrive == null ? 'Chưa sao lưu lên Drive' : 'Lần gần nhất: ${fmtBackupDateTime(lastDrive)}',
           ].join(' · ')
         : 'Dữ liệu gửi lên thư mục ẩn (appDataFolder) trên Google Drive ở dạng đã mã hóa.';
 
@@ -122,10 +112,7 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          if (state.drivePendingDeleteActive) ...[
-            const PendingDriveDeleteCard(),
-            const SizedBox(height: 16),
-          ],
+          if (state.drivePendingDeleteActive) ...[const PendingDriveDeleteCard(), const SizedBox(height: 16)],
           Text('Tệp mã hóa trên máy', style: t.titleMedium),
           const SizedBox(height: 6),
           Text(
@@ -138,9 +125,7 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
           FilledButton(
             style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             onPressed: state.canBackupToFile && !_busy
-                ? () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(builder: (_) => const CreateBackupScreen()),
-                    )
+                ? () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const CreateBackupScreen()))
                 : null,
             child: const Text('Tạo tệp sao lưu'),
           ),
@@ -148,29 +133,22 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
           OutlinedButton(
             style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             onPressed: state.canRestoreFromFile && !_busy
-                ? () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const RestoreBackupScreen(hasExistingData: true),
-                      ),
-                    )
+                ? () => Navigator.of(context)
+                      .push(MaterialPageRoute<void>(builder: (_) => const RestoreBackupScreen(hasExistingData: true)))
                 : null,
             child: const Text('Khôi phục từ tệp'),
           ),
           const Divider(height: 32),
           Text('Google Drive (tùy chọn)', style: t.titleMedium),
           const SizedBox(height: 6),
-          Text(
-            driveStatus,
-            style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-          ),
+          Text(driveStatus, style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
           const SizedBox(height: 16),
           if (!state.driveEnabled)
             FilledButton.tonal(
               style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
               onPressed: state.canBackupToFile && !_busy
-                  ? () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(builder: (_) => const DriveConsentScreen()),
-                      )
+                  ? () =>
+                        Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const DriveConsentScreen()))
                   : null,
               child: const Text('Kết nối Google Drive'),
             )
@@ -178,9 +156,9 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
             FilledButton.tonal(
               style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
               onPressed: state.canBackupToFile && !_busy
-                  ? () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(builder: (_) => const CreateDriveBackupScreen()),
-                      )
+                  ? () =>
+                        Navigator.of(context)
+                            .push(MaterialPageRoute<void>(builder: (_) => const CreateDriveBackupScreen()))
                   : null,
               child: const Text('Sao lưu lên Drive'),
             ),
@@ -188,21 +166,16 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
           OutlinedButton(
             style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             onPressed: state.canRestoreFromFile && !_busy
-                ? () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const RestoreDriveBackupScreen(hasExistingData: true),
-                      ),
-                    )
+                ? () => Navigator.of(
+                    context,
+                  ).push(MaterialPageRoute<void>(builder: (_) => const RestoreDriveBackupScreen(hasExistingData: true)))
                 : null,
             child: const Text('Khôi phục từ Drive'),
           ),
           if (state.driveEnabled) ...[
             const SizedBox(height: 6),
             TextButton(
-              style: TextButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-                foregroundColor: cs.error,
-              ),
+              style: TextButton.styleFrom(minimumSize: const Size.fromHeight(48), foregroundColor: cs.error),
               onPressed: _busy ? null : _disconnectDrive,
               child: const Text('Ngắt kết nối Google Drive'),
             ),
@@ -224,8 +197,7 @@ class BackupSecretSection extends StatefulWidget {
 
   const BackupSecretSection({
     super.key,
-    this.noticeText =
-        'Khóa bản sao lưu chỉ bạn giữ. Quên mã hoặc mật khẩu sẽ không mở lại được tệp.',
+    this.noticeText = 'Khóa bản sao lưu chỉ bạn giữ. Quên mã hoặc mật khẩu sẽ không mở lại được tệp.',
     required this.primaryLabel,
     required this.busyLabel,
     required this.onSubmit,
@@ -278,8 +250,7 @@ class _BackupSecretSectionState extends State<BackupSecretSection> {
     }
   }
 
-  String get _activeSecret =>
-      _mode == BackupSecretMode.recoveryKey ? _recoveryKey : _passCtl.text;
+  String get _activeSecret => _mode == BackupSecretMode.recoveryKey ? _recoveryKey : _passCtl.text;
 
   Future<void> _copyKey() async {
     await Clipboard.setData(ClipboardData(text: _recoveryKey));
@@ -402,17 +373,11 @@ class _BackupSecretSectionState extends State<BackupSecretSection> {
             controller: _confirmCtl,
             enabled: !_busy,
             obscureText: _obscurePass,
-            decoration: InputDecoration(
-              labelText: 'Nhập lại mật khẩu',
-              errorText: pwErr,
-            ),
+            decoration: InputDecoration(labelText: 'Nhập lại mật khẩu', errorText: pwErr),
             onChanged: (_) => setState(() => _errorText = null),
           ),
         ],
-        if (_errorText != null) ...[
-          const SizedBox(height: 12),
-          Text(_errorText!, style: TextStyle(color: cs.error)),
-        ],
+        if (_errorText != null) ...[const SizedBox(height: 12), Text(_errorText!, style: TextStyle(color: cs.error))],
         const SizedBox(height: 20),
         FilledButton(
           style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
@@ -421,11 +386,7 @@ class _BackupSecretSectionState extends State<BackupSecretSection> {
               ? Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
+                    const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
                     const SizedBox(width: 12),
                     Text(widget.busyLabel),
                   ],
@@ -570,9 +531,7 @@ class _RestoreBackupScreenState extends State<RestoreBackupScreen> {
         context: context,
         builder: (ctx) => AlertDialog(
           title: const Text('Thay dữ liệu hiện tại?'),
-          content: const Text(
-            'Dữ liệu hiện tại trên máy này sẽ được thay bằng bản sao lưu. Tiếp tục?',
-          ),
+          content: const Text('Dữ liệu hiện tại trên máy này sẽ được thay bằng bản sao lưu. Tiếp tục?'),
           actions: [
             TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Hủy')),
             FilledButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Khôi phục')),
@@ -588,10 +547,7 @@ class _RestoreBackupScreenState extends State<RestoreBackupScreen> {
     });
     final state = AppScope.of(context);
     try {
-      final res = await state.restoreEncryptedBackupFile(
-        backupBytes: file.bytes,
-        secret: _secretCtl.text.trim(),
-      );
+      final res = await state.restoreEncryptedBackupFile(backupBytes: file.bytes, secret: _secretCtl.text.trim());
       if (!mounted) return;
       switch (res) {
         case RestoreSucceeded():
@@ -625,10 +581,7 @@ class _RestoreBackupScreenState extends State<RestoreBackupScreen> {
         children: [
           const Text('Chọn tệp .wwbackup và nhập mã khôi phục hoặc mật khẩu.'),
           const SizedBox(height: 16),
-          if (_picked != null) ...[
-            Text('Tệp: ${_picked!.name}', style: t.bodyMedium),
-            const SizedBox(height: 8),
-          ],
+          if (_picked != null) ...[Text('Tệp: ${_picked!.name}', style: t.bodyMedium), const SizedBox(height: 8)],
           OutlinedButton.icon(
             style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             onPressed: _busy ? null : _pickFile,
@@ -659,17 +612,12 @@ class _RestoreBackupScreenState extends State<RestoreBackupScreen> {
                 children: [
                   Icon(LucideIcons.info, size: 18),
                   SizedBox(width: 8),
-                  Expanded(
-                    child: Text('Khôi phục sẽ thay dữ liệu hiện tại trên máy này.'),
-                  ),
+                  Expanded(child: Text('Khôi phục sẽ thay dữ liệu hiện tại trên máy này.')),
                 ],
               ),
             ),
           ],
-          if (_errorText != null) ...[
-            const SizedBox(height: 12),
-            Text(_errorText!, style: TextStyle(color: cs.error)),
-          ],
+          if (_errorText != null) ...[const SizedBox(height: 12), Text(_errorText!, style: TextStyle(color: cs.error))],
           const SizedBox(height: 20),
           FilledButton(
             style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
@@ -678,11 +626,7 @@ class _RestoreBackupScreenState extends State<RestoreBackupScreen> {
                 ? const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
+                      SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
                       SizedBox(width: 12),
                       Text('Đang giải mã và kiểm tra...'),
                     ],

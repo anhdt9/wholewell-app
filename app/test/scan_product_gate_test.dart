@@ -7,14 +7,13 @@ String? _accept({
   bool busy = false,
   String? heldBarcode,
   String? lastHandledCode,
-}) =>
-    ScanProductScreen.acceptLiveCode(
-      code: code,
-      routeIsCurrent: routeIsCurrent,
-      busy: busy,
-      heldBarcode: heldBarcode,
-      lastHandledCode: lastHandledCode,
-    );
+}) => ScanProductScreen.acceptLiveCode(
+  code: code,
+  routeIsCurrent: routeIsCurrent,
+  busy: busy,
+  heldBarcode: heldBarcode,
+  lastHandledCode: lastHandledCode,
+);
 
 void main() {
   group('camera quét mã chỉ mở một màn', () {

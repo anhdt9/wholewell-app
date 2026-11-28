@@ -44,10 +44,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      _meal = DiaryController.defaultMealFor(
-        DateTime.now(),
-        AppScope.of(context).diary.dayTimesSettings,
-      );
+      _meal = DiaryController.defaultMealFor(DateTime.now(), AppScope.of(context).diary.dayTimesSettings);
       unawaited(_refreshLists(''));
     }
   }
@@ -70,10 +67,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
 
     final q = query.trim();
     if (q.isEmpty) {
-      final res = await Future.wait([
-        diary.recentFoods(limit: 8),
-        diary.searchCustomFoods('', limit: 20),
-      ]);
+      final res = await Future.wait([diary.recentFoods(limit: 8), diary.searchCustomFoods('', limit: 20)]);
       if (!mounted) return;
       _loading = false;
       _spinnerDelay?.cancel();
@@ -86,10 +80,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
       return;
     }
 
-    final res = await Future.wait([
-      diary.searchCustomFoods(q, limit: 20),
-      diary.searchLibrary(q, limit: 30),
-    ]);
+    final res = await Future.wait([diary.searchCustomFoods(q, limit: 20), diary.searchLibrary(q, limit: 30)]);
     if (!mounted) return;
     _loading = false;
     _spinnerDelay?.cancel();
@@ -185,21 +176,14 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
     final q = _searchCtrl.text.trim();
     final fb = await Navigator.of(context).push<FoodLogFeedback>(
       MaterialPageRoute(
-        builder: (_) => LabelFoodScreen(
-          initialMeal: _meal,
-          initialName: q.isEmpty ? null : q,
-        ),
+        builder: (_) => LabelFoodScreen(initialMeal: _meal, initialName: q.isEmpty ? null : q),
       ),
     );
     if (fb != null) await _finishWithFeedback(fb);
   }
 
   Future<void> _confirmArchiveCustom(CustomFood c) async {
-    final ok = await showConfirmDialog(
-      context,
-      title: 'Bỏ lưu “${c.name}” khỏi danh sách?',
-      confirmLabel: 'Bỏ lưu',
-    );
+    final ok = await showConfirmDialog(context, title: 'Bỏ lưu “${c.name}” khỏi danh sách?', confirmLabel: 'Bỏ lưu');
     if (!ok || !mounted) return;
     await AppScope.of(context).diary.archiveCustomFood(c.id);
     if (mounted) unawaited(_refreshLists(_searchCtrl.text));
@@ -252,15 +236,15 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
                             child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
                           )
                         : (isSearching
-                            ? IconButton(
-                                tooltip: 'Xóa tìm kiếm',
-                                onPressed: () {
-                                  _searchCtrl.clear();
-                                  unawaited(_refreshLists(''));
-                                },
-                                icon: const Icon(LucideIcons.x),
-                              )
-                            : null),
+                              ? IconButton(
+                                  tooltip: 'Xóa tìm kiếm',
+                                  onPressed: () {
+                                    _searchCtrl.clear();
+                                    unawaited(_refreshLists(''));
+                                  },
+                                  icon: const Icon(LucideIcons.x),
+                                )
+                              : null),
                   ),
                 ),
               ],
@@ -305,10 +289,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
                 SizedBox(
                   height: 48,
                   width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: _openLabelScreen,
-                    child: const Text('Nhập theo nhãn'),
-                  ),
+                  child: OutlinedButton(onPressed: _openLabelScreen, child: const Text('Nhập theo nhãn')),
                 ),
                 const SizedBox(height: 24),
               ],
@@ -389,14 +370,9 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
       title: Wrap(
         spacing: 8,
         crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          Text(s.nameVi),
-          if (s.isEstimate) const EstimateChip(),
-        ],
+        children: [Text(s.nameVi), if (s.isEstimate) const EstimateChip()],
       ),
-      subtitle: Text(
-        s.nameEn != null && s.nameEn != s.nameVi ? '${s.nameEn} · $portionText' : portionText,
-      ),
+      subtitle: Text(s.nameEn != null && s.nameEn != s.nameVi ? '${s.nameEn} · $portionText' : portionText),
       trailing: displayKcal > 0 ? CalorieText(displayKcal, suffix: '') : null,
       onTap: () => _openLibraryDetail(s),
     );

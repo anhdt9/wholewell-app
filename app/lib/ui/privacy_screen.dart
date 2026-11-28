@@ -41,9 +41,7 @@ Future<void> confirmAndWipeAllData(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Mọi dữ liệu trên máy này sẽ bị xóa và không lấy lại được, trừ khi bạn có bản sao lưu.',
-                  ),
+                  const Text('Mọi dữ liệu trên máy này sẽ bị xóa và không lấy lại được, trừ khi bạn có bản sao lưu.'),
                   const SizedBox(height: 8),
                   CheckboxListTile(
                     contentPadding: EdgeInsets.zero,
@@ -62,9 +60,7 @@ Future<void> confirmAndWipeAllData(
                   TextField(
                     autofocus: true,
                     textCapitalization: TextCapitalization.characters,
-                    decoration: const InputDecoration(
-                      hintText: 'XÓA',
-                    ),
+                    decoration: const InputDecoration(hintText: 'XÓA'),
                     onChanged: (v) => setDialogState(() => typed = v),
                   ),
                 ],
@@ -73,10 +69,7 @@ Future<void> confirmAndWipeAllData(
             actions: [
               TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Hủy')),
               FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: cs.error,
-                  foregroundColor: cs.onError,
-                ),
+                style: FilledButton.styleFrom(backgroundColor: cs.error, foregroundColor: cs.onError),
                 onPressed: canConfirm ? () => Navigator.of(ctx).pop(true) : null,
                 child: const Text('Xóa toàn bộ'),
               ),
@@ -109,17 +102,13 @@ Future<void> _executeResetAndReturnToRoot({
 }) async {
   onBusyChanged?.call(true);
   try {
-    final remoteCleared = await state.withdrawConsentAndReset(
-      deleteDriveBackup: deleteDriveBackup,
-    );
+    final remoteCleared = await state.withdrawConsentAndReset(deleteDriveBackup: deleteDriveBackup);
     if (isMounted()) nav.popUntil((r) => r.isFirst);
     if (deleteDriveBackup && !remoteCleared) {
       messenger
         ?..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(
-            content: Text('Chưa xóa được bản trên Google Drive. App sẽ thử lại khi có mạng.'),
-          ),
+          const SnackBar(content: Text('Chưa xóa được bản trên Google Drive. App sẽ thử lại khi có mạng.')),
         );
     }
   } finally {
@@ -153,9 +142,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Rút đồng ý sẽ xóa mọi dữ liệu trên máy này. Nếu có bản sao lưu, bạn có thể khôi phục sau.',
-                ),
+                const Text('Rút đồng ý sẽ xóa mọi dữ liệu trên máy này. Nếu có bản sao lưu, bạn có thể khôi phục sau.'),
                 if (hasDrive) ...[
                   const SizedBox(height: 8),
                   CheckboxListTile(
@@ -175,10 +162,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
             actions: [
               TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Hủy')),
               FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: cs.error,
-                  foregroundColor: cs.onError,
-                ),
+                style: FilledButton.styleFrom(backgroundColor: cs.error, foregroundColor: cs.onError),
                 onPressed: () => Navigator.of(ctx).pop(true),
                 child: const Text('Rút đồng ý'),
               ),
@@ -191,15 +175,14 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
     await _resetAndReturnToRoot(deleteDriveBackup: hasDrive && deleteDrive);
   }
 
-  Future<void> _resetAndReturnToRoot({required bool deleteDriveBackup}) =>
-      _executeResetAndReturnToRoot(
-        state: AppScope.of(context),
-        nav: Navigator.of(context),
-        messenger: ScaffoldMessenger.maybeOf(context),
-        deleteDriveBackup: deleteDriveBackup,
-        isMounted: () => mounted,
-        onBusyChanged: (b) => setState(() => _busy = b),
-      );
+  Future<void> _resetAndReturnToRoot({required bool deleteDriveBackup}) => _executeResetAndReturnToRoot(
+    state: AppScope.of(context),
+    nav: Navigator.of(context),
+    messenger: ScaffoldMessenger.maybeOf(context),
+    deleteDriveBackup: deleteDriveBackup,
+    isMounted: () => mounted,
+    onBusyChanged: (b) => setState(() => _busy = b),
+  );
 
   Future<void> _exportData() async {
     final go = await showDialog<bool>(
@@ -209,10 +192,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
         content: const Text('Tệp này không được mã hóa. Ai có tệp đều đọc được.'),
         actions: [
           TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Hủy')),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Tiếp tục xuất'),
-          ),
+          FilledButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Tiếp tục xuất')),
         ],
       ),
     );
@@ -221,10 +201,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
     try {
       final saved = await AppScope.of(context).exportReadableJsonFile();
       if (!mounted) return;
-      AppFeedback.showSnack(
-        context,
-        saved == null ? 'Chưa xuất được dữ liệu.' : 'Đã xuất dữ liệu JSON.',
-      );
+      AppFeedback.showSnack(context, saved == null ? 'Chưa xuất được dữ liệu.' : 'Đã xuất dữ liệu JSON.');
     } on Object {
       if (!mounted) return;
       AppFeedback.showSnack(context, 'Chưa xuất được dữ liệu.');
@@ -233,11 +210,8 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
     }
   }
 
-  Future<void> _wipeAll() => confirmAndWipeAllData(
-        context,
-        isMounted: () => mounted,
-        onBusyChanged: (b) => setState(() => _busy = b),
-      );
+  Future<void> _wipeAll() =>
+      confirmAndWipeAllData(context, isMounted: () => mounted, onBusyChanged: (b) => setState(() => _busy = b));
 
   @override
   Widget build(BuildContext context) {
@@ -245,8 +219,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final consent = state.healthConsent;
-    final grantedLabel =
-        consent == null ? 'Chưa có thông tin' : fmtBackupDateTime(consent.grantedAt);
+    final grantedLabel = consent == null ? 'Chưa có thông tin' : fmtBackupDateTime(consent.grantedAt);
     final driveText = state.driveEnabled
         ? 'Google Drive: Đang bật (${state.driveAccount?.email ?? 'đã kết nối'})'
         : 'Google Drive: chưa bật';
@@ -263,24 +236,15 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
           Text(grantedLabel, style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
           const SizedBox(height: 12),
           OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size.fromHeight(48),
-              foregroundColor: cs.error,
-            ),
+            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48), foregroundColor: cs.error),
             onPressed: _busy ? null : _withdrawConsent,
             child: const Text('Rút đồng ý'),
           ),
           const Divider(height: 32),
           Text('Sao lưu đám mây', style: t.titleMedium),
           const SizedBox(height: 6),
-          Text(
-            driveText,
-            style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-          ),
-          if (state.drivePendingDeleteActive) ...[
-            const SizedBox(height: 12),
-            const PendingDriveDeleteCard(),
-          ],
+          Text(driveText, style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
+          if (state.drivePendingDeleteActive) ...[const SizedBox(height: 12), const PendingDriveDeleteCard()],
           const Divider(height: 32),
           Text('Tài liệu', style: t.titleMedium),
           const SizedBox(height: 4),
@@ -289,9 +253,8 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
             minTileHeight: 56,
             title: const Text('Chính sách quyền riêng tư'),
             trailing: const Icon(LucideIcons.chevronRight),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const PrivacyPolicyScreen()),
-            ),
+            onTap: () =>
+                Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const PrivacyPolicyScreen())),
           ),
           const Divider(height: 24),
           Text('Dữ liệu của bạn', style: t.titleMedium),
@@ -303,10 +266,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
           ),
           const SizedBox(height: 10),
           OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size.fromHeight(48),
-              foregroundColor: cs.error,
-            ),
+            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48), foregroundColor: cs.error),
             onPressed: _busy ? null : _wipeAll,
             child: const Text('Xóa toàn bộ dữ liệu'),
           ),

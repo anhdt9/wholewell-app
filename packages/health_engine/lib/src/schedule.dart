@@ -8,11 +8,7 @@ class MealTimes {
   final int? lunch;
   final int? dinner;
 
-  const MealTimes({
-    this.breakfast,
-    this.lunch,
-    this.dinner,
-  });
+  const MealTimes({this.breakfast, this.lunch, this.dinner});
 }
 
 class ScheduledNutrient {
@@ -20,11 +16,7 @@ class ScheduledNutrient {
   final String form;
   final double amount;
 
-  const ScheduledNutrient({
-    required this.nutrientId,
-    this.form = 'unknown',
-    required this.amount,
-  });
+  const ScheduledNutrient({required this.nutrientId, this.form = 'unknown', required this.amount});
 }
 
 class ScheduledDoseInput {
@@ -77,10 +69,7 @@ class ScheduleMatch {
   final int scheduleId;
   final String day;
 
-  const ScheduleMatch({
-    required this.scheduleId,
-    required this.day,
-  });
+  const ScheduleMatch({required this.scheduleId, required this.day});
 }
 
 int _clockDiffMinutes(int a, int b) {
@@ -89,11 +78,7 @@ int _clockDiffMinutes(int a, int b) {
 }
 
 /// Đánh giá toàn bộ `scheduleRules` trong [pack] thuần bằng dữ liệu.
-List<ScheduleNotice> evaluateScheduleRules(
-  ReferencePack pack,
-  MealTimes mealTimes,
-  List<ScheduledDoseInput> doses,
-) {
+List<ScheduleNotice> evaluateScheduleRules(ReferencePack pack, MealTimes mealTimes, List<ScheduledDoseInput> doses) {
   final meals = <int>[
     if (mealTimes.breakfast != null) mealTimes.breakfast!,
     if (mealTimes.lunch != null) mealTimes.lunch!,
@@ -113,8 +98,7 @@ List<ScheduleNotice> evaluateScheduleRules(
         for (final d in doses) {
           var total = 0.0;
           for (final item in d.nutrients) {
-            if (item.nutrientId == targetNid &&
-                (reqForms.isEmpty || reqForms.contains(item.form))) {
+            if (item.nutrientId == targetNid && (reqForms.isEmpty || reqForms.contains(item.form))) {
               total += item.amount;
             }
           }
@@ -129,14 +113,16 @@ List<ScheduleNotice> evaluateScheduleRules(
           final entry = byTime[t]!;
           if (entry.amount > threshold) {
             final pids = entry.productIds.toList()..sort();
-            out.add(ScheduleNotice(
-              ruleId: r.id,
-              severity: r.severity,
-              timeOfDay: t,
-              productIds: pids,
-              uncertain: r.uncertain,
-              messageVi: r.messageVi,
-            ));
+            out.add(
+              ScheduleNotice(
+                ruleId: r.id,
+                severity: r.severity,
+                timeOfDay: t,
+                productIds: pids,
+                uncertain: r.uncertain,
+                messageVi: r.messageVi,
+              ),
+            );
           }
         }
 
@@ -144,22 +130,21 @@ List<ScheduleNotice> evaluateScheduleRules(
         final targetNid = r.nutrients.first;
         for (final d in doses) {
           final matched = d.nutrients.any(
-            (it) =>
-                it.nutrientId == targetNid &&
-                it.amount > 0 &&
-                (reqForms.isEmpty || reqForms.contains(it.form)),
+            (it) => it.nutrientId == targetNid && it.amount > 0 && (reqForms.isEmpty || reqForms.contains(it.form)),
           );
           if (!matched) continue;
           final nearMeal = meals.any((m) => _clockDiffMinutes(d.timeOfDay, m) <= window);
           if (!nearMeal) {
-            out.add(ScheduleNotice(
-              ruleId: r.id,
-              severity: r.severity,
-              timeOfDay: d.timeOfDay,
-              productIds: [d.productId],
-              uncertain: r.uncertain,
-              messageVi: r.messageVi,
-            ));
+            out.add(
+              ScheduleNotice(
+                ruleId: r.id,
+                severity: r.severity,
+                timeOfDay: d.timeOfDay,
+                productIds: [d.productId],
+                uncertain: r.uncertain,
+                messageVi: r.messageVi,
+              ),
+            );
           }
         }
 
@@ -182,14 +167,16 @@ List<ScheduleNotice> evaluateScheduleRules(
               final hi = da.timeOfDay < db.timeOfDay ? db.timeOfDay : da.timeOfDay;
               if (!seen.add((lo, hi))) continue;
               final pids = ({da.productId, db.productId}).toList()..sort();
-              out.add(ScheduleNotice(
-                ruleId: r.id,
-                severity: r.severity,
-                timeOfDay: da.timeOfDay,
-                productIds: pids,
-                uncertain: r.uncertain,
-                messageVi: r.messageVi,
-              ));
+              out.add(
+                ScheduleNotice(
+                  ruleId: r.id,
+                  severity: r.severity,
+                  timeOfDay: da.timeOfDay,
+                  productIds: pids,
+                  uncertain: r.uncertain,
+                  messageVi: r.messageVi,
+                ),
+              );
             }
           }
         }
@@ -224,14 +211,16 @@ List<ScheduleNotice> evaluateScheduleRules(
           }
           if (trigSum >= threshold && seenTimes.add(da.timeOfDay)) {
             final sortedPids = pids.toList()..sort();
-            out.add(ScheduleNotice(
-              ruleId: r.id,
-              severity: r.severity,
-              timeOfDay: da.timeOfDay,
-              productIds: sortedPids,
-              uncertain: r.uncertain,
-              messageVi: r.messageVi,
-            ));
+            out.add(
+              ScheduleNotice(
+                ruleId: r.id,
+                severity: r.severity,
+                timeOfDay: da.timeOfDay,
+                productIds: sortedPids,
+                uncertain: r.uncertain,
+                messageVi: r.messageVi,
+              ),
+            );
           }
         }
     }
@@ -241,11 +230,7 @@ List<ScheduleNotice> evaluateScheduleRules(
 
 /// Khớp một lần ghi [doseAt] của [productId] với lần uống theo lịch chưa đánh dấu
 /// trong khung ±2 giờ (kể cả lịch ngày trước kéo qua nửa đêm). Chọn lần gần giờ nhất.
-ScheduleMatch? matchDoseToScheduleWindow(
-  DateTime doseAt,
-  int productId,
-  List<ScheduleCandidate> unmarkedCandidates,
-) {
+ScheduleMatch? matchDoseToScheduleWindow(DateTime doseAt, int productId, List<ScheduleCandidate> unmarkedCandidates) {
   double? bestDiff;
   DateTime? bestSchedAt;
   ScheduleCandidate? best;
@@ -263,7 +248,8 @@ ScheduleMatch? matchDoseToScheduleWindow(
     );
     final diffMin = (doseAt.difference(schedAt).inSeconds).abs() / 60.0;
     if (diffMin <= 120.0 + 1e-9) {
-      final better = best == null ||
+      final better =
+          best == null ||
           diffMin < bestDiff! - 1e-9 ||
           ((diffMin - bestDiff).abs() <= 1e-9 &&
               (schedAt.isBefore(bestSchedAt!) ||

@@ -24,21 +24,20 @@ class DiaryScreen extends StatefulWidget {
 class _DiaryScreenState extends State<DiaryScreen> {
   _DiaryFilter _filter = _DiaryFilter.all;
 
-  Future<bool> _confirmSwipeDelete(BuildContext context, String itemLabel) =>
-      showConfirmDialog(
-        context,
-        title: 'Xóa $itemLabel?',
-        message: 'Mục $itemLabel này sẽ bị xóa khỏi nhật ký.',
-        confirmLabel: 'Xóa',
-        destructive: true,
-      );
+  Future<bool> _confirmSwipeDelete(BuildContext context, String itemLabel) => showConfirmDialog(
+    context,
+    title: 'Xóa $itemLabel?',
+    message: 'Mục $itemLabel này sẽ bị xóa khỏi nhật ký.',
+    confirmLabel: 'Xóa',
+    destructive: true,
+  );
 
   static String _mealSectionTitle(Meal m) => switch (m) {
-        Meal.breakfast => 'Bữa sáng',
-        Meal.lunch => 'Bữa trưa',
-        Meal.dinner => 'Bữa tối',
-        Meal.snack => 'Bữa phụ',
-      };
+    Meal.breakfast => 'Bữa sáng',
+    Meal.lunch => 'Bữa trưa',
+    Meal.dinner => 'Bữa tối',
+    Meal.snack => 'Bữa phụ',
+  };
 
   static String _foodSubtitle(FoodEntry f) {
     final slot = switch (f.meal) {
@@ -58,11 +57,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
       child: Column(
         children: [
           for (var i = 0; i < children.length; i++) ...[
-            if (i > 0)
-              Divider(
-                height: 1,
-                color: ww.outlineSubtle.withValues(alpha: 0.5),
-              ),
+            if (i > 0) Divider(height: 1, color: ww.outlineSubtle.withValues(alpha: 0.5)),
             children[i],
           ],
         ],
@@ -80,13 +75,11 @@ class _DiaryScreenState extends State<DiaryScreen> {
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
 
-    void open(Widget page) =>
-        Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
+    void open(Widget page) => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
 
     Future<void> editFood(FoodEntry f) async {
-      final fb = await Navigator.of(context).push<FoodLogFeedback>(
-        MaterialPageRoute(builder: (_) => EditFoodScreen(entry: f)),
-      );
+      final fb = await Navigator.of(context)
+          .push<FoodLogFeedback>(MaterialPageRoute(builder: (_) => EditFoodScreen(entry: f)));
       if (fb != null && context.mounted) {
         await presentFoodFeedback(context, feedback: fb, pack: state.pack);
       }
@@ -134,20 +127,14 @@ class _DiaryScreenState extends State<DiaryScreen> {
           if (foods.isEmpty)
             Padding(
               padding: const EdgeInsets.all(AppSpacing.sm),
-              child: Text(
-                'Chưa có món nào.',
-                style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-              ),
+              child: Text('Chưa có món nào.', style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
             )
           else
             for (final meal in Meal.values)
               if (foodsByMeal[meal]!.isNotEmpty) ...[
                 Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-                  child: Text(
-                    _mealSectionTitle(meal),
-                    style: t.labelLarge?.copyWith(color: cs.onSurfaceVariant),
-                  ),
+                  child: Text(_mealSectionTitle(meal), style: t.labelLarge?.copyWith(color: cs.onSurfaceVariant)),
                 ),
                 _groupedCard(context, [
                   for (final f in foodsByMeal[meal]!)
@@ -158,10 +145,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
                       title: f.name,
                       subtitle: _foodSubtitle(f),
                       timeText: fmtTime24(f.at),
-                      kcal: f.lines.fold<double>(
-                        0,
-                        (s, l) => s + (l.amounts['energyKcal'] ?? 0),
-                      ),
+                      kcal: f.lines.fold<double>(0, (s, l) => s + (l.amounts['energyKcal'] ?? 0)),
                       isEstimate: f.foodRef?.startsWith('recipe:') ?? false,
                       onTap: () => editFood(f),
                     ),
@@ -190,11 +174,9 @@ class _DiaryScreenState extends State<DiaryScreen> {
                     title: d.name ?? 'Bổ sung',
                     subtitle: '${fmt(d.servings)} lần · ${d.lines.length} chất',
                     timeText: fmtTime24(d.at),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => AddSupplementScreen(existingDose: d),
-                      ),
-                    ),
+                    onTap: () =>
+                        Navigator.of(context)
+                            .push(MaterialPageRoute<void>(builder: (_) => AddSupplementScreen(existingDose: d))),
                   ),
                 ),
             ]),
@@ -202,9 +184,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
         ],
         if (showWater) ...[
           Text(
-            waters.isEmpty
-                ? 'Nước'
-                : 'Nước  ${fmtWaterMl(state.diary.todayWaterTotalMl)} ml (${waters.length} lần)',
+            waters.isEmpty ? 'Nước' : 'Nước  ${fmtWaterMl(state.diary.todayWaterTotalMl)} ml (${waters.length} lần)',
             style: tabularNumberStyle(t.titleMedium),
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -246,13 +226,10 @@ class _DiaryScreenState extends State<DiaryScreen> {
                   onDismissed: (_) => state.diary.deleteWorkout(w.id),
                   child: EntryTile(
                     leadingIcon: LucideIcons.footprints,
-                    title: state.pack.activities[w.workout.activityCode]?.nameVi ??
-                        w.workout.activityCode,
+                    title: state.pack.activities[w.workout.activityCode]?.nameVi ?? w.workout.activityCode,
                     subtitle: '${fmt(w.workout.minutes)} phút',
                     timeText: fmtTime24(w.startAt),
-                    kcal: state.profile == null
-                        ? null
-                        : workoutKcal(state.pack, state.profile!, w.workout),
+                    kcal: state.profile == null ? null : workoutKcal(state.pack, state.profile!, w.workout),
                     onTap: () => open(AddWorkoutScreen(editing: w)),
                   ),
                 ),

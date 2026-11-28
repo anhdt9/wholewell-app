@@ -10,10 +10,7 @@ import 'models.dart';
 abstract interface class FoodLibraryAssetStore {
   /// Giải nén/chuẩn bị tệp cục bộ theo [libraryVersion], kiểm [expectedSha256],
   /// xóa bản cũ nếu cần và trả về đường dẫn tệp sẵn sàng mở chỉ đọc.
-  Future<String> prepareDatabaseFile({
-    required String libraryVersion,
-    required String expectedSha256,
-  });
+  Future<String> prepareDatabaseFile({required String libraryVersion, required String expectedSha256});
 }
 
 abstract interface class FoodLibraryRepository {
@@ -25,11 +22,7 @@ abstract interface class FoodLibraryRepository {
 }
 
 /// Quy đổi chung từ `food_nutrients_per_100g` sang `List<IntakeLine>` cho cả bản SQLite và bản giả.
-List<IntakeLine> computeFoodIntakeLines(
-  FoodDetail food,
-  double grams, {
-  required ReferencePack pack,
-}) {
+List<IntakeLine> computeFoodIntakeLines(FoodDetail food, double grams, {required ReferencePack pack}) {
   if (grams <= 0) throw ArgumentError.value(grams, 'grams', 'Khối lượng phải > 0');
   final scale = grams / 100.0;
   final dfeFactor = pack.unitConversions['folicAcid_ug_to_ug_DFE'] ?? 1.7;
@@ -41,22 +34,21 @@ List<IntakeLine> computeFoodIntakeLines(
     final ulVal = n.ulAmount == null ? null : n.ulAmount! * scale;
     final Map<String, double> amounts;
     if (n.nutrientId == 'folicAcid') {
-      amounts = {
-        'folicAcid': val,
-        'folate': val * dfeFactor,
-      };
+      amounts = {'folicAcid': val, 'folate': val * dfeFactor};
     } else {
       amounts = {n.nutrientId: val};
     }
-    out.add(IntakeLine(
-      nutrientId: n.nutrientId,
-      source: n.source,
-      form: n.form,
-      labelAmount: val,
-      labelUnit: n.unit,
-      amounts: amounts,
-      ulAmounts: ulVal == null ? null : {n.nutrientId: ulVal},
-    ));
+    out.add(
+      IntakeLine(
+        nutrientId: n.nutrientId,
+        source: n.source,
+        form: n.form,
+        labelAmount: val,
+        labelUnit: n.unit,
+        amounts: amounts,
+        ulAmounts: ulVal == null ? null : {n.nutrientId: ulVal},
+      ),
+    );
   }
   return List.unmodifiable(out);
 }
