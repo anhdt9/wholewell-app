@@ -11,6 +11,7 @@ import 'package:journal_db/journal_db.dart';
 import '../platform/backup_provider.dart';
 import '../platform/label_scanner.dart';
 import '../platform/notification_scheduler.dart';
+import '../platform/perf_probe.dart';
 import 'db_session_controller.dart';
 import 'diary_controller.dart';
 
@@ -151,18 +152,20 @@ class AppState extends ChangeNotifier {
   void clearReadFailed() => diary.clearReadFailed();
 
   Future<void> start() async {
-    await session.start(
-      onReady: () async {
-        diary.attachRepository(session.repo);
-        if (session.stage == SessionStage.ready) {
-          await diary.checkAgeBumpOnReady();
-        }
-        await _ensureFoodLibrary();
-        unawaited(_ensureDsldLibrary());
-        await diary.reload();
-        unawaited(syncNotifications());
-      },
-    );
+    await PerfProbe.step('session_start', () async {
+      await session.start(
+        onReady: () async {
+          PerfProbe.mark('db_open');
+          diary.attachRepository(session.repo);
+          if (session.stage == SessionStage.ready) {
+            await diary.checkAgeBumpOnReady();
+          }
+          await _prepareLibrariesAndReload();
+          if (session.stage == SessionStage.ready) PerfProbe.markTodayReadyAfterNextFrame();
+          unawaited(syncNotifications());
+        },
+      );
+    });
     await _checkDriveStateAndPendingDelete();
   }
 
@@ -204,9 +207,7 @@ class AppState extends ChangeNotifier {
       );
       if (!created) return false;
       diary.attachRepository(session.repo);
-      await _ensureFoodLibrary();
-      unawaited(_ensureDsldLibrary());
-      await diary.reload();
+      await _prepareLibrariesAndReload();
       return true;
     } on StorageFullException {
       return false;
@@ -223,9 +224,7 @@ class AppState extends ChangeNotifier {
       if (session.stage == SessionStage.ready) {
         await diary.checkAgeBumpOnReady();
       }
-      await _ensureFoodLibrary();
-      unawaited(_ensureDsldLibrary());
-      await diary.reload();
+      await _prepareLibrariesAndReload();
       return true;
     } on StorageFullException {
       return false;
@@ -242,6 +241,20 @@ class AppState extends ChangeNotifier {
     session.setStage(SessionStage.ready);
     await diary.checkAgeBumpOnReady();
     return true;
+  }
+
+  /// Mở thư viện món song song với đọc nhật ký (`reload` không dùng thư viện món), nên khởi động chỉ
+  /// mất bằng việc lâu hơn trong hai việc. Thư viện DSLD (lớn, chỉ dùng khi thêm sản phẩm) bắt đầu sau,
+  /// để không tranh tài nguyên với màn đầu tiên.
+  Future<void> _prepareLibrariesAndReload() async {
+    try {
+      await Future.wait([
+        PerfProbe.step('food_library', _ensureFoodLibrary),
+        PerfProbe.step('diary_reload', diary.reload),
+      ]);
+    } finally {
+      unawaited(PerfProbe.step('dsld_library', _ensureDsldLibrary));
+    }
   }
 
   Future<void> _ensureFoodLibrary() async {
@@ -584,9 +597,7 @@ class AppState extends ChangeNotifier {
         if (session.stage == SessionStage.ready) {
           await diary.checkAgeBumpOnReady();
         }
-        await _ensureFoodLibrary();
-        unawaited(_ensureDsldLibrary());
-        await diary.reload();
+        await _prepareLibrariesAndReload();
         unawaited(syncNotifications());
       },
     );
