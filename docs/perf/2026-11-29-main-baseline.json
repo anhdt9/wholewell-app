@@ -1,7 +1,7 @@
 {
   "date": "2026-11-29",
-  "branch": "perf/early-startup",
-  "commit": "f461164",
+  "branch": "main",
+  "commit": "84b7ea4 (app/, packages/ của main + công cụ đo), PerfProbe của eb01156",
   "device": {
     "model": "SM-S928B",
     "sdk": "37"
