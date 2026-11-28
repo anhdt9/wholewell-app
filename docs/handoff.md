@@ -1,6 +1,6 @@
 # Bàn giao công việc
 
-Cập nhật 28/11/2026. Dành cho người (hoặc agent) nhận tiếp dự án WholeWell. Đọc theo thứ tự: tệp này → [AGENTS.md](../AGENTS.md) (quy tắc bắt buộc) → [status.md](status.md) (đã xong, việc tiếp theo) → [refactor-plan.md](refactor-plan.md) (việc đang làm) → [plan.md](plan.md) → [design/mvp-overview.md](design/mvp-overview.md).
+Cập nhật 29/11/2026. Dành cho người (hoặc agent) nhận tiếp dự án WholeWell. Đọc theo thứ tự: tệp này → [AGENTS.md](../AGENTS.md) (quy tắc bắt buộc) → [status.md](status.md) (đã xong, việc tiếp theo) → [refactor-plan.md](refactor-plan.md) (việc đang làm) → [plan.md](plan.md) → [design/mvp-overview.md](design/mvp-overview.md).
 
 ## 1. Dự án trong một đoạn
 
@@ -10,10 +10,10 @@ App tham chiếu dinh dưỡng, miễn phí, mọi dữ liệu nằm trên máy.
 - Không máy chủ, không SDK phân tích hay báo lỗi, không quảng cáo.
 - **AI tạo sinh chỉ chạy trên máy:** Gemini Nano qua Android AICore (`LabelGenAiExtractor.kt`) gợi ý tách thành phần từ chữ OCR trên nhãn. Chủ dự án quyết giữ tính năng này ngày 28/11/2026. `AGENTS.md` vẫn ghi "Không dùng AI tạo sinh"; dòng này sửa ở PR 0d theo lời đề xuất ở mục 7.2 của [refactor-plan.md](refactor-plan.md). Đừng gỡ tính năng.
 
-## 2. Trạng thái (28/11/2026)
+## 2. Trạng thái (29/11/2026)
 
-- Mọi việc MVP trong [status.md](status.md) (việc 1–19) đã gộp vào `main`. PR cuối là #44 (A11y 200%, Dark Mode). Không còn PR nào mở; trên remote chỉ còn nhánh `main` và nhánh `docs/refactor-plan` (chứa plan và tệp này).
-- **Đang làm: kế hoạch tái cấu trúc** [refactor-plan.md](refactor-plan.md), bản 15, **nháp, chờ chủ dự án duyệt** mục 2 (15 ADR) và mục 5 (lộ trình). Chưa có dòng code nào của tái cấu trúc.
+- Mọi việc MVP trong [status.md](status.md) (việc 1–19) đã gộp vào `main`. PR 1 (an toàn AI đọc nhãn, #46) đã gộp 28/11/2026.
+- **Đang làm: tái cấu trúc** theo [refactor-plan.md](refactor-plan.md), bản 15, **đã duyệt** 28/11/2026 (mục 2, mục 5, quyết định mục 7). Đang làm PR 0a (workspace, ghim Flutter), nhánh `infra/workspace-pin`.
 - **Đặc tả và thiết kế cho PR 1** (an toàn AI đọc nhãn): "Bổ sung 1" ở cuối [specs/label-scan-inventory.md](specs/label-scan-inventory.md) và [design/label-scan-inventory.md](design/label-scan-inventory.md), **đã duyệt** 28/11/2026.
 - Còn thử tay trên máy thật: status.md việc 1 (mở app trước lần mở khóa đầu sau khởi động lại, đổi hoặc xóa khóa màn hình, 2 năm dữ liệu) và việc 19 (kiểm thử trực quan, chụp ảnh Store).
 
@@ -36,12 +36,8 @@ Plan qua 15 bản, mỗi bản sửa theo một vòng review của chủ dự á
 
 ### 3.2. Việc tiếp theo, theo thứ tự
 
-1. **Chủ dự án** duyệt mục 2 và mục 5 của plan, quyết các mục 7.2–7.5, tạo keystore và các Android OAuth client (mục 7.4).
-2. **Đặc tả và thiết kế PR 1 đã duyệt (28/11/2026):** "Bổ sung 1" của `label-scan-inventory`. Quyết định ở mục B1.10 của đặc tả:
-   - sửa cả 7 chỗ đang đoán đơn vị;
-   - không tự tải mô hình AI ở chỗ nào;
-   - B1.8 làm trong PR 1: `Calcium (as calcium carbonate) 500 mg` là 500 mg canxi nguyên tố (chủ dự án xác nhận; nguồn 21 CFR 101.36(b)(2)(ii), đọc qua Cornell LII). **Trước khi gộp PR 1** phải mở eCFR bằng Claude in Chrome, đối chiếu câu gốc, ghi ngày tra.
-3. **PR 0a** (workspace, ghim Flutter 3.50.1 trong `.fvmrc`, mọi job CI dùng Flutter đã ghim, sửa mục "Lệnh" của `AGENTS.md`), rồi **PR 1**, rồi 0b… theo bảng ở mục 5 của plan.
+1. **PR 0a** (đang làm, status.md việc 22), rồi 0b, 0c… theo bảng ở mục 5 của plan. PR 1 đã gộp (#46).
+2. **Chủ dự án** tạo keystore phát hành và các Android OAuth client (mục 7.4 của plan) trước PR 0f. Mục 7.5 (tách repo khung) quyết trước GĐ8.
 
 ### 3.3. Khi chủ dự án gửi review
 
@@ -67,10 +63,8 @@ Chi tiết và lý do ở AGENTS.md, plan.md, đặc tả. Những điểm hay b
 
 ## 5. Rủi ro và việc treo
 
-- **Lỗi đơn vị đang chạy trên máy:** AI đọc nhãn mặc định `mg` khi gặp đơn vị lạ, có thể sai 1.000 lần; DSLD lấy đơn vị chuẩn của chất cho 14.624 dòng có đơn vị lạ. Sửa ở PR 1 (mục 3.2).
-- **Tính thiếu giới hạn với nhãn ghi `(as hợp chất)`** (canxi, sắt; tới 60–88%): đã chốt sửa ở PR 1, mục B1.8 trong [specs/label-scan-inventory.md](specs/label-scan-inventory.md).
 - **Nhắc giờ cho lịch đã kết thúc:** khi người dùng không mở app, chuông vẫn kêu theo danh sách khung giờ cũ, kể cả cho lịch đã kết thúc. Kotlin tự đặt lại chuông mỗi ngày từ danh sách đã lưu ([ReminderReceiver.kt:21-22](../app/android/app/src/main/kotlin/vn/wholewell/app/ReminderReceiver.kt#L21-L22)), mà danh sách không có ngày hiệu lực. Chưa ghi vào status.md (plan hẹn PR 5d ghi); muốn sửa cần đặc tả riêng.
-- **Phát hành:** bản release đang ký bằng khóa debug, và `app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk` nằm trong git. Đổi khóa ký (PR 0f) thì phải thêm Android OAuth client cho SHA-1 mới, và bản đang cài không cài đè được: tạo `.wwbackup`, gỡ, cài bản mới, khôi phục.
+- **Phát hành:** bản release đang ký bằng khóa debug (PR 0a gỡ APK khỏi git). Đổi khóa ký (PR 0f) thì phải thêm Android OAuth client cho SHA-1 mới, và bản đang cài không cài đè được: tạo `.wwbackup`, gỡ, cài bản mới, khôi phục.
 - Chưa có iOS (Keychain, Application Support).
 
 ## 6. Cách làm việc (thực tế trên máy này)
@@ -80,7 +74,7 @@ Chi tiết và lý do ở AGENTS.md, plan.md, đặc tả. Những điểm hay b
   - Mỗi lúc chỉ một PR mở. Trước khi đẩy lên nhánh của PR, kiểm PR còn mở không (`gh pr view <n> --json state`), vì chủ dự án gộp nhanh.
   - Không đẩy thẳng vào `main`. Agent không tự gộp.
   - Commit bằng tiếng Việt.
-- **Máy phát triển (Windows):** Flutter 3.50.1 ở `C:\SETUP\flutter` (plan ghim đúng bản này). Ghi chú cũ ngày 24/11 chưa kiểm lại: Application Control chặn `dart test`; test thuần Dart chạy trực tiếp được bằng `dart test/<tệp>_test.dart`; test cần SQLite3MultipleCiphers chỉ chạy trên CI.
+- **Máy phát triển (Windows):** Flutter 3.50.1 ở `C:\setup\flutterSDK` (đúng bản ghim trong `.fvmrc`; chưa cài FVM; trong bash `flutter`, `dart` không nằm trong PATH, gọi bằng đường dẫn đầy đủ). Ngày 29/11/2026 `dart test` chạy được trên máy, kể cả test cần SQLite3MultipleCiphers. `gh` ở `C:\Program Files\GitHub CLI\gh.exe`; `adb` trong `%LOCALAPPDATA%\Android\Sdk\platform-tools`.
 - **Python:** chạy `python -I`. Script sửa nhiều dòng thì ghi ra tệp rồi chạy, vì heredoc trong bash hay lỗi.
 - **Kiểm nguồn:** đọc NIH ODS bằng Claude in Chrome, vì trang chặn truy cập tự động. Ghi ngày tra.
 - **CI:** xem log bằng `gh api --allow-escape-sequences repos/anhdt9/wholewell-app/actions/jobs/<id>/logs`.

@@ -13,6 +13,8 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+# Mọi job dùng Flutter ghim trong .fvmrc (kể cả package thuần Dart): workspace giải phụ thuộc chung,
+# Dart của setup-dart khác Dart đi kèm Flutter nên lock sẽ lệch (docs/refactor-plan.md, ADR 10).
 jobs:
   data-and-engine:
     runs-on: ubuntu-latest
@@ -28,11 +30,15 @@ jobs:
           python3 tools/verify_pack.py
           python3 tools/reference_engine.py
           git diff --exit-code -- packages/health_engine/assets app/assets packages/health_engine/test/fixtures
-      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: .fvmrc
+          cache: true
+      - name: Lấy phụ thuộc workspace (một lần ở gốc, đúng pubspec.lock đã commit)
+        run: flutter pub get --enforce-lockfile
       - name: Test engine
         working-directory: packages/health_engine
         run: |
-          dart pub get
           dart analyze
           dart test
 
@@ -41,11 +47,15 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: .fvmrc
+          cache: true
+      - name: Lấy phụ thuộc workspace (một lần ở gốc, đúng pubspec.lock đã commit)
+        run: flutter pub get --enforce-lockfile
       - name: Test thư viện món (SQLite FTS5)
         working-directory: packages/food_library
         run: |
-          dart pub get
           dart analyze
           dart test
 
@@ -54,11 +64,15 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: .fvmrc
+          cache: true
+      - name: Lấy phụ thuộc workspace (một lần ở gốc, đúng pubspec.lock đã commit)
+        run: flutter pub get --enforce-lockfile
       - name: Test thư viện bổ sung NIH DSLD (SQLite FTS5)
         working-directory: packages/dsld_library
         run: |
-          dart pub get
           dart analyze
           dart test
 
@@ -67,11 +81,15 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: .fvmrc
+          cache: true
+      - name: Lấy phụ thuộc workspace (một lần ở gốc, đúng pubspec.lock đã commit)
+        run: flutter pub get --enforce-lockfile
       - name: Test CSDL mã hóa (SQLite3MultipleCiphers)
         working-directory: packages/journal_db
         run: |
-          dart pub get
           dart analyze
           dart test
 
@@ -82,12 +100,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version-file: .fvmrc
           cache: true
+      - name: Lấy phụ thuộc workspace (một lần ở gốc, đúng pubspec.lock đã commit)
+        run: flutter pub get --enforce-lockfile
+      - name: Kiểm định dạng (dart format, độ rộng 120 khai trong analysis_options.yaml)
+        run: dart format --output=none --set-exit-if-changed app packages
       - name: Test app
         working-directory: app
         run: |
-          flutter pub get
           # CSDL phải dùng SQLite3MultipleCiphers, không kéo theo bản SQLite thường.
           if flutter pub deps --style=compact | grep -q sqlite3_flutter_libs; then
             echo "Không được dùng sqlite3_flutter_libs"; exit 1

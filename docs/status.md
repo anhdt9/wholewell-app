@@ -1,6 +1,6 @@
 # Trạng thái dự án
 
-Cập nhật 28/11/2026. Agent cập nhật tệp này khi xong một việc.
+Cập nhật 29/11/2026. Agent cập nhật tệp này khi xong một việc.
 
 Người mới nhận dự án: đọc [handoff.md](handoff.md) trước.
 
@@ -99,15 +99,23 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
     - [home_screen.dart](../app/lib/ui/home_screen.dart): nới vùng chạm nút `<` / `>` của `_DaySwitcherPill` lên `40 × 44` (bỏ `VisualDensity.compact` vốn co mất 8 px).
     - [common_widgets.dart](../app/lib/ui/common/common_widgets.dart), [supplements_screen.dart](../app/lib/ui/supplements_screen.dart), [log_sheet.dart](../app/lib/ui/common/log_sheet.dart) & [nutrient_detail_screen.dart](../app/lib/ui/nutrient_detail_screen.dart): xử lý `EntryTile` xếp giờ + `kcal` xuống `subtitle` khi `textScale >= 1.3` để tránh tràn `ListTile.trailing`, dùng `ResponsiveStatRow` cho dòng sản phẩm trong `Kho`, bọc `SingleChildScrollView` cho `Bảng Ghi` và `Flexible` cho `_SourceDotLabel`.
     - Bổ sung bộ kiểm thử A11y cỡ chữ `200%` (`360 dp`) & Dark Mode ở đủ trạng thái (trống, có dữ liệu, thận trọng, vượt UL, ẩn số calo) trong [a11y_dark_mode_polish_test.dart](../app/test/a11y_dark_mode_polish_test.dart); còn lại việc kiểm thử trực quan và chụp ảnh Store Assets trên máy thật.
-20. **Tái cấu trúc theo chuẩn Flutter** ([refactor-plan.md](refactor-plan.md), bản 15: **nháp, chờ chủ dự án duyệt** mục 2 và mục 5): MVVM theo Flutter App Architecture Guide, đối chiếu 17 khuyến nghị chính thức, 15 ADR, lộ trình từ PR 0a tới PR 8. "Bổ sung 1" cho PR 1 (an toàn AI đọc nhãn) trong [specs/label-scan-inventory.md](specs/label-scan-inventory.md) và [design/label-scan-inventory.md](design/label-scan-inventory.md): **đã duyệt** 28/11/2026. Chốt: sửa cả 7 chỗ đang đoán đơn vị; đối chiếu số AI với chữ trên ảnh; không tự tải mô hình; lượng trên bảng Supplement Facts là lượng nguyên tố (21 CFR 101.36(b)(2)(ii), còn phải kiểm trên eCFR bằng Chrome trước khi gộp PR 1). Plan vẫn chờ duyệt mục 2 và mục 5. Việc tiếp theo: test và code PR 1. Chi tiết bàn giao: [handoff.md](handoff.md), mục 3.
-21. **An toàn khi AI đọc nhãn (PR 1)** (đặc tả và thiết kế: mục "Bổ sung 1" trong [specs/label-scan-inventory.md](specs/label-scan-inventory.md) và [design/label-scan-inventory.md](design/label-scan-inventory.md), **đã duyệt** 28/11/2026; nhánh `fix/label-ai-safety`):
+20. **Tái cấu trúc theo chuẩn Flutter** ([refactor-plan.md](refactor-plan.md), bản 15: **đã duyệt** 28/11/2026, gồm mục 2, mục 5 và các quyết định ở mục 7): MVVM theo Flutter App Architecture Guide, đối chiếu 17 khuyến nghị chính thức, 15 ADR, lộ trình từ PR 0a tới PR 8. "Bổ sung 1" cho PR 1 (an toàn AI đọc nhãn) trong [specs/label-scan-inventory.md](specs/label-scan-inventory.md) và [design/label-scan-inventory.md](design/label-scan-inventory.md): **đã duyệt** 28/11/2026. Chốt: sửa cả 7 chỗ đang đoán đơn vị; đối chiếu số AI với chữ trên ảnh; không tự tải mô hình; lượng trên bảng Supplement Facts là lượng nguyên tố (21 CFR 101.36(b)(2)(ii), đã đối chiếu trên eCFR). PR 1 đã gộp (#46). Việc tiếp theo: PR 0a (việc 22), rồi 0b… theo mục 5 của plan. Chi tiết bàn giao: [handoff.md](handoff.md), mục 3.
+21. **An toàn khi AI đọc nhãn (PR 1)** (đặc tả và thiết kế: mục "Bổ sung 1" trong [specs/label-scan-inventory.md](specs/label-scan-inventory.md) và [design/label-scan-inventory.md](design/label-scan-inventory.md), **đã duyệt** 28/11/2026; **PR #46 đã gộp** 28/11/2026):
     - Bỏ cả 7 chỗ đoán đơn vị: `LabelUnitText.parse` đọc đơn vị của AI và DSLD theo danh sách cố định (thêm `μg` U+03BC); DSLD bỏ lượng khi đơn vị là `%`; dòng mới, dòng chưa rõ đơn vị và khi đổi chất không còn tự chọn đơn vị; `labelUnitForPackUnit` thay 3 bản sao; món đã lưu có đơn vị không đọc được thì báo lỗi.
     - Đối chiếu dòng AI với chữ OCR (`crossCheckAi`): dòng chưa khớp phải kiểm qua bảng sửa dòng; chất AI bỏ sót được thêm từ bộ đọc chữ; màn Xác nhận thành phần có ghi chú AI, dòng đếm số dòng cần kiểm, lời nhắc theo thứ tự ưu tiên.
     - Kotlin chỉ gọi Gemini Nano khi `checkStatus()` là `AVAILABLE` (`LabelGenAiRules`, có test JVM); bỏ `download()`.
     - B1.8: `Calcium (as calcium carbonate) 500 mg` tính 500 mg canxi nguyên tố; thêm nguồn `fda_21cfr_101_36` và `supplementFactsElemental` vào gói (giữ phiên bản `2026.11.25-2` vì không đổi con số nào; thư viện món ghi phiên bản gói) kèm ô kiểm.
     - Sửa lỗi thử trên máy (28/11/2026): giơ máy vào mã vạch lâu thì mở nhiều màn Xác nhận thành phần. Camera giờ chỉ nhận mã khi màn quét ở trên cùng và không bận, không mở lại mã vừa mở khi bấm quay lại. Hiện dòng hướng dẫn dưới khung camera như thiết kế màn 2. Test `scan_product_gate_test.dart`.
     - Ô Hạn dùng (Thông tin sản phẩm, Thêm/Sửa hộp): bàn phím số, gõ đủ 2 số tháng thì tự thêm `/` (chủ dự án yêu cầu 28/11/2026; ghi vào thiết kế màn Thông tin sản phẩm). Test trong `label_scan_inventory_test.dart`.
-    - Test: `label_ai_safety_test.dart`, `LabelGenAiRulesTest.kt`, sửa `label_scan_inventory_test.dart`. Đã đối chiếu nguyên văn 21 CFR 101.36(b)(2)(ii) và (d) bằng Claude in Chrome qua API eCFR (28/11/2026). **Còn lại trước khi gộp:** thử 5 nhãn thật trên S24 Ultra.
+    - Test: `label_ai_safety_test.dart`, `LabelGenAiRulesTest.kt`, sửa `label_scan_inventory_test.dart`. Đã đối chiếu nguyên văn 21 CFR 101.36(b)(2)(ii) và (d) bằng Claude in Chrome qua API eCFR (28/11/2026). Chủ dự án thử trên S24 Ultra rồi gộp.
+22. **Workspace và phiên bản (PR 0a, hạ tầng, không cần đặc tả)** (nhánh `infra/workspace-pin`):
+    - Pub Workspaces: `pubspec.yaml` gốc khai `app` và 4 package, `hooks` sqlite3mc khai một lần ở gốc; một `pubspec.lock` chung ở gốc, commit vào repo; mỗi package `resolution: workspace`, sàn Dart `^3.13.0`; app Flutter `>=3.47.0`, `material_ui ^1.11.1`.
+    - `.fvmrc` ghim Flutter 3.50.1. Mọi job CI (kể cả `release.yml` và job của package thuần Dart) dùng `flutter-action` với `flutter-version-file: .fvmrc`, `flutter pub get --enforce-lockfile` một lần ở gốc; bỏ `setup-dart`.
+    - `dart format` toàn repo (độ rộng 120, commit riêng chỉ có định dạng); CI chạy `dart format --set-exit-if-changed app packages`.
+    - Gỡ APK khỏi git (không viết lại lịch sử, theo mục 7.3 của plan); `app/build/` không còn trong repo.
+    - Tạm tắt 2 lint đòi đổi cú pháp constructor khi sàn Dart lên 3.13 (`unnecessary_type_name_in_constructor`, `prefer_initializing_formals`); PR 0b quyết.
+    - Sửa mục "Lệnh" của `AGENTS.md` theo workspace.
+    - **Test phụ thuộc giờ thật:** `batch1_audit_fixes_test.dart` ("P1: chạm lại tab Hôm nay…") hỏng khi chạy trong khoảng 23:54–23:59 giờ máy, vì cộng 6 phút vào `DateTime.now()` thì qua ngày. CI chạy giờ UTC nên ít gặp. Sửa ở PR 3a (`clock.now()` + `fake_async`).
 
 ## Để sau MVP (giai đoạn 2)
 
