@@ -3,6 +3,9 @@
 Cách dùng (từ gốc repo, máy đã kết nối adb):
 
     python tools/perf/run_perf.py --flutter <đường dẫn flutter> [--device <serial>] [--runs 10] [--skip-build]
+        [--flavor prod|dev]
+
+Mặc định đo flavor prod (`vn.wholewell.app`, cần hồ sơ đã xong onboarding để tới màn Hôm nay).
 
 Kết quả ghi vào docs/perf/<ngày>-<nhánh>.json.
 
@@ -36,9 +39,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 APP = ROOT / 'app'
 PKG = 'vn.wholewell.app'
-ACTIVITY = f'{PKG}/.MainActivity'
-PROFILE_APK = APP / 'build/app/outputs/flutter-apk/app-profile.apk'
-RELEASE_APK = APP / 'build/app/outputs/flutter-apk/app-release.apk'
+ACTIVITY = f'{PKG}/vn.wholewell.app.MainActivity'
+PROFILE_APK = APP / 'build/app/outputs/flutter-apk/app-prod-profile.apk'
+RELEASE_APK = APP / 'build/app/outputs/flutter-apk/app-prod-release.apk'
+
+
+def use_flavor(flavor: str) -> None:
+    global PKG, ACTIVITY, PROFILE_APK, RELEASE_APK
+    PKG = 'vn.wholewell.app' + ('.dev' if flavor == 'dev' else '')
+    ACTIVITY = f'{PKG}/vn.wholewell.app.MainActivity'
+    PROFILE_APK = APP / f'build/app/outputs/flutter-apk/app-{flavor}-profile.apk'
+    RELEASE_APK = APP / f'build/app/outputs/flutter-apk/app-{flavor}-release.apk'
 
 
 def run(cmd: list[str], check: bool = True, timeout: int = 600) -> str:
@@ -185,7 +196,9 @@ def main() -> None:
     ap.add_argument('--runs', type=int, default=10)
     ap.add_argument('--skip-build', action='store_true')
     ap.add_argument('--out')
+    ap.add_argument('--flavor', choices=['prod', 'dev'], default='prod')
     args = ap.parse_args()
+    use_flavor(args.flavor)
 
     adb = Adb(args.adb, args.device)
     devices = adb('devices')
@@ -194,7 +207,10 @@ def main() -> None:
 
     if not args.skip_build:
         print('Build APK profile arm64...')
-        run([args.flutter, 'build', 'apk', '--profile', '--target-platform', 'android-arm64'], timeout=1800)
+        run(
+            [args.flutter, 'build', 'apk', '--profile', '--flavor', args.flavor, '--target-platform', 'android-arm64'],
+            timeout=1800,
+        )
     print('Cài đè (adb install -r, giữ dữ liệu)...')
     out = adb('install', '-r', str(PROFILE_APK), check=False, timeout=600)
     if 'Success' not in out:
@@ -217,7 +233,7 @@ def main() -> None:
         'branch': branch,
         'commit': sha,
         'device': {'model': model, 'sdk': sdk},
-        'build': 'profile arm64',
+        'build': f'profile arm64, flavor {args.flavor}',
         'cold_start': cold,
         'startup_5s_frames_us': startup,
         'scroll_today_frames_us': scroll,
@@ -229,7 +245,7 @@ def main() -> None:
     out_path = Path(args.out).resolve() if args.out else ROOT / 'docs/perf' / f'{result["date"]}-{branch.replace("/", "_")}.json'
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    print(f'Đã ghi {out_path.relative_to(ROOT)}')
+    print(f'Đã ghi {out_path}')
     print(json.dumps({'total_time_ms': cold['total_time_ms'], 'to_today_ms': cold['to_today_ms'],
                       'ui_lag_max_ms': cold['ui_lag_max_ms'],
                       'steps_ms': cold['steps_ms'], 'startup_5s': startup, 'scroll': scroll}, ensure_ascii=False, indent=2))

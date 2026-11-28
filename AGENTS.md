@@ -100,9 +100,16 @@ cd packages/journal_db && dart analyze && dart test
 cd packages/food_library && dart analyze && dart test
 cd packages/dsld_library && dart analyze && dart test
 
-# App
+# App (flavor mặc định là dev: app id vn.wholewell.app.dev, "WholeWell Dev", dữ liệu riêng)
 cd app && flutter analyze && flutter test && flutter run
+# Bản thật (vn.wholewell.app) phải ghi rõ flavor; ra app-prod-release.apk
+cd app && flutter build apk --release --flavor prod --target-platform android-arm64
+
+# Đo hiệu năng trên máy thật (chỉ cài đè, không bao giờ gỡ app)
+python tools/perf/run_perf.py --flutter <flutter> --adb <adb> --device <serial>
 ```
+
+**Flavor và khóa ký (ADR 0012, 0014):** thử trên máy thì dùng dev, không đụng dữ liệu của bản thật. Không dùng `flutter run`/`flutter install`/`flutter drive` với bản prod trên máy có dữ liệu thật: khi cài đè lỗi, các lệnh này tự gỡ app (mất khóa Keystore và CSDL); cài bản prod bằng `adb install -r`. Bản release ký bằng khóa tải lên khi có biến môi trường `WW_KEYSTORE_PATH`, `WW_KEYSTORE_PASSWORD`, `WW_KEY_ALIAS`, `WW_KEY_PASSWORD` hoặc `app/android/key.properties` (không commit); thiếu thì ký bằng khóa debug, chỉ để thử. `release.yml` dừng nếu thiếu secrets hoặc APK ký bằng khóa debug.
 
 Test app: dựng trạng thái và màn qua `app/test/helpers/pump_app.dart` (`testAppState`, `pumpApp`), không tự dựng `AppScope`; `pumpApp` kiểm trợ năng, danh sách ngoại lệ chỉ được giảm. Golden test (tag `golden`) chỉ chạy trên Linux; sinh lại ảnh mẫu bằng workflow CI chạy tay với `update_goldens`. Lint: một `analysis_options.yaml` ở gốc cho mọi package (`very_good_analysis` + strict), không thêm tệp lint riêng trong package. `flutter analyze` trong CI thất bại cả với mức info (vd. API đã ngừng dùng), nên phải sạch hoàn toàn. Đổi phụ thuộc thì chạy lại `flutter pub get` ở gốc và commit `pubspec.lock`; CI dùng `--enforce-lockfile`.
 
