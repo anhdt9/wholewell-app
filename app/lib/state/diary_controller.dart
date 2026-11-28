@@ -673,8 +673,14 @@ class DiaryController extends ChangeNotifier {
         pack: pack,
       );
     } on FormatException {
-      // Món đã lưu có đơn vị không đọc được: không ghi, không đoán đơn vị.
-      return Future.value(const FoodLogFeedback(summaryText: 'Chưa lưu được. Thử lại', failed: true));
+      // Món đã lưu có đơn vị không đọc được: không ghi, không đoán đơn vị. Thử lại cũng không được,
+      // nên không bật `_saveFailed` (cờ đó hiện snackbar "Chưa lưu được. Thử lại").
+      return Future.value(
+        const FoodLogFeedback(
+          summaryText: 'Không đọc được số liệu của món đã lưu này. Hãy nhập lại món theo nhãn.',
+          failed: true,
+        ),
+      );
     }
     return _recordFoodEntry(input);
   }

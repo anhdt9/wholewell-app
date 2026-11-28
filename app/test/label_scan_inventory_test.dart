@@ -25,9 +25,10 @@ void main() {
       expect(parsed[0].amount, 1000);
       expect(parsed[0].unit, LabelUnit.iu);
 
-      // 21 CFR 101.36(b)(2)(ii): "(as calcium carbonate)" thì 1250 là lượng canxi nguyên tố (Bổ sung 1, B1.8).
+      // 21 CFR 101.36(b)(2)(ii): "(as calcium carbonate)" thì 1250 là lượng canxi nguyên tố (Bổ sung 1, B1.8);
+      // giữ dạng để quy tắc "uống canxi carbonat cùng bữa ăn" vẫn chạy.
       expect(parsed[1].nutrientId, 'calcium');
-      expect(parsed[1].form, NutrientForm.unknown);
+      expect(parsed[1].form, 'calcium_carbonate');
       expect(parsed[1].compoundKind, CompoundKind.elemental);
       expect(parsed[1].amount, 1250);
 
@@ -438,7 +439,7 @@ void main() {
       // Sửa Folate: `mg` không hợp nên ô đơn vị để trống (không tự chọn), chọn µg -> cảnh báo biến mất.
       await tester.tap(find.text('Sửa').first);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Chọn').last);
+      await tester.tap(find.byType(DropdownButton<LabelUnit>));
       await tester.pumpAndSettle();
       await tester.tap(find.text('µg').last);
       await tester.pumpAndSettle();

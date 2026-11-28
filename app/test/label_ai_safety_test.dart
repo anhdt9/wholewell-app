@@ -140,9 +140,9 @@ void main() {
   group('Lượng trên bảng Supplement Facts là lượng nguyên tố (B1.8)', () {
     test('xếp loại theo cách ghi trên nhãn', () {
       final cases = <(String, String, String, CompoundKind)>[
-        ('calcium', 'Calcium (as calcium carbonate) 500 mg', NutrientForm.unknown, CompoundKind.elemental),
-        ('calcium', 'Calcium from calcium citrate 300 mg', NutrientForm.unknown, CompoundKind.elemental),
-        ('iron', 'Iron (as ferrous gluconate) 27 mg', NutrientForm.unknown, CompoundKind.elemental),
+        ('calcium', 'Calcium (as calcium carbonate) 500 mg', 'calcium_carbonate', CompoundKind.elemental),
+        ('calcium', 'Calcium from calcium citrate 300 mg', 'calcium_citrate', CompoundKind.elemental),
+        ('iron', 'Iron (as ferrous gluconate) 27 mg', 'ferrous_gluconate', CompoundKind.elemental),
         ('calcium', 'Calcium carbonate 1250 mg', 'calcium_carbonate', CompoundKind.compound),
         ('calcium', 'Canxi carbonat 1250mg', 'calcium_carbonate', CompoundKind.compound),
         ('iron', 'Ferrous fumarate 300 mg', 'ferrous_fumarate', CompoundKind.compound),
@@ -167,6 +167,43 @@ void main() {
         isCompound: ing.isCompound,
       );
       expect(converted.amounts['iron'], 27);
+    });
+
+    test('nhãn "(as calcium carbonate)" giữ dạng để quy tắc uống cùng bữa ăn vẫn chạy', () {
+      final line = SupplementLabelParser.parseLines(const ['Calcium (as calcium carbonate) 500 mg']).single;
+      expect(line.form, 'calcium_carbonate');
+      expect(line.compoundKind, CompoundKind.elemental);
+      final rule = _pack.scheduleRules.firstWhere((r) => r.id == 'ca_carbonate_with_meal');
+      expect(rule.forms, contains(line.form));
+      final ing = EditableIngredient.fromParsed(line);
+      expect(ing.isCompound, isFalse);
+      expect(
+        SupplementIngredientHelper.convertLine(
+          _pack,
+          nutrientId: ing.nutrientId,
+          form: ing.form,
+          amount: ing.labelAmount!,
+          unit: ing.labelUnit!,
+          isCompound: ing.isCompound,
+        ).amounts['calcium'],
+        500,
+      );
+    });
+
+    test('số trong ngoặc ghi khối lượng nguồn không thành thêm một dòng canxi', () {
+      final lines = SupplementLabelParser.parseLines(const ['Calcium 500 mg (as calcium carbonate 1250 mg)']);
+      expect(lines, hasLength(1));
+      expect(lines.single.amount, 500);
+      expect(lines.single.form, 'calcium_carbonate');
+      expect(lines.single.compoundKind, CompoundKind.elemental);
+    });
+
+    test('AI ghi tên hợp chất trong name mà không khớp ảnh thì chưa rõ dạng, không tính là nguyên tố', () {
+      final pkg = _ai([
+        {'name': 'Calcium Carbonate', 'amount': 1250, 'unit': 'mg', 'form': null},
+      ]);
+      expect(pkg.ingredients.single.nutrientId, 'calcium');
+      expect(pkg.ingredients.single.compoundKind, CompoundKind.unknown);
     });
 
     test('chữ đánh dấu trong bộ đọc chữ trùng dữ liệu có nguồn trong gói', () {
@@ -215,6 +252,30 @@ void main() {
       );
       expect(pkg.ingredients, hasLength(2));
       expect(pkg.ingredients.every((l) => l.needsCheck), isTrue);
+    });
+
+    test('số AI lấy từ dòng tên tự do thì cần kiểm', () {
+      final pkg = _cross(
+        [
+          {'name': 'Vitamin C', 'amount': 100, 'unit': 'mg'},
+        ],
+        ['Vitamin C 1000 mg', 'Coenzyme Q10 100 mg'],
+      );
+      final vitC = pkg.ingredients.firstWhere((l) => l.nutrientId == 'vitC');
+      expect(vitC.needsCheck, isTrue);
+      // Dòng Coenzyme Q10 của bộ đọc chữ vẫn còn, không bị dòng AI lấy nhầm số thay chỗ.
+      expect(pkg.ingredients.where((l) => l.nutrientId == null && l.amount == 100), hasLength(1));
+    });
+
+    test('bộ đọc chữ đọc cùng chất với số khác thì cần kiểm', () {
+      final pkg = _cross(
+        [
+          {'name': 'Calcium', 'amount': 1250, 'unit': 'mg'},
+        ],
+        ['Calcium 500 mg (as calcium carbonate 1250 mg)'],
+      );
+      expect(pkg.ingredients.single.nutrientId, 'calcium');
+      expect(pkg.ingredients.single.needsCheck, isTrue);
     });
 
     test('chất AI bỏ sót mà bộ đọc chữ thấy được thêm vào', () {
@@ -357,6 +418,19 @@ void main() {
       ],
     );
 
+    test('ghi món đã lưu hỏng báo đúng lời, không bật cờ "Thử lại"', () async {
+      final state = await _readyState();
+      final fb = await state.diary.recordCustomFood(
+        corrupt,
+        usedQty: 1,
+        meal: Meal.breakfast,
+        at: DateTime(2026, 11, 28, 8),
+      );
+      expect(fb.failed, isTrue);
+      expect(fb.summaryText, 'Không đọc được số liệu của món đã lưu này. Hãy nhập lại món theo nhãn.');
+      expect(state.saveFailed, isFalse);
+    });
+
     test('mọi đơn vị lưu ra đọc lại được; chữ lạ thì báo lỗi, không đoán mg', () {
       for (final u in LabelUnit.values) {
         expect(LabelFoodBuilder.unitFromWire(LabelFoodBuilder.unitWireName(u)), u);
@@ -452,7 +526,7 @@ void main() {
       expect(find.text('Chọn đơn vị theo nhãn.'), findsOneWidget);
       expect(find.text('Sửa dòng thành phần'), findsOneWidget);
 
-      await tester.tap(find.text('Chọn').last);
+      await tester.tap(find.byType(DropdownButton<LabelUnit>));
       await tester.pumpAndSettle();
       await tester.tap(find.text('µg DFE').last);
       await tester.pumpAndSettle();

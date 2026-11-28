@@ -269,7 +269,8 @@ class SupplementLabelParser {
   }
 
   /// Xếp loại dòng canxi / sắt theo cách ghi trên nhãn (đặc tả Bổ sung 1, mục B1.8):
-  /// - `Chất (as/from hợp chất) N`: lượng nguyên tố;
+  /// - `Chất (as/from hợp chất) N`: lượng nguyên tố, giữ dạng (quy tắc lịch như
+  ///   "uống canxi carbonat cùng bữa ăn" lọc theo dạng);
   /// - bắt đầu bằng tên hợp chất (`Calcium carbonate 1250 mg`): khối lượng hợp chất;
   /// - có tên hợp chất nhưng không rõ cách ghi: chưa rõ dạng (giới hạn tính thận trọng nhất).
   static (String form, CompoundKind kind) classifyMineral(
@@ -305,7 +306,7 @@ class SupplementLabelParser {
     final prefix = lower.substring(0, compoundStart);
     final prefixWords = [for (final m in _wordRe.allMatches(prefix)) m.group(0)!];
     if (prefixWords.any(elementalSourceMarkers.contains)) {
-      return (NutrientForm.unknown, CompoundKind.elemental);
+      return (formId, CompoundKind.elemental);
     }
     final leads = _bareCompoundLeadWords[nutrientId] ?? const <String>[];
     final bare = !prefix.contains('(') &&
@@ -316,10 +317,11 @@ class SupplementLabelParser {
     return (NutrientForm.unknown, CompoundKind.unknown);
   }
 
-  static List<String> _splitSegments(List<String> rawLines) {
-    final segments = <String>[];
-    for (final raw in rawLines) {
-      final t = raw.trim();
+  /// Các đoạn kèm chỉ số dòng OCR gốc chứa đoạn đó.
+  static List<(String, int)> _splitSegmentsIndexed(List<String> rawLines) {
+    final segments = <(String, int)>[];
+    for (var ri = 0; ri < rawLines.length; ri++) {
+      final t = rawLines[ri].trim();
       if (t.isEmpty) continue;
       // Tách theo dấu `;` hoặc `, ` (không cắt dấu phẩy hàng nghìn như `1,250`).
       final parts = t.split(RegExp(r'[;,]\s+(?=[a-zA-ZÀ-ỹ(])'));
@@ -328,18 +330,18 @@ class SupplementLabelParser {
         if (p.isEmpty) continue;
         final matches = _amountUnitRe.allMatches(p).toList();
         if (matches.length <= 1) {
-          segments.add(p);
+          segments.add((p, ri));
         } else {
           // Nhiều cặp số + đơn vị nối liền không dấu phẩy: cắt ngay sau mỗi đơn vị.
           var start = 0;
           for (final m in matches) {
             final slice = p.substring(start, m.end).trim();
-            if (slice.isNotEmpty) segments.add(slice);
+            if (slice.isNotEmpty) segments.add((slice, ri));
             start = m.end;
           }
           final tail = p.substring(start).trim();
           if (tail.isNotEmpty && RegExp(r'[a-zA-ZÀ-ỹ]{2,}').hasMatch(tail)) {
-            segments.add(tail);
+            segments.add((tail, ri));
           }
         }
       }
@@ -348,7 +350,8 @@ class SupplementLabelParser {
   }
 
   static ParsedLabelPackage parsePackage(List<String> rawLines) {
-    final lines = _splitSegments(rawLines);
+    final indexed = _splitSegmentsIndexed(rawLines);
+    final lines = [for (final (seg, _) in indexed) seg];
     final ingredients = <ParsedIngredientLine>[];
     String? suggestedName;
     double? suggestedBoxCount;
@@ -405,6 +408,8 @@ class SupplementLabelParser {
     String? pendingNutrientId;
     int pendingIndex = -99;
     final contextBuffer = <String>[];
+    // Dòng OCR gốc của thành phần vừa thêm, để nhận đoạn trong ngoặc ghi lại cùng chất.
+    var lastAddedRaw = -1;
 
     for (var i = 0; i < lines.length; i++) {
       final line = lines[i];
@@ -431,6 +436,28 @@ class SupplementLabelParser {
       if (amount == null || amount <= 0) continue;
 
       final unit = _ocrUnit(m.group(2)!);
+
+      // Đoạn trong ngoặc ghi lại cùng chất trên cùng dòng nhãn, vd.
+      // "Calcium 500 mg (as calcium carbonate 1250 mg)": số trong ngoặc là khối lượng nguồn,
+      // không phải thêm một lượng canxi. Bỏ đoạn này, chỉ lấy dạng nguồn cho dòng trước.
+      if (line.startsWith('(') &&
+          lineNutrient != null &&
+          ingredients.isNotEmpty &&
+          ingredients.last.nutrientId == lineNutrient &&
+          lastAddedRaw == indexed[i].$2) {
+        final prev = ingredients.last;
+        if ((lineNutrient == 'calcium' || lineNutrient == 'iron') &&
+            prev.compoundKind == CompoundKind.elemental &&
+            prev.form == NutrientForm.unknown) {
+          final (f, k) = classifyMineral(lineNutrient, line);
+          if (k == CompoundKind.elemental && f != NutrientForm.unknown) {
+            ingredients[ingredients.length - 1] = prev.copyWith(form: f);
+          }
+        }
+        pendingNutrientId = null;
+        contextBuffer.clear();
+        continue;
+      }
 
       String? matchedNid = lineNutrient;
       String combinedLine = line;
@@ -475,6 +502,7 @@ class SupplementLabelParser {
         unit: unit,
         compoundKind: compoundKind,
       ));
+      lastAddedRaw = indexed[i].$2;
     }
 
     return ParsedLabelPackage(
@@ -525,7 +553,7 @@ class SupplementLabelParser {
           // AI đã chuẩn hóa tên nên không biết nhãn ghi "(as …)" hay tên hợp chất trần.
           // Có hợp chất mà không ghi nguyên tố thì coi là chưa rõ dạng (thận trọng nhất);
           // dòng khớp chữ trên ảnh được xếp lại theo đoạn chữ đó ở [crossCheckAi].
-          final (f, k) = classifyMineral(nid, formText, explicitElemental: explicitElemental);
+          final (f, k) = classifyMineral(nid, combined, explicitElemental: explicitElemental);
           if (k != CompoundKind.elemental || f != NutrientForm.unknown) {
             compoundKind = CompoundKind.unknown;
           }
@@ -577,7 +605,9 @@ class SupplementLabelParser {
       (a - b).abs() <= 1e-9 * math.max(1, a.abs());
 
   /// Đối chiếu từng dòng AI với chữ đọc từ ảnh (đặc tả Bổ sung 1, mục B1.5):
-  /// - dòng khớp khi số và đơn vị có trên ảnh, và bộ đọc chữ không gán cặp số đó cho chất khác;
+  /// - dòng khớp khi số và đơn vị có trên ảnh, bộ đọc chữ không gán cặp số đó cho dòng khác
+  ///   (kể cả dòng tên tự do), và bộ đọc chữ không đọc cùng chất đó với số khác (trừ khi nhãn
+  ///   ghi cùng chất bằng đơn vị khác trên cùng dòng, vd. "25 mcg (1,000 IU)");
   /// - dòng không khớp (kể cả đơn vị trống) mang `needsCheck`;
   /// - chất AI bỏ sót mà bộ đọc chữ thấy được thêm vào cuối.
   static ParsedLabelPackage crossCheckAi(
@@ -585,14 +615,16 @@ class SupplementLabelParser {
     ParsedLabelPackage parsed,
     List<String> ocrLines,
   ) {
-    final tokens = <(double, LabelUnit, String)>[];
-    for (final seg in _splitSegments(ocrLines)) {
+    final tokens = <(double, LabelUnit, String, int)>[];
+    for (final (seg, raw) in _splitSegmentsIndexed(ocrLines)) {
       for (final m in _amountUnitRe.allMatches(seg)) {
         final amount = _parseNumber(m.group(1)!);
         final unit = _ocrUnit(m.group(2)!);
-        if (amount != null && unit != null) tokens.add((amount, unit, seg));
+        if (amount != null && unit != null) tokens.add((amount, unit, seg, raw));
       }
     }
+    bool same(ParsedIngredientLine p, double amount, LabelUnit unit) =>
+        p.unit == unit && p.amount != null && _sameAmount(p.amount!, amount);
 
     final merged = <ParsedIngredientLine>[];
     for (final a in ai.ingredients) {
@@ -603,13 +635,26 @@ class SupplementLabelParser {
         continue;
       }
       final onImage = tokens.where((t) => t.$2 == unit && _sameAmount(t.$1, amount)).toList();
-      final sameToken = parsed.ingredients
-          .where((p) => p.unit == unit && p.amount != null && _sameAmount(p.amount!, amount))
-          .toList();
-      final assignedElsewhere = sameToken.isNotEmpty &&
-          !sameToken.any((p) => p.nutrientId == a.nutrientId) &&
-          sameToken.any((p) => p.nutrientId != null);
-      if (onImage.isEmpty || assignedElsewhere) {
+      final sameToken = parsed.ingredients.where((p) => same(p, amount, unit)).toList();
+      // Cặp số đó đã thuộc dòng khác của bộ đọc chữ, kể cả dòng tên tự do.
+      final assignedElsewhere =
+          sameToken.isNotEmpty && !sameToken.any((p) => p.nutrientId == a.nutrientId);
+      // Bộ đọc chữ đọc cùng chất với số khác.
+      final sameNutrient = a.nutrientId == null
+          ? const <ParsedIngredientLine>[]
+          : parsed.ingredients.where((p) => p.nutrientId == a.nutrientId).toList();
+      final onImageRaws = {for (final t in onImage) t.$4};
+      final dualUnit = sameNutrient.any((p) {
+        final pUnit = p.unit;
+        final pAmount = p.amount;
+        if (pUnit == null || pAmount == null || pUnit == unit) return false;
+        return tokens.any(
+          (t) => onImageRaws.contains(t.$4) && t.$2 == pUnit && _sameAmount(t.$1, pAmount),
+        );
+      });
+      final conflict =
+          sameNutrient.isNotEmpty && !sameNutrient.any((p) => same(p, amount, unit)) && !dualUnit;
+      if (onImage.isEmpty || assignedElsewhere || conflict) {
         merged.add(a.copyWith(needsCheck: true));
         continue;
       }
@@ -635,9 +680,16 @@ class SupplementLabelParser {
         continue;
       }
       final amount = p.amount;
+      // Dòng tên tự do chỉ coi là đã có khi một dòng AI tên tự do khớp ảnh mang đúng số đó;
+      // dòng AI lấy nhầm số của nó (đã gắn cần kiểm) không thay được dòng này.
       final covered = amount != null &&
-          ai.ingredients.any(
-            (a) => a.unit == p.unit && a.amount != null && _sameAmount(a.amount!, amount),
+          merged.any(
+            (a) =>
+                a.nutrientId == null &&
+                !a.needsCheck &&
+                a.unit == p.unit &&
+                a.amount != null &&
+                _sameAmount(a.amount!, amount),
           );
       if (!covered) merged.add(p);
     }

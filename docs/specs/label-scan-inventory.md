@@ -188,11 +188,12 @@ Luồng ở `_analyzeImages` ([supplements_screen.dart:603](../../app/lib/ui/sup
 4. Có kết quả AI thì `SupplementLabelParser.crossCheckAi(ai, parsed, lines)`:
    - **Mảnh số trên ảnh:** mọi cặp (số, đơn vị) mà `_amountUnitRe` bắt được trong các đoạn của `_splitSegments(lines)`, đọc số bằng `_parseNumber` (nên `1,000`, `1.000`, `1000` là một số; `2,5` là 2,5).
    - Hai số bằng nhau khi lệch không quá `1e-9 × max(1, |số|)`. Hai đơn vị phải là cùng một `LabelUnit` (`ug` khác `ugDfe`).
-   - **Dòng AI khớp** khi cả hai điều kiện sau đúng:
+   - **Dòng AI khớp** khi cả ba điều kiện sau đúng (sửa theo review PR 1):
      - có mảnh số trên ảnh bằng đúng số và đơn vị của dòng;
-     - nếu bộ đọc chữ có dòng mang đúng số và đơn vị đó thì ít nhất một dòng như vậy cùng chất với dòng AI, hoặc mọi dòng như vậy đều không gắn được chất. Điều kiện này bắt trường hợp AI gán số của chất này cho chất khác.
+     - nếu bộ đọc chữ có dòng mang đúng số và đơn vị đó thì ít nhất một dòng như vậy cùng chất với dòng AI. Số nằm trên dòng tên tự do (vd. `Coenzyme Q10 100 mg`) coi là đã thuộc dòng khác. Điều kiện này bắt trường hợp AI gán số của chất này cho chất khác;
+     - bộ đọc chữ không đọc cùng chất đó với số khác, trừ khi nhãn ghi cùng chất bằng đơn vị khác trên cùng dòng (vd. `Vitamin D3 25 mcg (1,000 IU)`, xem 21 CFR 101.36(b)(2)(ii)(B)). Điều kiện này bắt trường hợp AI lấy nhầm số của chất khác hay khối lượng nguồn trong ngoặc.
    - Dòng AI không khớp thì `needsCheck = true`. Dòng AI có đơn vị trống thì không khớp được, và đã phải chọn đơn vị.
-   - **Chất AI bỏ sót:** dòng của bộ đọc chữ có chất trong gói mà không dòng AI nào cùng chất thì thêm vào cuối danh sách, như khi chỉ dùng bộ đọc chữ. Dòng chất ngoài gói của bộ đọc chữ chỉ thêm khi không dòng AI nào có cùng số và đơn vị. So theo chất, không theo số, để nhãn ghi `25 mcg (1,000 IU)` không ra hai dòng vitamin D.
+   - **Chất AI bỏ sót:** dòng của bộ đọc chữ có chất trong gói mà không dòng AI nào cùng chất thì thêm vào cuối danh sách, như khi chỉ dùng bộ đọc chữ. Dòng chất ngoài gói của bộ đọc chữ chỉ bỏ khi đã có dòng AI chất ngoài gói khớp ảnh mang cùng số và đơn vị. So theo chất, không theo số, để nhãn ghi `25 mcg (1,000 IU)` không ra hai dòng vitamin D.
    - Tên sản phẩm, số viên, khẩu phần: lấy của AI như hiện nay; AI không có thì lấy của bộ đọc chữ.
 5. Mở màn Xác nhận thành phần.
 
@@ -264,21 +265,23 @@ Mỗi dòng thành ít nhất một test (`app/test/label_ai_safety_test.dart` m
 
 **Nguồn (nhãn A):** 21 CFR 101.36, quy định nhãn thực phẩm bổ sung của FDA.
 
-- (b)(2)(ii): "The quantitative amounts by weight shall represent the weight of the dietary ingredient rather than the weight of the source (e.g., the weight of calcium rather than that of calcium carbonate)".
+- (b)(2)(ii), nguyên văn: "The quantitative amounts by weight shall represent the weight of the dietary ingredient rather than the weight of the source of the dietary ingredient (e.g., the weight of calcium rather than that of calcium carbonate)."
 - (d): tên nguồn có thể ghi trong ngoặc, sau chữ "as" hoặc "from", ví dụ "Calcium (as calcium carbonate)".
-- Tra ngày 28/11/2026 qua bản chép của Cornell LII (https://www.law.cornell.edu/cfr/text/21/101.36), vì eCFR chuyển hướng truy cập tự động. **Trước khi gộp PR 1** phải mở eCFR (https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-101/subpart-A/section-101.36) bằng Claude in Chrome, đối chiếu nguyên văn (câu trích ở (b)(2)(ii) ghép từ hai đoạn trích ngắn) và ghi ngày tra.
+- Đối chiếu nguyên văn ngày 28/11/2026 bằng Claude in Chrome qua API chính thức của eCFR (`api/versioner/v1/full/2026-11-20/title-21.xml?part=101&section=101.36`), vì trang eCFR cho người đọc đòi CAPTCHA. Bản hiện hành: sửa đổi gần nhất 83 FR 65502 (21/12/2018). Mục 101.36 nằm ở subpart C.
+- (b)(2)(ii)(B) còn ghi lượng vitamin D tính bằng IU, nếu có, nằm trong ngoặc sau lượng tính bằng mcg: đây là căn cứ để coi `25 mcg (1,000 IU)` là một chất ghi hai đơn vị.
 
 **Quy tắc** (chỉ cho chất có hợp chất trong gói, hiện là canxi và sắt):
 
 | Cách ghi trên nhãn | Ví dụ | Hiểu là |
 |---|---|---|
-| Tên chất rồi `(as …)`, `(from …)`, `as …` | `Calcium (as calcium carbonate) 500 mg` | Lượng nguyên tố |
+| Tên chất rồi `(as …)`, `(from …)`, `as …` | `Calcium (as calcium carbonate) 500 mg` | Lượng nguyên tố, giữ dạng hợp chất (quy tắc lịch "uống canxi carbonat cùng bữa ăn" lọc theo dạng) |
 | Bắt đầu bằng tên hợp chất, không có tên chất đứng riêng trước | `Calcium carbonate 1250 mg`, `Canxi carbonat 1250mg` | Khối lượng hợp chất (như hiện nay) |
 | Có cả tên chất và tên hợp chất nhưng không rõ cách ghi | `Iron (ferrous fumarate) 100 mg`, `Canxi (canxi carbonat) 500mg` | Chưa rõ dạng: giới hạn tính cả con số, so mức khuyến nghị lấy số nhỏ nhất, ghi "chưa chắc" (quy tắc có sẵn của app) |
 
-- **Dòng AI:** dòng khớp chữ trên ảnh thì xét theo đoạn chữ đó trên ảnh. Dòng không khớp mà AI ghi hợp chất và không ghi `elemental: true` thì coi là chưa rõ dạng.
+- **Dòng AI:** dòng khớp chữ trên ảnh thì xét theo đoạn chữ đó trên ảnh. Dòng không khớp mà AI ghi hợp chất (trong `name` hoặc `form`) và không ghi `elemental: true` thì coi là chưa rõ dạng.
+- **Khối lượng nguồn trong ngoặc:** `Calcium 500 mg (as calcium carbonate 1250 mg)`: số trong ngoặc là khối lượng nguồn của cùng chất trên cùng dòng nhãn, không thành thêm một dòng canxi; dòng 500 mg lấy dạng `calcium_carbonate`.
 - **Dữ liệu có nguồn:** thêm nguồn `fda_21cfr_101_36` vào `SOURCES` và mục `supplementFactsElemental` (`source`, `quote`, `accessedDate`, các chữ đánh dấu `as`/`from`) vào `build_pack.py`, kèm ô kiểm ở `verify_pack.py`. Như vậy quy tắc là dữ liệu có nguồn, đúng `AGENTS.md`.
-- **Biểu diễn:** lượng nguyên tố là `isCompound = false`, `form = unknown`; chưa rõ dạng là `isCompound = true`, `form = unknown` (như khi người dùng chọn `Chưa rõ dạng` trong bảng sửa dòng). Không đổi engine.
+- **Biểu diễn:** lượng nguyên tố là `isCompound = false`, `form` giữ dạng ghi trong `(as …)` (vd. `calcium_carbonate`; engine bỏ qua dạng khi tính lượng nguyên tố); chưa rõ dạng là `isCompound = true`, `form = unknown` (như khi người dùng chọn `Chưa rõ dạng` trong bảng sửa dòng). Không đổi engine.
 - **Hệ quả:** đổi kết quả với nhãn Mỹ có `(as …)` (số tính vào giới hạn tăng) và với dòng như `Iron (ferrous fumarate) 100 mg`. Phải sửa test ở [label_scan_inventory_test.dart:15-38](../../app/test/label_scan_inventory_test.dart#L15-L38), và ghi rõ trong mô tả PR.
 
 ### B1.9. Ngoài phạm vi

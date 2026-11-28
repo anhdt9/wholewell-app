@@ -204,7 +204,7 @@
    "id": "fda_21cfr_101_36",
    "label": "A",
    "title": "eCFR – 21 CFR 101.36 Nutrition labeling of dietary supplements",
-   "url": "https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-101/subpart-A/section-101.36",
+   "url": "https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-101/subpart-C/section-101.36",
    "retrieved": "2026-11-28"
   },
   {
@@ -2402,9 +2402,9 @@
  "supplementFactsElemental": {
   "source": "fda_21cfr_101_36",
   "paragraph": "(b)(2)(ii), (d)",
-  "url": "https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-101/subpart-A/section-101.36",
+  "url": "https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-101/subpart-C/section-101.36",
   "accessedDate": "2026-11-28",
-  "quote": "The quantitative amounts by weight shall represent the weight of the dietary ingredient rather than the weight of the source",
+  "quote": "The quantitative amounts by weight shall represent the weight of the dietary ingredient rather than the weight of the source of the dietary ingredient",
   "markers": [
    "as",
    "from"
