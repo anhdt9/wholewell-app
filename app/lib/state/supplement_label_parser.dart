@@ -7,14 +7,21 @@ import 'dart:math' as math;
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 
+import 'label_unit_text.dart';
+
 class ParsedIngredientLine {
   final String rawLine;
   final String? nutrientId;
   final String? freeName;
   final String form;
   final double? amount;
+
+  /// `null` khi nhãn không ghi đơn vị hoặc đơn vị không có trong danh sách: người dùng chọn theo nhãn.
   final LabelUnit? unit;
   final CompoundKind compoundKind;
+
+  /// Dòng AI chưa khớp chữ đọc từ ảnh: người dùng phải kiểm qua bảng sửa dòng.
+  final bool needsCheck;
 
   const ParsedIngredientLine({
     required this.rawLine,
@@ -24,7 +31,24 @@ class ParsedIngredientLine {
     this.amount,
     this.unit,
     this.compoundKind = CompoundKind.elemental,
+    this.needsCheck = false,
   });
+
+  ParsedIngredientLine copyWith({
+    String? form,
+    CompoundKind? compoundKind,
+    bool? needsCheck,
+  }) =>
+      ParsedIngredientLine(
+        rawLine: rawLine,
+        nutrientId: nutrientId,
+        freeName: freeName,
+        form: form ?? this.form,
+        amount: amount,
+        unit: unit,
+        compoundKind: compoundKind ?? this.compoundKind,
+        needsCheck: needsCheck ?? this.needsCheck,
+      );
 }
 
 class ParsedLabelPackage {
@@ -35,6 +59,9 @@ class ParsedLabelPackage {
   final CountUnit? suggestedCountUnit;
   final List<String> rawLines;
 
+  /// Danh sách có gợi ý của AI trên máy (Gemini Nano).
+  final bool fromOnDeviceAi;
+
   const ParsedLabelPackage({
     required this.ingredients,
     this.suggestedProductName,
@@ -42,14 +69,16 @@ class ParsedLabelPackage {
     this.suggestedUnitsPerServing,
     this.suggestedCountUnit,
     this.rawLines = const [],
+    this.fromOnDeviceAi = false,
   });
 }
 
 /// Phân tích các dòng text OCR thành danh sách dòng thành phần và gợi ý thông tin sản phẩm.
 class SupplementLabelParser {
   // Bắt số + đơn vị, kể cả một số lỗi nhận nhầm ký tự phổ biến của OCR (mq/m9 -> mg, meg/ucg -> ug, 1u/lu -> iu).
+  // `µ` là U+00B5 (ký tự micro), `μ` là U+03BC (chữ mu Hy Lạp); OCR có thể trả một trong hai.
   static final _amountUnitRe = RegExp(
-    r'(\d+(?:[.,]\d+)?)\s*(mcg\s*dfe|µg\s*dfe|ug\s*dfe|mcg\s*rae|µg\s*rae|ug\s*rae|mg\s*ne|micrograms?|milligrams?|grams?|international\s+units?|mcg|µg|ug|meg|ucg|pcg|u9|mg|mq|m9|iu|ui|1u|lu|g)(?![a-zA-ZÀ-ỹ])',
+    r'(\d+(?:[.,]\d+)?)\s*(mcg\s*dfe|µg\s*dfe|μg\s*dfe|ug\s*dfe|mcg\s*rae|µg\s*rae|μg\s*rae|ug\s*rae|mg\s*ne|micrograms?|milligrams?|grams?|international\s+units?|mcg|µg|μg|ug|meg|ucg|pcg|u9|mg|mq|m9|iu|ui|1u|lu|g)(?![a-zA-ZÀ-ỹ])',
     caseSensitive: false,
   );
 
@@ -62,6 +91,11 @@ class SupplementLabelParser {
     r'(?:serving\s*size|khẩu\s*phần|mỗi\s*lần\s*uống)[^0-9]{0,12}(\d+(?:[.,]\d+)?)',
     caseSensitive: false,
   );
+
+  /// Chữ đánh dấu tên nguồn trên bảng Supplement Facts, vd. "Calcium (as calcium carbonate)".
+  /// Theo 21 CFR 101.36(d) và (b)(2)(ii), lượng ghi khi đó là lượng nguyên tố.
+  /// Phải trùng `supplementFactsElemental.markers` trong gói dữ liệu (có test kiểm).
+  static const elementalSourceMarkers = ['as', 'from'];
 
   static const _nutrientPatterns = <(String, List<String>)>[
     ('vitA', ['vitamin a', 'vit a', 'retinol', 'retinyl', 'beta-carotene', 'beta carotene']),
@@ -117,6 +151,25 @@ class SupplementLabelParser {
     ('retinol', 'vitA'),
   ];
 
+  /// Hợp chất khoáng có tỷ lệ nguyên tố trong gói: (form, chữ khớp đúng, chữ khớp gần, khoảng cách).
+  static const _mineralCompounds = <String, List<(String, List<String>, String, int)>>{
+    'calcium': [
+      ('calcium_carbonate', ['carbonate', 'carbonat'], 'carbonate', 2),
+      ('calcium_citrate', ['citrate', 'citrat'], 'citrate', 1),
+    ],
+    'iron': [
+      ('ferrous_fumarate', ['fumarate', 'fumarat'], 'fumarate', 2),
+      ('ferrous_sulfate', ['sulfate', 'sulfat'], 'sulfate', 1),
+      ('ferrous_gluconate', ['gluconate', 'gluconat'], 'gluconate', 2),
+    ],
+  };
+
+  /// Chữ được phép đứng trước tên hợp chất khi dòng ghi tên hợp chất trần (vd. "Calcium carbonate 1250 mg").
+  static const _bareCompoundLeadWords = <String, List<String>>{
+    'calcium': ['calcium', 'canxi', 'calci'],
+    'iron': ['iron', 'ferrous', 'ferric', 'sắt'],
+  };
+
   static const _ignoredHeaderWords = [
     'supplement facts',
     'nutrition facts',
@@ -133,6 +186,8 @@ class SupplementLabelParser {
     'natural health products',
     'natural healih products',
   ];
+
+  static final _wordRe = RegExp(r'[a-zA-ZÀ-ỹ0-9]+');
 
   static int _editDistance(String a, String b) {
     if (a == b) return 0;
@@ -156,12 +211,16 @@ class SupplementLabelParser {
     return prev[b.length];
   }
 
+  static bool _fuzzyEquals(String token, String keyword, int limit) {
+    if ((token.length - keyword.length).abs() > limit) return false;
+    return _editDistance(token, keyword) <= limit;
+  }
+
   static bool _fuzzyContains(String text, String keyword, {int? maxDist}) {
     final limit = maxDist ?? (keyword.length >= 7 ? 2 : 1);
-    final tokens = RegExp(r'[a-zA-ZÀ-ỹ0-9]+').allMatches(text.toLowerCase()).map((m) => m.group(0)!);
+    final tokens = _wordRe.allMatches(text.toLowerCase()).map((m) => m.group(0)!);
     for (final t in tokens) {
-      if ((t.length - keyword.length).abs() > limit) continue;
-      if (_editDistance(t, keyword) <= limit) return true;
+      if (_fuzzyEquals(t, keyword, limit)) return true;
     }
     return false;
   }
@@ -179,6 +238,22 @@ class SupplementLabelParser {
     return (v != null && v.isFinite) ? v : null;
   }
 
+  /// Đơn vị OCR: bỏ hết khoảng trắng trước khi so, nên `mcgdfe`, `mgne` cũng đọc được.
+  static LabelUnit? _ocrUnit(String raw) {
+    final u = raw.toLowerCase().replaceAll(RegExp(r'\s+'), '');
+    return switch (u) {
+      'mcgdfe' || 'µgdfe' || 'μgdfe' || 'ugdfe' => LabelUnit.ugDfe,
+      'mcgrae' || 'µgrae' || 'μgrae' || 'ugrae' => LabelUnit.ugRae,
+      'mgne' => LabelUnit.mgNe,
+      'mg' || 'mq' || 'm9' || 'milligram' || 'milligrams' => LabelUnit.mg,
+      'mcg' || 'µg' || 'μg' || 'ug' || 'meg' || 'ucg' || 'pcg' || 'u9' || 'microgram' || 'micrograms' =>
+        LabelUnit.ug,
+      'iu' || 'ui' || '1u' || 'lu' || 'internationalunit' || 'internationalunits' => LabelUnit.iu,
+      'g' || 'gram' || 'grams' => LabelUnit.g,
+      _ => null,
+    };
+  }
+
   static String? _matchNutrientId(String lower) {
     if (lower.contains('dfe') || lower.contains('methylfolate')) return 'folate';
     for (final (nid, keys) in _nutrientPatterns) {
@@ -191,6 +266,54 @@ class SupplementLabelParser {
     // Tên ngắn 4 ký tự: zinc / iron (chỉ khớp fuzzy khoảng cách 1).
     if (_fuzzyContains(lower, 'zinc', maxDist: 1)) return 'zinc';
     return null;
+  }
+
+  /// Xếp loại dòng canxi / sắt theo cách ghi trên nhãn (đặc tả Bổ sung 1, mục B1.8):
+  /// - `Chất (as/from hợp chất) N`: lượng nguyên tố;
+  /// - bắt đầu bằng tên hợp chất (`Calcium carbonate 1250 mg`): khối lượng hợp chất;
+  /// - có tên hợp chất nhưng không rõ cách ghi: chưa rõ dạng (giới hạn tính thận trọng nhất).
+  static (String form, CompoundKind kind) classifyMineral(
+    String? nutrientId,
+    String text, {
+    bool explicitElemental = false,
+  }) {
+    final compounds = _mineralCompounds[nutrientId];
+    if (compounds == null) return (NutrientForm.unknown, CompoundKind.elemental);
+    final lower = text.toLowerCase();
+    if (explicitElemental ||
+        lower.contains('elemental') ||
+        lower.contains('nguyên tố') ||
+        _fuzzyContains(lower, 'elemental', maxDist: 2)) {
+      return (NutrientForm.unknown, CompoundKind.elemental);
+    }
+
+    String? formId;
+    var compoundStart = -1;
+    for (final m in _wordRe.allMatches(lower)) {
+      final token = m.group(0)!;
+      for (final (fid, exact, fuzzy, dist) in compounds) {
+        if (exact.any(token.contains) || _fuzzyEquals(token, fuzzy, dist)) {
+          formId = fid;
+          compoundStart = m.start;
+          break;
+        }
+      }
+      if (formId != null) break;
+    }
+    if (formId == null) return (NutrientForm.unknown, CompoundKind.elemental);
+
+    final prefix = lower.substring(0, compoundStart);
+    final prefixWords = [for (final m in _wordRe.allMatches(prefix)) m.group(0)!];
+    if (prefixWords.any(elementalSourceMarkers.contains)) {
+      return (NutrientForm.unknown, CompoundKind.elemental);
+    }
+    final leads = _bareCompoundLeadWords[nutrientId] ?? const <String>[];
+    final bare = !prefix.contains('(') &&
+        prefixWords.every(
+          (w) => leads.any((l) => w == l || (l.length >= 5 && _fuzzyEquals(w, l, 2))),
+        );
+    if (bare) return (formId, CompoundKind.compound);
+    return (NutrientForm.unknown, CompoundKind.unknown);
   }
 
   static List<String> _splitSegments(List<String> rawLines) {
@@ -307,19 +430,7 @@ class SupplementLabelParser {
       final amount = _parseNumber(m.group(1)!);
       if (amount == null || amount <= 0) continue;
 
-      final unitRaw = m.group(2)!.toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
-      final unit = switch (unitRaw) {
-        'mcg dfe' || 'µg dfe' || 'ug dfe' => LabelUnit.ugDfe,
-        'mcg rae' || 'µg rae' || 'ug rae' => LabelUnit.ugRae,
-        'mg ne' => LabelUnit.mgNe,
-        'mg' || 'mq' || 'm9' || 'milligram' || 'milligrams' => LabelUnit.mg,
-        'mcg' || 'µg' || 'ug' || 'meg' || 'ucg' || 'pcg' || 'u9' || 'microgram' || 'micrograms' =>
-          LabelUnit.ug,
-        'iu' || 'ui' || '1u' || 'lu' || 'international unit' || 'international units' =>
-          LabelUnit.iu,
-        'g' || 'gram' || 'grams' => LabelUnit.g,
-        _ => null,
-      };
+      final unit = _ocrUnit(m.group(2)!);
 
       String? matchedNid = lineNutrient;
       String combinedLine = line;
@@ -336,39 +447,9 @@ class SupplementLabelParser {
 
       var form = NutrientForm.unknown;
       var compoundKind = CompoundKind.elemental;
-      final explicitElemental = lower.contains('elemental') ||
-          lower.contains('nguyên tố') ||
-          _fuzzyContains(lower, 'elemental', maxDist: 2);
 
-      if (matchedNid == 'calcium' && !explicitElemental) {
-        if (lower.contains('carbonate') ||
-            lower.contains('carbonat') ||
-            _fuzzyContains(lower, 'carbonate', maxDist: 2)) {
-          form = 'calcium_carbonate';
-          compoundKind = CompoundKind.compound;
-        } else if (lower.contains('citrate') ||
-            lower.contains('citrat') ||
-            _fuzzyContains(lower, 'citrate', maxDist: 1)) {
-          form = 'calcium_citrate';
-          compoundKind = CompoundKind.compound;
-        }
-      } else if (matchedNid == 'iron' && !explicitElemental) {
-        if (lower.contains('fumarate') ||
-            lower.contains('fumarat') ||
-            _fuzzyContains(lower, 'fumarate', maxDist: 2)) {
-          form = 'ferrous_fumarate';
-          compoundKind = CompoundKind.compound;
-        } else if (lower.contains('sulfate') ||
-            lower.contains('sulfat') ||
-            _fuzzyContains(lower, 'sulfate', maxDist: 1)) {
-          form = 'ferrous_sulfate';
-          compoundKind = CompoundKind.compound;
-        } else if (lower.contains('gluconate') ||
-            lower.contains('gluconat') ||
-            _fuzzyContains(lower, 'gluconate', maxDist: 2)) {
-          form = 'ferrous_gluconate';
-          compoundKind = CompoundKind.compound;
-        }
+      if (matchedNid == 'calcium' || matchedNid == 'iron') {
+        (form, compoundKind) = classifyMineral(matchedNid, combinedLine);
       } else if (matchedNid == 'vitE') {
         if (lower.contains('dl-alpha') || lower.contains('dl alpha')) {
           form = NutrientForm.synthetic2r;
@@ -410,6 +491,9 @@ class SupplementLabelParser {
       parsePackage(rawLines).ingredients;
 
   /// Chuyển JSON từ Gemini Nano (on-device) thành [ParsedLabelPackage]; trả `null` nếu JSON lỗi hoặc rỗng.
+  ///
+  /// Đơn vị thiếu hoặc lạ thì để trống (không bao giờ mặc định `mg`). Kết quả cần qua [crossCheckAi]
+  /// trước khi hiện cho người dùng.
   static ParsedLabelPackage? parseAiJson(String jsonStr, List<String> rawLines) {
     try {
       final decoded = jsonDecode(jsonStr);
@@ -422,19 +506,10 @@ class SupplementLabelParser {
         if (item is! Map<String, dynamic>) continue;
         final name = (item['name'] as String?)?.trim() ?? '';
         final amount = (item['amount'] as num?)?.toDouble();
-        if (name.isEmpty || amount == null || amount <= 0) continue;
+        if (name.isEmpty || amount == null || !amount.isFinite || amount <= 0) continue;
 
-        final unitStr = ((item['unit'] as String?) ?? 'mg').toLowerCase().trim();
-        final unit = switch (unitStr) {
-          'mg' => LabelUnit.mg,
-          'ug' || 'mcg' || 'µg' => LabelUnit.ug,
-          'iu' => LabelUnit.iu,
-          'g' => LabelUnit.g,
-          'ug_dfe' || 'mcg dfe' => LabelUnit.ugDfe,
-          'ug_rae' || 'mcg rae' => LabelUnit.ugRae,
-          'mg_ne' || 'mg ne' => LabelUnit.mgNe,
-          _ => LabelUnit.mg,
-        };
+        final unitStr = (item['unit'] as String?)?.trim();
+        final unit = LabelUnitText.parse(unitStr);
         final formText = ((item['form'] as String?) ?? '').toLowerCase();
         final explicitElemental = item['elemental'] == true ||
             formText.contains('elemental') ||
@@ -446,24 +521,13 @@ class SupplementLabelParser {
 
         var form = NutrientForm.unknown;
         var compoundKind = CompoundKind.elemental;
-        if (nid == 'calcium' && !explicitElemental) {
-          if (combined.contains('carbonate') || combined.contains('carbonat')) {
-            form = 'calcium_carbonate';
-            compoundKind = CompoundKind.compound;
-          } else if (combined.contains('citrate') || combined.contains('citrat')) {
-            form = 'calcium_citrate';
-            compoundKind = CompoundKind.compound;
-          }
-        } else if (nid == 'iron' && !explicitElemental) {
-          if (combined.contains('fumarate') || combined.contains('fumarat')) {
-            form = 'ferrous_fumarate';
-            compoundKind = CompoundKind.compound;
-          } else if (combined.contains('sulfate') || combined.contains('sulfat')) {
-            form = 'ferrous_sulfate';
-            compoundKind = CompoundKind.compound;
-          } else if (combined.contains('gluconate') || combined.contains('gluconat')) {
-            form = 'ferrous_gluconate';
-            compoundKind = CompoundKind.compound;
+        if (nid == 'calcium' || nid == 'iron') {
+          // AI đã chuẩn hóa tên nên không biết nhãn ghi "(as …)" hay tên hợp chất trần.
+          // Có hợp chất mà không ghi nguyên tố thì coi là chưa rõ dạng (thận trọng nhất);
+          // dòng khớp chữ trên ảnh được xếp lại theo đoạn chữ đó ở [crossCheckAi].
+          final (f, k) = classifyMineral(nid, formText, explicitElemental: explicitElemental);
+          if (k != CompoundKind.elemental || f != NutrientForm.unknown) {
+            compoundKind = CompoundKind.unknown;
           }
         } else if (nid == 'vitE') {
           if (combined.contains('dl-alpha') || combined.contains('synthetic')) {
@@ -482,7 +546,7 @@ class SupplementLabelParser {
         }
 
         ingredients.add(ParsedIngredientLine(
-          rawLine: '$name $amount $unitStr',
+          rawLine: '$name $amount ${unitStr ?? ''}'.trim(),
           nutrientId: nid,
           freeName: nid == null ? name : null,
           form: form,
@@ -502,10 +566,91 @@ class SupplementLabelParser {
         suggestedUnitsPerServing: (decoded['servings'] as num?)?.toDouble(),
         suggestedCountUnit: countUnit,
         rawLines: rawLines,
+        fromOnDeviceAi: true,
       );
     } on Object {
       return null;
     }
+  }
+
+  static bool _sameAmount(double a, double b) =>
+      (a - b).abs() <= 1e-9 * math.max(1, a.abs());
+
+  /// Đối chiếu từng dòng AI với chữ đọc từ ảnh (đặc tả Bổ sung 1, mục B1.5):
+  /// - dòng khớp khi số và đơn vị có trên ảnh, và bộ đọc chữ không gán cặp số đó cho chất khác;
+  /// - dòng không khớp (kể cả đơn vị trống) mang `needsCheck`;
+  /// - chất AI bỏ sót mà bộ đọc chữ thấy được thêm vào cuối.
+  static ParsedLabelPackage crossCheckAi(
+    ParsedLabelPackage ai,
+    ParsedLabelPackage parsed,
+    List<String> ocrLines,
+  ) {
+    final tokens = <(double, LabelUnit, String)>[];
+    for (final seg in _splitSegments(ocrLines)) {
+      for (final m in _amountUnitRe.allMatches(seg)) {
+        final amount = _parseNumber(m.group(1)!);
+        final unit = _ocrUnit(m.group(2)!);
+        if (amount != null && unit != null) tokens.add((amount, unit, seg));
+      }
+    }
+
+    final merged = <ParsedIngredientLine>[];
+    for (final a in ai.ingredients) {
+      final amount = a.amount;
+      final unit = a.unit;
+      if (amount == null || unit == null) {
+        merged.add(a.copyWith(needsCheck: true));
+        continue;
+      }
+      final onImage = tokens.where((t) => t.$2 == unit && _sameAmount(t.$1, amount)).toList();
+      final sameToken = parsed.ingredients
+          .where((p) => p.unit == unit && p.amount != null && _sameAmount(p.amount!, amount))
+          .toList();
+      final assignedElsewhere = sameToken.isNotEmpty &&
+          !sameToken.any((p) => p.nutrientId == a.nutrientId) &&
+          sameToken.any((p) => p.nutrientId != null);
+      if (onImage.isEmpty || assignedElsewhere) {
+        merged.add(a.copyWith(needsCheck: true));
+        continue;
+      }
+      if (a.nutrientId == 'calcium' || a.nutrientId == 'iron') {
+        final sameParser = sameToken.where((p) => p.nutrientId == a.nutrientId).firstOrNull;
+        final (form, kind) = sameParser != null
+            ? (sameParser.form, sameParser.compoundKind)
+            : classifyMineral(a.nutrientId, onImage.first.$3);
+        merged.add(a.copyWith(form: form, compoundKind: kind));
+      } else {
+        merged.add(a);
+      }
+    }
+
+    final aiNutrients = {
+      for (final a in ai.ingredients)
+        if (a.nutrientId != null) a.nutrientId!,
+    };
+    for (final p in parsed.ingredients) {
+      final nid = p.nutrientId;
+      if (nid != null) {
+        if (!aiNutrients.contains(nid)) merged.add(p);
+        continue;
+      }
+      final amount = p.amount;
+      final covered = amount != null &&
+          ai.ingredients.any(
+            (a) => a.unit == p.unit && a.amount != null && _sameAmount(a.amount!, amount),
+          );
+      if (!covered) merged.add(p);
+    }
+
+    return ParsedLabelPackage(
+      ingredients: merged,
+      suggestedProductName: ai.suggestedProductName ?? parsed.suggestedProductName,
+      suggestedBoxRemaining: ai.suggestedBoxRemaining ?? parsed.suggestedBoxRemaining,
+      suggestedUnitsPerServing: ai.suggestedUnitsPerServing ?? parsed.suggestedUnitsPerServing,
+      suggestedCountUnit: ai.suggestedCountUnit ?? parsed.suggestedCountUnit,
+      rawLines: parsed.rawLines,
+      fromOnDeviceAi: true,
+    );
   }
 
   static String? _extractName(String line, int matchStart) {

@@ -115,6 +115,23 @@ for (nid, fid), ratio in GOLDEN_COMPOUNDS.items():
     if not isinstance(meta, dict) or meta.get("source") not in src_ids or not meta.get("nameVi"):
         err(f"compoundMeta thiếu hoặc sai nguồn cho {nid}/{fid}")
 
+# ---- lượng trên bảng Supplement Facts là lượng nguyên tố (21 CFR 101.36)
+sfe = p.get("supplementFactsElemental")
+if not isinstance(sfe, dict):
+    err("thiếu supplementFactsElemental")
+else:
+    if sfe.get("source") not in src_ids:
+        err("supplementFactsElemental.source không có trong sources")
+    for k in ("url", "quote", "accessedDate", "paragraph"):
+        if not sfe.get(k):
+            err(f"supplementFactsElemental thiếu {k}")
+    if len(sfe.get("quote", "")) > 200:
+        err("supplementFactsElemental.quote phải là câu gốc ngắn")
+    if sfe.get("markers") != ["as", "from"]:
+        err(f"supplementFactsElemental.markers sai: {sfe.get('markers')}")
+    if not set(sfe.get("nutrients", [])) <= set(compounds):
+        err("supplementFactsElemental.nutrients phải là chất có hợp chất trong gói")
+
 # ---- vận động & PAG
 pag = p["pag"]
 if pag.get("source") not in src_ids:

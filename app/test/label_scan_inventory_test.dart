@@ -25,13 +25,16 @@ void main() {
       expect(parsed[0].amount, 1000);
       expect(parsed[0].unit, LabelUnit.iu);
 
+      // 21 CFR 101.36(b)(2)(ii): "(as calcium carbonate)" thì 1250 là lượng canxi nguyên tố (Bổ sung 1, B1.8).
       expect(parsed[1].nutrientId, 'calcium');
-      expect(parsed[1].form, 'calcium_carbonate');
-      expect(parsed[1].compoundKind, CompoundKind.compound);
+      expect(parsed[1].form, NutrientForm.unknown);
+      expect(parsed[1].compoundKind, CompoundKind.elemental);
       expect(parsed[1].amount, 1250);
 
+      // Có tên chất và tên hợp chất nhưng không rõ cách ghi: chưa rõ dạng (tính giới hạn thận trọng nhất).
       expect(parsed[2].nutrientId, 'iron');
-      expect(parsed[2].form, 'ferrous_fumarate');
+      expect(parsed[2].form, NutrientForm.unknown);
+      expect(parsed[2].compoundKind, CompoundKind.unknown);
       expect(parsed[2].amount, 100);
 
       expect(parsed[3].nutrientId, isNull);
@@ -56,7 +59,7 @@ void main() {
       expect(pkg.ingredients[0].amount, 1000);
       expect(pkg.ingredients[1].nutrientId, 'calcium');
       expect(pkg.ingredients[1].amount, 1250);
-      expect(pkg.ingredients[1].form, 'calcium_carbonate');
+      expect(pkg.ingredients[1].compoundKind, CompoundKind.elemental);
     });
 
     test('parsePackage xử lý đúng text OCR thật từ nhãn SCanPrev Zinc Bis Glycinate 25', () {
@@ -88,6 +91,7 @@ void main() {
       expect(pkg.ingredients, hasLength(3));
       expect(pkg.ingredients[0].nutrientId, 'calcium');
       expect(pkg.ingredients[0].form, 'calcium_carbonate');
+      expect(pkg.ingredients[0].compoundKind, CompoundKind.compound);
       expect(pkg.ingredients[0].unit, LabelUnit.mg);
       expect(pkg.ingredients[1].nutrientId, 'vitD');
       expect(pkg.ingredients[1].unit, LabelUnit.iu);
@@ -431,10 +435,10 @@ void main() {
       expect(find.text('Xác nhận thành phần'), findsOneWidget);
       expect(find.textContaining('chưa phù hợp với chất này'), findsOneWidget);
 
-      // Sửa Folate: sheet tự lọc sang đơn vị hợp lệ (µg DFE / µg), chọn µg -> cảnh báo biến mất.
+      // Sửa Folate: `mg` không hợp nên ô đơn vị để trống (không tự chọn), chọn µg -> cảnh báo biến mất.
       await tester.tap(find.text('Sửa').first);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('µg DFE').last);
+      await tester.tap(find.text('Chọn').last);
       await tester.pumpAndSettle();
       await tester.tap(find.text('µg').last);
       await tester.pumpAndSettle();

@@ -663,13 +663,19 @@ class DiaryController extends ChangeNotifier {
     required Meal meal,
     required DateTime at,
   }) {
-    final input = LabelFoodBuilder.entryFromCustomFood(
-      custom,
-      usedQty: usedQty,
-      meal: meal,
-      at: at,
-      pack: pack,
-    );
+    final FoodEntryInput input;
+    try {
+      input = LabelFoodBuilder.entryFromCustomFood(
+        custom,
+        usedQty: usedQty,
+        meal: meal,
+        at: at,
+        pack: pack,
+      );
+    } on FormatException {
+      // Món đã lưu có đơn vị không đọc được: không ghi, không đoán đơn vị.
+      return Future.value(const FoodLogFeedback(summaryText: 'Chưa lưu được. Thử lại', failed: true));
+    }
     return _recordFoodEntry(input);
   }
 

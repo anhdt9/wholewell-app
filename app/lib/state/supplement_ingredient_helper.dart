@@ -80,10 +80,11 @@ class SupplementIngredientHelper {
     required String? nutrientId,
     required String form,
     required double? amount,
-    required LabelUnit unit,
+    required LabelUnit? unit,
     required bool isCompound,
   }) {
-    if (nutrientId == null || amount == null || amount <= 0) {
+    // Đơn vị trống: màn xác nhận đã hiện lời nhắc "Chưa rõ đơn vị", không kiểm thêm.
+    if (nutrientId == null || amount == null || amount <= 0 || unit == null) {
       return (
         sanity: const IngredientSanityResult(
           suspectedUnitMistake: false,
@@ -171,6 +172,18 @@ class SupplementIngredientHelper {
       );
     }
   }
+
+  /// Đơn vị nhãn tương ứng đơn vị chuẩn của chất trong gói; `null` khi không có (vd. `L`).
+  /// Không có giá trị mặc định: chất trả `null` không được nhập theo đơn vị chuẩn.
+  static LabelUnit? labelUnitForPackUnit(String packUnit) => switch (packUnit) {
+        'g' => LabelUnit.g,
+        'mg' => LabelUnit.mg,
+        'ug' => LabelUnit.ug,
+        'ug_RAE' => LabelUnit.ugRae,
+        'ug_DFE' => LabelUnit.ugDfe,
+        'mg_NE' => LabelUnit.mgNe,
+        _ => null,
+      };
 
   static IntakeLine? toOneOffIntakeLine(
     ReferencePack pack, {

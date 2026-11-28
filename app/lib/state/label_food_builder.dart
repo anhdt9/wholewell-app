@@ -170,7 +170,8 @@ class LabelFoodBuilder {
         LabelUnit.mgNe => 'mg_NE',
       };
 
-  static LabelUnit unitFromWire(String s) => switch (s) {
+  /// Đọc tên đơn vị đã lưu; `null` khi không đọc được (không đoán `mg`).
+  static LabelUnit? unitFromWire(String s) => switch (s) {
         'g' => LabelUnit.g,
         'mg' => LabelUnit.mg,
         'ug' => LabelUnit.ug,
@@ -178,7 +179,7 @@ class LabelFoodBuilder {
         'ug_RAE' || 'ugRae' => LabelUnit.ugRae,
         'ug_DFE' || 'ugDfe' => LabelUnit.ugDfe,
         'mg_NE' || 'mgNe' => LabelUnit.mgNe,
-        _ => LabelUnit.mg,
+        _ => null,
       };
 
   static BuiltLabelFood build(
@@ -384,6 +385,9 @@ class LabelFoodBuilder {
         continue;
       }
       final unit = unitFromWire(cl.labelUnit);
+      if (unit == null) {
+        throw FormatException('Đơn vị đã lưu không đọc được', cl.labelUnit);
+      }
       final conv = converter.convertIntakeLine(IntakeLineInput(
         nutrientId: cl.nutrientId,
         source: cl.source,

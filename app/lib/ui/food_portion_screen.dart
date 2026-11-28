@@ -205,20 +205,41 @@ class _FoodPortionScreenState extends State<FoodPortionScreen> {
     final scrollWholePage = textScale >= 1.5 && screenHeight < 760;
 
     // Tính tóm tắt dinh dưỡng tức thì qua domain helper dùng chung.
-    final preview = cus != null
-        ? LabelFoodBuilder.previewCustomFood(
-            cus,
-            qty: _qty,
-            meal: widget.initialMeal,
-            at: widget.initialAt,
-            pack: state.pack,
-          )
-        : LabelFoodBuilder.previewLibraryFood(
-            lib!,
-            grams: _grams,
-            pack: state.pack,
-            foodLibrary: state.foodLibrary,
-          );
+    final FoodPortionPreview preview;
+    try {
+      preview = cus != null
+          ? LabelFoodBuilder.previewCustomFood(
+              cus,
+              qty: _qty,
+              meal: widget.initialMeal,
+              at: widget.initialAt,
+              pack: state.pack,
+            )
+          : LabelFoodBuilder.previewLibraryFood(
+              lib!,
+              grams: _grams,
+              pack: state.pack,
+              foodLibrary: state.foodLibrary,
+            );
+    } on FormatException {
+      // Món đã lưu có đơn vị không đọc được (chỉ khi dữ liệu hỏng): báo lỗi, không đoán đơn vị.
+      return Scaffold(
+        appBar: AppBar(title: Text(title)),
+        body: const ErrorState(
+          message: 'Không đọc được số liệu của món đã lưu này. Hãy nhập lại món theo nhãn.',
+        ),
+        bottomNavigationBar: const SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.lg),
+            child: SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: FilledButton(onPressed: null, child: Text('Lưu')),
+            ),
+          ),
+        ),
+      );
+    }
 
     final summaryCard = _NutritionPreviewCard(
       kcal: preview.kcal,

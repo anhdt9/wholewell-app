@@ -617,16 +617,15 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
         });
         return;
       }
-      ParsedLabelPackage? pkg;
+      // Bộ đọc chữ luôn chạy; gợi ý của AI (nếu có) được đối chiếu với chữ trên ảnh.
+      final parsed = SupplementLabelParser.parsePackage(ocr.lines);
       final aiJson = await state.ocrEngine.extractLabelJsonWithOnDeviceAi(ocr.lines);
-      if (aiJson != null) {
-        pkg = SupplementLabelParser.parseAiJson(aiJson, ocr.lines);
-      }
-      pkg ??= SupplementLabelParser.parsePackage(ocr.lines);
+      final ai = aiJson == null ? null : SupplementLabelParser.parseAiJson(aiJson, ocr.lines);
+      final pkg = ai == null ? parsed : SupplementLabelParser.crossCheckAi(ai, parsed, ocr.lines);
       if (!mounted) return;
       setState(() => _busy = false);
       _openConfirm(
-        [for (final p in pkg.ingredients) EditableIngredient.fromParsed(p, state.pack)],
+        [for (final p in pkg.ingredients) EditableIngredient.fromParsed(p)],
         pkg: pkg,
       );
     } on Object {
@@ -649,6 +648,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
           initialLines: initial,
           rawOcrLines: pkg?.rawLines ?? const [],
           scannedBarcode: _barcode,
+          showAiNote: pkg?.fromOnDeviceAi ?? false,
           onConfirmed: (ctx, drafts) async {
             await Navigator.of(ctx).pushReplacement(
               MaterialPageRoute<void>(
