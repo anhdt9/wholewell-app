@@ -1,6 +1,6 @@
 # Thiết kế UX: Chụp nhãn, mã vạch, kho, hạn dùng
 
-Trạng thái: Đã duyệt (25/11/2026)  <!-- Nháp | Đã duyệt -->
+Trạng thái: Nháp (Bổ sung 1 ngày 28/11/2026 cho PR 1 chờ duyệt; phần gốc đã duyệt 25/11/2026)  <!-- Nháp | Đã duyệt -->
 Đặc tả: [docs/specs/label-scan-inventory.md](../specs/label-scan-inventory.md)
 
 ## Luồng người dùng
@@ -240,3 +240,179 @@ flowchart LR
 - [x] Tối đa 3 lần chạm cho thao tác chính (`Ghi` → `Bổ sung` → chọn sản phẩm & `Lưu`)
 - [x] Cỡ chữ 200%, vùng chạm 48 dp (`Giờ [ HH:mm ]` là hàng chạm riêng trong thân màn), tương phản AA, không dùng chỉ màu truyền nghĩa
 - [x] Không quảng cáo ở màn cảnh báo
+
+## Bổ sung 1: An toàn khi AI đọc nhãn (PR 1, nháp 28/11/2026)
+
+Trạng thái phần này: Nháp, chờ chủ dự án duyệt. Đặc tả: mục "Bổ sung 1" trong [docs/specs/label-scan-inventory.md](../specs/label-scan-inventory.md).
+
+Các màn khác của phần gốc không đổi. Màn `Thêm sản phẩm` không đổi giao diện; chỉ không còn lúc chờ tải mô hình AI.
+
+### B1. Luồng đọc nhãn
+
+```mermaid
+flowchart LR
+  A[Bấm Đọc thông tin] --> B[Đọc chữ trên ảnh]
+  B --> C[Bộ đọc chữ tách dòng]
+  B --> D{Mô hình AI có sẵn trên máy?}
+  D -->|Không| E[Dùng dòng của bộ đọc chữ]
+  D -->|Có| F[AI gợi ý dòng]
+  F --> G[So từng dòng AI với chữ trên ảnh, thêm chất AI bỏ sót]
+  C --> E
+  C --> G
+  E --> H[Xác nhận thành phần]
+  G --> H
+  H -->|Dòng cần kiểm| I[Bảng sửa dòng]
+  I -->|Xác nhận dòng này| H
+  H -->|Mọi dòng đã xác nhận| J[Thông tin sản phẩm]
+```
+
+- Máy chưa có mô hình (hay mô hình đang tải): dùng ngay dòng của bộ đọc chữ, không có thêm lúc chờ, không hiện thông báo gì thêm.
+
+### B2. Màn và trạng thái thay đổi
+
+| Màn | Thay đổi |
+|---|---|
+| **Xác nhận thành phần** | Dòng ghi chú khi có gợi ý của AI; dòng "cần kiểm" khóa ô đánh dấu, có lời nhắc; dòng đếm số dòng cần kiểm; `Chọn tất cả` / `Xác nhận tất cả` chỉ hiện khi không còn dòng cần kiểm |
+| **Bảng sửa dòng** | Đơn vị không chọn sẵn; lời nhắc khi dòng chưa khớp chữ trên ảnh; báo lỗi ngay dưới ô khi thiếu đơn vị hay lượng |
+| **Chọn khẩu phần** (món đã lưu) | Trạng thái lỗi khi số liệu đã lưu không đọc được (hiếm, chỉ khi dữ liệu hỏng) |
+
+### B3. Wireframe
+
+#### Xác nhận thành phần (có gợi ý của AI)
+
+```
+┌──────────────────────────────┐
+│ ←  Xác nhận thành phần       │
+├──────────────────────────────┤
+│ Kiểm tra và đánh dấu xác nhận│
+│ từng dòng trước khi lưu.     │
+│ ⓘ Gợi ý do AI trên máy tách  │
+│ từ chữ trên ảnh. Hãy so từng │
+│ số với nhãn.                 │
+│ ⚠ Còn 3 dòng cần kiểm. Bấm   │
+│ Sửa ở từng dòng.             │
+│                              │
+│ [✓] Vitamin D                │
+│     25 µg                Sửa │
+│ ──────────────────────────── │
+│ [–] Vitamin B6               │
+│     5 mg                     │
+│     ⚠ Chưa thấy số này trong │
+│     chữ đọc từ ảnh. Bấm Sửa  │
+│     để so với nhãn.      Sửa │
+│ ──────────────────────────── │
+│ [–] Folate                   │
+│     667 · Chưa rõ đơn vị     │
+│     ⚠ Chưa đọc được đơn vị.  │
+│     Bấm Sửa và chọn đơn vị   │
+│     theo nhãn.           Sửa │
+│ ──────────────────────────── │
+│ [–] Magie                    │
+│     ⚠ Chưa có lượng. Bấm Sửa │
+│     và nhập theo nhãn.   Sửa │
+│ ──────────────────────────── │
+│ [+ Thêm dòng thành phần]     │
+│ ▸ Chữ đã đọc từ ảnh (24 dòng)│
+│                              │
+│[ Tiếp tục (1/4 đã xác nhận) ]│
+└──────────────────────────────┘
+```
+
+- `[–]` là ô đánh dấu bị khóa. Chạm vào dòng bị khóa không làm gì; người dùng bấm `Sửa`. Trình đọc màn hình đọc ô khóa là "Cần kiểm, bấm Sửa".
+- **Dòng ghi chú AI** chỉ hiện khi danh sách có gợi ý của AI. Không hiện với kết quả của bộ đọc chữ, thư viện nhãn hay nhập tay.
+- **Dòng đếm** `Còn {n} dòng cần kiểm. Bấm Sửa ở từng dòng.` hiện khi `n > 0`, ở chỗ của `Chọn tất cả` / `Xác nhận tất cả`. Hết dòng cần kiểm thì dòng đếm ẩn và nút hiện lại như hiện nay.
+- Mỗi dòng hiện **một** lời nhắc, theo thứ tự ưu tiên:
+  1. chưa có lượng;
+  2. chưa rõ đơn vị;
+  3. đơn vị chưa phù hợp với chất (đã có);
+  4. chưa khớp chữ trên ảnh;
+  5. số khá lớn so với mức thông thường (đã có).
+
+  Lời nhắc 1, 2, 4 dùng khung vàng hổ phách như lời nhắc 5 (`warningContainer`); lời nhắc 3 giữ khung lỗi như hiện nay. Mọi lời nhắc có biểu tượng `⚠` và chữ, không chỉ dùng màu.
+- Dòng do bộ đọc chữ thêm vì AI bỏ sót hiện như dòng thường, không có nhãn riêng.
+- Sửa xong một dòng qua bảng sửa thì dòng đó được đánh dấu xác nhận và hết lời nhắc 4. Nếu số vẫn khá lớn thì lời nhắc 5 vẫn hiện, như hiện nay.
+
+#### Bảng sửa dòng
+
+```
+┌──────────────────────────────┐
+│ Sửa dòng thành phần          │
+│ ⚠ Chưa thấy số này trong chữ │
+│ đọc từ ảnh. So số và đơn vị  │
+│ với nhãn rồi bấm Xác nhận    │
+│ dòng này.                    │
+│                              │
+│ Chất dinh dưỡng              │
+│ [ Folate                  ▾ ]│
+│ Lượng mỗi khẩu phần  Đơn vị  │
+│ [ 667             ] [Chọn ▾] │
+│                Chọn đơn vị   │
+│                theo nhãn.    │
+│                              │
+│ [     Xác nhận dòng này     ]│
+└──────────────────────────────┘
+```
+
+- Lời nhắc ở đầu bảng chỉ hiện với dòng AI chưa khớp chữ trên ảnh.
+- Ô đơn vị để trống (`Chọn`) với dòng mới, dòng chưa rõ đơn vị, và khi đổi sang chất mà đơn vị cũ không hợp. Không tự chọn đơn vị đầu danh sách.
+- Bấm `Xác nhận dòng này`:
+  - thiếu đơn vị: chữ lỗi `Chọn đơn vị theo nhãn.` dưới ô đơn vị;
+  - lượng trống, bằng 0 hay không phải số: chữ lỗi `Nhập lượng lớn hơn 0.` dưới ô lượng;
+  - bảng không đóng; hiện nay bảng lặng lẽ không đóng mà không báo gì.
+- Ô đơn vị có nhãn đọc được `Đơn vị`; vùng chạm ≥ 48 dp.
+
+#### Chọn khẩu phần: món đã lưu không đọc được (hiếm)
+
+```
+┌──────────────────────────────┐
+│ ←  Bánh yến mạch             │
+├──────────────────────────────┤
+│                              │
+│      (biểu tượng cảnh báo)   │
+│ Không đọc được số liệu của   │
+│ món đã lưu này. Hãy nhập lại │
+│ món theo nhãn.               │
+│                              │
+│ [ Lưu ]  (khóa)              │
+└──────────────────────────────┘
+```
+
+- Dùng `ErrorState` có sẵn, không có nút `Thử lại` (thử lại vẫn ra cùng kết quả).
+- Chỉ xảy ra khi tệp dữ liệu hỏng. Mọi đường ghi món đều lưu đơn vị đọc lại được (có test khứ hồi).
+
+### B4. Trạng thái
+
+| Màn | Trống | Đang xử lý | Lỗi | Cảnh báo |
+|---|---|---|---|---|
+| Thêm sản phẩm (đọc ảnh) | Như phần gốc | `Đang đọc chữ trên {n} ảnh...`, không còn lúc chờ tải mô hình | Như phần gốc | — |
+| Xác nhận thành phần | Như phần gốc | — | Còn dòng cần kiểm: `Tiếp tục` khóa, dòng đếm số dòng cần kiểm | Lời nhắc trên từng dòng theo thứ tự ưu tiên ở B3 |
+| Bảng sửa dòng | Dòng mới: chưa chọn chất, đơn vị trống | — | `Chọn đơn vị theo nhãn.`, `Nhập lượng lớn hơn 0.`, `Đơn vị này không phù hợp với chất đã chọn.` (đã có) | Lời nhắc chưa khớp chữ trên ảnh ở đầu bảng |
+| Chọn khẩu phần | — | — | Món đã lưu không đọc được: `ErrorState`, `Lưu` khóa | — |
+
+### B5. Nội dung chữ
+
+| Vị trí | Chữ hiển thị |
+|---|---|
+| Ghi chú khi có gợi ý của AI | `Gợi ý do AI trên máy tách từ chữ trên ảnh. Hãy so từng số với nhãn.` |
+| Dòng đếm | `Còn {n} dòng cần kiểm. Bấm Sửa ở từng dòng.` |
+| Dòng chưa có lượng | `Chưa có lượng. Bấm Sửa và nhập theo nhãn.` |
+| Dòng chưa rõ đơn vị (dòng phụ) | `{lượng} · Chưa rõ đơn vị` |
+| Dòng chưa rõ đơn vị (lời nhắc) | `Chưa đọc được đơn vị. Bấm Sửa và chọn đơn vị theo nhãn.` |
+| Dòng chưa khớp chữ trên ảnh | `Chưa thấy số này trong chữ đọc từ ảnh. Bấm Sửa để so với nhãn.` |
+| Ô đánh dấu bị khóa (trình đọc màn hình) | `Cần kiểm, bấm Sửa` |
+| Đầu bảng sửa dòng (dòng chưa khớp) | `Chưa thấy số này trong chữ đọc từ ảnh. So số và đơn vị với nhãn rồi bấm Xác nhận dòng này.` |
+| Ô đơn vị trống | `Chọn` (nhãn ô: `Đơn vị`) |
+| Lỗi thiếu đơn vị | `Chọn đơn vị theo nhãn.` |
+| Lỗi lượng | `Nhập lượng lớn hơn 0.` |
+| Món đã lưu không đọc được | `Không đọc được số liệu của món đã lưu này. Hãy nhập lại món theo nhãn.` |
+
+Nếu chủ dự án chọn đưa mục B1.8 của đặc tả ("as hợp chất") vào PR 1, giao diện không thêm chữ mới. Dòng chưa rõ dạng hiện `Chưa rõ dạng · …` và lời nhắc `Chưa rõ dạng: tính giới hạn theo cách thận trọng nhất; so mức khuyến nghị là chưa chắc.` như phần gốc.
+
+### B6. Kiểm theo nguyên tắc (`docs/design/README.md`)
+
+- [x] Lời lẽ đúng vai tham chiếu, không viết tắt chuẩn. "AI" không phải tên chuẩn; ghi rõ "AI trên máy".
+- [x] Ẩn số calo được tôn trọng (bổ sung không hiện calo; màn Chọn khẩu phần ở trạng thái lỗi không hiện số).
+- [x] Tối đa 3 lần chạm cho thao tác chính: ghi lần uống không đổi. Thêm sản phẩm có thêm chạm cho dòng cần kiểm; chấp nhận được vì đây là bước an toàn, không phải thao tác ghi hằng ngày.
+- [x] Cỡ chữ 200%, vùng chạm 48 dp, tương phản AA, không dùng chỉ màu truyền nghĩa (lời nhắc có `⚠` và chữ; ô khóa có nhãn cho trình đọc màn hình).
+- [x] Không quảng cáo ở màn cảnh báo.
+- [x] Mọi dòng do OCR hay AI đọc đều phải được người dùng xác nhận trước khi lưu.
