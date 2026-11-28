@@ -14,7 +14,7 @@ App tham chiếu dinh dưỡng, miễn phí, mọi dữ liệu nằm trên máy.
 
 - Mọi việc MVP trong [status.md](status.md) (việc 1–19) đã gộp vào `main`. PR cuối là #44 (A11y 200%, Dark Mode). Không còn PR nào mở; trên remote chỉ còn nhánh `main` và nhánh `docs/refactor-plan` (chứa plan và tệp này).
 - **Đang làm: kế hoạch tái cấu trúc** [refactor-plan.md](refactor-plan.md), bản 15, **nháp, chờ chủ dự án duyệt** mục 2 (15 ADR) và mục 5 (lộ trình). Chưa có dòng code nào của tái cấu trúc.
-- **Đặc tả và thiết kế cho PR 1** (an toàn AI đọc nhãn): đã viết nháp "Bổ sung 1" ở cuối [specs/label-scan-inventory.md](specs/label-scan-inventory.md) và [design/label-scan-inventory.md](design/label-scan-inventory.md), **chờ duyệt**. Dòng `Trạng thái` đầu hai tệp đã đổi về `Nháp` để cổng duyệt chặn code PR 1.
+- **Đặc tả và thiết kế cho PR 1** (an toàn AI đọc nhãn): "Bổ sung 1" ở cuối [specs/label-scan-inventory.md](specs/label-scan-inventory.md) và [design/label-scan-inventory.md](design/label-scan-inventory.md), **đã duyệt** 28/11/2026.
 - Còn thử tay trên máy thật: status.md việc 1 (mở app trước lần mở khóa đầu sau khởi động lại, đổi hoặc xóa khóa màn hình, 2 năm dữ liệu) và việc 19 (kiểm thử trực quan, chụp ảnh Store).
 
 ## 3. Kế hoạch tái cấu trúc
@@ -37,12 +37,10 @@ Plan qua 15 bản, mỗi bản sửa theo một vòng review của chủ dự á
 ### 3.2. Việc tiếp theo, theo thứ tự
 
 1. **Chủ dự án** duyệt mục 2 và mục 5 của plan, quyết các mục 7.2–7.5, tạo keystore và các Android OAuth client (mục 7.4).
-2. **Đã viết (28/11/2026), chờ duyệt:** "Bổ sung 1" của `label-scan-inventory` cho PR 1 (chỉ là tài liệu). Chủ dự án duyệt thì đổi dòng `Trạng thái` đầu hai tệp thành `Đã duyệt`. Điểm chính cần chủ dự án xem:
-   - **Sửa cả 7 chỗ** đang đoán đơn vị (6 chỗ cũ và chỗ mới thấy: bảng sửa dòng tự đổi sang đơn vị đầu danh sách, [confirm_ingredients_screen.dart:470](../app/lib/ui/confirm_ingredients_screen.dart#L470), [:516](../app/lib/ui/confirm_ingredients_screen.dart#L516)). Chỗ dữ liệu thật có tới thì để trống đơn vị cho người dùng chọn; chỗ chỉ có tới khi dữ liệu hỏng thì báo lỗi, kèm test khứ hồi.
-   - **DSLD:** 14.624 trong 260.626 dòng vitamin, khoáng chất có đơn vị app chưa đọc được (vd. `Folate 1.7 mg DFE`, `Vitamin D3 5000 UI`, `Vitamin C 25 %`); hiện app lấy đơn vị chuẩn của chất.
-   - **Đối chiếu AI với chữ trên ảnh:** luôn chạy bộ đọc chữ; dòng AI không khớp số, đơn vị hoặc chất thì phải kiểm từng dòng; chất AI bỏ sót được thêm từ bộ đọc chữ.
-   - **Không tải mô hình:** chỉ chạy AI khi `checkStatus()` là `AVAILABLE`.
-   - **Đề xuất B1.8, chờ quyết:** `Calcium (as calcium carbonate) 500 mg` đang bị tính là 500 mg hợp chất (200 mg canxi). Theo trí nhớ của agent (chưa kiểm), NIH ODS ghi rằng bảng Supplement Facts ghi lượng nguyên tố; nếu đúng thì app tính thiếu giới hạn tới 60% (canxi) và 88% (sắt gluconat). **Phải kiểm câu gốc NIH ODS bằng Claude in Chrome trước khi code**; phiên viết đặc tả không có Chrome.
+2. **Đặc tả và thiết kế PR 1 đã duyệt (28/11/2026):** "Bổ sung 1" của `label-scan-inventory`. Quyết định ở mục B1.10 của đặc tả:
+   - sửa cả 7 chỗ đang đoán đơn vị;
+   - không tự tải mô hình AI ở chỗ nào;
+   - B1.8 làm trong PR 1: `Calcium (as calcium carbonate) 500 mg` là 500 mg canxi nguyên tố (chủ dự án xác nhận; nguồn 21 CFR 101.36(b)(2)(ii), đọc qua Cornell LII). **Trước khi gộp PR 1** phải mở eCFR bằng Claude in Chrome, đối chiếu câu gốc, ghi ngày tra.
 3. **PR 0a** (workspace, ghim Flutter 3.50.1 trong `.fvmrc`, mọi job CI dùng Flutter đã ghim, sửa mục "Lệnh" của `AGENTS.md`), rồi **PR 1**, rồi 0b… theo bảng ở mục 5 của plan.
 
 ### 3.3. Khi chủ dự án gửi review
@@ -70,7 +68,7 @@ Chi tiết và lý do ở AGENTS.md, plan.md, đặc tả. Những điểm hay b
 ## 5. Rủi ro và việc treo
 
 - **Lỗi đơn vị đang chạy trên máy:** AI đọc nhãn mặc định `mg` khi gặp đơn vị lạ, có thể sai 1.000 lần; DSLD lấy đơn vị chuẩn của chất cho 14.624 dòng có đơn vị lạ. Sửa ở PR 1 (mục 3.2).
-- **Có thể tính thiếu giới hạn với nhãn ghi `(as hợp chất)`** (canxi, sắt): xem đề xuất B1.8 trong [specs/label-scan-inventory.md](specs/label-scan-inventory.md). Cần kiểm nguồn bằng Chrome rồi chủ dự án quyết.
+- **Tính thiếu giới hạn với nhãn ghi `(as hợp chất)`** (canxi, sắt; tới 60–88%): đã chốt sửa ở PR 1, mục B1.8 trong [specs/label-scan-inventory.md](specs/label-scan-inventory.md).
 - **Nhắc giờ cho lịch đã kết thúc:** khi người dùng không mở app, chuông vẫn kêu theo danh sách khung giờ cũ, kể cả cho lịch đã kết thúc. Kotlin tự đặt lại chuông mỗi ngày từ danh sách đã lưu ([ReminderReceiver.kt:21-22](../app/android/app/src/main/kotlin/vn/wholewell/app/ReminderReceiver.kt#L21-L22)), mà danh sách không có ngày hiệu lực. Chưa ghi vào status.md (plan hẹn PR 5d ghi); muốn sửa cần đặc tả riêng.
 - **Phát hành:** bản release đang ký bằng khóa debug, và `app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk` nằm trong git. Đổi khóa ký (PR 0f) thì phải thêm Android OAuth client cho SHA-1 mới, và bản đang cài không cài đè được: tạo `.wwbackup`, gỡ, cài bản mới, khôi phục.
 - Chưa có iOS (Keychain, Application Support).

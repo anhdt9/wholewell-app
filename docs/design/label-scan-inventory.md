@@ -1,6 +1,6 @@
 # Thiết kế UX: Chụp nhãn, mã vạch, kho, hạn dùng
 
-Trạng thái: Nháp (Bổ sung 1 ngày 28/11/2026 cho PR 1 chờ duyệt; phần gốc đã duyệt 25/11/2026)  <!-- Nháp | Đã duyệt -->
+Trạng thái: Đã duyệt (25/11/2026; Bổ sung 1: 28/11/2026)  <!-- Nháp | Đã duyệt -->
 Đặc tả: [docs/specs/label-scan-inventory.md](../specs/label-scan-inventory.md)
 
 ## Luồng người dùng
@@ -241,9 +241,9 @@ flowchart LR
 - [x] Cỡ chữ 200%, vùng chạm 48 dp (`Giờ [ HH:mm ]` là hàng chạm riêng trong thân màn), tương phản AA, không dùng chỉ màu truyền nghĩa
 - [x] Không quảng cáo ở màn cảnh báo
 
-## Bổ sung 1: An toàn khi AI đọc nhãn (PR 1, nháp 28/11/2026)
+## Bổ sung 1: An toàn khi AI đọc nhãn (PR 1)
 
-Trạng thái phần này: Nháp, chờ chủ dự án duyệt. Đặc tả: mục "Bổ sung 1" trong [docs/specs/label-scan-inventory.md](../specs/label-scan-inventory.md).
+Trạng thái phần này: Đã duyệt 28/11/2026. Đặc tả: mục "Bổ sung 1" trong [docs/specs/label-scan-inventory.md](../specs/label-scan-inventory.md).
 
 Các màn khác của phần gốc không đổi. Màn `Thêm sản phẩm` không đổi giao diện; chỉ không còn lúc chờ tải mô hình AI.
 
@@ -406,7 +406,7 @@ flowchart LR
 | Lỗi lượng | `Nhập lượng lớn hơn 0.` |
 | Món đã lưu không đọc được | `Không đọc được số liệu của món đã lưu này. Hãy nhập lại món theo nhãn.` |
 
-Nếu chủ dự án chọn đưa mục B1.8 của đặc tả ("as hợp chất") vào PR 1, giao diện không thêm chữ mới. Dòng chưa rõ dạng hiện `Chưa rõ dạng · …` và lời nhắc `Chưa rõ dạng: tính giới hạn theo cách thận trọng nhất; so mức khuyến nghị là chưa chắc.` như phần gốc.
+Mục B1.8 của đặc tả (lượng trên bảng Supplement Facts là lượng nguyên tố) làm trong PR 1 và không thêm chữ mới. Dòng chưa rõ dạng hiện `Chưa rõ dạng · …` và lời nhắc `Chưa rõ dạng: tính giới hạn theo cách thận trọng nhất; so mức khuyến nghị là chưa chắc.` như phần gốc.
 
 ### B6. Kiểm theo nguyên tắc (`docs/design/README.md`)
 

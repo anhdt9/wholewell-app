@@ -1,6 +1,6 @@
 # Đặc tả: Chụp nhãn, mã vạch, kho, hạn dùng
 
-Trạng thái: Nháp (Bổ sung 1 ngày 28/11/2026 cho PR 1 chờ duyệt; phần gốc đã duyệt 25/11/2026)  <!-- Nháp | Đã duyệt -->
+Trạng thái: Đã duyệt (25/11/2026; Bổ sung 1: 28/11/2026)  <!-- Nháp | Đã duyệt -->
 Thiết kế UX: [docs/design/label-scan-inventory.md](../design/label-scan-inventory.md)
 Thứ tự MVP: Việc 5 trong [docs/status.md](../status.md)
 
@@ -103,9 +103,9 @@ Các bảng trong `schemaV1` (`products`, `ingredients`, `boxes`, `dose_entries`
 3. **Migration `schema_version = 2`:** Thêm cột `barcode TEXT` vào bảng `products` kèm test migrate `v1 -> v2`.
 4. **Lưu tệp ảnh nhãn (`Ảnh nhãn ›`):** Để ngoài phạm vi Việc 5.
 
-## Bổ sung 1: An toàn khi AI đọc nhãn (PR 1, nháp 28/11/2026)
+## Bổ sung 1: An toàn khi AI đọc nhãn (PR 1)
 
-Trạng thái phần này: Nháp, chờ chủ dự án duyệt. Thiết kế UX đi kèm: mục "Bổ sung 1" trong [docs/design/label-scan-inventory.md](../design/label-scan-inventory.md). Thứ tự làm: PR 1 trong [docs/refactor-plan.md](../refactor-plan.md), mục 5 (ngay sau PR 0a).
+Trạng thái phần này: Đã duyệt 28/11/2026 (quyết định ở B1.10). Thiết kế UX đi kèm: mục "Bổ sung 1" trong [docs/design/label-scan-inventory.md](../design/label-scan-inventory.md). Thứ tự làm: PR 1 trong [docs/refactor-plan.md](../refactor-plan.md), mục 5 (ngay sau PR 0a).
 
 ### B1.1. Mục tiêu
 
@@ -129,7 +129,7 @@ Trạng thái phần này: Nháp, chờ chủ dự án duyệt. Thiết kế UX 
 
 - Giữ mọi ràng buộc của phần gốc. AI chỉ gợi ý; người dùng xác nhận từng dòng; engine quyết định mọi số và cảnh báo.
 - **Không đoán đơn vị ở bất kỳ đâu.** Đơn vị chỉ đến từ chữ trên nhãn (OCR, AI, DSLD) khớp một danh sách cố định, hoặc do người dùng chọn.
-- Không đổi số người dùng đã nhập. Không đổi gói dữ liệu, engine, lược đồ CSDL (trừ mục B1.8 nếu được chọn).
+- Không đổi số người dùng đã nhập. Không đổi engine, lược đồ CSDL. Gói dữ liệu chỉ thêm nguồn và quy tắc của B1.8.
 - Không đổi hành vi với dữ liệu hợp lệ: nhãn đọc được đủ đơn vị và AI khớp chữ trên ảnh thì kết quả như hiện nay.
 
 ### B1.4. Phạm vi: 7 chỗ đang đoán đơn vị
@@ -253,18 +253,22 @@ Mỗi dòng thành ít nhất một test (`app/test/label_ai_safety_test.dart` m
 - [ ] Thử trên S24 Ultra với 5 nhãn thật: ghi lại số dòng AI khớp và cần kiểm cho từng nhãn; tắt mạng, máy chưa có mô hình thì đọc nhãn không chờ.
 - [ ] CI xanh, `flutter analyze` sạch.
 
-### B1.8. Đề xuất thêm, chờ quyết: lượng ghi "(as hợp chất)" là lượng nguyên tố
+### B1.8. Lượng ghi trên bảng Supplement Facts là lượng nguyên tố (làm trong PR 1)
 
-**Phát hiện khi rà code.** Bộ đọc chữ và AI coi `Calcium (as calcium carbonate) 500 mg` là 500 mg hợp chất, tính 200 mg canxi. Test hiện có khóa cách hiểu này ([label_scan_inventory_test.dart:19](../../app/test/label_scan_inventory_test.dart#L19), [:30](../../app/test/label_scan_inventory_test.dart#L30)).
-
-**Theo nguồn (cần kiểm lại bằng Claude in Chrome trước khi duyệt; phiên này không có Chrome).** Theo trí nhớ của agent, fact sheet canxi và sắt của NIH ODS ghi rằng bảng Supplement Facts ghi lượng nguyên tố, không phải khối lượng hợp chất. Nếu đúng, app đang:
+**Phát hiện khi rà code.** Bộ đọc chữ và AI coi `Calcium (as calcium carbonate) 500 mg` là 500 mg hợp chất, tính 200 mg canxi. Test hiện có khóa cách hiểu này ([label_scan_inventory_test.dart:19](../../app/test/label_scan_inventory_test.dart#L19), [:30](../../app/test/label_scan_inventory_test.dart#L30)). App đang:
 
 - tính thiếu 60% với canxi carbonat, 79% với canxi citrat;
 - tính thiếu 67–88% với sắt fumarat, sulfat, gluconat.
 
-Đây là chiều không an toàn cho giới hạn. Ví dụ `Iron (as ferrous gluconate) 27 mg` được tính 3,2 mg sắt.
+Đây là chiều không an toàn cho giới hạn. Ví dụ `Iron (as ferrous gluconate) 27 mg` được tính 3,2 mg sắt. Chủ dự án xác nhận ngày 28/11/2026: `Calcium (as calcium carbonate) 500 mg` là 500 mg canxi nguyên tố.
 
-**Quy tắc đề xuất** (chỉ cho chất có hợp chất trong gói, hiện là canxi và sắt):
+**Nguồn (nhãn A):** 21 CFR 101.36, quy định nhãn thực phẩm bổ sung của FDA.
+
+- (b)(2)(ii): "The quantitative amounts by weight shall represent the weight of the dietary ingredient rather than the weight of the source (e.g., the weight of calcium rather than that of calcium carbonate)".
+- (d): tên nguồn có thể ghi trong ngoặc, sau chữ "as" hoặc "from", ví dụ "Calcium (as calcium carbonate)".
+- Tra ngày 28/11/2026 qua bản chép của Cornell LII (https://www.law.cornell.edu/cfr/text/21/101.36), vì eCFR chuyển hướng truy cập tự động. **Trước khi gộp PR 1** phải mở eCFR (https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-101/subpart-A/section-101.36) bằng Claude in Chrome, đối chiếu nguyên văn (câu trích ở (b)(2)(ii) ghép từ hai đoạn trích ngắn) và ghi ngày tra.
+
+**Quy tắc** (chỉ cho chất có hợp chất trong gói, hiện là canxi và sắt):
 
 | Cách ghi trên nhãn | Ví dụ | Hiểu là |
 |---|---|---|
@@ -273,7 +277,7 @@ Mỗi dòng thành ít nhất một test (`app/test/label_ai_safety_test.dart` m
 | Có cả tên chất và tên hợp chất nhưng không rõ cách ghi | `Iron (ferrous fumarate) 100 mg`, `Canxi (canxi carbonat) 500mg` | Chưa rõ dạng: giới hạn tính cả con số, so mức khuyến nghị lấy số nhỏ nhất, ghi "chưa chắc" (quy tắc có sẵn của app) |
 
 - **Dòng AI:** dòng khớp chữ trên ảnh thì xét theo đoạn chữ đó trên ảnh. Dòng không khớp mà AI ghi hợp chất và không ghi `elemental: true` thì coi là chưa rõ dạng.
-- **Dữ liệu có nguồn:** danh sách chất áp quy tắc đặt trong `build_pack.py` (vd. `labelDeclaresElemental: {"calcium": "nih_ods_calcium", "iron": "nih_ods_iron"}`), kèm câu gốc ngắn và ngày tra trong `SOURCES`, ô kiểm ở `verify_pack.py`. Như vậy quy tắc là dữ liệu có nguồn, đúng `AGENTS.md`.
+- **Dữ liệu có nguồn:** thêm nguồn `fda_21cfr_101_36` vào `SOURCES` và mục `supplementFactsElemental` (`source`, `quote`, `accessedDate`, các chữ đánh dấu `as`/`from`) vào `build_pack.py`, kèm ô kiểm ở `verify_pack.py`. Như vậy quy tắc là dữ liệu có nguồn, đúng `AGENTS.md`.
 - **Biểu diễn:** lượng nguyên tố là `isCompound = false`, `form = unknown`; chưa rõ dạng là `isCompound = true`, `form = unknown` (như khi người dùng chọn `Chưa rõ dạng` trong bảng sửa dòng). Không đổi engine.
 - **Hệ quả:** đổi kết quả với nhãn Mỹ có `(as …)` (số tính vào giới hạn tăng) và với dòng như `Iron (ferrous fumarate) 100 mg`. Phải sửa test ở [label_scan_inventory_test.dart:15-38](../../app/test/label_scan_inventory_test.dart#L15-L38), và ghi rõ trong mô tả PR.
 
@@ -284,8 +288,8 @@ Mỗi dòng thành ít nhất một test (`app/test/label_ai_safety_test.dart` m
 - Đổi lược đồ CSDL; thêm `origin = 'ai'`.
 - Đơn vị `RE`, `alpha-TE` (engine chưa đổi được): người dùng chọn đơn vị khác theo nhãn hoặc nhập theo số đã đổi.
 
-### B1.10. Câu hỏi còn mở
+### B1.10. Quyết định đã chốt (28/11/2026)
 
-1. Đưa mục B1.8 ("as hợp chất") vào PR 1 hay PR riêng? **Đề xuất: PR 1**, vì cùng là an toàn đọc nhãn và đang tính thiếu giới hạn. Trước khi code phải kiểm câu gốc NIH ODS bằng Chrome.
-2. Có tự tải mô hình AI ở chỗ khác (vd. một nút trong `Tôi`) không? **Đề xuất: không**, trong PR 1. Nếu muốn thì làm đặc tả riêng, có hỏi người dùng trước khi tải.
-3. Sửa cả 7 chỗ (đề xuất) hay chỉ chỗ số 1 của AI? Nếu chỉ chỗ số 1 thì DSLD vẫn đoán đơn vị cho 14.624 dòng.
+1. Mục B1.8 làm trong PR 1. Chủ dự án xác nhận `Calcium (as calcium carbonate) 500 mg` là 500 mg canxi nguyên tố.
+2. Không tự tải mô hình AI ở chỗ nào. Nếu sau này muốn thì làm đặc tả riêng, có hỏi người dùng trước khi tải.
+3. Sửa cả 7 chỗ ở B1.4.
