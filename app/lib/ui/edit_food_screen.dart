@@ -5,7 +5,7 @@ import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:food_library/food_library.dart';
-import 'package:journal_db/journal_db.dart';
+import 'package:journal_db/models.dart';
 
 import '../state/app_scope.dart';
 import '../state/diary_controller.dart';

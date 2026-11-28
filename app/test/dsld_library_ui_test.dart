@@ -5,8 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:wholewell/main.dart';
 import 'package:wholewell/state/app_state.dart';
+
+import 'helpers/pump_app.dart';
 
 Future<AppState> _makeReadyState({
   required ReferencePack pack,
@@ -16,7 +17,7 @@ Future<AppState> _makeReadyState({
   OcrEngine? ocrEngine,
 }) async {
   final repo = InMemoryJournalRepository();
-  final state = AppState.withRepository(
+  final state = testAppState(
     pack: pack,
     repo: repo,
     dsldLibrary: dsld,
@@ -107,7 +108,7 @@ void main() {
 
   testWidgets('Quét mã vạch khớp DSLD điền sẵn, Xác nhận tất cả, lưu và hiện tá dược', (tester) async {
     final state = await _makeReadyState(pack: pack, dsld: _fakeDsld(), scanBarcodeResult: '0 23249 01234 4');
-    await tester.pumpWidget(WholeWellApp(state: state));
+    await pumpWholeWellApp(tester, state);
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Bổ sung'));
@@ -135,7 +136,7 @@ void main() {
 
   testWidgets('Quét mã vạch có nhiều bản ghi DSLD mở sheet Chọn phiên bản nhãn', (tester) async {
     final state = await _makeReadyState(pack: pack, dsld: _fakeDsld(), scanBarcodeResult: '023249010111');
-    await tester.pumpWidget(WholeWellApp(state: state));
+    await pumpWholeWellApp(tester, state);
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Bổ sung'));
@@ -154,7 +155,7 @@ void main() {
 
   testWidgets('Tìm theo tên sản phẩm trong thư viện DSLD và không khớp mã vạch', (tester) async {
     final state = await _makeReadyState(pack: pack, dsld: _fakeDsld(), scanBarcodeResult: '023249094012');
-    await tester.pumpWidget(WholeWellApp(state: state));
+    await pumpWholeWellApp(tester, state);
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Bổ sung'));
@@ -186,7 +187,7 @@ void main() {
       ocrEngine: ocr,
       scanBarcodeFromImageResult: '0 23249 01234 4',
     );
-    await tester.pumpWidget(WholeWellApp(state: state));
+    await pumpWholeWellApp(tester, state);
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Bổ sung'));

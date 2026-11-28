@@ -5,6 +5,11 @@ on:
     branches: [main]
   workflow_call:
   workflow_dispatch:
+    inputs:
+      update_goldens:
+        description: "Sinh lại ảnh golden (tải artifact goldens về app/test/goldens/ rồi commit)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -106,7 +111,7 @@ jobs:
         run: flutter pub get --enforce-lockfile
       - name: Kiểm định dạng (dart format, độ rộng 120 khai trong analysis_options.yaml)
         run: dart format --output=none --set-exit-if-changed app packages
-      - name: Test app
+      - name: Kiểm phụ thuộc và phân tích app
         working-directory: app
         run: |
           # CSDL phải dùng SQLite3MultipleCiphers, không kéo theo bản SQLite thường.
@@ -114,7 +119,21 @@ jobs:
             echo "Không được dùng sqlite3_flutter_libs"; exit 1
           fi
           flutter analyze
-          flutter test
+      - name: Sinh lại ảnh golden (chỉ khi chạy bằng tay với update_goldens)
+        if: github.event_name == 'workflow_dispatch' && inputs.update_goldens
+        working-directory: app
+        run: flutter test --tags golden --update-goldens
+      - name: Lưu ảnh golden vừa sinh
+        if: github.event_name == 'workflow_dispatch' && inputs.update_goldens
+        uses: actions/upload-artifact@v4
+        with:
+          name: goldens
+          path: app/test/goldens/*.png
+          retention-days: 7
+          if-no-files-found: error
+      - name: Test app (gồm golden, chỉ chạy trên Linux)
+        working-directory: app
+        run: flutter test
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

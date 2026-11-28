@@ -7,12 +7,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:wholewell/state/app_scope.dart';
 import 'package:wholewell/state/app_state.dart';
 import 'package:wholewell/state/dsld_ingredient_mapper.dart';
-import 'package:wholewell/ui/common/common_widgets.dart';
 import 'package:wholewell/ui/confirm_ingredients_screen.dart';
 import 'package:wholewell/ui/food_portion_screen.dart';
+
+import 'helpers/pump_app.dart';
 
 final _packJson = File('assets/reference_pack.json').readAsStringSync();
 final _pack = ReferencePack.fromJsonString(_packJson);
@@ -25,15 +25,10 @@ Future<AppState> _readyState() async {
   );
   await repo.saveHideCalories(false);
   await repo.saveOnboardingStep(OnboardingStep.done);
-  final state = AppState.withRepository(pack: _pack, repo: repo);
+  final state = testAppState(pack: _pack, repo: repo);
   await state.start();
   return state;
 }
-
-Widget _wrap(AppState state, Widget child) => AppScope(
-  state: state,
-  child: MaterialApp(theme: buildWholeWellTheme(Brightness.light), home: child),
-);
 
 void _phoneViewport(WidgetTester tester) {
   tester.view.physicalSize = const Size(1080, 2600);
@@ -330,17 +325,11 @@ void main() {
         _dsld([_fact('Vitamin B12', '500', 'mcg'), _fact('Folate', '1.7', 'mg DFE')]),
         _pack,
       );
-      await tester.pumpWidget(
-        _wrap(
-          state,
-          ConfirmIngredientsScreen(
-            initialLines: mapped.ingredients,
-            fromDsld: true,
-            onConfirmed: (ctx, drafts) async {},
-          ),
-        ),
+      await pumpApp(
+        tester,
+        state,
+        ConfirmIngredientsScreen(initialLines: mapped.ingredients, fromDsld: true, onConfirmed: (ctx, drafts) async {}),
       );
-      await tester.pumpAndSettle();
       expect(find.textContaining('Xác nhận tất cả'), findsNothing);
       expect(find.textContaining('Còn 1 dòng cần kiểm'), findsOneWidget);
     });
@@ -429,13 +418,11 @@ void main() {
     testWidgets('màn Chọn khẩu phần hiện lỗi thay vì màn đỏ, nút Lưu khóa', (tester) async {
       _phoneViewport(tester);
       final state = await _readyState();
-      await tester.pumpWidget(
-        _wrap(
-          state,
-          FoodPortionScreen.custom(custom: corrupt, initialMeal: Meal.breakfast, initialAt: DateTime(2026, 11, 28, 8)),
-        ),
+      await pumpApp(
+        tester,
+        state,
+        FoodPortionScreen.custom(custom: corrupt, initialMeal: Meal.breakfast, initialAt: DateTime(2026, 11, 28, 8)),
       );
-      await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.textContaining('Không đọc được số liệu của món đã lưu này'), findsOneWidget);
       expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Lưu')).onPressed, isNull);
@@ -459,13 +446,11 @@ void main() {
     Future<void> pumpConfirm(WidgetTester tester, List<EditableIngredient> initial) async {
       _phoneViewport(tester);
       final state = await _readyState();
-      await tester.pumpWidget(
-        _wrap(
-          state,
-          ConfirmIngredientsScreen(initialLines: initial, showAiNote: true, onConfirmed: (ctx, drafts) async {}),
-        ),
+      await pumpApp(
+        tester,
+        state,
+        ConfirmIngredientsScreen(initialLines: initial, showAiNote: true, onConfirmed: (ctx, drafts) async {}),
       );
-      await tester.pumpAndSettle();
     }
 
     testWidgets('dòng cần kiểm bị khóa ô đánh dấu và hiện đúng lời nhắc', (tester) async {

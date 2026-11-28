@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:wholewell/state/app_scope.dart';
 import 'package:wholewell/state/app_state.dart';
 import 'package:wholewell/ui/add_workout_screen.dart';
 import 'package:wholewell/ui/body_metrics_fields.dart';
@@ -14,6 +13,8 @@ import 'package:wholewell/ui/label_food_screen.dart';
 import 'package:wholewell/ui/supplements_screen.dart';
 import 'package:wholewell/ui/today_doses_screen.dart';
 import 'package:wholewell/ui/water_log_screen.dart';
+
+import 'helpers/pump_app.dart';
 
 class _SlowWorkoutRepo extends InMemoryJournalRepository {
   @override
@@ -75,11 +76,7 @@ Future<AppState> _makeReadyState(
   JournalRepository? repo,
   FakeNotificationScheduler? scheduler,
 }) async {
-  final state = AppState.withRepository(
-    pack: pack,
-    repo: repo ?? InMemoryJournalRepository(),
-    notificationScheduler: scheduler,
-  );
+  final state = testAppState(pack: pack, repo: repo ?? InMemoryJournalRepository(), notificationScheduler: scheduler);
   await state.start();
   await state.completeFirstConsent(ageYears: 28, caution: false);
   await state.saveOnboardingBodyProfile(
@@ -87,11 +84,6 @@ Future<AppState> _makeReadyState(
   );
   return state;
 }
-
-Widget _wrapWithState(AppState state, Widget child) => AppScope(
-  state: state,
-  child: MaterialApp(home: child),
-);
 
 void main() {
   late ReferencePack pack;
@@ -114,8 +106,7 @@ void main() {
       final state = await _makeReadyState(pack);
       addTearDown(state.dispose);
 
-      await tester.pumpWidget(_wrapWithState(state, const WaterLogScreen()));
-      await tester.pumpAndSettle();
+      await pumpApp(tester, state, const WaterLogScreen());
 
       // Chuyển sang nhập số tùy chỉnh bằng cách gõ vào ô text.
       final field = find.byType(TextField);
@@ -134,8 +125,7 @@ void main() {
       final state = await _makeReadyState(pack, repo: slowRepo);
       addTearDown(state.dispose);
 
-      await tester.pumpWidget(_wrapWithState(state, const AddWorkoutScreen()));
-      await tester.pumpAndSettle();
+      await pumpApp(tester, state, const AddWorkoutScreen());
 
       // Chọn hoạt động đầu tiên.
       await tester.tap(find.byType(RadioListTile<String>).first);
@@ -170,8 +160,7 @@ void main() {
       );
       addTearDown(state.dispose);
 
-      await tester.pumpWidget(_wrapWithState(state, const AddWorkoutScreen()));
-      await tester.pumpAndSettle();
+      await pumpApp(tester, state, const AddWorkoutScreen());
 
       await tester.tap(find.byType(RadioListTile<String>).first);
       await tester.pumpAndSettle();
@@ -208,17 +197,11 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(
-        _wrapWithState(
-          state,
-          FoodPortionScreen.custom(
-            custom: custom,
-            initialMeal: Meal.breakfast,
-            initialAt: DateTime(2026, 11, 27, 7, 0),
-          ),
-        ),
+      await pumpApp(
+        tester,
+        state,
+        FoodPortionScreen.custom(custom: custom, initialMeal: Meal.breakfast, initialAt: DateTime(2026, 11, 27, 7, 0)),
       );
-      await tester.pumpAndSettle();
 
       final qtyField = find.byType(TextField);
       for (final bad in ['', '0', '-5', 'NaN', 'Infinity']) {
@@ -234,10 +217,7 @@ void main() {
       final state = await _makeReadyState(pack);
       addTearDown(state.dispose);
 
-      await tester.pumpWidget(
-        _wrapWithState(state, const LabelFoodScreen(initialMeal: Meal.snack, initialName: 'Bánh thử')),
-      );
-      await tester.pumpAndSettle();
+      await pumpApp(tester, state, const LabelFoodScreen(initialMeal: Meal.snack, initialName: 'Bánh thử'));
 
       final kcalField = find.widgetWithText(TextFormField, 'Năng lượng (kcal)');
       await tester.enterText(kcalField, 'NaN');
@@ -315,8 +295,7 @@ void main() {
       );
       await state.diary.addSchedule(pid!, 8 * 60, 1, validFrom: dayKey(now));
 
-      await tester.pumpWidget(_wrapWithState(state, TodayDosesScreen(nowOverride: now)));
-      await tester.pumpAndSettle();
+      await pumpApp(tester, state, TodayDosesScreen(nowOverride: now));
 
       await tester.tap(find.text('Đã uống'));
       await tester.pump();
@@ -328,7 +307,7 @@ void main() {
     });
 
     testWidgets('ScanProductScreen nhả _busy khi quét ảnh/OCR ném ngoại lệ', (tester) async {
-      final state = AppState.withRepository(
+      final state = testAppState(
         pack: pack,
         repo: InMemoryJournalRepository(),
         ocrEngine: _ThrowingOcrEngine(),
@@ -341,8 +320,7 @@ void main() {
       );
       addTearDown(state.dispose);
 
-      await tester.pumpWidget(_wrapWithState(state, const ScanProductScreen()));
-      await tester.pumpAndSettle();
+      await pumpApp(tester, state, const ScanProductScreen());
 
       await tester.tap(find.text('Chụp ảnh nhãn (tên, thành phần)'));
       await tester.pumpAndSettle();

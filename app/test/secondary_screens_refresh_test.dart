@@ -6,7 +6,6 @@ import 'package:food_library/food_library.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:wholewell/state/app_scope.dart';
 import 'package:wholewell/state/app_state.dart';
 import 'package:wholewell/ui/common/common_widgets.dart';
 import 'package:wholewell/ui/common/log_sheet.dart';
@@ -17,9 +16,11 @@ import 'package:wholewell/ui/onboarding_flow.dart';
 import 'package:wholewell/ui/supplements_screen.dart';
 import 'package:wholewell/ui/today_doses_screen.dart';
 
+import 'helpers/pump_app.dart';
+
 Future<AppState> _makeReadyState(ReferencePack pack, {bool hideCalories = false}) async {
   final repo = InMemoryJournalRepository();
-  final state = AppState.withRepository(pack: pack, repo: repo);
+  final state = testAppState(pack: pack, repo: repo);
   await state.start();
   await state.completeFirstConsent(ageYears: 30, caution: false);
   await state.saveOnboardingBodyProfile(
@@ -27,13 +28,6 @@ Future<AppState> _makeReadyState(ReferencePack pack, {bool hideCalories = false}
   );
   await state.setHideCalories(hideCalories);
   return state;
-}
-
-Widget _wrapWithAppTheme(AppState state, Widget child, {Brightness brightness = Brightness.light}) {
-  return AppScope(
-    state: state,
-    child: MaterialApp(theme: buildWholeWellTheme(brightness), home: child),
-  );
 }
 
 void main() {
@@ -64,13 +58,11 @@ void main() {
       ],
     );
 
-    await tester.pumpWidget(
-      _wrapWithAppTheme(
-        state,
-        FoodPortionScreen.library(food: food, initialMeal: Meal.lunch, initialAt: DateTime(2026, 11, 27, 12, 0)),
-      ),
+    await pumpApp(
+      tester,
+      state,
+      FoodPortionScreen.library(food: food, initialMeal: Meal.lunch, initialAt: DateTime(2026, 11, 27, 12, 0)),
     );
-    await tester.pumpAndSettle();
 
     expect(find.descendant(of: find.byType(SurfaceCard), matching: find.byType(AnimatedSwitcher)), findsOneWidget);
     expect(find.textContaining('kcal'), findsOneWidget);
@@ -103,21 +95,17 @@ void main() {
       ),
     );
 
-    await tester.pumpWidget(
-      _wrapWithAppTheme(
-        state,
-        Scaffold(
-          body: const DiaryScreen(),
-          floatingActionButton: Builder(
-            builder: (ctx) => FloatingActionButton(
-              onPressed: () => unawaited(showLogSheet(ctx)),
-              child: const Icon(LucideIcons.plus),
-            ),
-          ),
+    await pumpApp(
+      tester,
+      state,
+      Scaffold(
+        body: const DiaryScreen(),
+        floatingActionButton: Builder(
+          builder: (ctx) =>
+              FloatingActionButton(onPressed: () => unawaited(showLogSheet(ctx)), child: const Icon(LucideIcons.plus)),
         ),
       ),
     );
-    await tester.pumpAndSettle();
 
     expect(find.text('Bữa sáng'), findsOneWidget);
     expect(find.text('Bữa trưa'), findsOneWidget);
@@ -159,9 +147,7 @@ void main() {
     );
     await state.diary.addSchedule(pid!, 480, 1, validFrom: dayKey(state.day));
 
-    await tester.pumpWidget(
-      _wrapWithAppTheme(state, const Scaffold(body: SupplementsScreen()), brightness: Brightness.dark),
-    );
+    await pumpApp(tester, state, const Scaffold(body: SupplementsScreen()), brightness: Brightness.dark, settle: false);
     // Dùng pump(Duration) thay vì pumpAndSettle khi LoadingSkeletonBox đang chạy animation lặp.
     expect(find.byType(LoadingSkeletonBox), findsWidgets);
     await tester.pump(const Duration(milliseconds: 120));
@@ -189,14 +175,12 @@ void main() {
     await state.diary.addSchedule(pid!, 480, 1, validFrom: dayKey(state.day));
     final now = DateTime(state.day.year, state.day.month, state.day.day, 8, 5);
 
-    await tester.pumpWidget(_wrapWithAppTheme(state, TodayDosesScreen(nowOverride: now)));
-    await tester.pumpAndSettle();
+    await pumpApp(tester, state, TodayDosesScreen(nowOverride: now));
 
     expect(find.text('08:00'), findsOneWidget);
     expect(find.text('Đã uống'), findsOneWidget);
 
-    await tester.pumpWidget(_wrapWithAppTheme(state, const Scaffold(body: MeScreen())));
-    await tester.pumpAndSettle();
+    await pumpApp(tester, state, const Scaffold(body: MeScreen()));
 
     expect(find.text('Hồ sơ & Lịch sinh hoạt'), findsOneWidget);
     expect(find.text('Nhắc giờ & Hiển thị'), findsOneWidget);
@@ -207,12 +191,11 @@ void main() {
 
   testWidgets('OnboardingFlow Chào mừng có huy hiệu và bước 1/3 có thanh tiến độ 3 đoạn', (tester) async {
     final repo = InMemoryJournalRepository();
-    final state = AppState.withRepository(pack: pack, repo: repo);
+    final state = testAppState(pack: pack, repo: repo);
     await state.start();
     addTearDown(state.dispose);
 
-    await tester.pumpWidget(_wrapWithAppTheme(state, const OnboardingFlow()));
-    await tester.pumpAndSettle();
+    await pumpApp(tester, state, const OnboardingFlow());
 
     expect(find.byType(CustomPaint), findsWidgets);
     expect(find.byType(SurfaceCard), findsOneWidget);
@@ -249,13 +232,8 @@ void main() {
     await state.diary.addSchedule(pid, 1200, 1, validFrom: today);
     final now = DateTime(state.day.year, state.day.month, state.day.day, 12, 15);
 
-    await tester.pumpWidget(
-      MediaQuery(
-        data: const MediaQueryData(size: Size(360, 800), textScaler: TextScaler.linear(2.0)),
-        child: _wrapWithAppTheme(state, TodayDosesScreen(nowOverride: now)),
-      ),
-    );
-    await tester.pumpAndSettle();
+    usePhoneViewport(tester);
+    await pumpApp(tester, state, TodayDosesScreen(nowOverride: now), textScale: 2.0);
 
     expect(tester.takeException(), isNull);
     expect(find.text('Đánh dấu'), findsOneWidget);

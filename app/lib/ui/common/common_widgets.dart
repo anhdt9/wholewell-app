@@ -1,7 +1,7 @@
 /// Các thành phần giao diện dùng chung theo `docs/design/mvp-overview.md`.
 library;
 
-import 'package:journal_db/journal_db.dart';
+import 'package:journal_db/models.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../state/app_scope.dart';

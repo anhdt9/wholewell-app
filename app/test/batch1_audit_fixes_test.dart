@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:wholewell/state/app_scope.dart';
 import 'package:wholewell/state/app_state.dart';
 import 'package:wholewell/ui/diary_screen.dart';
 import 'package:wholewell/ui/home_screen.dart';
@@ -12,28 +11,16 @@ import 'package:wholewell/ui/product_detail_screen.dart';
 import 'package:wholewell/ui/profile_screen.dart';
 import 'package:wholewell/ui/today_screen.dart';
 
+import 'helpers/pump_app.dart';
+
 Future<AppState> _readyState(ReferencePack pack, {JournalRepository? repo}) async {
-  final state = AppState.withRepository(pack: pack, repo: repo ?? InMemoryJournalRepository());
+  final state = testAppState(pack: pack, repo: repo ?? InMemoryJournalRepository());
   await state.start();
   await state.completeFirstConsent(ageYears: 30, caution: false);
   await state.saveOnboardingBodyProfile(
     const Profile(ageYears: 30, sex: Sex.female, heightCm: 160, weightKg: 55, activityLevel: ActivityLevel.lowActive),
   );
   return state;
-}
-
-Widget _wrap(AppState state, Widget child, {ThemeData? theme, double textScale = 1.0}) {
-  return AppScope(
-    state: state,
-    child: MaterialApp(
-      theme: theme ?? ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
-      builder: (ctx, c) => MediaQuery(
-        data: MediaQuery.of(ctx).copyWith(textScaler: TextScaler.linear(textScale)),
-        child: c!,
-      ),
-      home: child,
-    ),
-  );
 }
 
 void main() {
@@ -47,39 +34,39 @@ void main() {
 
   testWidgets('P0: tạo sản phẩm mới từ stack sâu xong bấm Back về thẳng màn gốc', (tester) async {
     final state = await _readyState(pack);
-    await tester.pumpWidget(
-      _wrap(
-        state,
-        Builder(
-          builder: (ctx) => Scaffold(
-            body: Center(
-              child: FilledButton(
-                onPressed: () {
-                  Navigator.of(ctx).push(
-                    MaterialPageRoute<void>(
-                      builder: (ctx2) => Scaffold(
-                        body: Center(
-                          child: FilledButton(
-                            onPressed: () {
-                              Navigator.of(ctx2).push(
-                                MaterialPageRoute<void>(
-                                  builder: (_) => const ProductInfoScreen(initialName: 'Canxi Test'),
-                                ),
-                              );
-                            },
-                            child: const Text('Mở info'),
-                          ),
+    await pumpApp(
+      tester,
+      state,
+      Builder(
+        builder: (ctx) => Scaffold(
+          body: Center(
+            child: FilledButton(
+              onPressed: () {
+                Navigator.of(ctx).push(
+                  MaterialPageRoute<void>(
+                    builder: (ctx2) => Scaffold(
+                      body: Center(
+                        child: FilledButton(
+                          onPressed: () {
+                            Navigator.of(ctx2).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const ProductInfoScreen(initialName: 'Canxi Test'),
+                              ),
+                            );
+                          },
+                          child: const Text('Mở info'),
                         ),
                       ),
                     ),
-                  );
-                },
-                child: const Text('Mở quét'),
-              ),
+                  ),
+                );
+              },
+              child: const Text('Mở quét'),
             ),
           ),
         ),
       ),
+      settle: false,
     );
 
     await tester.tap(find.text('Mở quét'));
@@ -107,8 +94,7 @@ void main() {
     await state.setDay(yesterday);
     expect(state.diary.isViewingToday, isFalse);
 
-    await tester.pumpWidget(_wrap(state, const HomeScreen()));
-    await tester.pumpAndSettle();
+    await pumpApp(tester, state, const HomeScreen());
 
     // Chạm lại tab Hôm nay -> tự về hôm nay.
     await tester.tap(find.text('Hôm nay').last);
@@ -132,8 +118,7 @@ void main() {
     final state = await _readyState(pack);
     await state.addWorkout(WorkoutEntry(activityCode: pack.activities.keys.first, minutes: 30));
 
-    await tester.pumpWidget(_wrap(state, const Scaffold(body: DiaryScreen())));
-    await tester.pumpAndSettle();
+    await pumpApp(tester, state, const Scaffold(body: DiaryScreen()));
 
     expect(find.text('30 phút'), findsOneWidget);
 
@@ -167,8 +152,7 @@ void main() {
 
   testWidgets('P1: xóa dữ liệu ở Hồ sơ dùng hộp thoại xác nhận gõ XÓA', (tester) async {
     final state = await _readyState(pack);
-    await tester.pumpWidget(_wrap(state, const ProfileScreen()));
-    await tester.pumpAndSettle();
+    await pumpApp(tester, state, const ProfileScreen());
 
     await tester.scrollUntilVisible(find.text('Xóa toàn bộ dữ liệu'), 300, scrollable: find.byType(Scrollable).first);
     await tester.tap(find.text('Xóa toàn bộ dữ liệu'));
@@ -190,15 +174,7 @@ void main() {
       ),
     );
 
-    await tester.pumpWidget(
-      _wrap(
-        state,
-        const Scaffold(body: TodayScreen()),
-        theme: ThemeData(colorSchemeSeed: Colors.teal, brightness: Brightness.dark, useMaterial3: true),
-        textScale: 2.0,
-      ),
-    );
-    await tester.pumpAndSettle();
+    await pumpApp(tester, state, const Scaffold(body: TodayScreen()), brightness: Brightness.dark, textScale: 2.0);
 
     expect(find.text('Năng lượng'), findsOneWidget);
     expect(find.text('Tỷ lệ đạm, béo, bột đường'), findsOneWidget);

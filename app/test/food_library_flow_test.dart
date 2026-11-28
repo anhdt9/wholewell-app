@@ -6,11 +6,12 @@ import 'package:material_ui/material_ui.dart';
 import 'package:food_library/food_library.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
-import 'package:wholewell/state/app_scope.dart';
 import 'package:wholewell/state/app_state.dart';
 import 'package:wholewell/ui/add_food_screen.dart';
 import 'package:wholewell/ui/food_portion_screen.dart';
 import 'package:wholewell/ui/label_food_screen.dart';
+
+import 'helpers/pump_app.dart';
 
 void main() {
   final pack = ReferencePack.fromJsonString(File('assets/reference_pack.json').readAsStringSync());
@@ -19,7 +20,7 @@ void main() {
   group('LabelFoodBuilder và custom_foods', () {
     test('đường bổ sung bỏ trống -> false; nhập 0 -> true và giữ được qua custom_foods', () async {
       final repo = InMemoryJournalRepository();
-      final state = AppState.withRepository(pack: pack, repo: repo);
+      final state = testAppState(pack: pack, repo: repo);
       await state.start();
       await state.saveProfile(profile);
 
@@ -156,7 +157,7 @@ void main() {
     test('sửa khẩu phần món thư viện gọi replaceFoodLines; thiếu món trong DB mới vẫn nhân tỷ lệ an toàn', () async {
       final repo = InMemoryJournalRepository();
       final lib = FakeFoodLibraryRepository([sampleFood]);
-      final state = AppState.withRepository(pack: pack, repo: repo, foodLibrary: lib);
+      final state = testAppState(pack: pack, repo: repo, foodLibrary: lib);
       await state.start();
       await state.saveProfile(profile);
 
@@ -220,18 +221,12 @@ void main() {
           ],
         ),
       ]);
-      final state = AppState.withRepository(pack: pack, repo: repo, foodLibrary: lib);
+      final state = testAppState(pack: pack, repo: repo, foodLibrary: lib);
       await state.start();
       await state.saveProfile(profile);
       await state.setHideCalories(true);
 
-      await tester.pumpWidget(
-        AppScope(
-          state: state,
-          child: const MaterialApp(home: AddFoodScreen()),
-        ),
-      );
-      await tester.pumpAndSettle();
+      await pumpApp(tester, state, const AddFoodScreen());
 
       await tester.enterText(find.byType(TextField), 'pho bo');
       await tester.pump(const Duration(milliseconds: 200));
@@ -279,7 +274,7 @@ void main() {
 
   test('updateLoggedFood đổi ngày kiểm tra đúng cờ UL và đường bổ sung của ngày đích', () async {
     final repo = InMemoryJournalRepository();
-    final state = AppState.withRepository(pack: pack, repo: repo);
+    final state = testAppState(pack: pack, repo: repo);
     await state.start();
     await state.saveProfile(profile);
 
@@ -327,17 +322,11 @@ void main() {
 
   testWidgets('LabelFoodScreen đổi Vitamin E mg->IU, Folate mode không crash và tô đỏ inline vitA', (tester) async {
     final repo = InMemoryJournalRepository();
-    final state = AppState.withRepository(pack: pack, repo: repo);
+    final state = testAppState(pack: pack, repo: repo);
     await state.start();
     await state.saveProfile(profile);
 
-    await tester.pumpWidget(
-      AppScope(
-        state: state,
-        child: const MaterialApp(home: LabelFoodScreen(initialMeal: Meal.breakfast)),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await pumpApp(tester, state, const LabelFoodScreen(initialMeal: Meal.breakfast));
 
     final mainScroll = find.byType(Scrollable).first;
 

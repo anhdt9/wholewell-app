@@ -116,11 +116,18 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
     - Tạm tắt 2 lint đòi đổi cú pháp constructor khi sàn Dart lên 3.13 (`unnecessary_type_name_in_constructor`, `prefer_initializing_formals`); PR 0b quyết (việc 23).
     - Sửa mục "Lệnh" của `AGENTS.md` theo workspace.
     - **Test phụ thuộc giờ thật:** `batch1_audit_fixes_test.dart` ("P1: chạm lại tab Hôm nay…") hỏng khi chạy trong khoảng 23:54–23:59 giờ máy, vì cộng 6 phút vào `DateTime.now()` thì qua ngày. CI chạy giờ UTC nên ít gặp. Sửa ở PR 3a (`clock.now()` + `fake_async`).
-23. **Lint strict (PR 0b, hạ tầng, không cần đặc tả)** (nhánh `infra/lint-strict`):
+23. **Lint strict (PR 0b, hạ tầng, không cần đặc tả)** (**PR #48 đã gộp** 29/11/2026, CI qua):
     - Một `analysis_options.yaml` ở gốc cho mọi package: `very_good_analysis` + `strict-casts`, `strict-inference`, `strict-raw-types`; danh sách rule đang tắt của app chuyển lên đây; `exclude` tính từ gốc (`app/build/**`, `app/android/**`). `very_good_analysis` khai trong `dev_dependencies` của `pubspec.yaml` gốc.
     - Xóa tệp lint riêng của `app`, `health_engine`, `journal_db`; bỏ `lints`, `flutter_lints`.
     - Giữ tắt hẳn `unnecessary_type_name_in_constructor` (đòi constructor `new(...)`) và `prefer_initializing_formals` (đòi tham số tên riêng `this._x`): cú pháp mới của Dart 3.13; giữ cách viết như tài liệu và ví dụ chính thức của Flutter.
     - Sửa 120 cảnh báo mới ở `health_engine`, `journal_db` (`dart fix`, không đổi hành vi): đọc cột `r['x']! as T` thay cho `r['x'] as T` (cùng ném `TypeError` khi null), `const`, nháy đơn, mỗi dòng một khai báo, ngoặc thừa; 4 tham chiếu trong chú thích đổi sang `code`.
+24. **Lưới test (PR 0c, hạ tầng, không cần đặc tả)** (nhánh `test/test-net`):
+    - `package:journal_db/models.dart` chỉ export model (`src/models.dart`, chỉ phụ thuộc `health_engine`; test `models_library_test.dart`). 19/21 tệp UI chuyển sang `models.dart`; còn `backup_restore_screen.dart`, `drive_backup_screens.dart` (cần sao lưu).
+    - Test kiểm toán `architecture_rules_test.dart`, mỗi danh sách vi phạm chỉ được giảm (thêm vi phạm hay sửa xong mà chưa xóa khỏi danh sách đều làm test hỏng): UI import `journal_db.dart` (2 tệp); UI gọi thẳng plugin nền tảng hoặc channel (`supplements_screen.dart`: `mobile_scanner`, chuyển ở PR 4b); không re-export `journal_db`; chỉ helper dựng `AppScope` và gọi `AppState.withRepository`; ngoại lệ trợ năng.
+    - Helper duy nhất `test/helpers/pump_app.dart`: `testAppState`, `wrapApp`, `pumpApp`, `pumpWholeWellApp`, `usePhoneViewport`. 16 tệp test chuyển sang helper, bỏ các hàm `_wrap` riêng; theme trong test đều là theme WholeWell (sáng/tối).
+    - `pumpApp` kiểm 3 hướng dẫn trợ năng của Flutter (`androidTapTargetGuideline`, `labeledTapTargetGuideline`, `textContrastGuideline`) cho màn đang hiện. Danh sách ngoại lệ `test/helpers/a11y_exceptions.dart` (4 cặp, chỉ được giảm): `DiaryScreen`, `EditFoodScreen`, `FoodPortionScreen` có nút chưa có nhãn; `HomeScreen` có nút chọn ngày cao 36 dp. Không màn nào lỗi tương phản chữ. Lập lại danh sách: chạy test với biến môi trường `A11Y_DISCOVER=<tệp>`.
+    - Golden: `test/helpers/golden.dart` (`goldenTest`, chỉ chạy trên Linux, tag `golden` trong `dart_test.yaml`), ảnh mẫu trong `test/goldens/`; một golden mẫu `EnergyArcGauge` sáng/tối. Ảnh sinh trên CI: chạy workflow CI bằng tay với `update_goldens`, tải artifact `goldens` rồi commit.
+    - **Lệch so với plan (mục 3.6):** font BeVietnamPro nạp trong helper golden, không trong `flutter_test_config.dart`. Nạp cho mọi test làm 4 test bố cục hỏng vì đổi kích thước chữ so với font Ahem (`a11y_dark_mode_polish_test` FoodPortionScreen 360×640, `food_library_flow_test` ẩn kcal, `meal_toggles_and_reminder_details_test` #26, `secondary_screens_refresh_test` LogSheet); chuyển mọi test sang font thật là việc riêng.
 
 ## Để sau MVP (giai đoạn 2)
 

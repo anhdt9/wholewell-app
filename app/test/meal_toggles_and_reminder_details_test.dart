@@ -4,8 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:wholewell/main.dart';
-import 'package:wholewell/state/app_scope.dart';
 import 'package:wholewell/state/app_state.dart';
 import 'package:wholewell/ui/add_food_screen.dart';
 import 'package:wholewell/ui/edit_food_screen.dart';
@@ -15,12 +13,14 @@ import 'package:wholewell/ui/me_screen.dart';
 import 'package:wholewell/ui/notification_settings_screen.dart';
 import 'package:wholewell/ui/today_screen.dart';
 
+import 'helpers/pump_app.dart';
+
 Future<AppState> _makeReadyState(
   ReferencePack pack, {
   FakeNotificationScheduler? scheduler,
   InMemoryJournalRepository? repo,
 }) async {
-  final state = AppState.withRepository(
+  final state = testAppState(
     pack: pack,
     repo: repo ?? InMemoryJournalRepository(),
     notificationScheduler: scheduler ?? FakeNotificationScheduler(),
@@ -32,11 +32,6 @@ Future<AppState> _makeReadyState(
   );
   return state;
 }
-
-Widget _wrap(AppState state, Widget child) => AppScope(
-  state: state,
-  child: MaterialApp(home: child),
-);
 
 void main() {
   final pack = ReferencePack.fromJsonString(File('assets/reference_pack.json').readAsStringSync());
@@ -59,8 +54,7 @@ void main() {
       final state = await _makeReadyState(pack);
       addTearDown(state.dispose);
 
-      await tester.pumpWidget(_wrap(state, const Scaffold(body: MeScreen())));
-      await tester.pumpAndSettle();
+      await pumpApp(tester, state, const Scaffold(body: MeScreen()));
       await tester.tap(find.text('Giờ trong ngày'));
       await tester.pumpAndSettle();
 
@@ -108,16 +102,14 @@ void main() {
       );
 
       // AddFoodScreen chỉ còn Trưa và Phụ.
-      await tester.pumpWidget(_wrap(state, const AddFoodScreen()));
-      await tester.pumpAndSettle();
+      await pumpApp(tester, state, const AddFoodScreen());
       expect(find.text('Sáng'), findsNothing);
       expect(find.text('Trưa'), findsOneWidget);
       expect(find.text('Tối'), findsNothing);
       expect(find.text('Phụ'), findsOneWidget);
 
       // LabelFoodScreen mở với initialMeal=Meal.snack cũng chỉ hiện Trưa và Phụ.
-      await tester.pumpWidget(_wrap(state, const LabelFoodScreen(initialMeal: Meal.snack)));
-      await tester.pumpAndSettle();
+      await pumpApp(tester, state, const LabelFoodScreen(initialMeal: Meal.snack));
       expect(find.text('Sáng'), findsNothing);
       expect(find.text('Trưa'), findsOneWidget);
       expect(find.text('Tối'), findsNothing);
@@ -142,8 +134,7 @@ void main() {
         ],
       );
       final prod = state.diary.allProducts.singleWhere((p) => p.product.id == prodId).product;
-      await tester.pumpWidget(_wrap(state, EditScheduleScreen(product: prod)));
-      await tester.pumpAndSettle();
+      await pumpApp(tester, state, EditScheduleScreen(product: prod));
       expect(find.widgetWithText(ActionChip, 'Sáng 07:00'), findsNothing);
       expect(find.widgetWithText(ActionChip, 'Trưa 12:00'), findsOneWidget);
       expect(find.widgetWithText(ActionChip, 'Tối 19:00'), findsNothing);
@@ -165,8 +156,7 @@ void main() {
       );
       await state.diary.reload();
       final oldEntry = state.diary.todayFoods.singleWhere((e) => e.id == entryId);
-      await tester.pumpWidget(_wrap(state, EditFoodScreen(entry: oldEntry)));
-      await tester.pumpAndSettle();
+      await pumpApp(tester, state, EditFoodScreen(entry: oldEntry));
       expect(find.text('Sáng'), findsOneWidget);
       expect(find.text('Trưa'), findsOneWidget);
       expect(find.text('Tối'), findsNothing);
@@ -203,7 +193,7 @@ void main() {
         state.dispose();
       });
 
-      await tester.pumpWidget(WholeWellApp(state: state));
+      await pumpWholeWellApp(tester, state);
       await tester.pumpAndSettle();
 
       expect(find.byType(TodayScreen), findsOneWidget);
@@ -246,8 +236,7 @@ void main() {
       expect(scheduler.syncedSlots.single.detailText, isNull);
       expect(scheduler.syncedSlots.single.toMap().containsKey('detailText'), isFalse);
 
-      await tester.pumpWidget(_wrap(state, const NotificationSettingsScreen()));
-      await tester.pumpAndSettle();
+      await pumpApp(tester, state, const NotificationSettingsScreen());
 
       final detailTile = find.widgetWithText(SwitchListTile, 'Hiện tên sản phẩm trên thông báo');
       expect(detailTile, findsOneWidget);

@@ -4,9 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:wholewell/main.dart';
 import 'package:wholewell/state/app_state.dart';
 import 'package:wholewell/ui/labels.dart';
+
+import 'helpers/pump_app.dart';
 
 void main() {
   final pack = ReferencePack.fromJsonString(File('assets/reference_pack.json').readAsStringSync());
@@ -216,7 +217,7 @@ void main() {
       );
       await repo.saveHideCalories(false);
       await repo.saveOnboardingStep(OnboardingStep.done);
-      final state = AppState.withRepository(pack: pack, repo: repo, ocrEngine: ocr, barcodeScanner: scanner);
+      final state = testAppState(pack: pack, repo: repo, ocrEngine: ocr, barcodeScanner: scanner);
       await state.start();
       return state;
     }
@@ -232,7 +233,7 @@ void main() {
       final scanner = FakeBarcodeScanner(nextBarcode: '8935001122');
       final state = await makeReadyState(ocr: ocr, scanner: scanner);
 
-      await tester.pumpWidget(WholeWellApp(state: state));
+      await pumpWholeWellApp(tester, state);
       await tester.pumpAndSettle();
 
       // Mở tab Bổ sung (tab 3/4).
@@ -337,7 +338,7 @@ void main() {
       );
       expect(pid, isNotNull);
 
-      await tester.pumpWidget(WholeWellApp(state: state));
+      await pumpWholeWellApp(tester, state);
       await tester.pumpAndSettle();
 
       // 3 chạm từ nút nổi Ghi: Ghi -> Bổ sung -> chọn sản phẩm -> Lưu.
@@ -399,7 +400,7 @@ void main() {
         summaryLabel: 'Viên cũ',
       );
 
-      await tester.pumpWidget(WholeWellApp(state: state));
+      await pumpWholeWellApp(tester, state);
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Nhật ký'));
@@ -428,7 +429,7 @@ void main() {
       );
       final state = await makeReadyState(ocr: ocr, scanner: FakeBarcodeScanner());
 
-      await tester.pumpWidget(WholeWellApp(state: state));
+      await pumpWholeWellApp(tester, state);
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Bổ sung'));
@@ -463,7 +464,7 @@ void main() {
       );
       final state = await makeReadyState(ocr: ocr, scanner: FakeBarcodeScanner());
 
-      await tester.pumpWidget(WholeWellApp(state: state));
+      await pumpWholeWellApp(tester, state);
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Bổ sung'));
