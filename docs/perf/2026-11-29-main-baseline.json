@@ -1,7 +1,7 @@
 {
   "date": "2026-11-29",
   "branch": "perf/early-startup",
-  "commit": "77bd2c4",
+  "commit": "f461164",
   "device": {
     "model": "SM-S928B",
     "sdk": "37"
@@ -10,46 +10,60 @@
   "cold_start": {
     "total_time_ms": {
       "n": 10,
-      "min": 294,
-      "median": 306.0,
-      "p90": 324,
-      "max": 325
+      "min": 301,
+      "median": 319.5,
+      "p90": 329,
+      "max": 334
     },
     "to_today_ms": {
       "n": 10,
-      "min": 490,
-      "median": 520.0,
-      "p90": 554,
-      "max": 555
+      "min": 481,
+      "median": 553.5,
+      "p90": 567,
+      "max": 600
+    },
+    "ui_lag_max_ms": {
+      "n": 10,
+      "min": 14,
+      "median": 16.0,
+      "p90": 18,
+      "max": 21
+    },
+    "ui_blocked_over_50ms_total_ms": {
+      "n": 10,
+      "min": 0,
+      "median": 0.0,
+      "p90": 0,
+      "max": 0
     },
     "steps_ms": {
       "food_library": {
         "n": 10,
-        "min": 151,
-        "median": 170.5,
+        "min": 131,
+        "median": 175.5,
         "p90": 192,
-        "max": 200
+        "max": 201
       },
       "diary_reload": {
         "n": 10,
         "min": 7,
-        "median": 9.0,
+        "median": 9.5,
         "p90": 10,
         "max": 10
       },
       "session_start": {
         "n": 10,
-        "min": 237,
-        "median": 253.0,
-        "p90": 290,
-        "max": 302
+        "min": 216,
+        "median": 285.5,
+        "p90": 301,
+        "max": 303
       },
       "dsld_library": {
         "n": 10,
-        "min": 774,
-        "median": 800.0,
-        "p90": 806,
-        "max": 830
+        "min": 785,
+        "median": 802.0,
+        "p90": 814,
+        "max": 831
       }
     },
     "marks_ms": {
@@ -62,62 +76,84 @@
       },
       "run_app": {
         "n": 10,
-        "min": 32,
-        "median": 33.5,
-        "p90": 34,
-        "max": 35
+        "min": 31,
+        "median": 33.0,
+        "p90": 35,
+        "max": 38
       },
       "db_open": {
         "n": 10,
-        "min": 99,
-        "median": 108.5,
-        "p90": 117,
-        "max": 121
+        "min": 82,
+        "median": 115.5,
+        "p90": 142,
+        "max": 200
       },
       "today_ready": {
         "n": 10,
-        "min": 279,
-        "median": 298.5,
-        "p90": 337,
-        "max": 344
+        "min": 259,
+        "median": 332.5,
+        "p90": 347,
+        "max": 355
       }
     },
     "raw": {
       "total_time_ms": [
-        324,
-        306,
-        294,
-        303,
-        303,
+        327,
+        334,
+        321,
+        307,
+        310,
+        329,
+        318,
         301,
-        306,
-        317,
-        325,
-        318
+        314,
+        321
       ],
       "to_today_ms": [
-        520,
-        524,
-        507,
-        554,
-        527,
-        555,
-        490,
-        509,
-        508,
-        520
+        600,
+        540,
+        481,
+        557,
+        550,
+        564,
+        540,
+        567,
+        528,
+        562
+      ],
+      "ui_lag_max_ms": [
+        21,
+        15,
+        17,
+        15,
+        18,
+        17,
+        16,
+        16,
+        14,
+        16
       ]
     }
   },
+  "startup_5s_frames_us": {
+    "label": "to_background",
+    "n": 14,
+    "build_p50": 253,
+    "build_p90": 5089,
+    "build_p99": 5129,
+    "raster_p50": 2238,
+    "raster_p90": 7875,
+    "raster_p99": 9705
+  },
   "scroll_today_frames_us": {
     "label": "to_background",
-    "n": 844,
-    "build_p50": 683,
-    "build_p90": 858,
-    "build_p99": 2533,
-    "raster_p50": 3418,
-    "raster_p90": 3738,
-    "raster_p99": 5093
+    "n": 852,
+    "build_p50": 667,
+    "build_p90": 843,
+    "build_p99": 2238,
+    "raster_p50": 3350,
+    "raster_p90": 3761,
+    "raster_p99": 4928
   },
   "apk_bytes": {
     "profile_arm64": 139801769,

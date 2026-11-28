@@ -5,6 +5,8 @@
 /// (lúc còn màn chờ), nên mốc "tới Hôm nay có dữ liệu" là log `today_ready`.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -14,14 +16,36 @@ abstract final class PerfProbe {
   static final List<FrameTiming> _frames = [];
   static bool _collecting = false;
 
-  /// Gọi đầu `main()`: mốc 0 của các `mark`, bắt đầu thu thời gian khung hình (bản profile).
+  /// Gọi đầu `main()`: mốc 0 của các `mark`, bắt đầu thu thời gian khung hình và đo độ trễ của
+  /// isolate giao diện trong 6 giây đầu (bản profile).
   static void start() {
     _sinceMain.start();
     if (kProfileMode && !_collecting) {
       _collecting = true;
       SchedulerBinding.instance.addTimingsCallback(_frames.addAll);
+      _watchUiLag();
     }
     mark('main_start');
+  }
+
+  /// Hẹn giờ 16 ms; mỗi lần chạy trễ hơn hẹn là lúc isolate giao diện bị chặn (chạm, cuộn không phản hồi).
+  /// In độ trễ lớn nhất và tổng thời gian trễ quá 50 ms.
+  static void _watchUiLag() {
+    final sw = Stopwatch()..start();
+    var last = 0;
+    var maxLag = 0;
+    var blockedOver50 = 0;
+    Timer.periodic(const Duration(milliseconds: 16), (t) {
+      final now = sw.elapsedMilliseconds;
+      final lag = now - last - 16;
+      last = now;
+      if (lag > maxLag) maxLag = lag;
+      if (lag > 50) blockedOver50 += lag;
+      if (now >= 6000) {
+        t.cancel();
+        debugPrint('WW_PERF uilag max=$maxLag blocked_over50=$blockedOver50');
+      }
+    });
   }
 
   /// Ghi một mốc: số ms tính từ đầu `main()`.

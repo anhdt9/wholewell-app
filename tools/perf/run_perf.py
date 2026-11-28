@@ -16,7 +16,9 @@ vì hai lệnh này tự gỡ bản cũ khi cài đè thất bại. App không g
   (màn Hôm nay đã có dữ liệu). Không dùng "Fully drawn" của Android: FlutterActivity tự báo ở khung hình đầu.
   Cần hồ sơ đã xong onboarding.
 - Từng bước khởi động: log `WW_PERF step/mark` của bản profile.
-- Khung hình khi cuộn Hôm nay: log `WW_PERF frames` in lúc app vào nền.
+- Độ trễ isolate giao diện 6 s đầu (`WW_PERF uilag`): lúc bị chặn, chạm và cuộn không phản hồi.
+- Khung hình 5 giây đầu sau khởi động nguội (gồm lúc chuẩn bị thư viện DSLD) và khi cuộn Hôm nay:
+  log `WW_PERF frames` in lúc app vào nền.
 - Kích thước APK arm64 (bản profile và, nếu có, bản release đã build).
 """
 from __future__ import annotations
@@ -98,7 +100,7 @@ def summary(values: list[int]) -> dict:
 
 
 def cold_start(adb: Adb, runs: int) -> dict:
-    total, to_today, steps_all, marks_all = [], [], {}, {}
+    total, to_today, steps_all, marks_all, lag_max, lag_blocked = [], [], {}, {}, [], []
     for i in range(runs):
         adb.shell(f'am force-stop {PKG}')
         time.sleep(1.5)
@@ -113,23 +115,43 @@ def cold_start(adb: Adb, runs: int) -> dict:
             time.sleep(0.5)
             log = adb('logcat', '-d', '-v', 'time', check=False)
             tt = parse_to_today(log)
-            if tt is not None and 'WW_PERF step dsld_library' in log:
+            if tt is not None and 'WW_PERF uilag' in log:
                 break
         if tt is not None:
             to_today.append(tt)
         perf = parse_perf(log)
+        lag = re.search(r'WW_PERF uilag max=(\d+) blocked_over50=(\d+)', log)
+        if lag:
+            lag_max.append(int(lag.group(1)))
+            lag_blocked.append(int(lag.group(2)))
         for k, v in perf['steps'].items():
             steps_all.setdefault(k, []).append(v)
         for k, v in perf['marks'].items():
             marks_all.setdefault(k, []).append(v)
-        print(f'  lần {i + 1}: TotalTime={total[-1] if m else "?"} ms, tới Hôm nay={tt} ms, bước={perf["steps"]}')
+        print(f'  lần {i + 1}: TotalTime={total[-1] if m else "?"} ms, tới Hôm nay={tt} ms, '
+              f'trễ giao diện tối đa={lag.group(1) if lag else "?"} ms, bước={perf["steps"]}')
     return {
         'total_time_ms': summary(total),
         'to_today_ms': summary(to_today),
+        'ui_lag_max_ms': summary(lag_max),
+        'ui_blocked_over_50ms_total_ms': summary(lag_blocked),
         'steps_ms': {k: summary(v) for k, v in steps_all.items()},
         'marks_ms': {k: summary(v) for k, v in marks_all.items()},
-        'raw': {'total_time_ms': total, 'to_today_ms': to_today},
+        'raw': {'total_time_ms': total, 'to_today_ms': to_today, 'ui_lag_max_ms': lag_max},
     }
+
+
+def startup_frames(adb: Adb) -> dict:
+    """Khởi động nguội, chờ 5 s (thư viện DSLD chuẩn bị xong), vào nền: khung hình của 5 s đầu."""
+    adb.shell(f'am force-stop {PKG}')
+    time.sleep(1.5)
+    adb('logcat', '-c')
+    adb.shell(f'am start -W -n {ACTIVITY}')
+    time.sleep(5.0)
+    adb.shell('input keyevent KEYCODE_HOME')
+    time.sleep(1.5)
+    frames = parse_perf(adb('logcat', '-d', '-v', 'brief', check=False))['frames']
+    return frames[-1] if frames else {}
 
 
 def scroll_today(adb: Adb, swipes: int = 8) -> dict:
@@ -185,6 +207,8 @@ def main() -> None:
 
     print(f'Khởi động nguội x{args.runs} trên {model} (API {sdk})...')
     cold = cold_start(adb, args.runs)
+    print('Khung hình 5 s đầu sau khởi động...')
+    startup = startup_frames(adb)
     print('Cuộn màn Hôm nay...')
     scroll = scroll_today(adb)
 
@@ -195,6 +219,7 @@ def main() -> None:
         'device': {'model': model, 'sdk': sdk},
         'build': 'profile arm64',
         'cold_start': cold,
+        'startup_5s_frames_us': startup,
         'scroll_today_frames_us': scroll,
         'apk_bytes': {
             'profile_arm64': PROFILE_APK.stat().st_size if PROFILE_APK.exists() else None,
@@ -206,7 +231,8 @@ def main() -> None:
     out_path.write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(f'Đã ghi {out_path.relative_to(ROOT)}')
     print(json.dumps({'total_time_ms': cold['total_time_ms'], 'to_today_ms': cold['to_today_ms'],
-                      'steps_ms': cold['steps_ms'], 'scroll': scroll}, ensure_ascii=False, indent=2))
+                      'ui_lag_max_ms': cold['ui_lag_max_ms'],
+                      'steps_ms': cold['steps_ms'], 'startup_5s': startup, 'scroll': scroll}, ensure_ascii=False, indent=2))
 
 
 if __name__ == '__main__':
