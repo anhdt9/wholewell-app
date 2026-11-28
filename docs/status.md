@@ -1,6 +1,6 @@
 # Trạng thái dự án
 
-Cập nhật 27/11/2026. Agent cập nhật tệp này khi xong một việc.
+Cập nhật 28/11/2026. Agent cập nhật tệp này khi xong một việc.
 
 Người mới nhận dự án: đọc [handoff.md](handoff.md) trước.
 
@@ -95,10 +95,11 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
     - [log_sheet.dart](../app/lib/ui/common/log_sheet.dart) & [diary_screen.dart](../app/lib/ui/diary_screen.dart): `Bảng Ghi` 4 ô bo `16 dp` với icon nền tròn pastel theo nhóm; `Nhật ký` nhóm món ăn theo bữa trong `Card` phân tách bằng `Divider` mảnh.
     - [supplements_screen.dart](../app/lib/ui/supplements_screen.dart) & [today_doses_screen.dart](../app/lib/ui/today_doses_screen.dart): thanh lượng còn lại + pill trạng thái dịu trong `Kho`; timeline dọc ở `Lần uống hôm nay`, tự xếp dọc/`Wrap` nút khi cỡ chữ ≥ 1.3x.
     - [onboarding_flow.dart](../app/lib/ui/onboarding_flow.dart), [common_widgets.dart](../app/lib/ui/common/common_widgets.dart) & [me_screen.dart](../app/lib/ui/me_screen.dart): huy hiệu minh họa tối giản & thẻ cam kết ở `Chào mừng`, thanh tiến độ 3 đoạn mảnh ở `StepScaffold`, tab `Tôi` gom 4 nhóm thẻ; gỡ `OutlineInputBorder()` viết cứng toàn app, bổ sung `LoadingSkeletonBox`, `HapticFeedback` và kiểm thử [secondary_screens_refresh_test.dart](../app/test/secondary_screens_refresh_test.dart).
-19. **Đại tu giao diện — PR 5: A11y 200%, Dark Mode & Polish (`ui/refresh-p5-a11y-polish`):**
+19. **Đại tu giao diện — PR 5: A11y 200%, Dark Mode & Polish (PR #44 đã gộp vào `main`):**
     - [home_screen.dart](../app/lib/ui/home_screen.dart): nới vùng chạm nút `<` / `>` của `_DaySwitcherPill` lên `40 × 44` (bỏ `VisualDensity.compact` vốn co mất 8 px).
     - [common_widgets.dart](../app/lib/ui/common/common_widgets.dart), [supplements_screen.dart](../app/lib/ui/supplements_screen.dart), [log_sheet.dart](../app/lib/ui/common/log_sheet.dart) & [nutrient_detail_screen.dart](../app/lib/ui/nutrient_detail_screen.dart): xử lý `EntryTile` xếp giờ + `kcal` xuống `subtitle` khi `textScale >= 1.3` để tránh tràn `ListTile.trailing`, dùng `ResponsiveStatRow` cho dòng sản phẩm trong `Kho`, bọc `SingleChildScrollView` cho `Bảng Ghi` và `Flexible` cho `_SourceDotLabel`.
     - Bổ sung bộ kiểm thử A11y cỡ chữ `200%` (`360 dp`) & Dark Mode ở đủ trạng thái (trống, có dữ liệu, thận trọng, vượt UL, ẩn số calo) trong [a11y_dark_mode_polish_test.dart](../app/test/a11y_dark_mode_polish_test.dart); còn lại việc kiểm thử trực quan và chụp ảnh Store Assets trên máy thật.
+20. **Tái cấu trúc theo chuẩn Flutter** ([refactor-plan.md](refactor-plan.md), bản 15: **nháp, chờ chủ dự án duyệt** mục 2 và mục 5): MVVM theo Flutter App Architecture Guide, đối chiếu 17 khuyến nghị chính thức, 15 ADR, lộ trình từ PR 0a tới PR 8. Việc tiếp theo: chủ dự án duyệt; viết bổ sung đặc tả và thiết kế cho PR 1 (an toàn AI đọc nhãn); rồi PR 0a. Chi tiết bàn giao: [handoff.md](handoff.md), mục 3.
 
 ## Để sau MVP (giai đoạn 2)
 
