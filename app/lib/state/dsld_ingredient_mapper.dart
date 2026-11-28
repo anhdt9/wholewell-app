@@ -6,6 +6,7 @@ import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 
 import '../ui/confirm_ingredients_screen.dart';
+import 'label_unit_text.dart';
 import 'supplement_label_parser.dart';
 
 class DsldMappedProduct {
@@ -92,9 +93,13 @@ class DsldIngredientMapper {
     final cat = f.category.trim().toLowerCase();
     // Bỏ qua dòng tiêu đề nhóm / calo / đường tổng nếu không phải vi chất cần theo dõi,
     // nhưng giữ vitamin, mineral, hoặc các chất có số lượng rõ ràng.
+    // `%` là phần trăm giá trị hằng ngày, không phải lượng: bỏ cả lượng và đơn vị.
+    final isPercent = f.unit.trim() == '%';
     final rawAmount = double.tryParse(f.amount.trim().replaceAll(',', '.'));
-    final amount = (rawAmount != null && rawAmount.isFinite && rawAmount >= 0) ? rawAmount : null;
-    final unit = _parseUnit(f.unit);
+    final amount =
+        (!isPercent && rawAmount != null && rawAmount.isFinite && rawAmount >= 0) ? rawAmount : null;
+    // Đơn vị lạ để trống cho người dùng chọn theo nhãn, không lấy đơn vị chuẩn của chất.
+    final unit = isPercent ? null : LabelUnitText.parse(f.unit);
 
     // Tận dụng SupplementLabelParser để ánh xạ tên chất + dạng.
     final fakeLine = '$ing ${f.amount} ${f.unit}'.trim();
@@ -108,39 +113,15 @@ class DsldIngredientMapper {
       return null;
     }
 
-    final def = nutrientId == null ? null : pack.nutrients[nutrientId];
     return EditableIngredient(
       nutrientId: nutrientId,
       freeName: nutrientId == null ? ing : null,
       form: p?.form ?? NutrientForm.unknown,
       labelAmount: amount,
-      labelUnit: unit ?? _defaultUnitFor(def?.unit),
+      labelUnit: unit,
       isCompound: p != null && p.compoundKind != CompoundKind.elemental,
       origin: IngredientOrigin.barcode,
       confirmed: false,
     );
   }
-
-  static LabelUnit? _parseUnit(String raw) {
-    final u = raw.trim().toLowerCase();
-    if (u.isEmpty) return null;
-    if (u == 'g' || u == 'gram' || u == 'grams' || u == 'gram(s)') return LabelUnit.g;
-    if (u == 'mg') return LabelUnit.mg;
-    if (u == 'mcg' || u == 'ug' || u == 'µg') return LabelUnit.ug;
-    if (u == 'iu') return LabelUnit.iu;
-    if (u == 'mcg rae' || u == 'ug rae' || u == 'µg rae') return LabelUnit.ugRae;
-    if (u == 'mcg dfe' || u == 'ug dfe' || u == 'µg dfe') return LabelUnit.ugDfe;
-    if (u == 'mg ne') return LabelUnit.mgNe;
-    return null;
-  }
-
-  static LabelUnit _defaultUnitFor(String? packUnit) => switch (packUnit) {
-        'g' => LabelUnit.g,
-        'mg' => LabelUnit.mg,
-        'ug' => LabelUnit.ug,
-        'ug_RAE' => LabelUnit.ugRae,
-        'ug_DFE' => LabelUnit.ugDfe,
-        'mg_NE' => LabelUnit.mgNe,
-        _ => LabelUnit.mg,
-      };
 }

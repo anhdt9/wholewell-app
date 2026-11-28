@@ -343,6 +343,26 @@ class _StockStatusPill extends StatelessWidget {
 class ScanProductScreen extends StatefulWidget {
   const ScanProductScreen({super.key});
 
+  /// Lời hướng dẫn dưới khung camera (thiết kế label-scan-inventory, màn 2).
+  static const scanHint = 'Đưa mã vạch sản phẩm vào khung để tìm sản phẩm đã lưu hoặc trong thư viện nhãn.';
+
+  /// Camera báo mã nhiều lần mỗi giây khi mã còn trong khung. Chỉ nhận mã khi
+  /// màn quét đang ở trên cùng, không bận, chưa giữ mã nào, và không phải mã vừa mở
+  /// (để bấm quay lại mà máy còn hướng vào mã thì không mở lại).
+  /// Trả về mã đã cắt khoảng trắng, hoặc null nếu bỏ qua.
+  static String? acceptLiveCode({
+    required String? code,
+    required bool routeIsCurrent,
+    required bool busy,
+    required String? heldBarcode,
+    required String? lastHandledCode,
+  }) {
+    if (!routeIsCurrent || busy || heldBarcode != null) return null;
+    final trimmed = code?.trim() ?? '';
+    if (trimmed.isEmpty || trimmed == lastHandledCode) return null;
+    return trimmed;
+  }
+
   @override
   State<ScanProductScreen> createState() => _ScanProductScreenState();
 }
@@ -354,6 +374,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
   bool _busy = false;
   bool _cameraDenied = false;
   bool _scannerPaused = false;
+  String? _lastLiveCode;
 
   bool get _useLiveMobileScanner =>
       !kIsWeb &&
@@ -404,6 +425,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
     } on Object {
       if (mounted) {
         setState(() {
+          _lastLiveCode = null; // cho camera thử lại mã này
           _statusMsg = 'Chưa tra được mã vạch. Thử lại.';
         });
       }
@@ -617,16 +639,15 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
         });
         return;
       }
-      ParsedLabelPackage? pkg;
+      // Bộ đọc chữ luôn chạy; gợi ý của AI (nếu có) được đối chiếu với chữ trên ảnh.
+      final parsed = SupplementLabelParser.parsePackage(ocr.lines);
       final aiJson = await state.ocrEngine.extractLabelJsonWithOnDeviceAi(ocr.lines);
-      if (aiJson != null) {
-        pkg = SupplementLabelParser.parseAiJson(aiJson, ocr.lines);
-      }
-      pkg ??= SupplementLabelParser.parsePackage(ocr.lines);
+      final ai = aiJson == null ? null : SupplementLabelParser.parseAiJson(aiJson, ocr.lines);
+      final pkg = ai == null ? parsed : SupplementLabelParser.crossCheckAi(ai, parsed, ocr.lines);
       if (!mounted) return;
       setState(() => _busy = false);
       _openConfirm(
-        [for (final p in pkg.ingredients) EditableIngredient.fromParsed(p, state.pack)],
+        [for (final p in pkg.ingredients) EditableIngredient.fromParsed(p)],
         pkg: pkg,
       );
     } on Object {
@@ -649,6 +670,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
           initialLines: initial,
           rawOcrLines: pkg?.rawLines ?? const [],
           scannedBarcode: _barcode,
+          showAiNote: pkg?.fromOnDeviceAi ?? false,
           onConfirmed: (ctx, drafts) async {
             await Navigator.of(ctx).pushReplacement(
               MaterialPageRoute<void>(
@@ -683,29 +705,37 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
               icon: const Icon(LucideIcons.scanBarcode),
               label: const Text('Quét mã vạch'),
             )
-          else if (_useLiveMobileScanner && !_scannerPaused)
+          else if (_useLiveMobileScanner && !_scannerPaused) ...[
             SizedBox(
               height: 180,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: MobileScanner(
                   onDetect: (capture) {
-                    final code = capture.barcodes.firstOrNull?.rawValue;
-                    if (code != null && _barcode == null) {
-                      unawaited(_handleBarcode(code));
-                    }
+                    final code = ScanProductScreen.acceptLiveCode(
+                      code: capture.barcodes.firstOrNull?.rawValue,
+                      routeIsCurrent: ModalRoute.of(context)?.isCurrent ?? true,
+                      busy: _busy,
+                      heldBarcode: _barcode,
+                      lastHandledCode: _lastLiveCode,
+                    );
+                    if (code == null) return;
+                    _lastLiveCode = code;
+                    unawaited(_handleBarcode(code));
                   },
                 ),
               ),
-            )
-          else
+            ),
+            const SizedBox(height: 8),
+            const Text(ScanProductScreen.scanHint, textAlign: TextAlign.center),
+          ] else
             const SizedBox(
               height: 110,
               child: SurfaceCard(
                 color: Colors.transparent,
                 child: Center(
                   child: Text(
-                    'Đưa mã vạch vào khung để tìm sản phẩm đã lưu hoặc trong thư viện nhãn.',
+                    ScanProductScreen.scanHint,
                     textAlign: TextAlign.center,
                   ),
                 ),

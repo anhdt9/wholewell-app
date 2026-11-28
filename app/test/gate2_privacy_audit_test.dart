@@ -217,7 +217,7 @@ void main() {
       ]);
       expect(parsed.ingredients, hasLength(2));
       for (final line in parsed.ingredients) {
-        expect(EditableIngredient.fromParsed(line, pack).confirmed, isFalse);
+        expect(EditableIngredient.fromParsed(line).confirmed, isFalse);
       }
 
       final repo = InMemoryJournalRepository();

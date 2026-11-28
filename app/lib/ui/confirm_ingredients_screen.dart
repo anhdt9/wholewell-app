@@ -15,59 +15,59 @@ class EditableIngredient {
   String? freeName;
   String form;
   double? labelAmount;
-  LabelUnit labelUnit;
+
+  /// `null` khi chưa biết đơn vị: người dùng phải chọn theo nhãn trước khi xác nhận.
+  LabelUnit? labelUnit;
   bool isCompound;
   IngredientOrigin origin;
   bool confirmed;
+
+  /// Dòng AI chưa khớp chữ đọc từ ảnh; tắt khi người dùng xác nhận qua bảng sửa dòng.
+  bool needsCheck;
 
   EditableIngredient({
     this.nutrientId,
     this.freeName,
     this.form = NutrientForm.unknown,
     this.labelAmount,
-    this.labelUnit = LabelUnit.mg,
+    this.labelUnit,
     this.isCompound = false,
     this.origin = IngredientOrigin.manual,
     this.confirmed = false,
+    this.needsCheck = false,
   });
 
-  factory EditableIngredient.fromParsed(ParsedIngredientLine p, ReferencePack pack) {
-    final def = p.nutrientId == null ? null : pack.nutrients[p.nutrientId];
+  factory EditableIngredient.fromParsed(ParsedIngredientLine p) {
     return EditableIngredient(
       nutrientId: p.nutrientId,
       freeName: p.freeName,
       form: p.form,
       labelAmount: p.amount,
-      labelUnit: p.unit ?? _defaultUnitFor(def?.unit),
+      labelUnit: p.unit,
       isCompound: p.compoundKind != CompoundKind.elemental,
       origin: IngredientOrigin.ocr,
       confirmed: false,
+      needsCheck: p.needsCheck,
     );
   }
 
   factory EditableIngredient.fromSaved(ProductIngredient i) {
+    final unit = LabelUnit.values.where((u) => u.name == i.labelUnit).firstOrNull;
     return EditableIngredient(
       nutrientId: i.nutrientId,
       freeName: i.freeName,
       form: i.form,
       labelAmount: i.labelAmount,
-      labelUnit: LabelUnit.values.where((u) => u.name == i.labelUnit).firstOrNull ?? LabelUnit.mg,
+      labelUnit: unit,
       isCompound: i.isCompound,
       origin: i.origin,
-      confirmed: i.confirmed,
+      confirmed: unit != null && i.confirmed,
     );
   }
-
-  static LabelUnit _defaultUnitFor(String? packUnit) => switch (packUnit) {
-        'g' => LabelUnit.g,
-        'mg' => LabelUnit.mg,
-        'ug' => LabelUnit.ug,
-        'ug_RAE' => LabelUnit.ugRae,
-        'ug_DFE' => LabelUnit.ugDfe,
-        'mg_NE' => LabelUnit.mgNe,
-        _ => LabelUnit.mg,
-      };
 }
+
+/// Lý do một dòng phải kiểm qua bảng sửa dòng, theo thứ tự ưu tiên hiển thị.
+enum _ReviewReason { noAmount, noUnit, unitIncompatible, notOnImage }
 
 class ConfirmIngredientsScreen extends StatefulWidget {
   final List<EditableIngredient> initialLines;
@@ -75,6 +75,9 @@ class ConfirmIngredientsScreen extends StatefulWidget {
   final String? scannedBarcode;
   final int? editingProductId;
   final bool fromDsld;
+
+  /// Danh sách có gợi ý của AI trên máy: hiện dòng ghi chú ở đầu màn.
+  final bool showAiNote;
   final Future<void> Function(BuildContext ctx, List<IngredientDraft> drafts) onConfirmed;
 
   const ConfirmIngredientsScreen({
@@ -84,6 +87,7 @@ class ConfirmIngredientsScreen extends StatefulWidget {
     this.scannedBarcode,
     this.editingProductId,
     this.fromDsld = false,
+    this.showAiNote = false,
     required this.onConfirmed,
   });
 
@@ -101,23 +105,25 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
     _lines = [for (final l in widget.initialLines) l];
   }
 
-  bool _isUnitCompatible(EditableIngredient l, ReferencePack pack) =>
-      SupplementIngredientHelper.isUnitCompatible(
-        pack,
-        nutrientId: l.nutrientId,
-        form: l.form,
-        amount: l.labelAmount,
-        unit: l.labelUnit,
-        isCompound: l.isCompound,
-      );
-
-  bool get _allUnitCompatible {
-    if (_lines.isEmpty) return false;
-    final pack = AppScope.of(context).pack;
-    return _lines.every(
-      (l) => (l.labelAmount ?? 0) > 0 && _isUnitCompatible(l, pack),
+  _ReviewReason? _reviewReason(EditableIngredient l, ReferencePack pack) {
+    final amount = l.labelAmount;
+    if (amount == null || !amount.isFinite || amount <= 0) return _ReviewReason.noAmount;
+    final unit = l.labelUnit;
+    if (unit == null) return _ReviewReason.noUnit;
+    final compatible = SupplementIngredientHelper.isUnitCompatible(
+      pack,
+      nutrientId: l.nutrientId,
+      form: l.form,
+      amount: amount,
+      unit: unit,
+      isCompound: l.isCompound,
     );
+    if (!compatible) return _ReviewReason.unitIncompatible;
+    if (l.needsCheck) return _ReviewReason.notOnImage;
+    return null;
   }
+
+  int _reviewCount(ReferencePack pack) => _lines.where((l) => _reviewReason(l, pack) != null).length;
 
   void _setAllConfirmed(bool value) {
     final pack = AppScope.of(context).pack;
@@ -125,7 +131,7 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
       for (final l in _lines) {
         if (!value) {
           l.confirmed = false;
-        } else if ((l.labelAmount ?? 0) > 0 && _isUnitCompatible(l, pack)) {
+        } else if (_reviewReason(l, pack) == null) {
           l.confirmed = true;
         }
       }
@@ -142,9 +148,7 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
   bool get _allConfirmed {
     if (_lines.isEmpty) return false;
     final pack = AppScope.of(context).pack;
-    return _lines.every(
-      (l) => l.confirmed && (l.labelAmount ?? 0) > 0 && _isUnitCompatible(l, pack),
-    );
+    return _lines.every((l) => l.confirmed && _reviewReason(l, pack) == null);
   }
 
   IngredientDraft _toDraft(EditableIngredient l, ReferencePack pack) =>
@@ -154,7 +158,8 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
         freeName: l.freeName,
         form: l.form,
         labelAmount: l.labelAmount,
-        labelUnit: l.labelUnit,
+        // `_allConfirmed` bảo đảm mọi dòng đã có đơn vị trước khi gửi.
+        labelUnit: l.labelUnit!,
         isCompound: l.isCompound,
         origin: l.origin,
         confirmed: l.confirmed,
@@ -203,12 +208,32 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
     }
   }
 
+  Widget _note(String text, {bool error = false}) {
+    final cs = Theme.of(context).colorScheme;
+    final ww = context.wwColors;
+    final t = Theme.of(context).textTheme;
+    return Container(
+      margin: const EdgeInsets.only(top: AppSpacing.xs),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
+      decoration: BoxDecoration(
+        color: error ? cs.errorContainer : ww.warningContainer,
+        borderRadius: AppRadius.controlRadius,
+        border: error ? null : Border.all(color: ww.warningBorder),
+      ),
+      child: Text(
+        '⚠ $text',
+        style: t.bodySmall?.copyWith(color: error ? cs.onErrorContainer : ww.onWarningContainer),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = AppScope.of(context);
     final pack = state.pack;
     final cs = Theme.of(context).colorScheme;
     final confirmedCount = _lines.where((l) => l.confirmed).length;
+    final reviewCount = _reviewCount(pack);
 
     return Scaffold(
       appBar: AppBar(
@@ -225,14 +250,33 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
                     : 'Kiểm tra và đánh dấu xác nhận từng dòng trước khi lưu.',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
-          if (widget.fromDsld && _lines.isNotEmpty && !_allConfirmed && _allUnitCompatible) ...[
+          if (widget.showAiNote) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(LucideIcons.info, size: 18, color: cs.onSurfaceVariant),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    'Gợi ý do AI trên máy tách từ chữ trên ảnh. Hãy so từng số với nhãn.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          if (reviewCount > 0) ...[
+            const SizedBox(height: AppSpacing.sm),
+            _note('Còn $reviewCount dòng cần kiểm. Bấm Sửa ở từng dòng.'),
+          ] else if (widget.fromDsld && _lines.isNotEmpty && !_allConfirmed) ...[
             const SizedBox(height: 12),
             FilledButton.tonalIcon(
               onPressed: _saving ? null : _confirmAllAndSubmit,
               icon: const Icon(LucideIcons.checkCheck),
               label: Text('Xác nhận tất cả (${_lines.length})'),
             ),
-          ] else if (!widget.fromDsld && _lines.length > 1 && _allUnitCompatible) ...[
+          ] else if (!widget.fromDsld && _lines.length > 1) ...[
             const SizedBox(height: 8),
             Align(
               alignment: Alignment.centerRight,
@@ -250,7 +294,7 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
               child: Center(child: Text('Chưa có dòng thành phần nào.')),
             ),
           for (var i = 0; i < _lines.length; i++) ...[
-            _buildLineTile(i, _lines[i], state, pack, cs),
+            _buildLineTile(i, _lines[i], state, pack),
             const Divider(height: 1),
           ],
           const SizedBox(height: 12),
@@ -294,84 +338,71 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
     EditableIngredient l,
     AppState state,
     ReferencePack pack,
-    ColorScheme cs,
   ) {
-    final ww = context.wwColors;
     final t = Theme.of(context).textTheme;
     final def = l.nutrientId == null ? null : pack.nutrients[l.nutrientId!];
     final title = def?.nameVi ?? (l.freeName ?? 'Chưa chọn chất');
-    final check = _sanity(l, state);
-    final sanity = check.sanity;
-    final unitBad = check.unitIncompatible;
+    final reason = _reviewReason(l, pack);
+    final sanity = reason == null ? _sanity(l, state).sanity : null;
+    final unit = l.labelUnit;
 
     String subtitle = '';
-    if (l.labelAmount != null) {
-      subtitle = '${fmt(l.labelAmount!)} ${unitLabel(l.labelUnit.name)}';
-      if (l.isCompound && l.nutrientId != null) {
-        final meta = pack.compoundMeta[l.nutrientId!]?[l.form];
-        if (meta != null) {
-          final ratio = pack.compounds[l.nutrientId!]?[l.form];
-          final elem = ratio == null ? null : l.labelAmount! * ratio;
-          subtitle = elem != null
-              ? '${meta.nameVi} · nhãn ${fmt(l.labelAmount!)} → nguyên tố ${fmt(elem)} ${unitLabel(def?.unit ?? 'mg')}'
-              : '${meta.nameVi} · $subtitle';
-        } else {
-          subtitle = 'Chưa rõ dạng · $subtitle';
+    final amount = l.labelAmount;
+    if (amount != null) {
+      if (unit == null) {
+        subtitle = '${fmt(amount)} · Chưa rõ đơn vị';
+      } else {
+        subtitle = '${fmt(amount)} ${unitLabel(unit.name)}';
+        if (l.isCompound && l.nutrientId != null) {
+          final meta = pack.compoundMeta[l.nutrientId!]?[l.form];
+          if (meta != null && def != null) {
+            final ratio = pack.compounds[l.nutrientId!]?[l.form];
+            final elem = ratio == null ? null : amount * ratio;
+            subtitle = elem != null
+                ? '${meta.nameVi} · nhãn ${fmt(amount)} → nguyên tố ${fmt(elem)} ${unitLabel(def.unit)}'
+                : '${meta.nameVi} · $subtitle';
+          } else {
+            subtitle = 'Chưa rõ dạng · $subtitle';
+          }
         }
       }
     }
+
+    final Widget? note = switch (reason) {
+      _ReviewReason.noAmount => _note('Chưa có lượng. Bấm Sửa và nhập theo nhãn.'),
+      _ReviewReason.noUnit => _note('Chưa đọc được đơn vị. Bấm Sửa và chọn đơn vị theo nhãn.'),
+      _ReviewReason.unitIncompatible => _note(
+          'Đơn vị "${unitLabel(unit!.name)}" chưa phù hợp với chất này. Bấm Sửa để chọn lại.',
+          error: true,
+        ),
+      _ReviewReason.notOnImage =>
+        _note('Chưa thấy số này trong chữ đọc từ ảnh. Bấm Sửa để so với nhãn.'),
+      null => (sanity?.hasWarning ?? false)
+          ? _note('Số này khá lớn so với mức thông thường, hãy kiểm lại đơn vị mg/µg trên nhãn.')
+          : null,
+    };
+
+    final checkbox = Checkbox(
+      value: reason == null && l.confirmed,
+      onChanged: reason == null ? (v) => setState(() => l.confirmed = v ?? false) : null,
+    );
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Checkbox(
-            value: !unitBad && l.confirmed,
-            onChanged: !unitBad && (l.labelAmount ?? 0) > 0
-                ? (v) => setState(() => l.confirmed = v ?? false)
-                : null,
-          ),
+          if (reason == null)
+            checkbox
+          else
+            Semantics(label: 'Cần kiểm, bấm Sửa', child: checkbox),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: t.titleSmall),
-                if (subtitle.isNotEmpty)
-                  Text(subtitle, style: tabularNumberStyle(t.bodySmall)),
-                if (unitBad)
-                  Container(
-                    margin: const EdgeInsets.only(top: AppSpacing.xs),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                      vertical: AppSpacing.xs,
-                    ),
-                    decoration: BoxDecoration(
-                      color: cs.errorContainer,
-                      borderRadius: AppRadius.controlRadius,
-                    ),
-                    child: Text(
-                      '⚠ Đơn vị "${unitLabel(l.labelUnit.name)}" chưa phù hợp với chất này. Bấm Sửa để chọn lại.',
-                      style: t.bodySmall?.copyWith(color: cs.onErrorContainer),
-                    ),
-                  )
-                else if (sanity.hasWarning)
-                  Container(
-                    margin: const EdgeInsets.only(top: AppSpacing.xs),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                      vertical: AppSpacing.xs,
-                    ),
-                    decoration: BoxDecoration(
-                      color: ww.warningContainer,
-                      borderRadius: AppRadius.controlRadius,
-                      border: Border.all(color: ww.warningBorder),
-                    ),
-                    child: Text(
-                      '⚠ Số này khá lớn so với mức thông thường, hãy kiểm lại đơn vị mg/µg trên nhãn.',
-                      style: t.bodySmall?.copyWith(color: ww.onWarningContainer),
-                    ),
-                  ),
+                if (subtitle.isNotEmpty) Text(subtitle, style: tabularNumberStyle(t.bodySmall)),
+                if (note != null) note,
               ],
             ),
           ),
@@ -404,9 +435,11 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
   bool _isFree = false;
   late TextEditingController _freeName;
   late TextEditingController _amountCtrl;
-  late LabelUnit _unit;
+  LabelUnit? _unit;
   late String _form;
   late bool _isCompound;
+  String? _amountError;
+  String? _unitError;
 
   @override
   void initState() {
@@ -417,7 +450,9 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
     _amountCtrl = TextEditingController(
       text: widget.initial.labelAmount == null ? '' : '${widget.initial.labelAmount}',
     );
-    _unit = widget.initial.labelUnit;
+    final unit = widget.initial.labelUnit;
+    // Đơn vị không hợp với chất thì để trống cho người dùng chọn, không tự đổi sang đơn vị khác.
+    _unit = unit != null && _allowedUnitsFor(_nutrientId, _isFree).contains(unit) ? unit : null;
     _form = widget.initial.form;
     _isCompound = widget.initial.isCompound;
   }
@@ -458,6 +493,13 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
         LabelUnit.mgNe => 'mg NE',
       };
 
+  void _dropUnitIfNotAllowed() {
+    final unit = _unit;
+    if (unit != null && !_allowedUnitsFor(_nutrientId, _isFree).contains(unit)) {
+      _unit = null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final nutrients = widget.pack.nutrients.values
@@ -466,9 +508,8 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
     final compounds = _nutrientId == null ? null : widget.pack.compounds[_nutrientId!];
     final compoundMeta = _nutrientId == null ? null : widget.pack.compoundMeta[_nutrientId!];
     final allowedUnits = _allowedUnitsFor(_nutrientId, _isFree);
-    if (!allowedUnits.contains(_unit)) {
-      _unit = allowedUnits.first;
-    }
+    final ww = context.wwColors;
+    final t = Theme.of(context).textTheme;
 
     return ConstrainedBox(
       constraints: BoxConstraints(
@@ -480,7 +521,7 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.md),
-            child: Text('Sửa dòng thành phần', style: Theme.of(context).textTheme.titleMedium),
+            child: Text('Sửa dòng thành phần', style: t.titleMedium),
           ),
           Flexible(
             child: SingleChildScrollView(
@@ -489,15 +530,37 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  if (widget.initial.needsCheck) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.xs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: ww.warningContainer,
+                        borderRadius: AppRadius.controlRadius,
+                        border: Border.all(color: ww.warningBorder),
+                      ),
+                      child: Text(
+                        '⚠ Chưa thấy số này trong chữ đọc từ ảnh. So số và đơn vị với nhãn rồi bấm Xác nhận dòng này.',
+                        style: t.bodySmall?.copyWith(color: ww.onWarningContainer),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
                   DropdownButtonFormField<String>(
+                    isExpanded: true,
                     initialValue: _isFree ? '__free__' : _nutrientId,
                     decoration: const InputDecoration(labelText: 'Chất dinh dưỡng'),
                     items: [
                       for (final d in nutrients)
-                        DropdownMenuItem(value: d.id, child: Text(d.nameVi)),
+                        DropdownMenuItem(
+                          value: d.id,
+                          child: Text(d.nameVi, overflow: TextOverflow.ellipsis),
+                        ),
                       const DropdownMenuItem(
                         value: '__free__',
-                        child: Text('Chất khác (không tính giới hạn)'),
+                        child: Text('Chất khác (không tính giới hạn)', overflow: TextOverflow.ellipsis),
                       ),
                     ],
                     onChanged: (v) {
@@ -512,9 +575,8 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                           _nutrientId = v;
                           _form = NutrientForm.unknown;
                           _isCompound = false;
-                          final allowed = _allowedUnitsFor(_nutrientId, false);
-                          if (!allowed.contains(_unit)) _unit = allowed.first;
                         }
+                        _dropUnitIfNotAllowed();
                       });
                     },
                   ),
@@ -527,31 +589,62 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                   ],
                   const SizedBox(height: AppSpacing.md),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
+                        flex: 3,
                         child: TextField(
                           controller: _amountCtrl,
                           style: tabularNumberStyle(null),
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          decoration: const InputDecoration(labelText: 'Lượng mỗi khẩu phần'),
+                          decoration: InputDecoration(
+                            labelText: 'Lượng mỗi khẩu phần',
+                            errorText: _amountError,
+                            errorMaxLines: 3,
+                          ),
+                          onChanged: (_) {
+                            if (_amountError != null) setState(() => _amountError = null);
+                          },
                         ),
                       ),
                       const SizedBox(width: AppSpacing.md),
-                      DropdownButton<LabelUnit>(
-                        value: _unit,
-                        items: [
-                          for (final u in allowedUnits)
-                            DropdownMenuItem(value: u, child: Text(_unitDisplay(u))),
-                        ],
-                        onChanged: (u) {
-                          if (u != null) setState(() => _unit = u);
-                        },
+                      Expanded(
+                        flex: 2,
+                        child: InputDecorator(
+                          decoration: InputDecoration(
+                            labelText: 'Đơn vị',
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            errorText: _unitError,
+                            errorMaxLines: 3,
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<LabelUnit>(
+                              value: _unit,
+                              isExpanded: true,
+                              isDense: true,
+                              hint: const Text('Chọn'),
+                              items: [
+                                for (final u in allowedUnits)
+                                  DropdownMenuItem(value: u, child: Text(_unitDisplay(u))),
+                              ],
+                              onChanged: (u) {
+                                if (u != null) {
+                                  setState(() {
+                                    _unit = u;
+                                    _unitError = null;
+                                  });
+                                }
+                              },
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
                   if (!_isFree && compounds != null && compounds.isNotEmpty) ...[
                     const SizedBox(height: AppSpacing.md),
                     DropdownButtonFormField<String>(
+                      isExpanded: true,
                       initialValue: !_isCompound
                           ? '__elemental__'
                           : (compounds.containsKey(_form) ? _form : NutrientForm.unknown),
@@ -561,7 +654,7 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                         for (final fid in compounds.keys)
                           DropdownMenuItem(
                             value: fid,
-                            child: Text(compoundMeta?[fid]?.nameVi ?? fid),
+                            child: Text(compoundMeta?[fid]?.nameVi ?? fid, overflow: TextOverflow.ellipsis),
                           ),
                         const DropdownMenuItem(
                           value: NutrientForm.unknown,
@@ -584,6 +677,7 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                   if (!_isFree && _nutrientId == 'vitE') ...[
                     const SizedBox(height: AppSpacing.md),
                     DropdownButtonFormField<String>(
+                      isExpanded: true,
                       initialValue: _form == NutrientForm.natural2r || _form == NutrientForm.synthetic2r
                           ? _form
                           : NutrientForm.unknown,
@@ -599,6 +693,7 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                   if (!_isFree && _nutrientId == 'vitA') ...[
                     const SizedBox(height: AppSpacing.md),
                     DropdownButtonFormField<String>(
+                      isExpanded: true,
                       initialValue: _form == NutrientForm.retinol || _form == NutrientForm.betaCarotene
                           ? _form
                           : NutrientForm.unknown,
@@ -640,7 +735,13 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
 
   void _submitLine() {
     final amt = double.tryParse(_amountCtrl.text.trim().replaceAll(',', '.'));
-    if (amt == null || !amt.isFinite || amt <= 0) return;
+    final amountOk = amt != null && amt.isFinite && amt > 0;
+    final unit = _unit;
+    setState(() {
+      _amountError = amountOk ? null : 'Nhập lượng lớn hơn 0.';
+      _unitError = unit == null ? 'Chọn đơn vị theo nhãn.' : null;
+    });
+    if (!amountOk || unit == null) return;
     if (!_isFree && _nutrientId == null) return;
     if (_isFree && _freeName.text.trim().isEmpty) return;
     if (!_isFree) {
@@ -649,7 +750,7 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
         nutrientId: _nutrientId,
         form: _form,
         amount: amt,
-        unit: _unit,
+        unit: unit,
         isCompound: _isCompound,
       );
       if (!ok) {
@@ -664,7 +765,7 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
         freeName: _isFree ? _freeName.text.trim() : null,
         form: _form,
         labelAmount: amt,
-        labelUnit: _unit,
+        labelUnit: unit,
         isCompound: _isCompound,
         origin: widget.initial.origin,
         confirmed: true,

@@ -38,6 +38,10 @@ SOURCES = [
      "title": "NIH ODS – Vitamin E Fact Sheet for Health Professionals (cập nhật 19/10/2026)",
      "url": "https://ods.od.nih.gov/factsheets/VitaminE-HealthProfessional/",
      "retrieved": "2026-11-25"},
+    {"id": "fda_21cfr_101_36", "label": "A",
+     "title": "eCFR – 21 CFR 101.36 Nutrition labeling of dietary supplements",
+     "url": "https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-101/subpart-C/section-101.36",
+     "retrieved": "2026-11-28"},
     {"id": "fda_unit_conversions", "label": "A",
      "title": "FDA – Guidance for Industry: Converting Units of Measure for Folate, Niacin, and Vitamins A, D, and E (2019); 21 CFR 101.9, 101.36",
      "url": "https://www.fda.gov/media/129863/download",
@@ -419,6 +423,21 @@ COMPOUND_META = {
     },
 }
 
+# Lượng ghi trên bảng Supplement Facts là lượng nguyên tố, kể cả khi ghi nguồn trong ngoặc
+# ("Calcium (as calcium carbonate)"). Đặc tả label-scan-inventory, Bổ sung 1, mục B1.8.
+# Đối chiếu nguyên văn ngày 28/11/2026 bằng Claude in Chrome qua API chính thức của eCFR
+# (https://www.ecfr.gov/api/versioner/v1/full/2026-11-20/title-21.xml?part=101&section=101.36;
+# trang eCFR cho người đọc đòi CAPTCHA). Bản hiện hành: sửa đổi gần nhất 83 FR 65502, 21/12/2018.
+SUPPLEMENT_FACTS_ELEMENTAL = {
+    "source": "fda_21cfr_101_36",
+    "paragraph": "(b)(2)(ii), (d)",
+    "url": "https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-101/subpart-C/section-101.36",
+    "accessedDate": "2026-11-28",
+    "quote": "The quantitative amounts by weight shall represent the weight of the dietary ingredient rather than the weight of the source of the dietary ingredient",
+    "markers": ["as", "from"],
+    "nutrients": ["calcium", "iron"],
+}
+
 # Quy tắc lịch (tra NIH ODS Health Professional fact sheets ngày 23/11/2026, docs/plan.md mục 4).
 # Mọi quy tắc đều chạy bằng dữ liệu ở cả Python reference_engine và Dart health_engine.
 SCHEDULE_RULES = [
@@ -531,6 +550,7 @@ def main():
         "palSuggestion": PAL_SUGGESTION,
         "unitConversions": UNIT_CONVERSIONS,
         "compoundMeta": COMPOUND_META,
+        "supplementFactsElemental": SUPPLEMENT_FACTS_ELEMENTAL,
         "scheduleRules": SCHEDULE_RULES,
     }
     out = pathlib.Path(__file__).resolve().parent.parent / "packages/health_engine/assets/reference_pack.json"

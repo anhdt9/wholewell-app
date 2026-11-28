@@ -1,8 +1,6 @@
 package vn.wholewell.app
 
 import android.util.Log
-import com.google.mlkit.genai.common.DownloadStatus
-import com.google.mlkit.genai.common.FeatureStatus
 import com.google.mlkit.genai.prompt.Generation
 import com.google.mlkit.genai.prompt.GenerativeModel
 import io.flutter.plugin.common.MethodCall
@@ -16,7 +14,8 @@ import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * Trích xuất thành phần nhãn thực phẩm bổ sung trên máy bằng Gemini Nano (Android AICore).
- * Trả về `null` nếu máy không hỗ trợ hoặc lỗi để Flutter fallback về parser OCR.
+ * Trả về `null` nếu máy chưa có sẵn mô hình, không hỗ trợ hoặc lỗi để Flutter dùng bộ đọc chữ.
+ * Không tải mô hình giữa luồng quét (xem [LabelGenAiRules.shouldRun]).
  */
 class LabelGenAiExtractor : MethodChannel.MethodCallHandler {
     companion object {
@@ -46,28 +45,16 @@ class LabelGenAiExtractor : MethodChannel.MethodCallHandler {
         var client: GenerativeModel? = null
         return try {
             client = Generation.getClient()
-            val status = client.checkStatus()
-            val ready = when (status) {
-                FeatureStatus.AVAILABLE -> true
-                FeatureStatus.DOWNLOADABLE -> {
-                    withTimeoutOrNull(25_000L) {
-                        var done = false
-                        client.download().collect { ds ->
-                            if (ds is DownloadStatus.DownloadCompleted) done = true
-                        }
-                        done
-                    } ?: false
-                }
-                else -> false
-            }
-            if (!ready) return null
+            if (!LabelGenAiRules.shouldRun(client.checkStatus())) return null
 
             val prompt = """
 Extract supplement label fields from the OCR text below. Return ONLY valid JSON (no markdown, no extra text):
-{"productName": string or null, "boxCount": number or null, "servings": number or null, "unit": "tablet"|"capsule"|"softgel"|"sachet"|"drop"|"ml"|"g"|null, "ingredients": [{"name": string, "amount": number, "unit": "mg"|"ug"|"iu"|"g"|"ug_dfe"|"ug_rae"|"mg_ne", "form": string or null, "elemental": boolean}]}
+{"productName": string or null, "boxCount": number or null, "servings": number or null, "unit": "tablet"|"capsule"|"softgel"|"sachet"|"drop"|"ml"|"g"|null, "ingredients": [{"name": string, "amount": number, "unit": "mg"|"ug"|"iu"|"g"|"ug_dfe"|"ug_rae"|"mg_ne"|null, "form": string or null, "elemental": boolean}]}
 
 Rules:
-- Convert mcg/µg to "ug", mcg DFE to "ug_dfe", mcg RAE to "ug_rae", mg NE to "mg_ne", IU to "iu".
+- Copy every amount exactly as printed on the label. Never convert amounts between units.
+- Write mcg/µg as "ug", mcg DFE as "ug_dfe", mcg RAE as "ug_rae", mg NE as "mg_ne", IU as "iu".
+- If the unit is not printed or is not in the list above, set "unit" to null.
 - Ignore % Daily Value numbers.
 - If label says elemental or "pure elemental", set elemental=true.
 

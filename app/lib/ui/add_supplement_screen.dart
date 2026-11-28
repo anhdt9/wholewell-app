@@ -140,8 +140,14 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
 
   Future<void> _addOneOffLine() async {
     final pack = AppScope.of(context).pack;
-    final options =
-        pack.nutrients.values.where((d) => d.group != 'macro' && d.id != 'retinol').toList();
+    final options = pack.nutrients.values
+        .where(
+          (d) =>
+              d.group != 'macro' &&
+              d.id != 'retinol' &&
+              SupplementIngredientHelper.labelUnitForPackUnit(d.unit) != null,
+        )
+        .toList();
     final picked = await showModalBottomSheet<String>(
       context: context,
       builder: (ctx) => ListView(
@@ -158,23 +164,16 @@ class _AddSupplementScreenState extends State<AddSupplementScreen> {
     if (picked != null) setState(() => _lines.add(_Line(picked)));
   }
 
-  LabelUnit _stdLabelUnit(String packUnit) => switch (packUnit) {
-        'g' => LabelUnit.g,
-        'mg' => LabelUnit.mg,
-        'ug' => LabelUnit.ug,
-        'ug_RAE' => LabelUnit.ugRae,
-        'ug_DFE' => LabelUnit.ugDfe,
-        'mg_NE' => LabelUnit.mgNe,
-        _ => LabelUnit.mg,
-      };
-
   List<IntakeLine> _buildOneOffLines(ReferencePack pack) {
     final out = <IntakeLine>[];
     for (final l in _lines) {
       final raw = double.tryParse(l.amount.text.trim().replaceAll(',', '.'));
       if (raw == null || !raw.isFinite || raw <= 0) continue;
       final def = pack.nutrients[l.nutrientId]!;
-      final labelUnit = l.unit == _Unit.iu ? LabelUnit.iu : _stdLabelUnit(def.unit);
+      final labelUnit =
+          l.unit == _Unit.iu ? LabelUnit.iu : SupplementIngredientHelper.labelUnitForPackUnit(def.unit);
+      // Danh sách chọn đã bỏ chất không có đơn vị tương ứng; không đoán đơn vị.
+      if (labelUnit == null) continue;
       final form = switch (l.nutrientId) {
         'vitE' => l.eForm == VitaminEForm.natural ? NutrientForm.natural2r : NutrientForm.synthetic2r,
         'vitA' => l.vitAPreformed ? NutrientForm.retinol : NutrientForm.betaCarotene,
