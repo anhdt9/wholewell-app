@@ -1,56 +1,58 @@
 # Bàn giao công việc
 
-Cập nhật 24/11/2026. Dành cho người (hoặc agent) nhận tiếp dự án WholeWell. Đọc theo thứ tự: tệp này → [AGENTS.md](../AGENTS.md) (quy tắc bắt buộc) → [status.md](status.md) (việc tiếp theo, chi tiết) → [plan.md](plan.md) → [design/mvp-overview.md](design/mvp-overview.md) → [specs/encrypted-db.md](specs/encrypted-db.md).
+Cập nhật 28/11/2026. Dành cho người (hoặc agent) nhận tiếp dự án WholeWell. Đọc theo thứ tự: tệp này → [AGENTS.md](../AGENTS.md) (quy tắc bắt buộc) → [status.md](status.md) (đã xong, việc tiếp theo) → [refactor-plan.md](refactor-plan.md) (việc đang làm) → [plan.md](plan.md) → [design/mvp-overview.md](design/mvp-overview.md).
 
 ## 1. Dự án trong một đoạn
 
 App tham chiếu dinh dưỡng, miễn phí, mọi dữ liệu nằm trên máy. App so lượng vi chất từ thức ăn và thực phẩm bổ sung với chuẩn Mỹ (NASEM: RDA/AI, UL, EER, AMDR; Dietary Guidelines 2025–2030 cho đường bổ sung; 2024 Compendium; Physical Activity Guidelines; hệ số đổi đơn vị của FDA). App cũng quản lý kho và lịch uống bổ sung, và cảnh báo khi vượt giới hạn an toàn.
 
 - MVP: người khỏe mạnh từ 18 tuổi, không mang thai, không cho con bú. Người dùng thuốc theo chỉ định hoặc có bệnh mạn tính dùng **chế độ thận trọng**.
-- Không AI tạo sinh, không máy chủ, không SDK bên thứ ba.
+- Không máy chủ, không SDK phân tích hay báo lỗi, không quảng cáo.
+- **AI tạo sinh chỉ chạy trên máy:** Gemini Nano qua Android AICore (`LabelGenAiExtractor.kt`) gợi ý tách thành phần từ chữ OCR trên nhãn. Chủ dự án quyết giữ tính năng này ngày 28/11/2026. `AGENTS.md` vẫn ghi "Không dùng AI tạo sinh"; dòng này sửa ở PR 0d theo lời đề xuất ở mục 7.2 của [refactor-plan.md](refactor-plan.md). Đừng gỡ tính năng.
 
-## 2. Đã xong
+## 2. Trạng thái (28/11/2026)
 
-| Phần | Ở đâu | Trạng thái |
-|---|---|---|
-| Plan, quy trình (đặc tả → UX → test → code, có cổng duyệt) | `docs/plan.md`, `AGENTS.md` | Đã gộp |
-| Gói dữ liệu: 40 chất × 16 nhóm, UL đúng phạm vi, kiểm đối chiếu | `tools/build_pack.py`, `verify_pack.py`, `reference_engine.py` | Đã gộp |
-| Engine Dart, test so với fixtures Python | `packages/health_engine` | Đã gộp |
-| Thiết kế UX tổng thể MVP | `docs/design/mvp-overview.md` | **Đã duyệt** 24/11/2026 |
-| Đặc tả CSDL mã hóa | `docs/specs/encrypted-db.md` | **Đã duyệt** 24/11/2026 (PR #11 đã gộp) |
-| CSDL mã hóa: code và test | PR #12, nhánh `feat/encrypted-db-v1` | **Đang mở, chờ chủ dự án gộp** |
-| App Flutter | `app/` | **Khung tạm** để thử engine, chưa theo thiết kế UX |
+- Mọi việc MVP trong [status.md](status.md) (việc 1–19) đã gộp vào `main`. PR cuối là #44 (A11y 200%, Dark Mode). Không còn PR nào mở; trên remote chỉ còn nhánh `main` và nhánh `docs/refactor-plan` (chứa plan và tệp này).
+- **Đang làm: kế hoạch tái cấu trúc** [refactor-plan.md](refactor-plan.md), bản 15, **nháp, chờ chủ dự án duyệt** mục 2 (15 ADR) và mục 5 (lộ trình). Chưa có dòng code nào của tái cấu trúc.
+- **Đặc tả và thiết kế cho PR 1** (an toàn AI đọc nhãn): "Bổ sung 1" ở cuối [specs/label-scan-inventory.md](specs/label-scan-inventory.md) và [design/label-scan-inventory.md](design/label-scan-inventory.md), **đã duyệt** 28/11/2026.
+- Còn thử tay trên máy thật: status.md việc 1 (mở app trước lần mở khóa đầu sau khởi động lại, đổi hoặc xóa khóa màn hình, 2 năm dữ liệu) và việc 19 (kiểm thử trực quan, chụp ảnh Store).
 
-### PR #12: CSDL mã hóa (đang mở)
+## 3. Kế hoạch tái cấu trúc
 
-- **Gói mới `packages/journal_db`** (thuần Dart): drift + SQLite3MultipleCiphers, cipher `chacha20`, nạp khóa thô.
-  - Thứ tự kiểm khi mở: kiểm thư viện trên kết nối trong bộ nhớ → kiểm khóa → kiểm cipher.
-  - Khóa có bốn trạng thái: có, không có, mất, chưa đọc được.
-  - Mở theo bảng khóa × tệp.
-  - Tạo CSDL ở tệp tạm, chỉ đổi tên khi đã ghi xong đồng ý.
-  - Xóa toàn bộ: xóa khóa trước tệp; có dấu "đang xóa" để làm tiếp nếu bị ngắt.
-  - Sao tệp nguyên byte trước khi di chuyển lược đồ.
-  - Lược đồ v1 đủ bảng (kho, lịch, dòng chất).
-  - Không sinh mã drift: SQL viết tay, vì `build_runner` không chạy được trên máy phát triển.
-- **Android:**
-  - `DbKeyStore.kt`: khóa bọc AES-GCM trong Keystore với `setUnlockedDeviceRequired`, chạy trên luồng nền chung.
-  - `DbKeyRules.kt`: phân loại trạng thái khóa, có test JVM.
-  - `minSdk = 28`; tắt sao lưu và chuyển máy.
-- **App:**
-  - `AppState` bất đồng bộ, có bộ đếm thế hệ cho mỗi lần đọc; `start()` gọi chồng thì dùng chung một lần mở.
-  - Có màn trạng thái theo thiết kế (dòng "Toàn app").
-  - Nền tảng khác Android báo "chưa hỗ trợ".
-- **CI:**
-  - Job `journal-db`.
-  - Kiểm không kéo theo `sqlite3_flutter_libs`.
-  - Test JVM cho Kotlin.
-  - Lưu `app-debug.apk` vào Artifacts 14 ngày (tab Actions → lần chạy → Artifacts).
-- **Hai chỉnh sửa đặc tả đã duyệt, chủ dự án đồng ý 24/11/2026:**
-  - Thứ tự kiểm khi mở (lý do: SQLite 3.48).
-  - Tệp bản khóa hỏng khi máy đang mở khóa thì coi là mất khóa.
-- **Đã qua ba vòng review ngoài; mọi điểm đã sửa.**
+Mục tiêu: tổ chức lại theo [Flutter App Architecture Guide](https://docs.flutter.dev/app-architecture/guide) (MVVM) để app nhanh hơn và dùng làm khung cho các app Flutter sau. Mọi PR không đổi hành vi, trừ 3 ngoại lệ ở mục 1 của plan.
 
-## 3. Quyết định đã chốt (đừng tự đổi)
+### 3.1. Đã chốt qua các vòng review, đừng tự đổi lại
+
+Plan qua 15 bản, mỗi bản sửa theo một vòng review của chủ dự án; mục 8 của plan ghi lại từng bản. Những điểm dễ bị đề xuất đổi lại:
+
+- **DI** dùng `provider`. ViewModel tạo bằng `ChangeNotifierProvider(create:)` trong builder của route: không dùng `.value`; route có tham số gắn `ValueKey`.
+- **Repository không biết nhau**; phần ghép dữ liệu nằm ở use case hoặc ViewModel. Ngày đang xem ở `ViewedDayRepository` riêng.
+- **Kết nối CSDL** do `JournalDbService` giữ. Đây là chỗ lệch có lý do so với guide (guide ghi service *"hold no state"*).
+- **Làm mới dữ liệu** (ADR 15):
+  - Stream thay đổi theo bảng; `seq` tăng đồng bộ lúc ghi, không đánh số lúc nhận sự kiện.
+  - Cache chỉ giữ mục đang có người nghe; mỗi mục chỉ chạy một truy vấn tại một thời điểm.
+  - Hàm ghi nhiều câu lệnh phải nằm trong `db.transaction`.
+- **Thời gian** dùng `package:clock` và `fake_async`; đổi hết `DateTime.now` trong PR 3a, viết `() => clock.now()`, không dùng tear-off.
+
+### 3.2. Việc tiếp theo, theo thứ tự
+
+1. **Chủ dự án** duyệt mục 2 và mục 5 của plan, quyết các mục 7.2–7.5, tạo keystore và các Android OAuth client (mục 7.4).
+2. **Đặc tả và thiết kế PR 1 đã duyệt (28/11/2026):** "Bổ sung 1" của `label-scan-inventory`. Quyết định ở mục B1.10 của đặc tả:
+   - sửa cả 7 chỗ đang đoán đơn vị;
+   - không tự tải mô hình AI ở chỗ nào;
+   - B1.8 làm trong PR 1: `Calcium (as calcium carbonate) 500 mg` là 500 mg canxi nguyên tố (chủ dự án xác nhận; nguồn 21 CFR 101.36(b)(2)(ii), đọc qua Cornell LII). **Trước khi gộp PR 1** phải mở eCFR bằng Claude in Chrome, đối chiếu câu gốc, ghi ngày tra.
+3. **PR 0a** (workspace, ghim Flutter 3.50.1 trong `.fvmrc`, mọi job CI dùng Flutter đã ghim, sửa mục "Lệnh" của `AGENTS.md`), rồi **PR 1**, rồi 0b… theo bảng ở mục 5 của plan.
+
+### 3.3. Khi chủ dự án gửi review
+
+Kiểm từng điểm với code và tài liệu gốc trước khi sửa, không nhận ngay. Nhiều vòng có điểm review chưa đúng, ví dụ "guide không yêu cầu service không giữ state", "Session không đọc `settings`", "service đánh số `seq` lúc nhận sự kiện". Chủ dự án muốn kết quả đúng best practice và đúng code hiện tại, không cần làm theo nguyên văn góp ý.
+
+- Nguyên văn guide (trang web hay bị cắt khi đọc tự động):
+  `gh api "repos/flutter/website/contents/sites/docs/src/content/app-architecture/guide.md" -H "Accept: application/vnd.github.raw"`
+- Mã nguồn package có sẵn trong `~/AppData/Local/Pub/Cache/hosted/pub.dev/`; Flutter SDK ở `C:\SETUP\flutter`.
+- Đếm bằng grep thì escape dấu chấm (`DateTime\.now\b`), nếu không sẽ bắt nhầm.
+
+## 4. Quyết định đã chốt (đừng tự đổi)
 
 Chi tiết và lý do ở AGENTS.md, plan.md, đặc tả. Những điểm hay bị hỏi lại:
 
@@ -59,54 +61,26 @@ Chi tiết và lý do ở AGENTS.md, plan.md, đặc tả. Những điểm hay b
 - **ODA** (Linus Pauling Institute) chỉ để tham khảo, chỉ bật từ giai đoạn 3.
 - **Đường bổ sung** chỉ có giới hạn ≤10 g mỗi bữa, không có giới hạn theo % năng lượng.
 - **Dạng chưa rõ:** so mức khuyến nghị lấy số nhỏ nhất, tính giới hạn lấy số lớn nhất, ghi "chưa chắc". Đây là quy tắc của app.
-- **Không AI tạo sinh**; không lưu tên bệnh, tên thuốc.
+- **AI tạo sinh chỉ trên máy**, chỉ để gợi ý; người dùng xác nhận từng dòng, engine quyết định mọi số và cảnh báo. Không lưu tên bệnh, tên thuốc.
 - **Lưu sẵn lượng chất mỗi lần ghi**, kèm dữ liệu gốc và `pack_version`.
 - **Sửa lịch** có hiệu lực từ hôm nay; nếu hôm nay đã đánh dấu lần uống theo lịch cũ thì từ ngày mai.
 
-## 4. Việc cần làm tiếp (theo thứ tự)
-
-Danh sách đầy đủ ở [status.md](status.md), mục "Việc tiếp theo". Mỗi tính năng cần đặc tả đã duyệt, cần thêm thiết kế UX đã duyệt nếu có giao diện, rồi mới code.
-
-1. **Gộp PR #12** (chủ dự án). Sau đó thử trên máy thật theo danh sách trong status.md, việc 1. Quan trọng nhất:
-   - Khởi động lại máy rồi đọc khóa nhiều lần: không bao giờ được ra lỗi sai tag.
-   - Khóa và mở khóa máy.
-   - Đổi hoặc xóa mã khóa màn hình.
-   - Tiến trình app được dựng lại khi máy đang khóa.
-   - Đo tốc độ với 2 năm dữ liệu.
-2. **Sửa engine (việc 2): phải xong trước mọi đường ghi sinh lượng tính giới hạn riêng** (Nhập theo nhãn, Ghi một lần, chụp nhãn, mã vạch). Gồm:
-   - `IntakeItem` thêm bảng lượng tính giới hạn tùy chọn. Sau đó bật `engineSupportsUlAmounts` trong `packages/journal_db/lib/src/intake.dart` và đưa `ulAmounts` vào `_group`.
-   - **Lỗi có sẵn:** vitamin E tổng hợp cần hệ số tính giới hạn riêng (1.000 mg ≈ 1.100 IU tổng hợp; đã đối chiếu NIH ODS 24/11/2026). Gói và engine đang dùng 0,45 mg/IU cho cả phía giới hạn, nên tính thiếu khoảng một nửa. Thêm hệ số vào `build_pack.py` sau khi đối chiếu báo cáo DRI gốc, kèm ô đối chiếu.
-   - Test cho bảng "Quy tắc đổi một dòng thành khóa engine" trong đặc tả CSDL (mỗi hàng một ca).
-   - Các mục khác trong status.md, việc 2: nhóm tuổi là dữ liệu, mốc tuổi lấy giới hạn thấp hơn, đường bổ sung theo bữa và nối chuỗi bữa phụ, đủ cờ, hai tổng, vận động.
-3. **Thư viện món (việc 3):** USDA và FPED. Thêm hệ số beta-caroten trong thức ăn (IU → µg RAE) kèm nguồn. Tính lại món USDA khi sửa khẩu phần (CSDL đã có `replaceFoodLines`).
-4. **Điều kiện dùng app, chế độ thận trọng (việc 4).** Gặp đồng ý `khung-tam-0` thì phải hỏi lại cả màn Điều kiện lẫn Đồng ý.
-5. **Chụp nhãn, mã vạch, kho (việc 5):** tỷ lệ nguyên tố của hợp chất và tỷ lệ tocopherol của este vitamin E (acetat, succinat), kèm nguồn.
-6. **Lịch uống, nhắc giờ (việc 6).** Thêm chữ "Lịch mới áp dụng từ ngày mai." vào thiết kế.
-7. **Sao lưu (việc 7):** khi có tính năng này, nút [Khôi phục từ bản sao lưu] trên các màn lỗi mới bấm được.
-8. **Cổng 2:** kiểm thử an toàn, pháp lý, thử nghiệm kín 12 người × 14 ngày.
-
 ## 5. Rủi ro và việc treo
 
-- **Bản APK hiện tại chỉ để thử nội bộ, không phát cho người ngoài.** Khung tạm ghi một đồng ý `khung-tam-0` mà người dùng chưa cho, và câu thuốc, bệnh mặc định là "Không".
-- Khung tạm vẫn cho chọn mang thai, cho con bú, nhưng CSDL v1 không lưu (đúng đặc tả MVP).
-- Chưa có iOS: Keychain, Application Support.
-- `_loadDay` trong `AppState` đọc tuần tự 7 ngày sau mỗi lần ghi. Tạm ổn; sau này nên truy vấn theo khoảng ngày.
-- Nhánh cũ `feat/encrypted-db` (PR #5 đã đóng, làm theo đặc tả cũ) vẫn còn trên GitHub. **Chờ chủ dự án quyết có xóa không.**
+- **Lỗi đơn vị đang chạy trên máy:** AI đọc nhãn mặc định `mg` khi gặp đơn vị lạ, có thể sai 1.000 lần; DSLD lấy đơn vị chuẩn của chất cho 14.624 dòng có đơn vị lạ. Sửa ở PR 1 (mục 3.2).
+- **Tính thiếu giới hạn với nhãn ghi `(as hợp chất)`** (canxi, sắt; tới 60–88%): đã chốt sửa ở PR 1, mục B1.8 trong [specs/label-scan-inventory.md](specs/label-scan-inventory.md).
+- **Nhắc giờ cho lịch đã kết thúc:** khi người dùng không mở app, chuông vẫn kêu theo danh sách khung giờ cũ, kể cả cho lịch đã kết thúc. Kotlin tự đặt lại chuông mỗi ngày từ danh sách đã lưu ([ReminderReceiver.kt:21-22](../app/android/app/src/main/kotlin/vn/wholewell/app/ReminderReceiver.kt#L21-L22)), mà danh sách không có ngày hiệu lực. Chưa ghi vào status.md (plan hẹn PR 5d ghi); muốn sửa cần đặc tả riêng.
+- **Phát hành:** bản release đang ký bằng khóa debug, và `app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk` nằm trong git. Đổi khóa ký (PR 0f) thì phải thêm Android OAuth client cho SHA-1 mới, và bản đang cài không cài đè được: tạo `.wwbackup`, gỡ, cài bản mới, khôi phục.
+- Chưa có iOS (Keychain, Application Support).
 
 ## 6. Cách làm việc (thực tế trên máy này)
 
-- **Giao tiếp:** tiếng Việt, ngắn gọn. Giao diện dùng lời thường, không hiện tên viết tắt của chuẩn.
+- **Giao tiếp:** tiếng Việt, ngắn gọn. Giao diện dùng lời thường, không hiện tên viết tắt của chuẩn. Chủ dự án không thích hộp chọn bật lên; chọn mặc định hợp lý rồi liệt kê để duyệt.
 - **Git:**
   - Mỗi lúc chỉ một PR mở. Trước khi đẩy lên nhánh của PR, kiểm PR còn mở không (`gh pr view <n> --json state`), vì chủ dự án gộp nhanh.
   - Không đẩy thẳng vào `main`. Agent không tự gộp.
   - Commit bằng tiếng Việt.
-- **Máy Windows có Application Control:**
-  - `dart test` bị chặn.
-  - Test thuần Dart chạy trực tiếp được: `dart test/<tệp>_test.dart`.
-  - Test cần SQLite3MultipleCiphers (build hook) chỉ chạy trên CI.
-  - `dart analyze` chạy được.
-  - Không có Flutter: phần app chỉ kiểm qua CI.
-  - `gh` ở `/c/Program Files/GitHub CLI/gh.exe`.
+- **Máy phát triển (Windows):** Flutter 3.50.1 ở `C:\SETUP\flutter` (plan ghim đúng bản này). Ghi chú cũ ngày 24/11 chưa kiểm lại: Application Control chặn `dart test`; test thuần Dart chạy trực tiếp được bằng `dart test/<tệp>_test.dart`; test cần SQLite3MultipleCiphers chỉ chạy trên CI.
 - **Python:** chạy `python -I`. Script sửa nhiều dòng thì ghi ra tệp rồi chạy, vì heredoc trong bash hay lỗi.
 - **Kiểm nguồn:** đọc NIH ODS bằng Claude in Chrome, vì trang chặn truy cập tự động. Ghi ngày tra.
 - **CI:** xem log bằng `gh api --allow-escape-sequences repos/anhdt9/wholewell-app/actions/jobs/<id>/logs`.

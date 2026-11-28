@@ -1,6 +1,6 @@
 # Đặc tả: Chụp nhãn, mã vạch, kho, hạn dùng
 
-Trạng thái: Đã duyệt (25/11/2026)  <!-- Nháp | Đã duyệt -->
+Trạng thái: Đã duyệt (25/11/2026; Bổ sung 1: 28/11/2026)  <!-- Nháp | Đã duyệt -->
 Thiết kế UX: [docs/design/label-scan-inventory.md](../design/label-scan-inventory.md)
 Thứ tự MVP: Việc 5 trong [docs/status.md](../status.md)
 
@@ -14,7 +14,7 @@ Giúp người dùng thêm sản phẩm thực phẩm bổ sung vào tủ thuố
   3. Ghi một lần uống (từ sản phẩm có sẵn hoặc ghi một lần không lưu sản phẩm), trừ vào hộp còn hạn sớm nhất (hoặc hỏi người dùng khi chỉ còn hộp hết hạn).
 
 ## Ràng buộc
-- **Không AI tạo sinh, dữ liệu ở máy:** OCR và quét mã vạch chạy hoàn toàn trên thiết bị (`on-device`), không gửi ảnh nhãn ra máy chủ. Không tự suy đoán hay tự động ghi thành phần vào CSDL khi người dùng chưa xác nhận từng dòng.
+- **AI chỉ chạy trên máy, dữ liệu ở máy** (sửa ở Bổ sung 1, theo quyết định ngày 28/11/2026): OCR, quét mã vạch và AI tạo sinh (Gemini Nano qua Android AICore, chỉ để gợi ý tách thành phần từ chữ OCR) chạy hoàn toàn trên thiết bị, không gửi ảnh hay chữ trên nhãn ra ngoài. Không tự suy đoán hay tự động ghi thành phần vào CSDL khi người dùng chưa xác nhận từng dòng; engine quyết định mọi số và cảnh báo.
 - **Chuẩn tham chiếu & phạm vi UL:**
   - Quy đổi đơn vị nhãn (IU, DFE, NE, RAE) và hợp chất qua `UnitConverter.convertIntakeLine(IntakeLineInput)` có sẵn trong `packages/health_engine/lib/src/units.dart`.
   - Tỷ lệ nguyên tố của hợp chất (canxi, sắt, kẽm, magie...) chỉ thêm vào `tools/build_pack.py` sau khi đối chiếu trực tiếp trang Fact Sheet của NIH ODS bằng trình duyệt thật, kèm ô đối chiếu trong `tools/verify_pack.py`.
@@ -102,3 +102,194 @@ Các bảng trong `schemaV1` (`products`, `ingredients`, `boxes`, `dose_entries`
 2. **Mã vạch (Phương án A):** Quét mã vạch đối chiếu sản phẩm đã lưu trong máy (`productByBarcode`) để mở nhanh / thêm hộp mới; chưa có thì chuyển sang chụp nhãn OCR, giữ app 100% offline ở Việc 5.
 3. **Migration `schema_version = 2`:** Thêm cột `barcode TEXT` vào bảng `products` kèm test migrate `v1 -> v2`.
 4. **Lưu tệp ảnh nhãn (`Ảnh nhãn ›`):** Để ngoài phạm vi Việc 5.
+
+## Bổ sung 1: An toàn khi AI đọc nhãn (PR 1)
+
+Trạng thái phần này: Đã duyệt 28/11/2026 (quyết định ở B1.10). Thiết kế UX đi kèm: mục "Bổ sung 1" trong [docs/design/label-scan-inventory.md](../design/label-scan-inventory.md). Thứ tự làm: PR 1 trong [docs/refactor-plan.md](../refactor-plan.md), mục 5 (ngay sau PR 0a).
+
+### B1.1. Mục tiêu
+
+1. Không còn chỗ nào tự đoán đơn vị. Dòng có đơn vị không đọc được thì để trống, người dùng chọn theo nhãn rồi mới xác nhận được.
+2. Số do AI trên máy gợi ý được đối chiếu với chữ đọc từ ảnh. Dòng chưa khớp phải kiểm riêng từng dòng, không xác nhận hàng loạt được. Chất mà AI bỏ sót nhưng bộ đọc chữ thấy thì vẫn hiện.
+3. Quét nhãn không chờ tải mô hình AI. Máy chưa có sẵn mô hình thì dùng ngay bộ đọc chữ.
+
+### B1.2. Vì sao (lỗi đang chạy trên máy)
+
+- **AI trả đơn vị lạ hoặc thiếu đơn vị thì app ghi `mg`** ([supplement_label_parser.dart:427](../../app/lib/state/supplement_label_parser.dart#L427), [:436](../../app/lib/state/supplement_label_parser.dart#L436)). Code chỉ so ký tự micro `µ` (U+00B5); nếu AI trả `μg` với chữ mu Hy Lạp (U+03BC) thì `25 μg` vitamin D thành `25 mg`, gấp 1.000 lần. Ngược lại, AI bỏ trống đơn vị của `1 g` vitamin C thì thành `1 mg`, thiếu 1.000 lần, và cảnh báo vượt giới hạn có thể không hiện.
+- **Không có bước so số AI với chữ trên ảnh.** AI có thể đọc sai số hoặc gán số của chất này cho chất khác. Người dùng vẫn phải xác nhận, nhưng nút `Chọn tất cả` cho xác nhận mọi dòng trong một chạm.
+- **AI bỏ sót một chất thì chất đó mất hẳn**, vì khi AI trả kết quả, app không dùng kết quả của bộ đọc chữ ([supplements_screen.dart:620-625](../../app/lib/ui/supplements_screen.dart#L620-L625)). Bỏ sót một chất có giới hạn an toàn là tính thiếu.
+- **Thư viện nhãn DSLD:** trong 260.626 dòng nhóm vitamin, khoáng chất, 14.624 dòng có đơn vị app chưa đọc được (đếm trên `dsld_library.db` bản 16/01/2026). Hiện app lấy đơn vị chuẩn của chất ([dsld_ingredient_mapper.dart:117](../../app/lib/state/dsld_ingredient_mapper.dart#L117)). Ví dụ có trong thư viện:
+  - `Folate 1.7 mg DFE` thành 1,7 µg DFE (thiếu 1.000 lần);
+  - `Vitamin D3 5000 UI` thành 5.000 µg (gấp 40 lần);
+  - `Vitamin C 25 %` (phần trăm giá trị hằng ngày, không phải lượng) thành 25 mg;
+  - còn có `mg RAE` (6 dòng), `ng` (18), `gm` (3), `IU mg` (9); 14.063 dòng không ghi đơn vị, trong đó 104 dòng có lượng.
+- **Tải mô hình giữa luồng quét:** máy chưa có Gemini Nano thì Kotlin gọi `download()` và bắt người dùng chờ tới 25 giây ([LabelGenAiExtractor.kt:50-63](../../app/android/app/src/main/kotlin/vn/wholewell/app/LabelGenAiExtractor.kt#L50-L63)), tải bằng mạng của người dùng mà không hỏi.
+
+### B1.3. Ràng buộc
+
+- Giữ mọi ràng buộc của phần gốc. AI chỉ gợi ý; người dùng xác nhận từng dòng; engine quyết định mọi số và cảnh báo.
+- **Không đoán đơn vị ở bất kỳ đâu.** Đơn vị chỉ đến từ chữ trên nhãn (OCR, AI, DSLD) khớp một danh sách cố định, hoặc do người dùng chọn.
+- Không đổi số người dùng đã nhập. Không đổi engine, lược đồ CSDL. Gói dữ liệu chỉ thêm nguồn và quy tắc của B1.8.
+- Không đổi hành vi với dữ liệu hợp lệ: nhãn đọc được đủ đơn vị và AI khớp chữ trên ảnh thì kết quả như hiện nay.
+
+### B1.4. Phạm vi: 7 chỗ đang đoán đơn vị
+
+Handoff liệt kê 6 chỗ; khi rà code thấy thêm chỗ số 5 (bảng sửa dòng tự đổi đơn vị). **Đề xuất sửa cả 7**, theo hai cách:
+
+- Chỗ mà dữ liệu thật có tới (số 1, 2, 3, 5): đơn vị để trống, người dùng chọn.
+- Chỗ chỉ có tới khi dữ liệu đã lưu bị hỏng (số 4, 6, 7, vì mọi chỗ ghi đều dùng hàm đổi đủ mọi đơn vị): báo lỗi rõ thay cho đoán, kèm test khứ hồi bảo đảm không xảy ra.
+
+| # | Chỗ | Đang làm | Dữ liệu thật có tới? | Sửa |
+|---|---|---|---|---|
+| 1 | [supplement_label_parser.dart:427](../../app/lib/state/supplement_label_parser.dart#L427), [:436](../../app/lib/state/supplement_label_parser.dart#L436) (đọc JSON của AI) | Thiếu hoặc lạ thì `mg` | Có | Đọc qua `LabelUnitText.parse` (B1.5); không khớp thì đơn vị trống |
+| 2 | [dsld_ingredient_mapper.dart:117](../../app/lib/state/dsld_ingredient_mapper.dart#L117), [:144](../../app/lib/state/dsld_ingredient_mapper.dart#L144) | Lạ thì lấy đơn vị chuẩn của chất; chất ngoài gói thì `mg` | Có (14.624 dòng) | Đọc qua `LabelUnitText.parse`; không khớp thì đơn vị trống. Đơn vị `%` thì bỏ cả lượng (lượng trống), vì đó là phần trăm giá trị hằng ngày |
+| 3 | [confirm_ingredients_screen.dart:41](../../app/lib/ui/confirm_ingredients_screen.dart#L41), [:68](../../app/lib/ui/confirm_ingredients_screen.dart#L68) (`fromParsed`) | Bộ đọc chữ không ra đơn vị thì lấy đơn vị chuẩn hoặc `mg` | Có (vd. `mcgdfe` viết liền) | Giữ đơn vị trống. Bộ đọc chữ bỏ khoảng trắng trước khi so (`mcgdfe`, `mgne` đọc được) và nhận thêm `μg` (U+03BC) |
+| 4 | [confirm_ingredients_screen.dart:54](../../app/lib/ui/confirm_ingredients_screen.dart#L54) (`fromSaved`) | Tên đơn vị đã lưu không đọc được thì `mg` | Không: mọi chỗ ghi dùng `LabelUnit.name` | Đơn vị trống và bỏ dấu đã xác nhận của dòng đó; người dùng chọn lại khi sửa thành phần |
+| 5 | [confirm_ingredients_screen.dart:28](../../app/lib/ui/confirm_ingredients_screen.dart#L28), [:470](../../app/lib/ui/confirm_ingredients_screen.dart#L470), [:516](../../app/lib/ui/confirm_ingredients_screen.dart#L516) (dòng mới, bảng sửa dòng) | Dòng mới mặc định `mg`; đơn vị không hợp với chất thì lặng lẽ đổi sang đơn vị đầu danh sách | Có | Dòng mới và khi đổi chất mà đơn vị không hợp: đơn vị trống tới khi người dùng chọn |
+| 6 | [add_supplement_screen.dart:168](../../app/lib/ui/add_supplement_screen.dart#L168) (`Ghi một lần`) | Đơn vị chuẩn trong gói lạ thì `mg` | Không: mọi chất (trừ đa lượng) có đơn vị trong danh sách | Gộp 3 bản sao `_stdLabelUnit`/`_defaultUnitFor` thành `SupplementIngredientHelper.labelUnitForPackUnit` trả `null` khi lạ; chất trả `null` không hiện trong danh sách chọn |
+| 7 | [label_food_builder.dart:181](../../app/lib/state/label_food_builder.dart#L181) (`unitFromWire`, món đã lưu) | Lạ thì `mg` | Không: chỉ ghi qua `unitWireName` | Trả `null`; `entryFromCustomFood` ném `FormatException`; màn chọn khẩu phần báo lỗi, ghi món trả `failed` |
+
+### B1.5. Thiết kế kỹ thuật
+
+**Đọc đơn vị một chỗ (`LabelUnitText`, trong `app/lib/state/`)**
+
+- `LabelUnitText.parse(String? raw) → LabelUnit?` dùng chung cho JSON của AI và DSLD. Chuẩn hóa: chữ thường, bỏ khoảng trắng và `_` hai đầu, gộp khoảng trắng và `_` giữa chữ thành một dấu cách.
+- Danh sách cố định (chỉ những cách viết không thể hiểu khác):
+
+| `LabelUnit` | Chữ nhận |
+|---|---|
+| `mg` | `mg`, `milligram`, `milligrams` |
+| `ug` | `ug`, `mcg`, `µg` (U+00B5), `μg` (U+03BC), `microgram`, `micrograms` |
+| `g` | `g`, `gram`, `grams`, `gram(s)` |
+| `iu` | `iu`, `international unit`, `international units` |
+| `ugDfe` | `ug dfe`, `mcg dfe`, `µg dfe`, `μg dfe` |
+| `ugRae` | `ug rae`, `mcg rae`, `µg rae`, `μg rae` |
+| `mgNe` | `mg ne` |
+
+- Không nhận thêm: `UI`, `gm`, `mgs`, `ng`, `RE`, `alpha-TE`, `mg DFE`, `mg RAE`. Các chữ này hoặc là đơn vị engine không đổi được, hoặc trong DSLD thấy dùng sai (vd. `Magnesium 190 gm`), nên để người dùng chọn theo nhãn.
+- Bộ đọc chữ OCR giữ bảng riêng (có các lỗi nhận nhầm như `mq`, `meg`, `1u`), chỉ sửa hai điểm ở dòng 3 của bảng B1.4.
+- `SupplementIngredientHelper.labelUnitForPackUnit(String packUnit) → LabelUnit?`: `g`, `mg`, `ug`, `ug_RAE`, `ug_DFE`, `mg_NE`; còn lại `null`.
+
+**Dữ liệu trong bộ nhớ (không đổi CSDL)**
+
+- `ParsedIngredientLine`: thêm `needsCheck` (mặc định `false`), chỉ bật cho dòng AI chưa khớp chữ trên ảnh.
+- `ParsedLabelPackage`: thêm `fromOnDeviceAi`.
+- `EditableIngredient`: `labelUnit` đổi thành `LabelUnit?` (mặc định `null`); thêm `needsCheck`.
+- `SupplementIngredientHelper.isUnitCompatible`, `checkSanity` nhận `LabelUnit?`. Với dòng có chất trong gói, đơn vị `null` coi là chưa dùng được. `toDraft` chỉ được gọi khi mọi dòng đủ lượng và đơn vị (đã có điều kiện xác nhận chặn).
+- Chỉ dòng đã xác nhận mới được lưu, nên CSDL không bao giờ có dòng mang `needsCheck` hay đơn vị trống. Không đổi lược đồ; `ingredients.origin` vẫn là `ocr` cho dòng từ AI.
+
+**Đối chiếu dòng AI với chữ đọc từ ảnh**
+
+Luồng ở `_analyzeImages` ([supplements_screen.dart:603](../../app/lib/ui/supplements_screen.dart#L603)):
+
+1. OCR ra các dòng chữ.
+2. **Luôn chạy bộ đọc chữ:** `parsed = parsePackage(lines)`.
+3. Gọi AI. AI không chạy hoặc JSON lỗi thì dùng `parsed` như hiện nay.
+4. Có kết quả AI thì `SupplementLabelParser.crossCheckAi(ai, parsed, lines)`:
+   - **Mảnh số trên ảnh:** mọi cặp (số, đơn vị) mà `_amountUnitRe` bắt được trong các đoạn của `_splitSegments(lines)`, đọc số bằng `_parseNumber` (nên `1,000`, `1.000`, `1000` là một số; `2,5` là 2,5).
+   - Hai số bằng nhau khi lệch không quá `1e-9 × max(1, |số|)`. Hai đơn vị phải là cùng một `LabelUnit` (`ug` khác `ugDfe`).
+   - **Dòng AI khớp** khi cả hai điều kiện sau đúng:
+     - có mảnh số trên ảnh bằng đúng số và đơn vị của dòng;
+     - nếu bộ đọc chữ có dòng mang đúng số và đơn vị đó thì ít nhất một dòng như vậy cùng chất với dòng AI, hoặc mọi dòng như vậy đều không gắn được chất. Điều kiện này bắt trường hợp AI gán số của chất này cho chất khác.
+   - Dòng AI không khớp thì `needsCheck = true`. Dòng AI có đơn vị trống thì không khớp được, và đã phải chọn đơn vị.
+   - **Chất AI bỏ sót:** dòng của bộ đọc chữ có chất trong gói mà không dòng AI nào cùng chất thì thêm vào cuối danh sách, như khi chỉ dùng bộ đọc chữ. Dòng chất ngoài gói của bộ đọc chữ chỉ thêm khi không dòng AI nào có cùng số và đơn vị. So theo chất, không theo số, để nhãn ghi `25 mcg (1,000 IU)` không ra hai dòng vitamin D.
+   - Tên sản phẩm, số viên, khẩu phần: lấy của AI như hiện nay; AI không có thì lấy của bộ đọc chữ.
+5. Mở màn Xác nhận thành phần.
+
+**Xác nhận dòng**
+
+- Một dòng **cần kiểm** khi: chưa có lượng, đơn vị trống, đơn vị không hợp với chất (đã có), hoặc `needsCheck`.
+- Ô đánh dấu của dòng cần kiểm bị khóa. Người dùng bấm `Sửa`, xem số và đơn vị, rồi bấm `Xác nhận dòng này`; bảng sửa trả dòng đã xác nhận và tắt `needsCheck`, như hiện nay.
+- `Chọn tất cả` (OCR, AI) và `Xác nhận tất cả` (DSLD) chỉ hiện khi không còn dòng cần kiểm. Đây là điều kiện hiện có (`_allUnitCompatible`) mở rộng thêm.
+- Bảng sửa dòng: chưa chọn đơn vị thì `Xác nhận dòng này` báo `Chọn đơn vị theo nhãn.`, không đóng bảng.
+
+**Không tải mô hình giữa luồng quét (Kotlin)**
+
+- `LabelGenAiExtractor` chỉ gọi mô hình khi `checkStatus()` trả `AVAILABLE`. Mọi trạng thái khác (`DOWNLOADABLE`, `DOWNLOADING`, `UNAVAILABLE`) trả `null` ngay để Flutter dùng bộ đọc chữ. Bỏ lời gọi `download()` và lần chờ 25 giây.
+- Tách luật thành hàm thuần `LabelGenAiRules.shouldRun(status: Int): Boolean`, có test JVM như `DbKeyRules` (CI đã chạy `:app:testDebugUnitTest`).
+- Giữ giới hạn 20 giây cho bước tạo kết quả.
+- Sửa lời nhắc gửi mô hình (chạy trên máy): "chép số đúng như in trên nhãn, không đổi đơn vị; `unit` để `null` nếu nhãn không ghi hoặc không thuộc danh sách". Lời nhắc chỉ giúp AI ít sai hơn; an toàn vẫn dựa vào bước đối chiếu ở trên.
+- PR này không tự tải mô hình ở chỗ nào khác (xem Câu hỏi B1.10, số 2).
+
+**Món đã lưu có đơn vị không đọc được (chỗ số 7)**
+
+- `FoodPortionScreen` bắt `FormatException` khi dựng tóm tắt, hiện `ErrorState` và khóa nút `Lưu`.
+- `DiaryController.recordCustomFood` bắt lỗi này, trả `FoodLogFeedback(failed: true)` như các lỗi ghi khác.
+
+### B1.6. Lỗi và biên
+
+- AI trả JSON không hợp lệ, rỗng, hay `amount` không phải số: dùng kết quả bộ đọc chữ (như hiện nay).
+- AI trả dòng có số nhưng không có tên: bỏ dòng (như hiện nay).
+- Ảnh có hai cột cách xa nên số và đơn vị nằm ở hai hàng: bộ đọc chữ không bắt được mảnh số, dòng AI thành "cần kiểm". Đây là hướng an toàn (người dùng xem lại), không phải lỗi.
+- Nhãn ghi cùng một chất hai lần với hai đơn vị (`25 mcg (1,000 IU)`): dòng AI khớp nếu số AI chọn có trên ảnh; không thêm dòng trùng chất từ bộ đọc chữ.
+- Người dùng bỏ dấu một dòng đã sửa: dòng trở lại như dòng thường, không bật lại `needsCheck`.
+
+### B1.7. Tiêu chí đạt
+
+Mỗi dòng thành ít nhất một test (`app/test/label_ai_safety_test.dart` mới, sửa `label_scan_inventory_test.dart`, test JVM `LabelGenAiRulesTest.kt`).
+
+- [ ] `LabelUnitText.parse`: mọi chữ trong bảng B1.5 ra đúng `LabelUnit`, kể cả viết hoa, có `_`, khoảng trắng thừa; `null`, chuỗi rỗng, `UI`, `gm`, `ng`, `%`, `mg DFE`, `mg/day` ra `null`. Không chữ nào ra `mg` nếu không phải `mg`/`milligram(s)`.
+- [ ] `parseAiJson`: thiếu `unit` hoặc `unit` lạ thì dòng có đơn vị trống; `μg` (U+03BC) và `mcg` ra `ug`.
+- [ ] Bộ đọc chữ: `Folate 667 mcgDFE` ra `ugDfe`; `Vitamin D 25 μg` ra `ug`; các test hiện có giữ nguyên kết quả.
+- [ ] `crossCheckAi`:
+  - số và đơn vị có trên ảnh thì khớp, với `1,000` / `1.000` / `1000` và `2,5`;
+  - lệch số, lệch đơn vị (`ug` so với `ugDfe`), hay đơn vị trống thì `needsCheck`;
+  - AI đổi số của B2 (10 mg) và B6 (5 mg) cho nhau thì cả hai dòng `needsCheck`;
+  - AI bỏ sót vitamin A mà bộ đọc chữ thấy thì dòng vitamin A được thêm;
+  - nhãn `Vitamin D3 25 mcg (1,000 IU)`, AI trả `1000 IU`: một dòng vitamin D, khớp.
+- [ ] DSLD: `mcg` ra `ug`; `mg DFE`, `UI`, `gm`, chuỗi rỗng ra đơn vị trống; `%` ra lượng trống và đơn vị trống. Sản phẩm có dòng như vậy thì không hiện `Xác nhận tất cả`.
+- [ ] `EditableIngredient`: `fromParsed` giữ đơn vị trống; `fromSaved` với tên đơn vị lạ cho đơn vị trống và `confirmed = false`; dòng mới có đơn vị trống.
+- [ ] Màn Xác nhận thành phần (widget test):
+  - dòng đơn vị trống, dòng chưa có lượng, dòng `needsCheck` có ô đánh dấu bị khóa và hiện đúng lời nhắc;
+  - còn dòng cần kiểm thì không hiện `Chọn tất cả` / `Xác nhận tất cả`, nút `Tiếp tục` khóa;
+  - sửa dòng `needsCheck` qua bảng sửa thì dòng được xác nhận;
+  - bảng sửa không đóng khi chưa chọn đơn vị và hiện `Chọn đơn vị theo nhãn.`;
+  - đổi chất sang chất mà đơn vị cũ không hợp thì đơn vị trống, không tự chọn;
+  - có dòng từ AI thì hiện dòng ghi chú AI ở đầu màn.
+- [ ] `labelUnitForPackUnit`: mọi chất trong gói (trừ nhóm đa lượng) ra đơn vị khác `null`; `L` và chuỗi lạ ra `null`.
+- [ ] `unitWireName` rồi `unitFromWire` trả lại đúng mọi `LabelUnit`; chữ lạ ra `null`; `entryFromCustomFood` ném `FormatException`; `FoodPortionScreen` hiện `ErrorState` thay vì lỗi đỏ.
+- [ ] `LabelGenAiRules.shouldRun`: chỉ `AVAILABLE` ra `true`.
+- [ ] Test kiểm toán quét `app/lib`, cấm `_ => LabelUnit.mg`, `?? LabelUnit.mg` và `?? 'mg'`, danh sách ngoại lệ rỗng. Chỗ hiển thị `def?.unit ?? 'mg'` ([confirm_ingredients_screen.dart:316](../../app/lib/ui/confirm_ingredients_screen.dart#L316)) chỉ là chữ và `def` luôn có ở đó, nên đổi luôn để không cần ngoại lệ.
+- [ ] Thử trên S24 Ultra với 5 nhãn thật: ghi lại số dòng AI khớp và cần kiểm cho từng nhãn; tắt mạng, máy chưa có mô hình thì đọc nhãn không chờ.
+- [ ] CI xanh, `flutter analyze` sạch.
+
+### B1.8. Lượng ghi trên bảng Supplement Facts là lượng nguyên tố (làm trong PR 1)
+
+**Phát hiện khi rà code.** Bộ đọc chữ và AI coi `Calcium (as calcium carbonate) 500 mg` là 500 mg hợp chất, tính 200 mg canxi. Test hiện có khóa cách hiểu này ([label_scan_inventory_test.dart:19](../../app/test/label_scan_inventory_test.dart#L19), [:30](../../app/test/label_scan_inventory_test.dart#L30)). App đang:
+
+- tính thiếu 60% với canxi carbonat, 79% với canxi citrat;
+- tính thiếu 67–88% với sắt fumarat, sulfat, gluconat.
+
+Đây là chiều không an toàn cho giới hạn. Ví dụ `Iron (as ferrous gluconate) 27 mg` được tính 3,2 mg sắt. Chủ dự án xác nhận ngày 28/11/2026: `Calcium (as calcium carbonate) 500 mg` là 500 mg canxi nguyên tố.
+
+**Nguồn (nhãn A):** 21 CFR 101.36, quy định nhãn thực phẩm bổ sung của FDA.
+
+- (b)(2)(ii): "The quantitative amounts by weight shall represent the weight of the dietary ingredient rather than the weight of the source (e.g., the weight of calcium rather than that of calcium carbonate)".
+- (d): tên nguồn có thể ghi trong ngoặc, sau chữ "as" hoặc "from", ví dụ "Calcium (as calcium carbonate)".
+- Tra ngày 28/11/2026 qua bản chép của Cornell LII (https://www.law.cornell.edu/cfr/text/21/101.36), vì eCFR chuyển hướng truy cập tự động. **Trước khi gộp PR 1** phải mở eCFR (https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-101/subpart-A/section-101.36) bằng Claude in Chrome, đối chiếu nguyên văn (câu trích ở (b)(2)(ii) ghép từ hai đoạn trích ngắn) và ghi ngày tra.
+
+**Quy tắc** (chỉ cho chất có hợp chất trong gói, hiện là canxi và sắt):
+
+| Cách ghi trên nhãn | Ví dụ | Hiểu là |
+|---|---|---|
+| Tên chất rồi `(as …)`, `(from …)`, `as …` | `Calcium (as calcium carbonate) 500 mg` | Lượng nguyên tố |
+| Bắt đầu bằng tên hợp chất, không có tên chất đứng riêng trước | `Calcium carbonate 1250 mg`, `Canxi carbonat 1250mg` | Khối lượng hợp chất (như hiện nay) |
+| Có cả tên chất và tên hợp chất nhưng không rõ cách ghi | `Iron (ferrous fumarate) 100 mg`, `Canxi (canxi carbonat) 500mg` | Chưa rõ dạng: giới hạn tính cả con số, so mức khuyến nghị lấy số nhỏ nhất, ghi "chưa chắc" (quy tắc có sẵn của app) |
+
+- **Dòng AI:** dòng khớp chữ trên ảnh thì xét theo đoạn chữ đó trên ảnh. Dòng không khớp mà AI ghi hợp chất và không ghi `elemental: true` thì coi là chưa rõ dạng.
+- **Dữ liệu có nguồn:** thêm nguồn `fda_21cfr_101_36` vào `SOURCES` và mục `supplementFactsElemental` (`source`, `quote`, `accessedDate`, các chữ đánh dấu `as`/`from`) vào `build_pack.py`, kèm ô kiểm ở `verify_pack.py`. Như vậy quy tắc là dữ liệu có nguồn, đúng `AGENTS.md`.
+- **Biểu diễn:** lượng nguyên tố là `isCompound = false`, `form = unknown`; chưa rõ dạng là `isCompound = true`, `form = unknown` (như khi người dùng chọn `Chưa rõ dạng` trong bảng sửa dòng). Không đổi engine.
+- **Hệ quả:** đổi kết quả với nhãn Mỹ có `(as …)` (số tính vào giới hạn tăng) và với dòng như `Iron (ferrous fumarate) 100 mg`. Phải sửa test ở [label_scan_inventory_test.dart:15-38](../../app/test/label_scan_inventory_test.dart#L15-L38), và ghi rõ trong mô tả PR.
+
+### B1.9. Ngoài phạm vi
+
+- Nhập tay nhãn thực phẩm ([label_food_screen.dart:41](../../app/lib/ui/label_food_screen.dart#L41)): giữ đơn vị chọn sẵn theo chất. Bảng Nutrition Facts ghi mỗi chất một đơn vị cố định, và người dùng thấy đơn vị trên ô nhập; đây không phải đoán từ dữ liệu.
+- Tự tải Gemini Nano, hay cài đặt bật/tắt AI.
+- Đổi lược đồ CSDL; thêm `origin = 'ai'`.
+- Đơn vị `RE`, `alpha-TE` (engine chưa đổi được): người dùng chọn đơn vị khác theo nhãn hoặc nhập theo số đã đổi.
+
+### B1.10. Quyết định đã chốt (28/11/2026)
+
+1. Mục B1.8 làm trong PR 1. Chủ dự án xác nhận `Calcium (as calcium carbonate) 500 mg` là 500 mg canxi nguyên tố.
+2. Không tự tải mô hình AI ở chỗ nào. Nếu sau này muốn thì làm đặc tả riêng, có hỏi người dùng trước khi tải.
+3. Sửa cả 7 chỗ ở B1.4.
