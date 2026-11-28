@@ -3,14 +3,16 @@ description: MVP app sức khỏe cá nhân hóa theo RDA/AI, UL, ODA (dữ li�
 publish_to: none
 version: 0.1.0+1
 
+resolution: workspace
+
 environment:
-  sdk: ^3.4.0
-  flutter: ">=3.22.0"
+  sdk: ^3.13.0
+  flutter: ">=3.47.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  material_ui: ^1.10.0
+  material_ui: ^1.11.1
   health_engine:
     path: ../packages/health_engine
   journal_db:
@@ -54,9 +56,3 @@ flutter:
     - assets/food_library_manifest.json
     - assets/dsld_library.db.gz
     - assets/dsld_library_manifest.json
-
-# CSDL mã hóa: dùng SQLite3MultipleCiphers thay SQLite gốc (docs/specs/encrypted-db.md).
-hooks:
-  user_defines:
-    sqlite3:
-      source: sqlite3mc

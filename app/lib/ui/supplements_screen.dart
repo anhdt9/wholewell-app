@@ -454,7 +454,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
                 child: ListView.separated(
                   shrinkWrap: true,
                   itemCount: matches.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  separatorBuilder: (_, _) => const Divider(height: 1),
                   itemBuilder: (_, i) {
                     final m = matches[i];
                     return ListTile(

@@ -125,7 +125,7 @@ class _DsldSearchScreenState extends State<DsldSearchScreen> {
                           )
                         : ListView.separated(
                             itemCount: _results.length + 1,
-                            separatorBuilder: (_, __) => const Divider(height: 1),
+                            separatorBuilder: (_, _) => const Divider(height: 1),
                             itemBuilder: (_, i) {
                               if (i == _results.length) {
                                 return ListTile(

@@ -402,7 +402,7 @@ class _ConfirmIngredientsScreenState extends State<ConfirmIngredientsScreen> {
               children: [
                 Text(title, style: t.titleSmall),
                 if (subtitle.isNotEmpty) Text(subtitle, style: tabularNumberStyle(t.bodySmall)),
-                if (note != null) note,
+                ?note,
               ],
             ),
           ),

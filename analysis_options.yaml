@@ -1,0 +1,4 @@
+# Tạm thời chỉ khai độ rộng dòng cho dart format, áp cho package chưa có tệp lint riêng
+# (food_library, dsld_library). PR 0b chuyển toàn bộ lint lên tệp này.
+formatter:
+  page_width: 120

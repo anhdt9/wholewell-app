@@ -40,6 +40,11 @@ void main() {
     final pubspec = File('pubspec.yaml').readAsStringSync();
     expect(pubspec, isNot(contains('flutter_secure_storage')));
     expect(pubspec, isNot(contains('sqlite3_flutter_libs')));
-    expect(RegExp(r'sqlite3:\s*\n\s*source: sqlite3mc').hasMatch(pubspec), isTrue);
+    // Workspace: pub chỉ đọc hooks.user_defines ở pubspec gốc; lock chung cũng ở gốc.
+    final root = File('../pubspec.yaml').readAsStringSync();
+    expect(RegExp(r'sqlite3:\s*\n\s*source: sqlite3mc').hasMatch(root), isTrue);
+    final lock = File('../pubspec.lock').readAsStringSync();
+    expect(lock, isNot(contains('flutter_secure_storage')));
+    expect(lock, isNot(contains('sqlite3_flutter_libs')));
   });
 }

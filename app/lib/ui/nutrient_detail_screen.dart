@@ -323,7 +323,7 @@ class _NutrientDetailScreenState extends State<NutrientDetailScreen> {
         final parts = [
           'bổ sung',
           if (formName != null) 'dạng $formName',
-          if (origLabel != null) origLabel,
+          ?origLabel,
         ];
         list.add(_NutrientContribution(
           title: '${d.name ?? 'Bổ sung'} · ${fmt(d.servings)} lần',

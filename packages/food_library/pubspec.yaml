@@ -3,8 +3,10 @@ description: Thư viện món ăn SQLite chỉ đọc kèm FTS5 cho WholeWell. T
 version: 0.1.0
 publish_to: none
 
+resolution: workspace
+
 environment:
-  sdk: ^3.9.0
+  sdk: ^3.13.0
 
 dependencies:
   crypto: ^3.0.6
@@ -18,9 +20,3 @@ dependencies:
 dev_dependencies:
   lints: ^4.0.0
   test: ^1.25.0
-
-# Đồng bộ hook sqlite3mc với journal_db và app.
-hooks:
-  user_defines:
-    sqlite3:
-      source: sqlite3mc
