@@ -13,8 +13,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'platform/android_db_key_store.dart';
 import 'platform/google_drive_backup.dart';
-import 'platform/local_dsld_library_store.dart';
-import 'platform/local_food_library_store.dart';
+import 'platform/bundled_db_asset_store.dart';
 import 'platform/perf_probe.dart';
 import 'state/app_scope.dart';
 import 'state/app_state.dart';
@@ -48,12 +47,12 @@ Future<void> main() async {
       pack: pack,
       opener: DbOpener(files: DbFiles(dir), keys: const AndroidDbKeyStore()),
       openFoodLibrary: () => SqliteFoodLibraryRepository.open(
-        store: FlutterFoodLibraryAssetStore(supportDir: dir),
+        store: BundledDbAssetStore.foodLibrary(supportDir: dir),
         libraryVersion: libVersion,
         expectedSha256: libSha,
       ),
       openDsldLibrary: () => SqliteDsldLibraryRepository.open(
-        store: FlutterDsldLibraryAssetStore(supportDir: dir),
+        store: BundledDbAssetStore.dsldLibrary(supportDir: dir),
         libraryVersion: dsldVersion,
         expectedSha256: dsldSha,
       ),

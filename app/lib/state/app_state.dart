@@ -160,9 +160,7 @@ class AppState extends ChangeNotifier {
           if (session.stage == SessionStage.ready) {
             await diary.checkAgeBumpOnReady();
           }
-          await PerfProbe.step('food_library', _ensureFoodLibrary);
-          unawaited(PerfProbe.step('dsld_library', _ensureDsldLibrary));
-          await PerfProbe.step('diary_reload', diary.reload);
+          await _prepareLibrariesAndReload();
           if (session.stage == SessionStage.ready) PerfProbe.markTodayReadyAfterNextFrame();
           unawaited(syncNotifications());
         },
@@ -209,9 +207,7 @@ class AppState extends ChangeNotifier {
       );
       if (!created) return false;
       diary.attachRepository(session.repo);
-      await _ensureFoodLibrary();
-      unawaited(_ensureDsldLibrary());
-      await diary.reload();
+      await _prepareLibrariesAndReload();
       return true;
     } on StorageFullException {
       return false;
@@ -228,9 +224,7 @@ class AppState extends ChangeNotifier {
       if (session.stage == SessionStage.ready) {
         await diary.checkAgeBumpOnReady();
       }
-      await _ensureFoodLibrary();
-      unawaited(_ensureDsldLibrary());
-      await diary.reload();
+      await _prepareLibrariesAndReload();
       return true;
     } on StorageFullException {
       return false;
@@ -247,6 +241,20 @@ class AppState extends ChangeNotifier {
     session.setStage(SessionStage.ready);
     await diary.checkAgeBumpOnReady();
     return true;
+  }
+
+  /// Mở thư viện món song song với đọc nhật ký (`reload` không dùng thư viện món), nên khởi động chỉ
+  /// mất bằng việc lâu hơn trong hai việc. Thư viện DSLD (lớn, chỉ dùng khi thêm sản phẩm) bắt đầu sau,
+  /// để không tranh tài nguyên với màn đầu tiên.
+  Future<void> _prepareLibrariesAndReload() async {
+    try {
+      await Future.wait([
+        PerfProbe.step('food_library', _ensureFoodLibrary),
+        PerfProbe.step('diary_reload', diary.reload),
+      ]);
+    } finally {
+      unawaited(PerfProbe.step('dsld_library', _ensureDsldLibrary));
+    }
   }
 
   Future<void> _ensureFoodLibrary() async {
@@ -589,9 +597,7 @@ class AppState extends ChangeNotifier {
         if (session.stage == SessionStage.ready) {
           await diary.checkAgeBumpOnReady();
         }
-        await _ensureFoodLibrary();
-        unawaited(_ensureDsldLibrary());
-        await diary.reload();
+        await _prepareLibrariesAndReload();
         unawaited(syncNotifications());
       },
     );
