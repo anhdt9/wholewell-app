@@ -1,7 +1,7 @@
 {
   "date": "2026-11-29",
   "branch": "perf/early-startup",
-  "commit": "d445880",
+  "commit": "77bd2c4",
   "device": {
     "model": "SM-S928B",
     "sdk": "37"
@@ -10,39 +10,46 @@
   "cold_start": {
     "total_time_ms": {
       "n": 10,
-      "min": 303,
-      "median": 320.0,
-      "p90": 327,
-      "max": 364
+      "min": 294,
+      "median": 306.0,
+      "p90": 324,
+      "max": 325
     },
-    "fully_drawn_ms": {
+    "to_today_ms": {
       "n": 10,
-      "min": 303,
-      "median": 320.0,
-      "p90": 327,
-      "max": 364
+      "min": 490,
+      "median": 520.0,
+      "p90": 554,
+      "max": 555
     },
     "steps_ms": {
       "food_library": {
         "n": 10,
-        "min": 141,
-        "median": 162.0,
-        "p90": 199,
-        "max": 213
+        "min": 151,
+        "median": 170.5,
+        "p90": 192,
+        "max": 200
       },
       "diary_reload": {
         "n": 10,
         "min": 7,
         "median": 9.0,
         "p90": 10,
-        "max": 13
+        "max": 10
       },
       "session_start": {
         "n": 10,
-        "min": 239,
-        "median": 271.5,
-        "p90": 288,
-        "max": 296
+        "min": 237,
+        "median": 253.0,
+        "p90": 290,
+        "max": 302
+      },
+      "dsld_library": {
+        "n": 10,
+        "min": 774,
+        "median": 800.0,
+        "p90": 806,
+        "max": 830
       }
     },
     "marks_ms": {
@@ -55,65 +62,65 @@
       },
       "run_app": {
         "n": 10,
-        "min": 33,
-        "median": 35.0,
-        "p90": 36,
-        "max": 38
+        "min": 32,
+        "median": 33.5,
+        "p90": 34,
+        "max": 35
       },
       "db_open": {
         "n": 10,
-        "min": 90,
-        "median": 114.5,
-        "p90": 149,
-        "max": 163
+        "min": 99,
+        "median": 108.5,
+        "p90": 117,
+        "max": 121
       },
-      "fully_drawn": {
+      "today_ready": {
         "n": 10,
-        "min": 283,
-        "median": 318.0,
-        "p90": 332,
-        "max": 336
+        "min": 279,
+        "median": 298.5,
+        "p90": 337,
+        "max": 344
       }
     },
     "raw": {
       "total_time_ms": [
-        364,
-        327,
+        324,
+        306,
+        294,
         303,
-        326,
-        320,
-        312,
-        320,
-        315,
-        320,
-        306
+        303,
+        301,
+        306,
+        317,
+        325,
+        318
       ],
-      "fully_drawn_ms": [
-        364,
-        327,
-        303,
-        326,
-        320,
-        312,
-        320,
-        315,
-        320,
-        306
+      "to_today_ms": [
+        520,
+        524,
+        507,
+        554,
+        527,
+        555,
+        490,
+        509,
+        508,
+        520
       ]
     }
   },
   "scroll_today_frames_us": {
     "label": "to_background",
-    "n": 853,
-    "build_p50": 677,
-    "build_p90": 830,
-    "build_p99": 2511,
-    "raster_p50": 3507,
-    "raster_p90": 3855,
-    "raster_p99": 4626
+    "n": 844,
+    "build_p50": 683,
+    "build_p90": 858,
+    "build_p99": 2533,
+    "raster_p50": 3418,
+    "raster_p90": 3738,
+    "raster_p99": 5093
   },
   "apk_bytes": {
-    "profile_arm64": 127860074,
+    "profile_arm64": 139801769,
     "release_arm64": 101496274
   }
 }
