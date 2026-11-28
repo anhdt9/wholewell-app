@@ -1,0 +1,4 @@
+# Tag của test app (docs/refactor-plan.md, mục 3.6).
+tags:
+  golden:
+    # Ảnh golden chỉ khớp trên Linux; xem test/helpers/golden.dart.

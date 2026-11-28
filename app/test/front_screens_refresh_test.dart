@@ -4,15 +4,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:wholewell/main.dart';
-import 'package:wholewell/state/app_scope.dart';
 import 'package:wholewell/state/app_state.dart';
 import 'package:wholewell/ui/common/common_widgets.dart';
 import 'package:wholewell/ui/nutrient_detail_screen.dart';
 
+import 'helpers/pump_app.dart';
+
 Future<AppState> _makeState(ReferencePack pack, {bool hideCalories = false}) async {
   final repo = InMemoryJournalRepository();
-  final state = AppState.withRepository(pack: pack, repo: repo);
+  final state = testAppState(pack: pack, repo: repo);
   await state.start();
   await state.completeFirstConsent(ageYears: 30, caution: false);
   await state.saveOnboardingBodyProfile(
@@ -29,12 +29,7 @@ void main() {
     final state = await _makeState(pack);
     addTearDown(state.dispose);
 
-    await tester.pumpWidget(
-      MediaQuery(
-        data: const MediaQueryData(textScaler: TextScaler.linear(2.0)),
-        child: WholeWellApp(state: state),
-      ),
-    );
+    await pumpWholeWellApp(tester, state, textScale: 2.0);
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Hôm nay,'), findsOneWidget);
@@ -61,7 +56,7 @@ void main() {
       ),
     );
 
-    await tester.pumpWidget(WholeWellApp(state: state));
+    await pumpWholeWellApp(tester, state);
     await tester.pumpAndSettle();
 
     expect(find.byType(EnergyArcGauge), findsOneWidget);
@@ -89,16 +84,7 @@ void main() {
       ),
     ]);
 
-    await tester.pumpWidget(
-      AppScope(
-        state: state,
-        child: MaterialApp(
-          theme: buildWholeWellTheme(Brightness.dark),
-          home: const NutrientDetailScreen(nutrientId: 'magnesium'),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await pumpApp(tester, state, const NutrientDetailScreen(nutrientId: 'magnesium'), brightness: Brightness.dark);
 
     await tester.tap(find.text('7 ngày'));
     await tester.pumpAndSettle();

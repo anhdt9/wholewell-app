@@ -13,7 +13,7 @@ App tham chiếu dinh dưỡng, miễn phí, mọi dữ liệu nằm trên máy.
 ## 2. Trạng thái (29/11/2026)
 
 - Mọi việc MVP trong [status.md](status.md) (việc 1–19) đã gộp vào `main`. PR 1 (an toàn AI đọc nhãn, #46) đã gộp 28/11/2026.
-- **Đang làm: tái cấu trúc** theo [refactor-plan.md](refactor-plan.md), bản 15, **đã duyệt** 28/11/2026 (mục 2, mục 5, quyết định mục 7). PR 0a (workspace, ghim Flutter, #47) đã gộp; đang làm PR 0b (lint strict), nhánh `infra/lint-strict`.
+- **Đang làm: tái cấu trúc** theo [refactor-plan.md](refactor-plan.md), bản 15, **đã duyệt** 28/11/2026 (mục 2, mục 5, quyết định mục 7). PR 0a (#47), PR 0b (#48) đã gộp; đang làm PR 0c (lưới test), nhánh `test/test-net`.
 - **Đặc tả và thiết kế cho PR 1** (an toàn AI đọc nhãn): "Bổ sung 1" ở cuối [specs/label-scan-inventory.md](specs/label-scan-inventory.md) và [design/label-scan-inventory.md](design/label-scan-inventory.md), **đã duyệt** 28/11/2026.
 - Còn thử tay trên máy thật: status.md việc 1 (mở app trước lần mở khóa đầu sau khởi động lại, đổi hoặc xóa khóa màn hình, 2 năm dữ liệu) và việc 19 (kiểm thử trực quan, chụp ảnh Store).
 
@@ -36,7 +36,7 @@ Plan qua 15 bản, mỗi bản sửa theo một vòng review của chủ dự á
 
 ### 3.2. Việc tiếp theo, theo thứ tự
 
-1. **PR 0b** (đang làm, status.md việc 23), rồi 0c, 0d… theo bảng ở mục 5 của plan. PR 1 (#46), PR 0a (#47) đã gộp.
+1. **PR 0c** (đang làm, status.md việc 24), rồi 0d, 0e… theo bảng ở mục 5 của plan. PR 1 (#46), 0a (#47), 0b (#48) đã gộp.
 2. **Chủ dự án** tạo keystore phát hành và các Android OAuth client (mục 7.4 của plan) trước PR 0f. Mục 7.5 (tách repo khung) quyết trước GĐ8.
 
 ### 3.3. Khi chủ dự án gửi review

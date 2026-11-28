@@ -4,12 +4,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:wholewell/main.dart';
 import 'package:wholewell/state/app_state.dart';
+
+import 'helpers/pump_app.dart';
 
 Future<AppState> _makeReadyState({required ReferencePack pack, FakeNotificationScheduler? scheduler}) async {
   final repo = InMemoryJournalRepository();
-  final state = AppState.withRepository(pack: pack, repo: repo, notificationScheduler: scheduler);
+  final state = testAppState(pack: pack, repo: repo, notificationScheduler: scheduler);
   await state.start();
   await state.completeFirstConsent(ageYears: 30, caution: false);
   await state.saveOnboardingBodyProfile(
@@ -46,7 +47,7 @@ void main() {
       initialBoxRemaining: 30,
     );
 
-    await tester.pumpWidget(WholeWellApp(state: state));
+    await pumpWholeWellApp(tester, state);
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Bổ sung'));
@@ -146,7 +147,7 @@ void main() {
     );
     await state.diary.addSchedule(caId!, 420, 1, validFrom: dayKey(state.day));
 
-    await tester.pumpWidget(WholeWellApp(state: state));
+    await pumpWholeWellApp(tester, state);
     await tester.pumpAndSettle();
 
     // Lưu ý lịch quy tắc 1 hiện trên Hôm nay và thu gọn với "Đã hiểu".
@@ -196,7 +197,7 @@ void main() {
         scheduleIds: [4],
       ),
     );
-    final state = AppState.withRepository(pack: pack, repo: repo, notificationScheduler: scheduler);
+    final state = testAppState(pack: pack, repo: repo, notificationScheduler: scheduler);
     await state.start();
     await state.completeFirstConsent(ageYears: 30, caution: false);
     await state.saveOnboardingBodyProfile(
@@ -227,7 +228,7 @@ void main() {
     );
     await state.diary.reload();
 
-    await tester.pumpWidget(WholeWellApp(state: state));
+    await pumpWholeWellApp(tester, state);
     await tester.pumpAndSettle();
 
     // Sheet Xác nhận lần nhắc tự mở ngay khi vào app (cold start).
@@ -280,7 +281,7 @@ void main() {
     await state.setDay(DateTime.now().subtract(const Duration(days: 1)));
     expect(state.diary.actualTodaySchedules, hasLength(1));
 
-    await tester.pumpWidget(WholeWellApp(state: state));
+    await pumpWholeWellApp(tester, state);
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Bổ sung'));

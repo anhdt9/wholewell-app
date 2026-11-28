@@ -6,11 +6,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:wholewell/main.dart';
 import 'package:wholewell/state/app_state.dart';
 import 'package:wholewell/ui/data_status_screen.dart';
 import 'package:wholewell/ui/drive_backup_screens.dart';
 import 'package:wholewell/ui/today_screen.dart';
+
+import 'helpers/pump_app.dart';
 
 Future<void> _drainUntil(WidgetTester tester, bool Function() ready) async {
   for (var i = 0; i < 200; i++) {
@@ -85,7 +86,7 @@ void main() {
       final files = FakeBackupFileProvider();
       final state = await tester.runAsync(() => seedReadyApp(dir: dir, keys: keys, fileProvider: files));
 
-      await tester.pumpWidget(WholeWellApp(state: state!));
+      await pumpWholeWellApp(tester, state!);
       await tester.pumpAndSettle();
 
       // Vào tab Tôi -> thấy Chưa sao lưu qua tệp.
@@ -187,7 +188,7 @@ void main() {
         dstState.dispose();
       });
 
-      await tester.pumpWidget(WholeWellApp(state: dstState));
+      await pumpWholeWellApp(tester, dstState);
       await tester.pumpAndSettle();
 
       expect(find.text('Khôi phục từ bản sao lưu'), findsOneWidget);
@@ -257,7 +258,7 @@ void main() {
         errState.dispose();
       });
 
-      await tester.pumpWidget(WholeWellApp(state: errState));
+      await pumpWholeWellApp(tester, errState);
       await tester.pumpAndSettle();
 
       expect(find.byType(DataStatusScreen), findsOneWidget);
@@ -293,7 +294,7 @@ void main() {
       );
       files.nextPickFile = PickedBackupFile(name: 'future.wwbackup', bytes: futureBackup!);
 
-      await tester.pumpWidget(WholeWellApp(state: state!));
+      await pumpWholeWellApp(tester, state!);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Tôi'));
       await tester.pumpAndSettle();
@@ -334,7 +335,7 @@ void main() {
         () => seedReadyApp(dir: dir, keys: keys, fileProvider: files, notif: notif, waterMl: 300),
       );
 
-      await tester.pumpWidget(WholeWellApp(state: state!));
+      await pumpWholeWellApp(tester, state!);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Tôi'));
       await tester.pumpAndSettle();
@@ -418,7 +419,7 @@ void main() {
         state.dispose();
       });
 
-      await tester.pumpWidget(WholeWellApp(state: state));
+      await pumpWholeWellApp(tester, state);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Tôi'));
       await tester.pumpAndSettle();
@@ -525,7 +526,7 @@ void main() {
         dstState.dispose();
       });
 
-      await tester.pumpWidget(WholeWellApp(state: dstState));
+      await pumpWholeWellApp(tester, dstState);
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Khôi phục từ bản sao lưu'));
@@ -599,7 +600,7 @@ void main() {
           appState.dispose();
         });
 
-        await tester.pumpWidget(WholeWellApp(state: appState));
+        await pumpWholeWellApp(tester, appState);
         await tester.pumpAndSettle();
         await tester.tap(find.text('Tôi'));
         await tester.pumpAndSettle();

@@ -4,13 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:wholewell/main.dart';
 import 'package:wholewell/state/app_state.dart';
 import 'package:wholewell/ui/diary_screen.dart';
 import 'package:wholewell/ui/labels.dart';
 import 'package:wholewell/ui/profile_screen.dart';
 import 'package:wholewell/ui/today_screen.dart';
 import 'package:wholewell/ui/water_log_screen.dart';
+
+import 'helpers/pump_app.dart';
 
 void main() {
   final pack = ReferencePack.fromJsonString(File('assets/reference_pack.json').readAsStringSync());
@@ -40,7 +41,7 @@ void main() {
         state.dispose();
       });
 
-      await tester.pumpWidget(WholeWellApp(state: state));
+      await pumpWholeWellApp(tester, state);
       await tester.pumpAndSettle();
 
       // Chào mừng: có nút Bắt đầu và Khôi phục từ bản sao lưu.
@@ -105,7 +106,7 @@ void main() {
         await state2.session.repo?.close();
         state2.dispose();
       });
-      await tester.pumpWidget(WholeWellApp(state: state2));
+      await pumpWholeWellApp(tester, state2);
       await tester.pumpAndSettle();
       expect(find.text('3/3'), findsOneWidget);
 
@@ -200,7 +201,7 @@ void main() {
         state.dispose();
       });
 
-      await tester.pumpWidget(WholeWellApp(state: state));
+      await pumpWholeWellApp(tester, state);
       await tester.pumpAndSettle();
 
       expect(find.text('Xác nhận điều kiện'), findsOneWidget);
@@ -240,7 +241,7 @@ void main() {
         state.dispose();
       });
 
-      await tester.pumpWidget(WholeWellApp(state: state));
+      await pumpWholeWellApp(tester, state);
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Có').first);
@@ -272,11 +273,11 @@ void main() {
       await repo.saveHideCalories(false);
       await repo.saveOnboardingStep(OnboardingStep.done);
 
-      final state = AppState.withRepository(pack: pack, repo: repo);
+      final state = testAppState(pack: pack, repo: repo);
       await state.start();
       addTearDown(state.dispose);
 
-      await tester.pumpWidget(WholeWellApp(state: state));
+      await pumpWholeWellApp(tester, state);
       await tester.pumpAndSettle();
 
       expect(find.text(cautionBannerMessage), findsOneWidget);
@@ -307,7 +308,7 @@ void main() {
       await repo.saveHideCalories(false);
       await repo.saveOnboardingStep(OnboardingStep.done);
 
-      final state = AppState.withRepository(pack: pack, repo: repo);
+      final state = testAppState(pack: pack, repo: repo);
       // reload() không tự tăng tuổi; chỉ start() / onAppResume() khi ready mới chạy.
       state.diary.attachRepository(repo);
       await state.diary.reload();
@@ -317,7 +318,7 @@ void main() {
       await state.start();
       addTearDown(state.dispose);
 
-      await tester.pumpWidget(WholeWellApp(state: state));
+      await pumpWholeWellApp(tester, state);
       await tester.pumpAndSettle();
 
       expect(find.text('Tuổi trong hồ sơ đã được cập nhật thành 36.'), findsOneWidget);
@@ -335,11 +336,11 @@ void main() {
       await repo.saveHideCalories(false);
       await repo.saveOnboardingStep(OnboardingStep.done);
 
-      final state = AppState.withRepository(pack: pack, repo: repo);
+      final state = testAppState(pack: pack, repo: repo);
       await state.start();
       addTearDown(state.dispose);
 
-      await tester.pumpWidget(WholeWellApp(state: state));
+      await pumpWholeWellApp(tester, state);
       await tester.pumpAndSettle();
 
       await tester.scrollUntilVisible(find.text('Chưa ghi nước hôm nay'), 300);

@@ -1,7 +1,7 @@
 /// Màn Giờ trong ngày (`Tôi -> Giờ trong ngày` hoặc bước xác nhận lần đầu khi Đặt lịch).
 library;
 
-import 'package:journal_db/journal_db.dart';
+import 'package:journal_db/models.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:health_engine/health_engine.dart';
-import 'package:journal_db/journal_db.dart';
+import 'package:journal_db/models.dart';
 
 /// Nhãn tiếng Việt. Dùng lời thường, không hiện tên viết tắt của chuẩn.
 String levelLabel(ActivityLevel l) => switch (l) {

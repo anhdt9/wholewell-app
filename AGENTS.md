@@ -88,7 +88,7 @@ cd packages/dsld_library && dart analyze && dart test
 cd app && flutter analyze && flutter test && flutter run
 ```
 
-Lint: một `analysis_options.yaml` ở gốc cho mọi package (`very_good_analysis` + strict), không thêm tệp lint riêng trong package. `flutter analyze` trong CI thất bại cả với mức info (vd. API đã ngừng dùng), nên phải sạch hoàn toàn. Đổi phụ thuộc thì chạy lại `flutter pub get` ở gốc và commit `pubspec.lock`; CI dùng `--enforce-lockfile`.
+Test app: dựng trạng thái và màn qua `app/test/helpers/pump_app.dart` (`testAppState`, `pumpApp`), không tự dựng `AppScope`; `pumpApp` kiểm trợ năng, danh sách ngoại lệ chỉ được giảm. Golden test (tag `golden`) chỉ chạy trên Linux; sinh lại ảnh mẫu bằng workflow CI chạy tay với `update_goldens`. Lint: một `analysis_options.yaml` ở gốc cho mọi package (`very_good_analysis` + strict), không thêm tệp lint riêng trong package. `flutter analyze` trong CI thất bại cả với mức info (vd. API đã ngừng dùng), nên phải sạch hoàn toàn. Đổi phụ thuộc thì chạy lại `flutter pub get` ở gốc và commit `pubspec.lock`; CI dùng `--enforce-lockfile`.
 
 ## Quy tắc khi sửa code
 

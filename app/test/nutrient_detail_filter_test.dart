@@ -4,9 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:wholewell/state/app_scope.dart';
 import 'package:wholewell/state/app_state.dart';
 import 'package:wholewell/ui/today_screen.dart';
+
+import 'helpers/pump_app.dart';
 
 Future<AppState> _makeReadyState(ReferencePack pack, {bool caution = false}) async {
   final repo = InMemoryJournalRepository(initialCaution: caution, initialAgeYears: 35);
@@ -15,23 +16,9 @@ Future<AppState> _makeReadyState(ReferencePack pack, {bool caution = false}) asy
   );
   await repo.saveHideCalories(false);
   await repo.saveOnboardingStep(OnboardingStep.done);
-  final state = AppState.withRepository(pack: pack, repo: repo);
+  final state = testAppState(pack: pack, repo: repo);
   await state.start();
   return state;
-}
-
-Widget _wrap(AppState state, Widget child, {double textScale = 1.0}) {
-  return AppScope(
-    state: state,
-    child: MaterialApp(
-      theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
-      builder: (ctx, c) => MediaQuery(
-        data: MediaQuery.of(ctx).copyWith(textScaler: TextScaler.linear(textScale)),
-        child: c!,
-      ),
-      home: child,
-    ),
-  );
 }
 
 void main() {
@@ -62,8 +49,7 @@ void main() {
       ),
     );
 
-    await tester.pumpWidget(_wrap(state, const Scaffold(body: TodayScreen())));
-    await tester.pumpAndSettle();
+    await pumpApp(tester, state, const Scaffold(body: TodayScreen()));
 
     // Lọc "Có bổ sung": hiện Magie, ẩn Vitamin C (không có bổ sung).
     await tester.dragUntilVisible(find.text('Có bổ sung'), find.byType(ListView).first, const Offset(0, -300));
@@ -103,8 +89,7 @@ void main() {
       ),
     );
 
-    await tester.pumpWidget(_wrap(state, const Scaffold(body: TodayScreen())));
-    await tester.pumpAndSettle();
+    await pumpApp(tester, state, const Scaffold(body: TodayScreen()));
 
     // Chế độ thận trọng: bộ lọc dùng "Dưới mức tham chiếu".
     await tester.dragUntilVisible(find.text('Dưới mức tham chiếu'), find.byType(ListView).first, const Offset(0, -300));
@@ -152,8 +137,7 @@ void main() {
 
   testWidgets('Sắt hiển thị lưu ý vitamin C và chịu được cỡ chữ 200%', (tester) async {
     final state = await _makeReadyState(pack);
-    await tester.pumpWidget(_wrap(state, const Scaffold(body: TodayScreen()), textScale: 2.0));
-    await tester.pumpAndSettle();
+    await pumpApp(tester, state, const Scaffold(body: TodayScreen()), textScale: 2.0);
 
     await tester.dragUntilVisible(find.text('Sắt'), find.byType(ListView).first, const Offset(0, -300));
     await tester.ensureVisible(find.text('Sắt'));
@@ -188,8 +172,7 @@ void main() {
       ),
     );
 
-    await tester.pumpWidget(_wrap(state, const Scaffold(body: TodayScreen())));
-    await tester.pumpAndSettle();
+    await pumpApp(tester, state, const Scaffold(body: TodayScreen()));
 
     await tester.dragUntilVisible(find.text('Vitamin A'), find.byType(ListView).first, const Offset(0, -300));
     await tester.ensureVisible(find.text('Vitamin A'));

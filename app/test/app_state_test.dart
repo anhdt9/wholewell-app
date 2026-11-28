@@ -5,6 +5,8 @@ import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:wholewell/state/app_state.dart';
 
+import 'helpers/pump_app.dart';
+
 /// Đọc ngày [slowDay] chậm (giả lập đọc ngày cũ xong sau ngày mới).
 class _SlowRepo extends InMemoryJournalRepository {
   String? slowDay;
@@ -35,7 +37,7 @@ void main() {
   const profile = Profile(ageYears: 30, sex: Sex.male, heightCm: 170, weightKg: 65);
 
   test('báo cáo ngày qua AppState, cờ UL trung bình ngày có ghi và vận động tăng cơ', () async {
-    final s = AppState.withRepository(pack: pack, repo: InMemoryJournalRepository());
+    final s = testAppState(pack: pack, repo: InMemoryJournalRepository());
     await s.start();
     expect(s.report(), isNull);
     await s.saveProfile(profile);
@@ -56,7 +58,7 @@ void main() {
   });
 
   test('recordDose qua UnitConverter tính đúng UL vitamin E tổng hợp', () async {
-    final s = AppState.withRepository(pack: pack, repo: InMemoryJournalRepository());
+    final s = testAppState(pack: pack, repo: InMemoryJournalRepository());
     await s.start();
     await s.saveProfile(profile);
     final conv = UnitConverter(pack).convertIntakeLine(
@@ -85,7 +87,7 @@ void main() {
 
   test('ẩn số calo, nhật ký được lưu qua nhật ký và đọc lại khi mở lại', () async {
     final repo = InMemoryJournalRepository();
-    final a = AppState.withRepository(pack: pack, repo: repo);
+    final a = testAppState(pack: pack, repo: repo);
     await a.start();
     await a.saveProfile(profile);
     await a.setHideCalories(true);
@@ -97,7 +99,7 @@ void main() {
         nutrients: {'energyKcal': 200, 'protein': 4},
       ),
     );
-    final b = AppState.withRepository(pack: pack, repo: repo);
+    final b = testAppState(pack: pack, repo: repo);
     await b.start();
     expect(b.hideCalories, isTrue);
     expect(b.profile?.weightKg, 65);
@@ -106,7 +108,7 @@ void main() {
   });
 
   test('xóa mục theo vị trí trong danh sách', () async {
-    final s = AppState.withRepository(pack: pack, repo: InMemoryJournalRepository());
+    final s = testAppState(pack: pack, repo: InMemoryJournalRepository());
     await s.start();
     await s.addItem(
       const IntakeItem(label: 'A', source: IntakeSource.food, meal: MealSlot.breakfast, nutrients: {'protein': 1}),
@@ -135,7 +137,7 @@ void main() {
 
   test('đổi ngày nhanh: số liệu luôn của ngày đang xem', () async {
     final repo = _SlowRepo();
-    final s = AppState.withRepository(pack: pack, repo: repo);
+    final s = testAppState(pack: pack, repo: repo);
     await s.start();
     final today = s.day;
     await s.addItem(
@@ -157,7 +159,7 @@ void main() {
 
   test('đọc lỗi sau khi đã mở: vẫn ở app, báo lỗi đọc, Thử lại được', () async {
     final repo = _FailingRepo();
-    final s = AppState.withRepository(pack: pack, repo: repo);
+    final s = testAppState(pack: pack, repo: repo);
     await s.start();
     repo.failNext = true;
     await s.setDay(s.day);
@@ -191,7 +193,7 @@ void main() {
   test('memoize report() & periodReport7Days(), và hideTipCardForToday không gọi reload()', () async {
     var foodBetweenCalls = 0;
     final repo = _CountingRepo(() => foodBetweenCalls++);
-    final s = AppState.withRepository(pack: pack, repo: repo);
+    final s = testAppState(pack: pack, repo: repo);
     await s.start();
     await s.saveProfile(profile);
     final r1 = s.report();

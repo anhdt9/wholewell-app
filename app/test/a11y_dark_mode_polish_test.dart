@@ -6,7 +6,6 @@ import 'package:food_library/food_library.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:wholewell/state/app_scope.dart';
 import 'package:wholewell/state/app_state.dart';
 import 'package:wholewell/ui/common/common_widgets.dart';
 import 'package:wholewell/ui/common/log_sheet.dart';
@@ -19,9 +18,11 @@ import 'package:wholewell/ui/nutrient_detail_screen.dart';
 import 'package:wholewell/ui/onboarding_flow.dart';
 import 'package:wholewell/ui/supplements_screen.dart';
 
+import 'helpers/pump_app.dart';
+
 Future<AppState> _makeState(ReferencePack pack, {bool caution = false, bool hideCalories = false}) async {
   final repo = InMemoryJournalRepository();
-  final state = AppState.withRepository(pack: pack, repo: repo);
+  final state = testAppState(pack: pack, repo: repo);
   await state.start();
   await state.completeFirstConsent(ageYears: 30, caution: caution);
   const profile = Profile(
@@ -39,36 +40,6 @@ Future<AppState> _makeState(ReferencePack pack, {bool caution = false, bool hide
   return state;
 }
 
-Widget _wrapA11y(
-  AppState state,
-  Widget child, {
-  Brightness brightness = Brightness.light,
-  Size size = const Size(360, 800),
-  double textScale = 2.0,
-}) {
-  return MediaQuery(
-    data: MediaQueryData(size: size, textScaler: TextScaler.linear(textScale)),
-    child: AppScope(
-      state: state,
-      child: MaterialApp(
-        theme: buildWholeWellTheme(Brightness.light),
-        darkTheme: buildWholeWellTheme(Brightness.dark),
-        themeMode: brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
-        home: child,
-      ),
-    ),
-  );
-}
-
-void _usePhoneViewport(WidgetTester tester, {Size size = const Size(360, 800)}) {
-  tester.view.physicalSize = size;
-  tester.view.devicePixelRatio = 1.0;
-  addTearDown(() {
-    tester.view.resetPhysicalSize();
-    tester.view.resetDevicePixelRatio();
-  });
-}
-
 void main() {
   final pack = ReferencePack.fromJsonString(File('assets/reference_pack.json').readAsStringSync());
 
@@ -76,13 +47,12 @@ void main() {
     testWidgets('HomeScreen DaySwitcher >= 40x44 và TodayScreen trống không tràn ở 360dp 200% Light & Dark', (
       tester,
     ) async {
-      _usePhoneViewport(tester);
+      usePhoneViewport(tester);
       final state = await _makeState(pack);
       addTearDown(state.dispose);
 
       for (final brightness in [Brightness.light, Brightness.dark]) {
-        await tester.pumpWidget(_wrapA11y(state, const HomeScreen(), brightness: brightness));
-        await tester.pumpAndSettle();
+        await pumpApp(tester, state, const HomeScreen(), brightness: brightness, textScale: 2.0);
 
         expect(tester.takeException(), isNull);
         final prevSize = tester.getSize(find.byTooltip('Ngày trước'));
@@ -97,7 +67,7 @@ void main() {
     testWidgets('TodayScreen đủ dữ liệu (UL, thận trọng, đường > 10g, lịch, nước, ẩn calo) không tràn ở Dark 200%', (
       tester,
     ) async {
-      _usePhoneViewport(tester);
+      usePhoneViewport(tester);
       final state = await _makeState(pack, caution: true, hideCalories: false);
       addTearDown(state.dispose);
 
@@ -136,8 +106,7 @@ void main() {
       final nowMinutes = DateTime.now().hour * 60 + DateTime.now().minute;
       await state.diary.addSchedule(pid!, nowMinutes, 1, validFrom: dayKey(state.day));
 
-      await tester.pumpWidget(_wrapA11y(state, const HomeScreen(), brightness: Brightness.dark));
-      await tester.pumpAndSettle();
+      await pumpApp(tester, state, const HomeScreen(), brightness: Brightness.dark, textScale: 2.0);
 
       expect(tester.takeException(), isNull);
       expect(find.text('Vượt giới hạn an toàn'), findsOneWidget);
@@ -151,7 +120,7 @@ void main() {
     testWidgets('NutrientDetailScreen (Hôm nay & 7 ngày) ở 360dp 200% Dark Mode với nhãn đầy đủ không tràn', (
       tester,
     ) async {
-      _usePhoneViewport(tester);
+      usePhoneViewport(tester);
       final state = await _makeState(pack, caution: true);
       addTearDown(state.dispose);
 
@@ -164,10 +133,13 @@ void main() {
         ),
       ]);
 
-      await tester.pumpWidget(
-        _wrapA11y(state, const NutrientDetailScreen(nutrientId: 'magnesium'), brightness: Brightness.dark),
+      await pumpApp(
+        tester,
+        state,
+        const NutrientDetailScreen(nutrientId: 'magnesium'),
+        brightness: Brightness.dark,
+        textScale: 2.0,
       );
-      await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
 
       await tester.ensureVisible(find.text('7 ngày'));
@@ -191,7 +163,7 @@ void main() {
 
     testWidgets('FoodPortionScreen ở màn thấp 360x640 và 200% Dark Mode cuộn toàn trang không tràn', (tester) async {
       const smallPhone = Size(360, 640);
-      _usePhoneViewport(tester, size: smallPhone);
+      usePhoneViewport(tester, size: smallPhone);
       final state = await _makeState(pack);
       addTearDown(state.dispose);
 
@@ -214,15 +186,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(
-        _wrapA11y(
-          state,
-          FoodPortionScreen.library(food: food, initialMeal: Meal.breakfast, initialAt: DateTime(2026, 11, 27, 7, 30)),
-          brightness: Brightness.dark,
-          size: smallPhone,
-        ),
+      await pumpApp(
+        tester,
+        state,
+        FoodPortionScreen.library(food: food, initialMeal: Meal.breakfast, initialAt: DateTime(2026, 11, 27, 7, 30)),
+        brightness: Brightness.dark,
+        textScale: 2.0,
       );
-      await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
 
       await tester.scrollUntilVisible(find.text('Lưu'), 200);
@@ -233,7 +203,7 @@ void main() {
     testWidgets('DiaryScreen, LogSheet, SupplementsScreen & ConfirmIngredientsScreen không tràn ở 360dp 200% Dark', (
       tester,
     ) async {
-      _usePhoneViewport(tester);
+      usePhoneViewport(tester);
       final state = await _makeState(pack);
       addTearDown(state.dispose);
 
@@ -258,22 +228,22 @@ void main() {
       expect(pid, isNotNull);
 
       // DiaryScreen + LogSheet
-      await tester.pumpWidget(
-        _wrapA11y(
-          state,
-          Scaffold(
-            body: const DiaryScreen(),
-            floatingActionButton: Builder(
-              builder: (ctx) => FloatingActionButton(
-                onPressed: () => unawaited(showLogSheet(ctx)),
-                child: const Icon(LucideIcons.plus),
-              ),
+      await pumpApp(
+        tester,
+        state,
+        Scaffold(
+          body: const DiaryScreen(),
+          floatingActionButton: Builder(
+            builder: (ctx) => FloatingActionButton(
+              tooltip: 'Ghi',
+              onPressed: () => unawaited(showLogSheet(ctx)),
+              child: const Icon(LucideIcons.plus),
             ),
           ),
-          brightness: Brightness.dark,
         ),
+        brightness: Brightness.dark,
+        textScale: 2.0,
       );
-      await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
 
       await tester.tap(find.byType(FloatingActionButton));
@@ -283,7 +253,14 @@ void main() {
       await tester.pumpAndSettle();
 
       // SupplementsScreen (kiểm tra tên sản phẩm xếp dọc trên số còn lại ở 200%)
-      await tester.pumpWidget(_wrapA11y(state, const Scaffold(body: SupplementsScreen()), brightness: Brightness.dark));
+      await pumpApp(
+        tester,
+        state,
+        const Scaffold(body: SupplementsScreen()),
+        brightness: Brightness.dark,
+        textScale: 2.0,
+        settle: false,
+      );
       await tester.pump(const Duration(milliseconds: 120));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
@@ -292,26 +269,25 @@ void main() {
       expect(stockY, greaterThan(nameY));
 
       // ConfirmIngredientsScreen + Edit sheet
-      await tester.pumpWidget(
-        _wrapA11y(
-          state,
-          ConfirmIngredientsScreen(
-            initialLines: [
-              EditableIngredient(
-                nutrientId: 'iron',
-                form: 'ferrous_fumarate',
-                labelAmount: 30,
-                labelUnit: LabelUnit.mg,
-                isCompound: true,
-                confirmed: true,
-              ),
-            ],
-            onConfirmed: (ctx, drafts) async {},
-          ),
-          brightness: Brightness.dark,
+      await pumpApp(
+        tester,
+        state,
+        ConfirmIngredientsScreen(
+          initialLines: [
+            EditableIngredient(
+              nutrientId: 'iron',
+              form: 'ferrous_fumarate',
+              labelAmount: 30,
+              labelUnit: LabelUnit.mg,
+              isCompound: true,
+              confirmed: true,
+            ),
+          ],
+          onConfirmed: (ctx, drafts) async {},
         ),
+        brightness: Brightness.dark,
+        textScale: 2.0,
       );
-      await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
 
       await tester.tap(find.text('Sắt'));
@@ -320,13 +296,12 @@ void main() {
     });
 
     testWidgets('OnboardingFlow và MeScreen không tràn ở 360dp 200% Light & Dark', (tester) async {
-      _usePhoneViewport(tester);
-      final onboardingState = AppState.withRepository(pack: pack, repo: InMemoryJournalRepository());
+      usePhoneViewport(tester);
+      final onboardingState = testAppState(pack: pack, repo: InMemoryJournalRepository());
       await onboardingState.start();
       addTearDown(onboardingState.dispose);
 
-      await tester.pumpWidget(_wrapA11y(onboardingState, const OnboardingFlow(), brightness: Brightness.dark));
-      await tester.pumpAndSettle();
+      await pumpApp(tester, onboardingState, const OnboardingFlow(), brightness: Brightness.dark, textScale: 2.0);
       expect(tester.takeException(), isNull);
 
       await tester.scrollUntilVisible(find.text('Bắt đầu'), 200);
@@ -337,8 +312,7 @@ void main() {
 
       final readyState = await _makeState(pack);
       addTearDown(readyState.dispose);
-      await tester.pumpWidget(_wrapA11y(readyState, const Scaffold(body: MeScreen()), brightness: Brightness.dark));
-      await tester.pumpAndSettle();
+      await pumpApp(tester, readyState, const Scaffold(body: MeScreen()), brightness: Brightness.dark, textScale: 2.0);
       expect(tester.takeException(), isNull);
 
       await tester.scrollUntilVisible(find.text('Nguồn số liệu'), 200);

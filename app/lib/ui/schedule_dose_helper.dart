@@ -4,7 +4,7 @@ library;
 import 'dart:async';
 
 import 'package:flutter/services.dart' show HapticFeedback;
-import 'package:journal_db/journal_db.dart';
+import 'package:journal_db/models.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../state/app_scope.dart';

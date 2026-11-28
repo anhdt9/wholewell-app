@@ -4,11 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:wholewell/main.dart';
 import 'package:wholewell/state/app_state.dart';
 import 'package:wholewell/ui/confirm_ingredients_screen.dart';
 import 'package:wholewell/ui/privacy_policy_screen.dart';
 import 'package:wholewell/ui/privacy_policy_text.dart';
+
+import 'helpers/pump_app.dart';
 
 void main() {
   group('Cổng 2: Kiểm toán quyền riêng tư, cấu hình Android, Kotlin & Chính sách quyền riêng tư', () {
@@ -143,7 +144,7 @@ void main() {
           state.dispose();
         });
 
-        await tester.pumpWidget(WholeWellApp(state: state));
+        await pumpWholeWellApp(tester, state);
         await tester.pumpAndSettle();
 
         await tester.tap(find.text('Bắt đầu'));
@@ -173,14 +174,14 @@ void main() {
         const Profile(ageYears: 30, sex: Sex.female, heightCm: 160, weightKg: 54, activityLevel: ActivityLevel.active),
       );
       await repo.saveHideCalories(false);
-      final state = AppState.withRepository(pack: pack, repo: repo);
+      final state = testAppState(pack: pack, repo: repo);
       await tester.runAsync(state.reload);
       addTearDown(() async {
         await repo.close();
         state.dispose();
       });
 
-      await tester.pumpWidget(WholeWellApp(state: state));
+      await pumpWholeWellApp(tester, state);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Tôi'));
       await tester.pumpAndSettle();
@@ -220,19 +221,14 @@ void main() {
         nextGalleryResult: const OcrImagePickResult(paths: ['/fake/label.jpg']),
         nextOcrResult: const OcrLabelResult(lines: ['Vitamin C 500 mg', 'Zinc Gluconate 50 mg']),
       );
-      final state = AppState.withRepository(
-        pack: pack,
-        repo: repo,
-        ocrEngine: ocr,
-        barcodeScanner: FakeBarcodeScanner(),
-      );
+      final state = testAppState(pack: pack, repo: repo, ocrEngine: ocr, barcodeScanner: FakeBarcodeScanner());
       await tester.runAsync(state.start);
       addTearDown(() async {
         await repo.close();
         state.dispose();
       });
 
-      await tester.pumpWidget(WholeWellApp(state: state));
+      await pumpWholeWellApp(tester, state);
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Bổ sung'));
