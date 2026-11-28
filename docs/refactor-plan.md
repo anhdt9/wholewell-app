@@ -156,7 +156,7 @@ Chi tiết đã chép sang [adr/0015-lam-moi-du-lieu.md](adr/0015-lam-moi-du-lie
 
 | Chỉ số | Hiện tại | Mục tiêu |
 |---|---|---|
-| Khởi động nguội tới Hôm nay (S24 Ultra) | 869–1.048 ms | ≤ 600 ms |
+| Khởi động nguội tới Hôm nay (S24 Ultra) | 553 ms trung vị trên `main`, 512 ms sau PR 0e (profile, `docs/perf/`) | ≤ 600 ms |
 | Lần mở đầu, giải nén thư viện | giải nén nguyên 113 MB trong RAM trên isolate giao diện | không chặn giao diện, RAM đỉnh tăng < 20 MB |
 | Dựng khung hình p90 khi cuộn Hôm nay / Nhật ký | chưa đo | < 8 ms (120 Hz) |
 | Gõ tìm món / DSLD | chưa đo | không mất khung hình |
