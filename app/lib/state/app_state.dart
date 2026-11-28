@@ -11,6 +11,7 @@ import 'package:journal_db/journal_db.dart';
 import '../platform/backup_provider.dart';
 import '../platform/label_scanner.dart';
 import '../platform/notification_scheduler.dart';
+import '../platform/perf_probe.dart';
 import 'db_session_controller.dart';
 import 'diary_controller.dart';
 
@@ -151,18 +152,22 @@ class AppState extends ChangeNotifier {
   void clearReadFailed() => diary.clearReadFailed();
 
   Future<void> start() async {
-    await session.start(
-      onReady: () async {
-        diary.attachRepository(session.repo);
-        if (session.stage == SessionStage.ready) {
-          await diary.checkAgeBumpOnReady();
-        }
-        await _ensureFoodLibrary();
-        unawaited(_ensureDsldLibrary());
-        await diary.reload();
-        unawaited(syncNotifications());
-      },
-    );
+    await PerfProbe.step('session_start', () async {
+      await session.start(
+        onReady: () async {
+          PerfProbe.mark('db_open');
+          diary.attachRepository(session.repo);
+          if (session.stage == SessionStage.ready) {
+            await diary.checkAgeBumpOnReady();
+          }
+          await PerfProbe.step('food_library', _ensureFoodLibrary);
+          unawaited(PerfProbe.step('dsld_library', _ensureDsldLibrary));
+          await PerfProbe.step('diary_reload', diary.reload);
+          if (session.stage == SessionStage.ready) PerfProbe.markTodayReadyAfterNextFrame();
+          unawaited(syncNotifications());
+        },
+      );
+    });
     await _checkDriveStateAndPendingDelete();
   }
 

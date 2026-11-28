@@ -15,6 +15,7 @@ import 'platform/android_db_key_store.dart';
 import 'platform/google_drive_backup.dart';
 import 'platform/local_dsld_library_store.dart';
 import 'platform/local_food_library_store.dart';
+import 'platform/perf_probe.dart';
 import 'state/app_scope.dart';
 import 'state/app_state.dart';
 import 'ui/data_status_screen.dart';
@@ -24,6 +25,7 @@ import 'ui/onboarding_flow.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  PerfProbe.start();
   final pack = ReferencePack.fromJsonString(await rootBundle.loadString('assets/reference_pack.json'));
   final manifest = jsonDecode(await rootBundle.loadString('assets/food_library_manifest.json')) as Map<String, dynamic>;
   final dsldManifest =
@@ -64,6 +66,7 @@ Future<void> main() async {
     // iOS (Keychain, Application Support) làm khi có bản iOS.
     state = AppState.unsupportedPlatform(pack: pack);
   }
+  PerfProbe.mark('run_app');
   runApp(WholeWellApp(state: state));
   unawaited(state.start());
 }
@@ -87,7 +90,10 @@ class _WholeWellAppState extends State<WholeWellApp> {
     // Máy đang khóa: đọc lại khóa khi app trở lại; đã mở thì kiểm tự tăng tuổi & ngày đang xem.
     _lifecycle = AppLifecycleListener(
       onPause: () => widget.state.onAppBackgrounded(),
-      onHide: () => widget.state.onAppBackgrounded(),
+      onHide: () {
+        PerfProbe.dumpFrameStats('to_background');
+        widget.state.onAppBackgrounded();
+      },
       onResume: () {
         final atRoot = !(_navKey.currentState?.canPop() ?? false);
         unawaited(widget.state.onAppResume(atRootScreen: atRoot));

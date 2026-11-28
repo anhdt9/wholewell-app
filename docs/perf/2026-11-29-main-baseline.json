@@ -1,0 +1,119 @@
+{
+  "date": "2026-11-29",
+  "branch": "perf/early-startup",
+  "commit": "d445880",
+  "device": {
+    "model": "SM-S928B",
+    "sdk": "37"
+  },
+  "build": "profile arm64",
+  "cold_start": {
+    "total_time_ms": {
+      "n": 10,
+      "min": 303,
+      "median": 320.0,
+      "p90": 327,
+      "max": 364
+    },
+    "fully_drawn_ms": {
+      "n": 10,
+      "min": 303,
+      "median": 320.0,
+      "p90": 327,
+      "max": 364
+    },
+    "steps_ms": {
+      "food_library": {
+        "n": 10,
+        "min": 141,
+        "median": 162.0,
+        "p90": 199,
+        "max": 213
+      },
+      "diary_reload": {
+        "n": 10,
+        "min": 7,
+        "median": 9.0,
+        "p90": 10,
+        "max": 13
+      },
+      "session_start": {
+        "n": 10,
+        "min": 239,
+        "median": 271.5,
+        "p90": 288,
+        "max": 296
+      }
+    },
+    "marks_ms": {
+      "main_start": {
+        "n": 10,
+        "min": 0,
+        "median": 0.0,
+        "p90": 0,
+        "max": 0
+      },
+      "run_app": {
+        "n": 10,
+        "min": 33,
+        "median": 35.0,
+        "p90": 36,
+        "max": 38
+      },
+      "db_open": {
+        "n": 10,
+        "min": 90,
+        "median": 114.5,
+        "p90": 149,
+        "max": 163
+      },
+      "fully_drawn": {
+        "n": 10,
+        "min": 283,
+        "median": 318.0,
+        "p90": 332,
+        "max": 336
+      }
+    },
+    "raw": {
+      "total_time_ms": [
+        364,
+        327,
+        303,
+        326,
+        320,
+        312,
+        320,
+        315,
+        320,
+        306
+      ],
+      "fully_drawn_ms": [
+        364,
+        327,
+        303,
+        326,
+        320,
+        312,
+        320,
+        315,
+        320,
+        306
+      ]
+    }
+  },
+  "scroll_today_frames_us": {
+    "label": "to_background",
+    "n": 853,
+    "build_p50": 677,
+    "build_p90": 830,
+    "build_p99": 2511,
+    "raster_p50": 3507,
+    "raster_p90": 3855,
+    "raster_p99": 4626
+  },
+  "apk_bytes": {
+    "profile_arm64": 127860074,
+    "release_arm64": 101496274
+  }
+}
