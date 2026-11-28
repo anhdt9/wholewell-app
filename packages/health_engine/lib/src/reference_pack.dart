@@ -42,28 +42,28 @@ class GroupDef {
   });
 
   factory GroupDef.fromJson(Map<String, dynamic> j) => GroupDef(
-        id: j['id'] as String,
-        sex: switch (j['sex'] as String?) {
-          'male' => Sex.male,
-          'female' => Sex.female,
-          _ => null,
-        },
-        stage: switch (j['stage'] as String) {
-          'pregnant' => LifeStage.pregnant,
-          'lactating' => LifeStage.lactating,
-          _ => LifeStage.none,
-        },
-        minAge: (j['minAge'] as num).toInt(),
-        maxAge: (j['maxAge'] as num?)?.toInt(),
-        amdrKey: j['amdrKey'] as String,
-        proteinPerKg: (j['proteinPerKg'] as num?)?.toDouble(),
-        eerType: switch (j['eerType'] as String) {
-          'adult' => EerType.adult,
-          'pregnant' => EerType.pregnant,
-          'lactating' => EerType.lactating,
-          _ => EerType.none,
-        },
-      );
+    id: j['id'] as String,
+    sex: switch (j['sex'] as String?) {
+      'male' => Sex.male,
+      'female' => Sex.female,
+      _ => null,
+    },
+    stage: switch (j['stage'] as String) {
+      'pregnant' => LifeStage.pregnant,
+      'lactating' => LifeStage.lactating,
+      _ => LifeStage.none,
+    },
+    minAge: (j['minAge'] as num).toInt(),
+    maxAge: (j['maxAge'] as num?)?.toInt(),
+    amdrKey: j['amdrKey'] as String,
+    proteinPerKg: (j['proteinPerKg'] as num?)?.toDouble(),
+    eerType: switch (j['eerType'] as String) {
+      'adult' => EerType.adult,
+      'pregnant' => EerType.pregnant,
+      'lactating' => EerType.lactating,
+      _ => EerType.none,
+    },
+  );
 }
 
 class NutrientDef {
@@ -99,12 +99,12 @@ class EerCoef {
   const EerCoef(this.a, this.age, this.height, this.weight, [this.gestWeek = 0]);
 
   factory EerCoef.fromJson(Map<String, dynamic> j) => EerCoef(
-        _d(j['a']),
-        _d(j['age']),
-        _d(j['height']),
-        _d(j['weight']),
-        j['gestWeek'] == null ? 0 : _d(j['gestWeek']),
-      );
+    _d(j['a']),
+    _d(j['age']),
+    _d(j['height']),
+    _d(j['weight']),
+    j['gestWeek'] == null ? 0 : _d(j['gestWeek']),
+  );
 }
 
 class Activity {
@@ -169,22 +169,22 @@ class ScheduleRule {
   });
 
   factory ScheduleRule.fromJson(Map<String, dynamic> j) => ScheduleRule(
-        id: j['id'] as String,
-        type: j['type'] as String,
-        severity: j['severity'] as String,
-        nutrients: [for (final s in (j['nutrients'] as List)) s as String],
-        forms: [for (final s in ((j['forms'] as List?) ?? const [])) s as String],
-        threshold: (j['threshold'] as num?)?.toDouble(),
-        unit: j['unit'] as String?,
-        windowMinutes: (j['windowMinutes'] as num?)?.toInt() ?? 0,
-        uncertain: j['uncertain'] as bool? ?? false,
-        messageVi: j['messageVi'] as String,
-        tipVi: j['tipVi'] as String,
-        source: j['source'] as String,
-        url: j['url'] as String,
-        accessedDate: j['accessedDate'] as String,
-        quote: j['quote'] as String,
-      );
+    id: j['id'] as String,
+    type: j['type'] as String,
+    severity: j['severity'] as String,
+    nutrients: [for (final s in (j['nutrients'] as List)) s as String],
+    forms: [for (final s in ((j['forms'] as List?) ?? const [])) s as String],
+    threshold: (j['threshold'] as num?)?.toDouble(),
+    unit: j['unit'] as String?,
+    windowMinutes: (j['windowMinutes'] as num?)?.toInt() ?? 0,
+    uncertain: j['uncertain'] as bool? ?? false,
+    messageVi: j['messageVi'] as String,
+    tipVi: j['tipVi'] as String,
+    source: j['source'] as String,
+    url: j['url'] as String,
+    accessedDate: j['accessedDate'] as String,
+    quote: j['quote'] as String,
+  );
 }
 
 class ReferencePack {
@@ -248,8 +248,7 @@ class ReferencePack {
     required this.scheduleRules,
   });
 
-  factory ReferencePack.fromJsonString(String s) =>
-      ReferencePack.fromJson(jsonDecode(s) as Map<String, dynamic>);
+  factory ReferencePack.fromJsonString(String s) => ReferencePack.fromJson(jsonDecode(s) as Map<String, dynamic>);
 
   factory ReferencePack.fromJson(Map<String, dynamic> j) {
     if (j['schema'] != 2) {
@@ -309,9 +308,7 @@ class ReferencePack {
     }
 
     Range rangeOf(List<dynamic> l) => Range(_d(l[0]), _d(l[1]));
-    Map<String, Range> ranges(Map<String, dynamic> m) => {
-          for (final e in m.entries) e.key: rangeOf(e.value as List),
-        };
+    Map<String, Range> ranges(Map<String, dynamic> m) => {for (final e in m.entries) e.key: rangeOf(e.value as List)};
     final amdrRaw = j['amdr'] as Map<String, dynamic>;
     final amdr = <String, Map<String, Range>>{
       for (final e in amdrRaw.entries)
@@ -332,9 +329,7 @@ class ReferencePack {
         ),
     };
     final compRaw = (uc['compounds'] as Map<String, dynamic>?) ?? const {};
-    final compounds = <String, Map<String, double>>{
-      for (final e in compRaw.entries) e.key: _numMap(e.value),
-    };
+    final compounds = <String, Map<String, double>>{for (final e in compRaw.entries) e.key: _numMap(e.value)};
     final cMetaRaw = (j['compoundMeta'] as Map<String, dynamic>?) ?? const {};
     final compoundMeta = <String, Map<String, CompoundMeta>>{
       for (final e in cMetaRaw.entries)
@@ -350,10 +345,7 @@ class ReferencePack {
     return ReferencePack._(
       version: j['version'] as String,
       minProfileAge: (j['minProfileAge'] as num).toInt(),
-      groups: [
-        for (final g in (j['groups'] as List).cast<Map<String, dynamic>>())
-          GroupDef.fromJson(g),
-      ],
+      groups: [for (final g in (j['groups'] as List).cast<Map<String, dynamic>>()) GroupDef.fromJson(g)],
       sources: sources,
       nutrients: nutrients,
       eerAdult: adult,
@@ -387,8 +379,7 @@ class ReferencePack {
         for (final e in uc.entries)
           if (e.value is num) e.key: _d(e.value),
       },
-      foodBetaCaroteneIuToUgRae:
-          (uc['vitA_food_betacarotene_IU_to_ug_RAE'] as num?)?.toDouble(),
+      foodBetaCaroteneIuToUgRae: (uc['vitA_food_betacarotene_IU_to_ug_RAE'] as num?)?.toDouble(),
       vitaminEEsters: esters,
       compounds: compounds,
       compoundMeta: compoundMeta,
@@ -402,6 +393,4 @@ class ReferencePack {
 
 double _d(Object? v) => (v as num).toDouble();
 
-Map<String, double> _numMap(Object? m) => {
-      for (final e in (m as Map<String, dynamic>).entries) e.key: _d(e.value),
-    };
+Map<String, double> _numMap(Object? m) => {for (final e in (m as Map<String, dynamic>).entries) e.key: _d(e.value)};

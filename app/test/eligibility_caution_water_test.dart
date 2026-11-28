@@ -23,16 +23,13 @@ void main() {
     return dir;
   }
 
-  DbOpener makeOpener(Directory dir, FakeSecureKeyStore keys) => DbOpener(
-        files: DbFiles(dir),
-        keys: keys,
-        executorFactory: sameIsolateExecutor,
-        retryDelay: Duration.zero,
-      );
+  DbOpener makeOpener(Directory dir, FakeSecureKeyStore keys) =>
+      DbOpener(files: DbFiles(dir), keys: keys, executorFactory: sameIsolateExecutor, retryDelay: Duration.zero);
 
   group('việc 4: điều kiện, đồng ý, khởi tạo CSDL và tiếp tục bước dở', () {
-    testWidgets('không tạo CSDL/khóa trước khi đồng ý; <18/mang thai vào Chưa dùng được; nối lại 3/3 và vào Hôm nay',
-        (tester) async {
+    testWidgets('không tạo CSDL/khóa trước khi đồng ý; <18/mang thai vào Chưa dùng được; nối lại 3/3 và vào Hôm nay', (
+      tester,
+    ) async {
       final dir = makeTempDir();
       final keys = FakeSecureKeyStore();
       final opener = makeOpener(dir, keys);
@@ -174,22 +171,25 @@ void main() {
       await repo.saveProfile(const Profile(ageYears: 35, sex: Sex.female, heightCm: 160, weightKg: 55));
       await repo.saveHideCalories(false);
       await repo.saveOnboardingStep(OnboardingStep.done);
-      await repo.addFood(FoodEntryInput(
-        at: DateTime.now(),
-        meal: Meal.lunch,
-        name: 'Phở bò cũ',
-        portionUnit: 'bát',
-        portionQty: 1,
-        addedSugarKnown: true,
-        packVersion: pack.version,
-        lines: const [IntakeLine(nutrientId: 'energyKcal', source: IntakeSource.food, amounts: {'energyKcal': 420})],
-      ));
+      await repo.addFood(
+        FoodEntryInput(
+          at: DateTime.now(),
+          meal: Meal.lunch,
+          name: 'Phở bò cũ',
+          portionUnit: 'bát',
+          portionQty: 1,
+          addedSugarKnown: true,
+          packVersion: pack.version,
+          lines: const [
+            IntakeLine(nutrientId: 'energyKcal', source: IntakeSource.food, amounts: {'energyKcal': 420}),
+          ],
+        ),
+      );
       await repo.close();
       return opener;
     }
 
-    testWidgets('khung-tam-0 hỏi lại Điều kiện + Đồng ý, giữ món cũ và bật chế độ thận trọng',
-        (tester) async {
+    testWidgets('khung-tam-0 hỏi lại Điều kiện + Đồng ý, giữ món cũ và bật chế độ thận trọng', (tester) async {
       final dir = makeTempDir();
       final keys = FakeSecureKeyStore();
       final opener = await tester.runAsync(() => seedKhungTam(dir, keys));
@@ -229,8 +229,7 @@ void main() {
       expect(state.diary.todayFoods.map((f) => f.name), ['Phở bò cũ']);
     });
 
-    testWidgets('khung-tam-0 chọn đang mang thai -> Chưa dùng được có nút Xóa toàn bộ dữ liệu',
-        (tester) async {
+    testWidgets('khung-tam-0 chọn đang mang thai -> Chưa dùng được có nút Xóa toàn bộ dữ liệu', (tester) async {
       final dir = makeTempDir();
       final keys = FakeSecureKeyStore();
       final opener = await tester.runAsync(() => seedKhungTam(dir, keys));
@@ -267,8 +266,7 @@ void main() {
   });
 
   group('việc 4: thận trọng, tự tăng tuổi và nước', () {
-    testWidgets('CautionLabels đổi đầy đủ chuỗi (kể cả người 18 tuổi) và tắt/bật ở Hồ sơ',
-        (tester) async {
+    testWidgets('CautionLabels đổi đầy đủ chuỗi (kể cả người 18 tuổi) và tắt/bật ở Hồ sơ', (tester) async {
       final repo = InMemoryJournalRepository(initialCaution: true, initialAgeYears: 18);
       await repo.saveProfile(const Profile(ageYears: 18, sex: Sex.female, heightCm: 160, weightKg: 52));
       await repo.saveHideCalories(false);
@@ -302,8 +300,7 @@ void main() {
       expect(find.text('Chưa có mục tiêu calo cho người 18 tuổi.'), findsOneWidget);
     });
 
-    testWidgets('tự tăng tuổi chạy khi start(), không chạy khi reload(), xóa nhắc khi bấm Sửa/Lưu',
-        (tester) async {
+    testWidgets('tự tăng tuổi chạy khi start(), không chạy khi reload(), xóa nhắc khi bấm Sửa/Lưu', (tester) async {
       final oldAnchor = dayKey(DateTime.now().subtract(const Duration(days: 380)));
       final repo = InMemoryJournalRepository(initialAgeYears: 35, initialAgeEnteredOn: oldAnchor);
       await repo.saveProfile(const Profile(ageYears: 35, sex: Sex.male, heightCm: 170, weightKg: 65));
@@ -353,11 +350,7 @@ void main() {
       await tester.tap(find.text('+250 ml'));
       await tester.pumpAndSettle();
 
-      await tester.dragUntilVisible(
-        find.text('Đã uống 250 ml'),
-        find.byType(ListView).first,
-        const Offset(0, 200),
-      );
+      await tester.dragUntilVisible(find.text('Đã uống 250 ml'), find.byType(ListView).first, const Offset(0, 200));
       expect(find.text('Đã uống 250 ml'), findsOneWidget);
       expect(find.text('Đã ghi 250 ml nước'), findsOneWidget);
 

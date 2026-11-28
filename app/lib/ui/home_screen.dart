@@ -48,20 +48,12 @@ class _HomeScreenState extends State<HomeScreen> {
       case NotificationActionKind.markTaken:
         final tod = action.timeOfDayMinutes;
         if (tod != null) {
-          await showReminderQuickConfirmSheet(
-            context,
-            timeOfDayMinutes: tod,
-            scheduleIds: action.scheduleIds,
-          );
+          await showReminderQuickConfirmSheet(context, timeOfDayMinutes: tod, scheduleIds: action.scheduleIds);
         } else {
-          await Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen()),
-          );
+          await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen()));
         }
       case NotificationActionKind.openTodayDoses:
-        await Navigator.of(context).push(
-          MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen()),
-        );
+        await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen()));
       case NotificationActionKind.openUlAlerts:
         setState(() => _tab = 0);
     }
@@ -182,9 +174,7 @@ class _DaySwitcherPill extends StatelessWidget {
                 size: 16,
                 color: canPrev ? cs.onSurface : cs.onSurfaceVariant.withValues(alpha: 0.4),
               ),
-              onPressed: canPrev
-                  ? () => onSelectDay(day.subtract(const Duration(days: 1)))
-                  : null,
+              onPressed: canPrev ? () => onSelectDay(day.subtract(const Duration(days: 1))) : null,
             ),
             Flexible(
               child: InkWell(
@@ -195,9 +185,7 @@ class _DaySwitcherPill extends StatelessWidget {
                     _pillLabel(),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: tabularNumberStyle(
-                      t.labelLarge?.copyWith(color: cs.onSurface),
-                    ),
+                    style: tabularNumberStyle(t.labelLarge?.copyWith(color: cs.onSurface)),
                   ),
                 ),
               ),
@@ -211,9 +199,7 @@ class _DaySwitcherPill extends StatelessWidget {
                 size: 16,
                 color: isToday ? cs.onSurfaceVariant.withValues(alpha: 0.4) : cs.onSurface,
               ),
-              onPressed: isToday
-                  ? null
-                  : () => onSelectDay(day.add(const Duration(days: 1))),
+              onPressed: isToday ? null : () => onSelectDay(day.add(const Duration(days: 1))),
             ),
           ],
         ),

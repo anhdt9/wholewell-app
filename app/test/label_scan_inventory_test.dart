@@ -150,8 +150,8 @@ void main() {
       expect(SupplementLabelParser.parseAiJson('not-json', const []), isNull);
       final pkg = SupplementLabelParser.parseAiJson(
         '{"productName":"Sports Research B-Complex","boxCount":120,"servings":2,"unit":"capsule", '
-            '"ingredients":[{"name":"Folate","amount":667,"unit":"ug_dfe","form":"L-5-Methylfolate","elemental":false}, '
-            '{"name":"Vitamin B12","amount":500,"unit":"ug","form":"Methylcobalamin","elemental":false}]}',
+        '"ingredients":[{"name":"Folate","amount":667,"unit":"ug_dfe","form":"L-5-Methylfolate","elemental":false}, '
+        '{"name":"Vitamin B12","amount":500,"unit":"ug","form":"Methylcobalamin","elemental":false}]}',
         const ['raw'],
       );
       expect(pkg, isNotNull);
@@ -168,12 +168,8 @@ void main() {
 
     group('ô hạn dùng tự thêm dấu /', () {
       const f = ExpiryMonthInputFormatter();
-      String type(String old, String next) => f
-          .formatEditUpdate(
-            TextEditingValue(text: old),
-            TextEditingValue(text: next),
-          )
-          .text;
+      String type(String old, String next) =>
+          f.formatEditUpdate(TextEditingValue(text: old), TextEditingValue(text: next)).text;
 
       test('gõ đủ 2 số tháng thì thêm /, rồi chỉ cần gõ năm', () {
         expect(type('', '1'), '1');
@@ -212,42 +208,26 @@ void main() {
   });
 
   group('Luồng Việc 5: 4 tab, OCR giả lập, mã vạch, kho và cảnh báo', () {
-    Future<AppState> makeReadyState({
-      required FakeOcrEngine ocr,
-      required FakeBarcodeScanner scanner,
-    }) async {
+    Future<AppState> makeReadyState({required FakeOcrEngine ocr, required FakeBarcodeScanner scanner}) async {
       final repo = InMemoryJournalRepository();
       await repo.saveProfileWithCaution(
-        const Profile(
-          ageYears: 30,
-          sex: Sex.male,
-          heightCm: 170,
-          weightKg: 65,
-          activityLevel: ActivityLevel.inactive,
-        ),
+        const Profile(ageYears: 30, sex: Sex.male, heightCm: 170, weightKg: 65, activityLevel: ActivityLevel.inactive),
         caution: false,
       );
       await repo.saveHideCalories(false);
       await repo.saveOnboardingStep(OnboardingStep.done);
-      final state = AppState.withRepository(
-        pack: pack,
-        repo: repo,
-        ocrEngine: ocr,
-        barcodeScanner: scanner,
-      );
+      final state = AppState.withRepository(pack: pack, repo: repo, ocrEngine: ocr, barcodeScanner: scanner);
       await state.start();
       return state;
     }
 
-    testWidgets('quét mã vạch, từ chối camera -> thư viện OCR, cảnh báo mg/µg, xác nhận từng dòng, lưu và quét lại',
-        (tester) async {
+    testWidgets('quét mã vạch, từ chối camera -> thư viện OCR, cảnh báo mg/µg, xác nhận từng dòng, lưu và quét lại', (
+      tester,
+    ) async {
       final ocr = FakeOcrEngine(
         nextCaptureResult: const OcrImagePickResult(permissionDenied: true),
         nextGalleryResult: const OcrImagePickResult(paths: ['/fake/label.jpg']),
-        nextOcrResult: const OcrLabelResult(lines: [
-          'Vitamin D3 25 mg',
-          'Calcium carbonate 1250 mg',
-        ]),
+        nextOcrResult: const OcrLabelResult(lines: ['Vitamin D3 25 mg', 'Calcium carbonate 1250 mg']),
       );
       final scanner = FakeBarcodeScanner(nextBarcode: '8935001122');
       final state = await makeReadyState(ocr: ocr, scanner: scanner);
@@ -310,10 +290,7 @@ void main() {
       await tester.enterText(find.widgetWithText(TextField, 'Hạn dùng'), '13/2027');
       await tester.tap(find.text('Lưu sản phẩm'));
       await tester.pumpAndSettle();
-      expect(
-        find.text('Nhập hạn dùng theo tháng/năm (MM/YYYY), tháng từ 01 đến 12.'),
-        findsOneWidget,
-      );
+      expect(find.text('Nhập hạn dùng theo tháng/năm (MM/YYYY), tháng từ 01 đến 12.'), findsOneWidget);
 
       await tester.enterText(find.widgetWithText(TextField, 'Hạn dùng'), '08/2027');
       await tester.tap(find.text('Lưu sản phẩm'));
@@ -334,8 +311,7 @@ void main() {
       expect(find.text('Canxi D3 Test'), findsOneWidget);
     });
 
-    testWidgets('hộp hết hạn hỏi Trừ/Không trừ, vừa shortfall vừa vượt UL chỉ hiện 1 bảng cảnh báo',
-        (tester) async {
+    testWidgets('hộp hết hạn hỏi Trừ/Không trừ, vừa shortfall vừa vượt UL chỉ hiện 1 bảng cảnh báo', (tester) async {
       final ocr = FakeOcrEngine();
       final scanner = FakeBarcodeScanner();
       final state = await makeReadyState(ocr: ocr, scanner: scanner);
@@ -443,15 +419,12 @@ void main() {
       expect(find.text('Viên mới'), findsOneWidget);
     });
 
-    testWidgets('OCR đọc nhầm đơn vị (Folate 400 mg) không crash đỏ và cho phép sửa sang µg',
-        (tester) async {
+    testWidgets('OCR đọc nhầm đơn vị (Folate 400 mg) không crash đỏ và cho phép sửa sang µg', (tester) async {
       final ocr = FakeOcrEngine(
         nextGalleryResult: const OcrImagePickResult(paths: ['/fake/bcomplex.jpg']),
-        nextOcrResult: const OcrLabelResult(lines: [
-          'Sports Research B-Complex',
-          'Folate 400 mg',
-          'Vitamin B12 500 mcg',
-        ]),
+        nextOcrResult: const OcrLabelResult(
+          lines: ['Sports Research B-Complex', 'Folate 400 mg', 'Vitamin B12 500 mcg'],
+        ),
       );
       final state = await makeReadyState(ocr: ocr, scanner: FakeBarcodeScanner());
 
@@ -486,10 +459,7 @@ void main() {
     testWidgets('OCR nhiều chất có nút Chọn tất cả / Bỏ chọn tất cả mà không tự lưu', (tester) async {
       final ocr = FakeOcrEngine(
         nextGalleryResult: const OcrImagePickResult(paths: ['/fake/multi.jpg']),
-        nextOcrResult: const OcrLabelResult(lines: [
-          'Vitamin C 500 mg',
-          'Zinc Gluconate 15 mg',
-        ]),
+        nextOcrResult: const OcrLabelResult(lines: ['Vitamin C 500 mg', 'Zinc Gluconate 15 mg']),
       );
       final state = await makeReadyState(ocr: ocr, scanner: FakeBarcodeScanner());
 

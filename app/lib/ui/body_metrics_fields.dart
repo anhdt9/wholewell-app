@@ -85,18 +85,10 @@ class BodyMetricsFields extends StatelessWidget {
           child: const Row(
             children: [
               Expanded(
-                child: RadioListTile<Sex>(
-                  value: Sex.male,
-                  contentPadding: EdgeInsets.zero,
-                  title: Text('Nam'),
-                ),
+                child: RadioListTile<Sex>(value: Sex.male, contentPadding: EdgeInsets.zero, title: Text('Nam')),
               ),
               Expanded(
-                child: RadioListTile<Sex>(
-                  value: Sex.female,
-                  contentPadding: EdgeInsets.zero,
-                  title: Text('Nữ'),
-                ),
+                child: RadioListTile<Sex>(value: Sex.female, contentPadding: EdgeInsets.zero, title: Text('Nữ')),
               ),
             ],
           ),
@@ -131,14 +123,9 @@ class BodyMetricsFields extends StatelessWidget {
         DropdownButtonFormField<ActivityLevel>(
           key: ValueKey(level),
           initialValue: level,
-          decoration: const InputDecoration(
-            labelText: 'Mức vận động',
-          ),
+          decoration: const InputDecoration(labelText: 'Mức vận động'),
           hint: const Text('Chọn mức vận động'),
-          items: [
-            for (final l in ActivityLevel.values)
-              DropdownMenuItem(value: l, child: Text(levelLabel(l))),
-          ],
+          items: [for (final l in ActivityLevel.values) DropdownMenuItem(value: l, child: Text(levelLabel(l)))],
           onChanged: !enabled
               ? null
               : (v) {

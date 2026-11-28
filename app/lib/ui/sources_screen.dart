@@ -35,7 +35,10 @@ class SourcesScreen extends StatelessWidget {
                 children: [
                   Text(r.messageVi, style: t.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
-                  Text('Nguồn: ${pack.sources[r.source]?.title ?? r.source} · Tra ngày ${r.accessedDate}', style: t.bodySmall),
+                  Text(
+                    'Nguồn: ${pack.sources[r.source]?.title ?? r.source} · Tra ngày ${r.accessedDate}',
+                    style: t.bodySmall,
+                  ),
                   const SizedBox(height: 2),
                   SelectableText(r.url, style: t.bodySmall?.copyWith(color: cs.primary)),
                   const SizedBox(height: 4),
@@ -50,9 +53,7 @@ class SourcesScreen extends StatelessWidget {
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(s.title),
-              subtitle: SelectableText(
-                s.retrieved == null ? s.url : '${s.url} (tra ${s.retrieved})',
-              ),
+              subtitle: SelectableText(s.retrieved == null ? s.url : '${s.url} (tra ${s.retrieved})'),
             ),
         ],
       ),

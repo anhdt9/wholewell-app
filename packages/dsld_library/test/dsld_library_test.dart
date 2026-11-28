@@ -17,9 +17,7 @@ Future<String> _createSampleDb(String dir) async {
       fact_count INTEGER NOT NULL
     );
   ''');
-  db.execute(
-    "INSERT INTO meta VALUES ('2026.01.16-test', 'test', '2026-11-26', 2, 2);",
-  );
+  db.execute("INSERT INTO meta VALUES ('2026.01.16-test', 'test', '2026-11-26', 2, 2);");
   db.execute('''
     CREATE TABLE products (
       dsld_id INTEGER PRIMARY KEY,
@@ -74,17 +72,11 @@ void main() {
     final sha = await computeDsldFileSha256(dbPath);
 
     await expectLater(
-      () => SqliteDsldLibraryRepository.openVerifiedPath(
-        path: dbPath,
-        expectedSha256: '0' * 64,
-      ),
+      () => SqliteDsldLibraryRepository.openVerifiedPath(path: dbPath, expectedSha256: '0' * 64),
       throwsA(isA<DsldLibraryIntegrityException>()),
     );
 
-    final repo = await SqliteDsldLibraryRepository.openVerifiedPath(
-      path: dbPath,
-      expectedSha256: sha,
-    );
+    final repo = await SqliteDsldLibraryRepository.openVerifiedPath(path: dbPath, expectedSha256: sha);
     addTearDown(repo.close);
 
     expect(repo.meta.productCount, 2);

@@ -121,11 +121,7 @@ class BuiltLabelFood {
   final CustomFoodInput customFoodInput;
   final List<UnitPlausibilityWarning> warnings;
 
-  const BuiltLabelFood({
-    required this.entryInput,
-    required this.customFoodInput,
-    required this.warnings,
-  });
+  const BuiltLabelFood({required this.entryInput, required this.customFoodInput, required this.warnings});
 }
 
 class LabelFoodBuilder {
@@ -161,26 +157,26 @@ class LabelFoodBuilder {
   }
 
   static String unitWireName(LabelUnit u) => switch (u) {
-        LabelUnit.g => 'g',
-        LabelUnit.mg => 'mg',
-        LabelUnit.ug => 'ug',
-        LabelUnit.iu => 'iu',
-        LabelUnit.ugRae => 'ug_RAE',
-        LabelUnit.ugDfe => 'ug_DFE',
-        LabelUnit.mgNe => 'mg_NE',
-      };
+    LabelUnit.g => 'g',
+    LabelUnit.mg => 'mg',
+    LabelUnit.ug => 'ug',
+    LabelUnit.iu => 'iu',
+    LabelUnit.ugRae => 'ug_RAE',
+    LabelUnit.ugDfe => 'ug_DFE',
+    LabelUnit.mgNe => 'mg_NE',
+  };
 
   /// Đọc tên đơn vị đã lưu; `null` khi không đọc được (không đoán `mg`).
   static LabelUnit? unitFromWire(String s) => switch (s) {
-        'g' => LabelUnit.g,
-        'mg' => LabelUnit.mg,
-        'ug' => LabelUnit.ug,
-        'iu' => LabelUnit.iu,
-        'ug_RAE' || 'ugRae' => LabelUnit.ugRae,
-        'ug_DFE' || 'ugDfe' => LabelUnit.ugDfe,
-        'mg_NE' || 'mgNe' => LabelUnit.mgNe,
-        _ => null,
-      };
+    'g' => LabelUnit.g,
+    'mg' => LabelUnit.mg,
+    'ug' => LabelUnit.ug,
+    'iu' => LabelUnit.iu,
+    'ug_RAE' || 'ugRae' => LabelUnit.ugRae,
+    'ug_DFE' || 'ugDfe' => LabelUnit.ugDfe,
+    'mg_NE' || 'mgNe' => LabelUnit.mgNe,
+    _ => null,
+  };
 
   static BuiltLabelFood build(
     LabelFoodDraft draft, {
@@ -202,49 +198,47 @@ class LabelFoodBuilder {
     for (final (id, getter, unit) in _macroLabels) {
       final raw = getter(draft);
       if (raw == null || raw <= 0) continue;
-      intakeLines.add(IntakeLine(
-        nutrientId: id,
-        source: IntakeSource.food,
-        labelAmount: raw,
-        labelUnit: unit,
-        amounts: {id: raw * scale},
-      ));
-      customLines.add(CustomFoodLine(
-        nutrientId: id,
-        labelAmount: raw,
-        labelUnit: unit,
-        source: IntakeSource.food,
-      ));
+      intakeLines.add(
+        IntakeLine(
+          nutrientId: id,
+          source: IntakeSource.food,
+          labelAmount: raw,
+          labelUnit: unit,
+          amounts: {id: raw * scale},
+        ),
+      );
+      customLines.add(CustomFoodLine(nutrientId: id, labelAmount: raw, labelUnit: unit, source: IntakeSource.food));
     }
 
     // Đường tổng chỉ lưu vào custom_food_lines nếu cần, hoặc không đưa vào engine;
     // để khớp quy ước custom_food_lines cũng giữ lại tổng đường trên nhãn nếu > 0.
     if (draft.totalSugarG != null && draft.totalSugarG! > 0) {
-      customLines.add(CustomFoodLine(
-        nutrientId: 'totalSugar',
-        labelAmount: draft.totalSugarG!,
-        labelUnit: 'g',
-        source: IntakeSource.food,
-      ));
+      customLines.add(
+        CustomFoodLine(
+          nutrientId: 'totalSugar',
+          labelAmount: draft.totalSugarG!,
+          labelUnit: 'g',
+          source: IntakeSource.food,
+        ),
+      );
     }
 
     // Quy tắc Đường bổ sung: nhập 0 => ghi 0 (addedSugarKnown = true); bỏ trống => không ghi (false).
     final addedSugar = draft.addedSugarG;
     final addedSugarKnown = addedSugar != null;
     if (addedSugar != null) {
-      intakeLines.add(IntakeLine(
-        nutrientId: 'addedSugar',
-        source: IntakeSource.food,
-        labelAmount: addedSugar,
-        labelUnit: 'g',
-        amounts: {'addedSugar': addedSugar * scale},
-      ));
-      customLines.add(CustomFoodLine(
-        nutrientId: 'addedSugar',
-        labelAmount: addedSugar,
-        labelUnit: 'g',
-        source: IntakeSource.food,
-      ));
+      intakeLines.add(
+        IntakeLine(
+          nutrientId: 'addedSugar',
+          source: IntakeSource.food,
+          labelAmount: addedSugar,
+          labelUnit: 'g',
+          amounts: {'addedSugar': addedSugar * scale},
+        ),
+      );
+      customLines.add(
+        CustomFoodLine(nutrientId: 'addedSugar', labelAmount: addedSugar, labelUnit: 'g', source: IntakeSource.food),
+      );
     }
 
     final dfeFactor = pack.unitConversions['folicAcid_ug_to_ug_DFE'] ?? 1.7;
@@ -260,76 +254,87 @@ class LabelFoodBuilder {
         final naturalDfe = math.max(0.0, totalDfe - folicUg * dfeFactor);
 
         if (folicUg > 0) {
-          intakeLines.add(IntakeLine(
-            nutrientId: 'folicAcid',
-            source: IntakeSource.fortified,
-            form: NutrientForm.folicAcid,
-            labelAmount: folicUg,
-            labelUnit: 'ug',
-            amounts: {
-              'folicAcid': folicUg * scale,
-              'folate': folicUg * dfeFactor * scale,
-            },
-          ));
-          customLines.add(CustomFoodLine(
-            nutrientId: 'folicAcid',
-            form: NutrientForm.folicAcid,
-            labelAmount: folicUg,
-            labelUnit: 'ug',
-            source: IntakeSource.fortified,
-          ));
+          intakeLines.add(
+            IntakeLine(
+              nutrientId: 'folicAcid',
+              source: IntakeSource.fortified,
+              form: NutrientForm.folicAcid,
+              labelAmount: folicUg,
+              labelUnit: 'ug',
+              amounts: {'folicAcid': folicUg * scale, 'folate': folicUg * dfeFactor * scale},
+            ),
+          );
+          customLines.add(
+            CustomFoodLine(
+              nutrientId: 'folicAcid',
+              form: NutrientForm.folicAcid,
+              labelAmount: folicUg,
+              labelUnit: 'ug',
+              source: IntakeSource.fortified,
+            ),
+          );
         }
         if (naturalDfe > 0 || folicUg <= 0) {
-          intakeLines.add(IntakeLine(
-            nutrientId: 'folate',
-            source: IntakeSource.food,
-            form: NutrientForm.naturalFolate,
-            labelAmount: naturalDfe,
-            labelUnit: 'ug_DFE',
-            amounts: {'folate': naturalDfe * scale},
-          ));
-          customLines.add(CustomFoodLine(
-            nutrientId: 'folate',
-            form: NutrientForm.naturalFolate,
-            labelAmount: naturalDfe,
-            labelUnit: 'ug_DFE',
-            source: IntakeSource.food,
-          ));
+          intakeLines.add(
+            IntakeLine(
+              nutrientId: 'folate',
+              source: IntakeSource.food,
+              form: NutrientForm.naturalFolate,
+              labelAmount: naturalDfe,
+              labelUnit: 'ug_DFE',
+              amounts: {'folate': naturalDfe * scale},
+            ),
+          );
+          customLines.add(
+            CustomFoodLine(
+              nutrientId: 'folate',
+              form: NutrientForm.naturalFolate,
+              labelAmount: naturalDfe,
+              labelUnit: 'ug_DFE',
+              source: IntakeSource.food,
+            ),
+          );
         }
         continue;
       }
 
       final src = sourceForLabelMicro(m);
-      final conv = converter.convertIntakeLine(IntakeLineInput(
-        nutrientId: m.nutrientId,
-        source: src,
-        form: m.form,
-        amount: m.labelAmount,
-        unit: m.unit,
-        compoundKind: CompoundKind.elemental,
-        secondaryFolicAcidUg: m.secondaryFolicAcidUg,
-      ));
-      if (conv.amounts.isNotEmpty || (conv.ulAmounts != null && conv.ulAmounts!.isNotEmpty)) {
-        intakeLines.add(IntakeLine(
+      final conv = converter.convertIntakeLine(
+        IntakeLineInput(
           nutrientId: m.nutrientId,
           source: src,
           form: m.form,
-          uncertain: conv.uncertain,
+          amount: m.labelAmount,
+          unit: m.unit,
+          compoundKind: CompoundKind.elemental,
+          secondaryFolicAcidUg: m.secondaryFolicAcidUg,
+        ),
+      );
+      if (conv.amounts.isNotEmpty || (conv.ulAmounts != null && conv.ulAmounts!.isNotEmpty)) {
+        intakeLines.add(
+          IntakeLine(
+            nutrientId: m.nutrientId,
+            source: src,
+            form: m.form,
+            uncertain: conv.uncertain,
+            labelAmount: m.labelAmount,
+            labelUnit: unitWireName(m.unit),
+            amounts: {for (final e in conv.amounts.entries) e.key: e.value * scale},
+            ulAmounts: conv.ulAmounts == null
+                ? null
+                : {for (final e in conv.ulAmounts!.entries) e.key: e.value * scale},
+          ),
+        );
+      }
+      customLines.add(
+        CustomFoodLine(
+          nutrientId: m.nutrientId,
+          form: m.form,
           labelAmount: m.labelAmount,
           labelUnit: unitWireName(m.unit),
-          amounts: {for (final e in conv.amounts.entries) e.key: e.value * scale},
-          ulAmounts: conv.ulAmounts == null
-              ? null
-              : {for (final e in conv.ulAmounts!.entries) e.key: e.value * scale},
-        ));
-      }
-      customLines.add(CustomFoodLine(
-        nutrientId: m.nutrientId,
-        form: m.form,
-        labelAmount: m.labelAmount,
-        labelUnit: unitWireName(m.unit),
-        source: src,
-      ));
+          source: src,
+        ),
+      );
     }
 
     final warnings = checkPlausibility(intakeLines, pack: pack, profile: profile);
@@ -373,42 +378,47 @@ class LabelFoodBuilder {
 
     for (final cl in custom.lines) {
       if (cl.nutrientId == 'totalSugar') continue;
-      if (const {'energyKcal', 'protein', 'fat', 'carbohydrate', 'addedSugar', 'sodium'}
-          .contains(cl.nutrientId)) {
-        intakeLines.add(IntakeLine(
-          nutrientId: cl.nutrientId,
-          source: cl.source,
-          labelAmount: cl.labelAmount,
-          labelUnit: cl.labelUnit,
-          amounts: {cl.nutrientId: cl.labelAmount * scale},
-        ));
+      if (const {'energyKcal', 'protein', 'fat', 'carbohydrate', 'addedSugar', 'sodium'}.contains(cl.nutrientId)) {
+        intakeLines.add(
+          IntakeLine(
+            nutrientId: cl.nutrientId,
+            source: cl.source,
+            labelAmount: cl.labelAmount,
+            labelUnit: cl.labelUnit,
+            amounts: {cl.nutrientId: cl.labelAmount * scale},
+          ),
+        );
         continue;
       }
       final unit = unitFromWire(cl.labelUnit);
       if (unit == null) {
         throw FormatException('Đơn vị đã lưu không đọc được', cl.labelUnit);
       }
-      final conv = converter.convertIntakeLine(IntakeLineInput(
-        nutrientId: cl.nutrientId,
-        source: cl.source,
-        form: cl.form ?? NutrientForm.unknown,
-        amount: cl.labelAmount,
-        unit: unit,
-        compoundKind: CompoundKind.elemental,
-      ));
-      if (conv.amounts.isNotEmpty || (conv.ulAmounts != null && conv.ulAmounts!.isNotEmpty)) {
-        intakeLines.add(IntakeLine(
+      final conv = converter.convertIntakeLine(
+        IntakeLineInput(
           nutrientId: cl.nutrientId,
           source: cl.source,
-          form: cl.form,
-          uncertain: conv.uncertain,
-          labelAmount: cl.labelAmount,
-          labelUnit: cl.labelUnit,
-          amounts: {for (final e in conv.amounts.entries) e.key: e.value * scale},
-          ulAmounts: conv.ulAmounts == null
-              ? null
-              : {for (final e in conv.ulAmounts!.entries) e.key: e.value * scale},
-        ));
+          form: cl.form ?? NutrientForm.unknown,
+          amount: cl.labelAmount,
+          unit: unit,
+          compoundKind: CompoundKind.elemental,
+        ),
+      );
+      if (conv.amounts.isNotEmpty || (conv.ulAmounts != null && conv.ulAmounts!.isNotEmpty)) {
+        intakeLines.add(
+          IntakeLine(
+            nutrientId: cl.nutrientId,
+            source: cl.source,
+            form: cl.form,
+            uncertain: conv.uncertain,
+            labelAmount: cl.labelAmount,
+            labelUnit: cl.labelUnit,
+            amounts: {for (final e in conv.amounts.entries) e.key: e.value * scale},
+            ulAmounts: conv.ulAmounts == null
+                ? null
+                : {for (final e in conv.ulAmounts!.entries) e.key: e.value * scale},
+          ),
+        );
       }
     }
 
@@ -455,9 +465,7 @@ class LabelFoodBuilder {
       if (val <= 0) continue;
 
       final ulDef = def.ulKey != null ? pack.nutrients[def.ulKey!] : def;
-      final ulVal = profile != null && ulDef != null
-          ? ulFor(pack, profile, ulDef.id)
-          : ulDef?.ul[g];
+      final ulVal = profile != null && ulDef != null ? ulFor(pack, profile, ulDef.id) : ulDef?.ul[g];
       final targetVal = def.target[g];
 
       var flagged = false;
@@ -476,22 +484,20 @@ class LabelFoodBuilder {
       }
 
       if (flagged) {
-        out.add(UnitPlausibilityWarning(
-          nutrientId: def.id,
-          nutrientNameVi: def.nameVi,
-          displayAmount: val,
-          displayUnit: def.unit,
-        ));
+        out.add(
+          UnitPlausibilityWarning(
+            nutrientId: def.id,
+            nutrientNameVi: def.nameVi,
+            displayAmount: val,
+            displayUnit: def.unit,
+          ),
+        );
       }
     }
     return out;
   }
 
-  static FoodPortionPreview previewFromLines(
-    List<IntakeLine> lines, {
-    required bool sugarKnown,
-    double? totalSugar,
-  }) {
+  static FoodPortionPreview previewFromLines(List<IntakeLine> lines, {required bool sugarKnown, double? totalSugar}) {
     var kcal = 0.0;
     var protein = 0.0;
     var fat = 0.0;
@@ -538,8 +544,7 @@ class LabelFoodBuilder {
     required ReferencePack pack,
     FoodLibraryRepository? foodLibrary,
   }) {
-    final lines = foodLibrary?.computeLines(f, grams, pack: pack) ??
-        computeFoodIntakeLines(f, grams, pack: pack);
+    final lines = foodLibrary?.computeLines(f, grams, pack: pack) ?? computeFoodIntakeLines(f, grams, pack: pack);
     final rawTs = f.displayAmountPer100g('totalSugar');
     final totalSugar = rawTs == null ? null : rawTs * (grams / 100.0);
     return previewFromLines(lines, sugarKnown: f.addedSugarKnown, totalSugar: totalSugar);

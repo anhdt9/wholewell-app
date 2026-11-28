@@ -54,7 +54,10 @@ class _TodayScreenState extends State<TodayScreen> {
     final scheduleFlags = isToday ? diary.scheduledUlFlags() : const <UlFlag>[];
     final combinedFlags = <UlFlag>[...r.ulFlags, ...scheduleFlags];
     final activeNotices = isToday
-        ? [for (final n in diary.scheduleNotices()) if (n.severity == 'notice') n]
+        ? [
+            for (final n in diary.scheduleNotices())
+              if (n.severity == 'notice') n,
+          ]
         : const <ScheduleNotice>[];
     final noticeSig = diary.scheduleNoticeSignature(activeNotices);
     final tipRule = diary.todayTipRule(hasUlWarnings: combinedFlags.isNotEmpty);
@@ -66,14 +69,8 @@ class _TodayScreenState extends State<TodayScreen> {
           _UlBanner(flags: combinedFlags, pack: pack),
           const SizedBox(height: AppSpacing.md),
         ],
-        if (state.caution) ...[
-          const SafetyNote(message: cautionBannerMessage),
-          const SizedBox(height: AppSpacing.md),
-        ],
-        if (state.drivePendingDeleteActive) ...[
-          const PendingDriveDeleteCard(),
-          const SizedBox(height: AppSpacing.md),
-        ],
+        if (state.caution) ...[const SafetyNote(message: cautionBannerMessage), const SizedBox(height: AppSpacing.md)],
+        if (state.drivePendingDeleteActive) ...[const PendingDriveDeleteCard(), const SizedBox(height: AppSpacing.md)],
         if (activeNotices.isNotEmpty) ...[
           CollapsibleScheduleNote(
             messages: [for (final n in activeNotices) n.messageVi],
@@ -106,21 +103,13 @@ class _TodayScreenState extends State<TodayScreen> {
             state.todayWaters.isEmpty &&
             state.todayWorkouts.isEmpty) ...[
           _EmptyTodayHintCard(
-            onLogFood: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const AddFoodScreen()),
-            ),
-            onAddSupplement: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const ScanProductScreen()),
-            ),
+            onLogFood: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AddFoodScreen())),
+            onAddSupplement: () =>
+                Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const ScanProductScreen())),
           ),
           const SizedBox(height: AppSpacing.md),
         ],
-        _EnergyAndMacroCard(
-          report: r,
-          labels: cl,
-          hideCalories: state.hideCalories,
-          hasFood: hasFood,
-        ),
+        _EnergyAndMacroCard(report: r, labels: cl, hideCalories: state.hideCalories, hasFood: hasFood),
         const SizedBox(height: AppSpacing.md),
         _SugarCard(sugar: r.sugar, maxMeal: pack.addedSugarMaxGramsPerMeal),
         const SizedBox(height: AppSpacing.md),
@@ -128,29 +117,20 @@ class _TodayScreenState extends State<TodayScreen> {
           totalMl: state.diary.todayWaterTotalMl,
           hasEntries: state.todayWaters.isNotEmpty,
           quickMl: state.lastWaterMl,
-          onOpenLog: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => const WaterLogScreen()),
-          ),
+          onOpenLog: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const WaterLogScreen())),
           onQuickAdd: () async {
             final ml = state.lastWaterMl;
             final id = await state.diary.quickAddWater();
             if (id != null && context.mounted) {
               unawaited(HapticFeedback.selectionClick());
-              showUndoWaterSnack(
-                context,
-                ml: ml,
-                onUndo: () => state.diary.deleteWater(id),
-              );
+              showUndoWaterSnack(context, ml: ml, onUndo: () => state.diary.deleteWater(id));
             }
           },
         ),
         const SizedBox(height: AppSpacing.xl),
         Text('Vitamin và khoáng chất', style: t.titleMedium),
         const SizedBox(height: AppSpacing.xs),
-        Text(
-          cl.nutrientsSubtitle,
-          style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-        ),
+        Text(cl.nutrientsSubtitle, style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
         const SizedBox(height: AppSpacing.md),
         Wrap(
           spacing: AppSpacing.sm,
@@ -179,65 +159,57 @@ class _TodayScreenState extends State<TodayScreen> {
         const SizedBox(height: AppSpacing.md),
         const _TwoSegmentLegend(),
         const SizedBox(height: AppSpacing.sm),
-        Builder(builder: (context) {
-          final alertIds = {for (final f in combinedFlags) f.nutrientId};
-          final visible = [
-            for (final n in r.nutrients)
-              if (pack.nutrients[n.nutrientId]!.group != 'macro' &&
-                  (n.target != null || alertIds.contains(n.nutrientId)))
-                if (switch (_nutrientFilter) {
-                  _NutrientFilter.all => true,
-                  _NutrientFilter.withSupplement => n.supplementAmount > 0,
-                  _NutrientFilter.underTarget =>
-                    n.target != null && n.totalAmount < n.target!.value,
-                })
-                  n,
-          ];
-          if (visible.isEmpty) {
-            return const SurfaceCard(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                child: Text('Không có vi chất nào thuộc mục lọc này.'),
-              ),
-            );
-          }
-          return SurfaceCard(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.xs,
-            ),
-            child: Column(
-              children: [
-                for (var i = 0; i < visible.length; i++) ...[
-                  if (i > 0)
-                    Divider(
-                      height: 1,
-                      color: ww.outlineSubtle.withValues(alpha: 0.6),
-                    ),
-                  _NutrientRow(
-                    status: visible[i],
-                    def: pack.nutrients[visible[i].nutrientId]!,
-                    overLimit: alertIds.contains(visible[i].nutrientId),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => NutrientDetailScreen(
-                          nutrientId: visible[i].nutrientId,
+        Builder(
+          builder: (context) {
+            final alertIds = {for (final f in combinedFlags) f.nutrientId};
+            final visible = [
+              for (final n in r.nutrients)
+                if (pack.nutrients[n.nutrientId]!.group != 'macro' &&
+                    (n.target != null || alertIds.contains(n.nutrientId)))
+                  if (switch (_nutrientFilter) {
+                    _NutrientFilter.all => true,
+                    _NutrientFilter.withSupplement => n.supplementAmount > 0,
+                    _NutrientFilter.underTarget => n.target != null && n.totalAmount < n.target!.value,
+                  })
+                    n,
+            ];
+            if (visible.isEmpty) {
+              return const SurfaceCard(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                  child: Text('Không có vi chất nào thuộc mục lọc này.'),
+                ),
+              );
+            }
+            return SurfaceCard(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
+              child: Column(
+                children: [
+                  for (var i = 0; i < visible.length; i++) ...[
+                    if (i > 0) Divider(height: 1, color: ww.outlineSubtle.withValues(alpha: 0.6)),
+                    _NutrientRow(
+                      status: visible[i],
+                      def: pack.nutrients[visible[i].nutrientId]!,
+                      overLimit: alertIds.contains(visible[i].nutrientId),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => NutrientDetailScreen(nutrientId: visible[i].nutrientId),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
-              ],
-            ),
-          );
-        }),
+              ),
+            );
+          },
+        ),
         const SizedBox(height: AppSpacing.lg),
         if (tipRule != null) ...[
           TipCard(
             text: tipRule.tipVi,
-            onViewSource: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => SourcesScreen(highlightRuleId: tipRule.id)),
-            ),
+            onViewSource: () =>
+                Navigator.of(context)
+                    .push(MaterialPageRoute<void>(builder: (_) => SourcesScreen(highlightRuleId: tipRule.id))),
             onHide: diary.hideTipCardForToday,
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -269,12 +241,7 @@ class _NextDoseCardState extends State<_NextDoseCard> {
     try {
       for (final s in slotItems) {
         if (!mounted) break;
-        await markScheduledDoseTaken(
-          context,
-          schedule: s,
-          scheduleDay: todayStr,
-          at: now,
-        );
+        await markScheduledDoseTaken(context, schedule: s, scheduleDay: todayStr, at: now);
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -309,24 +276,19 @@ class _NextDoseCardState extends State<_NextDoseCard> {
           title: const Text('Lần uống hôm nay'),
           subtitle: const Text('Đã hoàn tất các lần uống theo lịch hôm nay.'),
           trailing: Icon(LucideIcons.chevronRight, color: cs.onSurfaceVariant),
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen()),
-          ),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen())),
         ),
       );
     }
 
     final firstTime = pending.first.timeOfDay;
-    final slotItems = [for (final s in pending) if (s.timeOfDay == firstTime) s];
+    final slotItems = [
+      for (final s in pending)
+        if (s.timeOfDay == firstTime) s,
+    ];
     final first = slotItems.first;
-    final phase = classifySchedulePhase(
-      schedule: first,
-      scheduleDay: todayStr,
-      now: now,
-    );
-    final names = [
-      for (final s in slotItems) prodMap[s.productId]?.name ?? 'Sản phẩm #${s.productId}',
-    ].join(', ');
+    final phase = classifySchedulePhase(schedule: first, scheduleDay: todayStr, now: now);
+    final names = [for (final s in slotItems) prodMap[s.productId]?.name ?? 'Sản phẩm #${s.productId}'].join(', ');
 
     return SurfaceCard(
       color: cs.primaryContainer.withValues(alpha: 0.32),
@@ -350,16 +312,12 @@ class _NextDoseCardState extends State<_NextDoseCard> {
                     child: Icon(LucideIcons.pill, size: 16, color: cs.primary),
                   ),
                   const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    'Lần uống ${formatMinutesHhMm(firstTime)}',
-                    style: tabularNumberStyle(t.titleSmall),
-                  ),
+                  Text('Lần uống ${formatMinutesHhMm(firstTime)}', style: tabularNumberStyle(t.titleSmall)),
                 ],
               ),
               TextButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen()),
-                ),
+                onPressed: () =>
+                    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen())),
                 child: const Text('Xem tất cả ›'),
               ),
             ],
@@ -375,9 +333,8 @@ class _NextDoseCardState extends State<_NextDoseCard> {
             )
           else
             OutlinedButton(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen()),
-              ),
+              onPressed: () =>
+                  Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen())),
               child: Text(phase == ScheduleWindowPhase.early ? 'Uống sớm?' : 'Đánh dấu'),
             ),
         ],
@@ -407,11 +364,7 @@ class _AgeBumpedBanner extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextButton(onPressed: onEdit, child: const Text('Sửa')),
-              IconButton(
-                tooltip: 'Đóng',
-                icon: const Icon(LucideIcons.x, size: 18),
-                onPressed: onDismiss,
-              ),
+              IconButton(tooltip: 'Đóng', icon: const Icon(LucideIcons.x, size: 18), onPressed: onDismiss),
             ],
           ),
         ],
@@ -463,9 +416,7 @@ class _WaterCard extends StatelessWidget {
                   hasEntries ? 'Đã uống ${fmtWaterMl(totalMl)} ml' : 'Chưa ghi nước hôm nay',
                   key: ValueKey('${hasEntries}_${totalMl.round()}'),
                   style: tabularNumberStyle(
-                    t.bodyMedium?.copyWith(
-                      color: hasEntries ? cs.onSurface : cs.onSurfaceVariant,
-                    ),
+                    t.bodyMedium?.copyWith(color: hasEntries ? cs.onSurface : cs.onSurfaceVariant),
                   ),
                 ),
               ),
@@ -476,15 +427,9 @@ class _WaterCard extends StatelessWidget {
     );
 
     final quickButton = OutlinedButton(
-      style: OutlinedButton.styleFrom(
-        minimumSize: const Size(48, 48),
-        shape: const StadiumBorder(),
-      ),
+      style: OutlinedButton.styleFrom(minimumSize: const Size(48, 48), shape: const StadiumBorder()),
       onPressed: onQuickAdd,
-      child: Text(
-        '+${fmtWaterMl(quickMl)} ml',
-        style: tabularNumberStyle(null),
-      ),
+      child: Text('+${fmtWaterMl(quickMl)} ml', style: tabularNumberStyle(null)),
     );
 
     return SurfaceCard(
@@ -521,10 +466,7 @@ class _WaterCard extends StatelessWidget {
 class _EmptyTodayHintCard extends StatelessWidget {
   final VoidCallback onLogFood;
   final VoidCallback onAddSupplement;
-  const _EmptyTodayHintCard({
-    required this.onLogFood,
-    required this.onAddSupplement,
-  });
+  const _EmptyTodayHintCard({required this.onLogFood, required this.onAddSupplement});
 
   @override
   Widget build(BuildContext context) {
@@ -594,121 +536,99 @@ class _EnergyAndMacroCard extends StatelessWidget {
           if (!hideCalories) ...[
             Text('Năng lượng', style: t.titleMedium),
             const SizedBox(height: AppSpacing.md),
-            LayoutBuilder(builder: (context, constraints) {
-              final stackGauge = textScale >= 1.3 || constraints.maxWidth < 320;
-              final gauge = EnergyArcGauge(
-                consumedKcal: r.energyInKcal,
-                targetKcal: (eer ?? 0).toDouble(),
-                size: 128,
-                hideCaloriesOverride: false,
-              );
-              final details = Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _StatLine(
-                    label: labels.calorieGoalLabel,
-                    value: eer == null ? '—' : '$eer kcal',
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  _StatLine(
-                    label: 'Tiêu hao khi tập',
-                    value: '${r.energyOutWorkoutKcal.round()} kcal',
-                  ),
-                  if (eer != null) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    Text(
-                      labels.calorieGoalExplainer,
-                      style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                    ),
-                  ],
-                  if (r.eerNotComputed != null) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    Text(
-                      reasonLabel(r.eerNotComputed!, caution: labels.caution),
-                      style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                    ),
-                  ],
-                ],
-              );
-
-              if (stackGauge) {
-                return Column(
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final stackGauge = textScale >= 1.3 || constraints.maxWidth < 320;
+                final gauge = EnergyArcGauge(
+                  consumedKcal: r.energyInKcal,
+                  targetKcal: (eer ?? 0).toDouble(),
+                  size: 128,
+                  hideCaloriesOverride: false,
+                );
+                final details = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Center(child: gauge),
-                    const SizedBox(height: AppSpacing.md),
-                    details,
+                    _StatLine(label: labels.calorieGoalLabel, value: eer == null ? '—' : '$eer kcal'),
+                    const SizedBox(height: AppSpacing.sm),
+                    _StatLine(label: 'Tiêu hao khi tập', value: '${r.energyOutWorkoutKcal.round()} kcal'),
+                    if (eer != null) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(labels.calorieGoalExplainer, style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                    ],
+                    if (r.eerNotComputed != null) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        reasonLabel(r.eerNotComputed!, caution: labels.caution),
+                        style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                      ),
+                    ],
                   ],
                 );
-              }
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  gauge,
-                  const SizedBox(width: AppSpacing.lg),
-                  Expanded(child: details),
-                ],
-              );
-            }),
+
+                if (stackGauge) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(child: gauge),
+                      const SizedBox(height: AppSpacing.md),
+                      details,
+                    ],
+                  );
+                }
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    gauge,
+                    const SizedBox(width: AppSpacing.lg),
+                    Expanded(child: details),
+                  ],
+                );
+              },
+            ),
             const Divider(height: AppSpacing.xl),
           ],
           Text('Tỷ lệ đạm, béo, bột đường', style: t.titleMedium),
           const SizedBox(height: AppSpacing.xs),
-          Text(
-            labels.macroShareSubtitle,
-            style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-          ),
+          Text(labels.macroShareSubtitle, style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
           const SizedBox(height: AppSpacing.md),
           if (!hasFood)
-            Text(
-              'Chưa ghi bữa ăn nào hôm nay.',
-              style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-            )
+            Text('Chưa ghi bữa ăn nào hôm nay.', style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant))
           else ...[
             if (hideCalories) ...[
-              LayoutBuilder(builder: (context, constraints) {
-                final stackCols = textScale >= 1.3 || constraints.maxWidth < 300;
-                final pills = [
-                  for (final m in r.macros)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.sm,
-                      ),
-                      decoration: BoxDecoration(
-                        color: ww.subtleSurface,
-                        borderRadius: AppRadius.controlRadius,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            macroLabel(m.macro),
-                            style: t.labelMedium?.copyWith(color: cs.onSurfaceVariant),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '${m.percentEnergy.round()}%',
-                            style: tabularNumberStyle(
-                              t.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final stackCols = textScale >= 1.3 || constraints.maxWidth < 300;
+                  final pills = [
+                    for (final m in r.macros)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                        decoration: BoxDecoration(color: ww.subtleSurface, borderRadius: AppRadius.controlRadius),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(macroLabel(m.macro), style: t.labelMedium?.copyWith(color: cs.onSurfaceVariant)),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${m.percentEnergy.round()}%',
+                              style: tabularNumberStyle(t.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                ];
-                if (stackCols) {
-                  return Wrap(spacing: AppSpacing.sm, runSpacing: AppSpacing.sm, children: pills);
-                }
-                return Row(
-                  children: [
-                    for (var i = 0; i < pills.length; i++) ...[
-                      if (i > 0) const SizedBox(width: AppSpacing.sm),
-                      Expanded(child: pills[i]),
+                  ];
+                  if (stackCols) {
+                    return Wrap(spacing: AppSpacing.sm, runSpacing: AppSpacing.sm, children: pills);
+                  }
+                  return Row(
+                    children: [
+                      for (var i = 0; i < pills.length; i++) ...[
+                        if (i > 0) const SizedBox(width: AppSpacing.sm),
+                        Expanded(child: pills[i]),
+                      ],
                     ],
-                  ],
-                );
-              }),
+                  );
+                },
+              ),
               const SizedBox(height: AppSpacing.md),
             ],
             for (final m in r.macros) _MacroRow(share: m),
@@ -734,11 +654,7 @@ class _StatLine extends StatelessWidget {
         Text(label, style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 200),
-          child: Text(
-            value,
-            key: ValueKey(value),
-            style: tabularNumberStyle(t.titleMedium),
-          ),
+          child: Text(value, key: ValueKey(value), style: tabularNumberStyle(t.titleMedium)),
         ),
       ],
     );
@@ -775,26 +691,48 @@ class _MacroRow extends StatelessWidget {
       minPercent: s.amdr.min,
       maxPercent: s.amdr.max,
       activeColor: macroColor,
-      semanticsLabel: '${macroLabel(s.macro)} $pctText, khoảng khuyến nghị ${s.amdr.min.round()} đến ${s.amdr.max.round()}%, $note',
+      semanticsLabel:
+          '${macroLabel(s.macro)} $pctText, khoảng khuyến nghị ${s.amdr.min.round()} đến ${s.amdr.max.round()}%, $note',
     );
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-      child: LayoutBuilder(builder: (context, constraints) {
-        final narrowOrLargeText = textScale >= 1.3 || constraints.maxWidth < 340;
-        if (narrowOrLargeText) {
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final narrowOrLargeText = textScale >= 1.3 || constraints.maxWidth < 340;
+          if (narrowOrLargeText) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: 2,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text('${macroLabel(s.macro)} $pctText', style: tabularNumberStyle(t.bodyMedium)),
+                    Text(rangeNote, style: tabularNumberStyle(t.bodySmall?.copyWith(color: cs.onSurfaceVariant))),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                bar,
+              ],
+            );
+          }
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: 2,
-                crossAxisAlignment: WrapCrossAlignment.center,
+              Row(
                 children: [
-                  Text('${macroLabel(s.macro)} $pctText', style: tabularNumberStyle(t.bodyMedium)),
-                  Text(
-                    rangeNote,
-                    style: tabularNumberStyle(t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                  Text(macroLabel(s.macro), style: t.bodyMedium),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(pctText, style: tabularNumberStyle(t.bodyMedium?.copyWith(fontWeight: FontWeight.w600))),
+                  const Spacer(),
+                  Flexible(
+                    child: Text(
+                      rangeNote,
+                      textAlign: TextAlign.right,
+                      style: tabularNumberStyle(t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                    ),
                   ),
                 ],
               ),
@@ -802,35 +740,8 @@ class _MacroRow extends StatelessWidget {
               bar,
             ],
           );
-        }
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(macroLabel(s.macro), style: t.bodyMedium),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  pctText,
-                  style: tabularNumberStyle(
-                    t.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-                  ),
-                ),
-                const Spacer(),
-                Flexible(
-                  child: Text(
-                    rangeNote,
-                    textAlign: TextAlign.right,
-                    style: tabularNumberStyle(t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            bar,
-          ],
-        );
-      }),
+        },
+      ),
     );
   }
 }
@@ -857,16 +768,12 @@ class _SugarCard extends StatelessWidget {
           ResponsiveStatRow(
             leading: Text(
               'Đường bổ sung',
-              style: t.titleSmall?.copyWith(
-                color: hasOverMeal ? ww.onWarningContainer : cs.onSurface,
-              ),
+              style: t.titleSmall?.copyWith(color: hasOverMeal ? ww.onWarningContainer : cs.onSurface),
             ),
             trailing: Text(
               '${fmt(sugar.addedSugarG)} g · ~${sugar.percentEnergy.round()}%',
               style: tabularNumberStyle(
-                t.titleSmall?.copyWith(
-                  color: hasOverMeal ? ww.onWarningContainer : cs.onSurface,
-                ),
+                t.titleSmall?.copyWith(color: hasOverMeal ? ww.onWarningContainer : cs.onSurface),
               ),
             ),
           ),
@@ -877,19 +784,13 @@ class _SugarCard extends StatelessWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.only(top: 2),
-                  child: Icon(
-                    LucideIcons.triangleAlert,
-                    size: 16,
-                    color: ww.onWarningContainer,
-                  ),
+                  child: Icon(LucideIcons.triangleAlert, size: 16, color: ww.onWarningContainer),
                 ),
                 const SizedBox(width: AppSpacing.xs),
                 Expanded(
                   child: Text(
                     'Bữa ${mealLabel(a.meal)}: ${fmt(a.grams)} g, vượt ${fmt(maxMeal)} g mỗi bữa.',
-                    style: tabularNumberStyle(
-                      t.bodySmall?.copyWith(color: ww.onWarningContainer),
-                    ),
+                    style: tabularNumberStyle(t.bodySmall?.copyWith(color: ww.onWarningContainer)),
                   ),
                 ),
               ],
@@ -899,9 +800,7 @@ class _SugarCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.xs),
             Text(
               'Chưa tính đường bổ sung của ${sugar.unknownSugarFoods.length} món (nhãn không ghi riêng).',
-              style: t.bodySmall?.copyWith(
-                color: hasOverMeal ? ww.onWarningContainer : cs.onSurfaceVariant,
-              ),
+              style: t.bodySmall?.copyWith(color: hasOverMeal ? ww.onWarningContainer : cs.onSurfaceVariant),
             ),
           ],
         ],
@@ -956,12 +855,7 @@ class _NutrientRow extends StatelessWidget {
   final bool overLimit;
   final VoidCallback onTap;
 
-  const _NutrientRow({
-    required this.status,
-    required this.def,
-    required this.overLimit,
-    required this.onTap,
-  });
+  const _NutrientRow({required this.status, required this.def, required this.overLimit, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -1017,10 +911,10 @@ class _UlBanner extends StatelessWidget {
   const _UlBanner({required this.flags, required this.pack});
 
   String _scope(UlScope s) => switch (s) {
-        UlScope.total => 'tính mọi nguồn',
-        UlScope.supplement => 'chỉ tính từ thuốc, thực phẩm bổ sung',
-        UlScope.synthetic => 'chỉ tính dạng tổng hợp (bổ sung, thực phẩm tăng cường)',
-      };
+    UlScope.total => 'tính mọi nguồn',
+    UlScope.supplement => 'chỉ tính từ thuốc, thực phẩm bổ sung',
+    UlScope.synthetic => 'chỉ tính dạng tổng hợp (bổ sung, thực phẩm tăng cường)',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -1040,10 +934,7 @@ class _UlBanner extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Vượt giới hạn an toàn',
-                  style: t.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: ww.onWarningContainer,
-                  ),
+                  style: t.titleSmall?.copyWith(fontWeight: FontWeight.w600, color: ww.onWarningContainer),
                 ),
               ),
             ],
@@ -1055,9 +946,7 @@ class _UlBanner extends StatelessWidget {
               '${unitLabel(pack.nutrients[f.nutrientId]!.unit)}'
               '${f.isSevenDayAverage ? ' (trung bình ${f.dayCount} ngày)' : ''}, ${_scope(f.scope)}'
               ' · Vượt ${fmt(f.excess)} (${f.percentOver.round()}%).',
-              style: tabularNumberStyle(
-                t.bodyMedium?.copyWith(color: ww.onWarningContainer),
-              ),
+              style: tabularNumberStyle(t.bodyMedium?.copyWith(color: ww.onWarningContainer)),
             ),
             const SizedBox(height: 2),
           ],

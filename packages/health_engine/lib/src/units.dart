@@ -39,26 +39,15 @@ class ConvertedIntakeLine {
   final bool uncertain;
   final NotComputedReason? amountsNotComputed;
 
-  const ConvertedIntakeLine({
-    required this.amounts,
-    this.ulAmounts,
-    this.uncertain = false,
-    this.amountsNotComputed,
-  });
+  const ConvertedIntakeLine({required this.amounts, this.ulAmounts, this.uncertain = false, this.amountsNotComputed});
 }
 
-const _metricFactorToUg = <LabelUnit, double>{
-  LabelUnit.g: 1000000,
-  LabelUnit.mg: 1000,
-  LabelUnit.ug: 1,
-};
+const _metricFactorToUg = <LabelUnit, double>{LabelUnit.g: 1000000, LabelUnit.mg: 1000, LabelUnit.ug: 1};
 
 class UnitConverter {
   final ReferencePack _pack;
   final Map<String, double> _c;
-  UnitConverter(ReferencePack pack)
-      : _pack = pack,
-        _c = pack.unitConversions;
+  UnitConverter(ReferencePack pack) : _pack = pack, _c = pack.unitConversions;
 
   /// Vitamin D: IU → µg.
   double vitDIuToUg(double iu) => iu * _c['vitD_IU_to_ug']!;
@@ -67,20 +56,15 @@ class UnitConverter {
   double vitARetinolIuToUgRae(double iu) => iu * _c['vitA_retinol_IU_to_ug_RAE']!;
 
   /// Beta-caroten trong thực phẩm bổ sung: IU → µg RAE.
-  double vitABetaCaroteneSupplementIuToUgRae(double iu) =>
-      iu * _c['vitA_supplemental_betacarotene_IU_to_ug_RAE']!;
+  double vitABetaCaroteneSupplementIuToUgRae(double iu) => iu * _c['vitA_supplemental_betacarotene_IU_to_ug_RAE']!;
 
   /// Vitamin E: IU → mg alpha-tocopherol cho RDA, theo dạng tự nhiên (d-) hay tổng hợp (dl-).
-  double vitEIuToMg(double iu, VitaminEForm form) => iu *
-      (form == VitaminEForm.natural
-          ? _c['vitE_natural_IU_to_mg']!
-          : _c['vitE_synthetic_IU_to_mg']!);
+  double vitEIuToMg(double iu, VitaminEForm form) =>
+      iu * (form == VitaminEForm.natural ? _c['vitE_natural_IU_to_mg']! : _c['vitE_synthetic_IU_to_mg']!);
 
   /// Vitamin E: IU → mg alpha-tocopherol cho UL.
-  double vitEIuToUlMg(double iu, VitaminEForm form) => iu *
-      (form == VitaminEForm.natural
-          ? _c['vitE_ul_natural_IU_to_mg']!
-          : _c['vitE_ul_synthetic_IU_to_mg']!);
+  double vitEIuToUlMg(double iu, VitaminEForm form) =>
+      iu * (form == VitaminEForm.natural ? _c['vitE_ul_natural_IU_to_mg']! : _c['vitE_ul_synthetic_IU_to_mg']!);
 
   /// Axit folic (µg) → µg DFE.
   double folicAcidToDfe(double ug) => ug * _c['folicAcid_ug_to_ug_DFE']!;
@@ -113,15 +97,15 @@ class UnitConverter {
     }
     if (input.secondaryFolicAcidUg != null && input.secondaryFolicAcidUg! < 0) {
       throw ArgumentError.value(
-          input.secondaryFolicAcidUg, 'secondaryFolicAcidUg', 'Lượng axit folic phụ không được âm');
+        input.secondaryFolicAcidUg,
+        'secondaryFolicAcidUg',
+        'Lượng axit folic phụ không được âm',
+      );
     }
     final nid = input.nutrientId;
     final def = nid == null ? null : _pack.nutrients[nid];
     if (nid == null || def == null) {
-      return const ConvertedIntakeLine(
-        amounts: {},
-        amountsNotComputed: NotComputedReason.missingNutrientInPack,
-      );
+      return const ConvertedIntakeLine(amounts: {}, amountsNotComputed: NotComputedReason.missingNutrientInPack);
     }
 
     final form = input.form;
@@ -155,9 +139,7 @@ class UnitConverter {
     // 4–8. Vitamin A
     if (nid == 'vitA') {
       if (form == NutrientForm.retinol) {
-        final rae = unit == LabelUnit.iu
-            ? vitARetinolIuToUgRae(amt)
-            : _toTargetUnit(amt, unit, 'ug_RAE');
+        final rae = unit == LabelUnit.iu ? vitARetinolIuToUgRae(amt) : _toTargetUnit(amt, unit, 'ug_RAE');
         return ConvertedIntakeLine(amounts: {'vitA': rae, 'retinol': rae});
       }
       if (form == NutrientForm.betaCarotene) {
@@ -217,10 +199,7 @@ class UnitConverter {
     if (input.compoundKind == CompoundKind.compound) {
       final ratio = _pack.compounds[nid]?[form];
       if (ratio == null) {
-        return const ConvertedIntakeLine(
-          amounts: {},
-          amountsNotComputed: NotComputedReason.missingCompoundRatio,
-        );
+        return const ConvertedIntakeLine(amounts: {}, amountsNotComputed: NotComputedReason.missingCompoundRatio);
       }
       return ConvertedIntakeLine(amounts: {nid: stdVal * ratio});
     }
@@ -235,11 +214,7 @@ class UnitConverter {
         );
       }
       final minRatio = byNutrient.values.reduce(math.min);
-      return ConvertedIntakeLine(
-        amounts: {nid: stdVal * minRatio},
-        ulAmounts: {nid: stdVal},
-        uncertain: true,
-      );
+      return ConvertedIntakeLine(amounts: {nid: stdVal * minRatio}, ulAmounts: {nid: stdVal}, uncertain: true);
     }
     return ConvertedIntakeLine(amounts: {nid: stdVal});
   }
@@ -262,10 +237,7 @@ class UnitConverter {
       if (isNatural == true) {
         final rda = vitEIuToMg(amt, VitaminEForm.natural);
         final ul = vitEIuToUlMg(amt, VitaminEForm.natural);
-        return ConvertedIntakeLine(
-          amounts: {'vitE': rda},
-          ulAmounts: (ul - rda).abs() < 1e-12 ? null : {'vitE': ul},
-        );
+        return ConvertedIntakeLine(amounts: {'vitE': rda}, ulAmounts: (ul - rda).abs() < 1e-12 ? null : {'vitE': ul});
       }
       if (isNatural == false) {
         return ConvertedIntakeLine(
@@ -294,25 +266,16 @@ class UnitConverter {
       if (esterDef.isNatural) {
         return ConvertedIntakeLine(amounts: {'vitE': tocopherolMg});
       }
-      return ConvertedIntakeLine(
-        amounts: {'vitE': tocopherolMg / eUlSyn * eRdaSyn},
-        ulAmounts: {'vitE': tocopherolMg},
-      );
+      return ConvertedIntakeLine(amounts: {'vitE': tocopherolMg / eUlSyn * eRdaSyn}, ulAmounts: {'vitE': tocopherolMg});
     }
     if (form == NutrientForm.natural2r) {
       return ConvertedIntakeLine(amounts: {'vitE': mg});
     }
     if (form == NutrientForm.synthetic2r) {
-      return ConvertedIntakeLine(
-        amounts: {'vitE': mg},
-        ulAmounts: {'vitE': mg / eRdaSyn * eUlSyn},
-      );
+      return ConvertedIntakeLine(amounts: {'vitE': mg}, ulAmounts: {'vitE': mg / eRdaSyn * eUlSyn});
     }
     if (form == NutrientForm.syntheticMass) {
-      return ConvertedIntakeLine(
-        amounts: {'vitE': mg / eUlSyn * eRdaSyn},
-        ulAmounts: {'vitE': mg},
-      );
+      return ConvertedIntakeLine(amounts: {'vitE': mg / eUlSyn * eRdaSyn}, ulAmounts: {'vitE': mg});
     }
     return ConvertedIntakeLine(
       amounts: {'vitE': mg / eUlSyn * eRdaSyn},
@@ -330,10 +293,7 @@ class UnitConverter {
     final nid = input.nutrientId;
     final def = nid == null ? null : _pack.nutrients[nid];
     if (nid == null || def == null) {
-      return const IngredientSanityResult(
-        suspectedUnitMistake: false,
-        exceedsSingleServingUl: false,
-      );
+      return const IngredientSanityResult(suspectedUnitMistake: false, exceedsSingleServingUl: false);
     }
     final line = converted ?? convertIntakeLine(input);
     final ulLimit = ulFor(_pack, profile, def.id);
@@ -342,8 +302,7 @@ class UnitConverter {
     final exceedsUl = ulLimit != null && ulVal != null && ulVal > ulLimit;
 
     var suspectedUnit = false;
-    if (def.unit == 'ug' &&
-        (input.unit == LabelUnit.mg || input.unit == LabelUnit.g)) {
+    if (def.unit == 'ug' && (input.unit == LabelUnit.mg || input.unit == LabelUnit.g)) {
       final valForCompare = ulVal ?? line.amounts[def.id] ?? 0.0;
       if (ulLimit != null) {
         suspectedUnit = valForCompare > ulLimit * 10;

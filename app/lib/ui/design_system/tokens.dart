@@ -27,9 +27,7 @@ abstract final class AppRadius {
   static const BorderRadius controlRadius = BorderRadius.all(Radius.circular(control));
   static const BorderRadius cardRadius = BorderRadius.all(Radius.circular(card));
   static const BorderRadius pillRadius = BorderRadius.all(Radius.circular(pill));
-  static const BorderRadius sheetTopRadius = BorderRadius.vertical(
-    top: Radius.circular(sheet),
-  );
+  static const BorderRadius sheetTopRadius = BorderRadius.vertical(top: Radius.circular(sheet));
 }
 
 /// Màu sắc phân lớp & ngữ nghĩa cho toàn app WholeWell (Light / Dark).
@@ -161,16 +159,12 @@ class WholeWellColors extends ThemeExtension<WholeWellColors> {
 extension WholeWellThemeContext on BuildContext {
   WholeWellColors get wwColors =>
       Theme.of(this).extension<WholeWellColors>() ??
-      (Theme.of(this).brightness == Brightness.dark
-          ? WholeWellColors.dark
-          : WholeWellColors.light);
+      (Theme.of(this).brightness == Brightness.dark ? WholeWellColors.dark : WholeWellColors.light);
 }
 
 /// Kiểu chữ số thẳng hàng cho kcal, mg, µg, %, giờ, cân nặng.
 TextStyle tabularNumberStyle(TextStyle? base) {
-  return (base ?? const TextStyle()).copyWith(
-    fontFeatures: const [FontFeature.tabularFigures()],
-  );
+  return (base ?? const TextStyle()).copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
 }
 
 /// Tạo [ThemeData] Material 3 nhất quán cho chế độ sáng và tối.
@@ -179,10 +173,7 @@ ThemeData buildWholeWellTheme(Brightness brightness) {
   final ww = isDark ? WholeWellColors.dark : WholeWellColors.light;
   final seed = isDark ? const Color(0xFF5FD4BE) : const Color(0xFF1B6B5C);
 
-  final baseScheme = ColorScheme.fromSeed(
-    seedColor: seed,
-    brightness: brightness,
-  );
+  final baseScheme = ColorScheme.fromSeed(seedColor: seed, brightness: brightness);
   final colorScheme = baseScheme.copyWith(
     surface: ww.cardSurface,
     surfaceContainerLowest: ww.cardSurface,
@@ -251,10 +242,7 @@ ThemeData buildWholeWellTheme(Brightness brightness) {
     chipTheme: baseTheme.chipTheme.copyWith(
       shape: const StadiumBorder(),
       side: BorderSide(color: ww.outlineSubtle),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
     ),
     bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: ww.cardSurface,
@@ -268,18 +256,9 @@ ThemeData buildWholeWellTheme(Brightness brightness) {
       indicatorColor: colorScheme.primaryContainer,
       elevation: 0,
     ),
-    dividerTheme: DividerThemeData(
-      color: ww.outlineSubtle,
-      thickness: 1,
-      space: 1,
-    ),
-    snackBarTheme: const SnackBarThemeData(
-      behavior: SnackBarBehavior.floating,
-    ),
-    iconTheme: IconThemeData(
-      color: colorScheme.onSurfaceVariant,
-      size: 20,
-    ),
+    dividerTheme: DividerThemeData(color: ww.outlineSubtle, thickness: 1, space: 1),
+    snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
+    iconTheme: IconThemeData(color: colorScheme.onSurfaceVariant, size: 20),
     extensions: [ww],
   );
 }

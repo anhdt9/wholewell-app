@@ -14,20 +14,14 @@ const currentSchemaVersion = 3;
 final Map<int, void Function(Database db)> defaultDbMigrations = {
   1: (db) {
     db.execute('ALTER TABLE products ADD COLUMN barcode TEXT');
-    db.execute(
-      'CREATE INDEX IF NOT EXISTS idx_products_barcode ON products (barcode) WHERE barcode IS NOT NULL',
-    );
+    db.execute('CREATE INDEX IF NOT EXISTS idx_products_barcode ON products (barcode) WHERE barcode IS NOT NULL');
   },
   2: (db) {
     db.execute(
       'ALTER TABLE settings ADD COLUMN has_breakfast INTEGER NOT NULL DEFAULT 1 CHECK (has_breakfast IN (0, 1))',
     );
-    db.execute(
-      'ALTER TABLE settings ADD COLUMN has_lunch INTEGER NOT NULL DEFAULT 1 CHECK (has_lunch IN (0, 1))',
-    );
-    db.execute(
-      'ALTER TABLE settings ADD COLUMN has_dinner INTEGER NOT NULL DEFAULT 1 CHECK (has_dinner IN (0, 1))',
-    );
+    db.execute('ALTER TABLE settings ADD COLUMN has_lunch INTEGER NOT NULL DEFAULT 1 CHECK (has_lunch IN (0, 1))');
+    db.execute('ALTER TABLE settings ADD COLUMN has_dinner INTEGER NOT NULL DEFAULT 1 CHECK (has_dinner IN (0, 1))');
     db.execute(
       'ALTER TABLE settings ADD COLUMN reminder_show_details INTEGER NOT NULL DEFAULT 0 CHECK (reminder_show_details IN (0, 1))',
     );
@@ -36,9 +30,9 @@ final Map<int, void Function(Database db)> defaultDbMigrations = {
 
 /// Các câu tạo lược đồ mới nhất (v3), chạy trong một giao dịch khi tạo CSDL mới.
 List<String> get schemaCurrent => [
-      ...schemaV1.map((s) {
-        if (s.contains('CREATE TABLE products (')) {
-          return '''
+  ...schemaV1.map((s) {
+    if (s.contains('CREATE TABLE products (')) {
+      return '''
 CREATE TABLE products (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
@@ -49,9 +43,9 @@ CREATE TABLE products (
   created_at INTEGER NOT NULL,
   archived INTEGER NOT NULL DEFAULT 0 CHECK (archived IN (0, 1))
 )''';
-        }
-        if (s.contains('CREATE TABLE settings (')) {
-          return '''
+    }
+    if (s.contains('CREATE TABLE settings (')) {
+      return '''
 CREATE TABLE settings (
   id INTEGER PRIMARY KEY CHECK (id = 1),
   hide_calories INTEGER CHECK (hide_calories IN (0, 1)),
@@ -67,11 +61,11 @@ CREATE TABLE settings (
   has_dinner INTEGER NOT NULL DEFAULT 1 CHECK (has_dinner IN (0, 1)),
   reminder_show_details INTEGER NOT NULL DEFAULT 0 CHECK (reminder_show_details IN (0, 1))
 )''';
-        }
-        return s;
-      }),
-      'CREATE INDEX IF NOT EXISTS idx_products_barcode ON products (barcode) WHERE barcode IS NOT NULL',
-    ];
+    }
+    return s;
+  }),
+  'CREATE INDEX IF NOT EXISTS idx_products_barcode ON products (barcode) WHERE barcode IS NOT NULL',
+];
 
 /// Các câu tạo lược đồ v1, chạy trong một giao dịch.
 const schemaV1 = <String>[

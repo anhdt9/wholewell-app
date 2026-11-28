@@ -9,19 +9,18 @@ class FakeDsldLibraryRepository implements DsldLibraryRepository {
   final DsldLibraryMeta meta;
   final List<DsldProductDetail> _products;
 
-  FakeDsldLibraryRepository({
-    DsldLibraryMeta? meta,
-    List<DsldProductDetail> products = const [],
-  })  : meta = meta ??
-            DsldLibraryMeta(
-              libraryVersion: 'test',
-              dsldRelease: 'test',
-              builtAt: '2026-11-26',
-              productCount: products.length,
-              factCount: products.fold(0, (s, p) => s + p.facts.length),
-              sha256: 'fake',
-            ),
-        _products = products;
+  FakeDsldLibraryRepository({DsldLibraryMeta? meta, List<DsldProductDetail> products = const []})
+    : meta =
+          meta ??
+          DsldLibraryMeta(
+            libraryVersion: 'test',
+            dsldRelease: 'test',
+            builtAt: '2026-11-26',
+            productCount: products.length,
+            factCount: products.fold(0, (s, p) => s + p.facts.length),
+            sha256: 'fake',
+          ),
+      _products = products;
 
   static Set<String> barcodeVariants(String raw) {
     final digits = raw.replaceAll(RegExp(r'\D'), '');
@@ -55,14 +54,16 @@ class FakeDsldLibraryRepository implements DsldLibraryRepository {
     for (final p in _products) {
       final hay = '${p.productName} ${p.brandName}'.toLowerCase();
       if (tokens.every(hay.contains)) {
-        out.add(DsldProductSummary(
-          dsldId: p.dsldId,
-          barcode: p.barcode,
-          productName: p.productName,
-          brandName: p.brandName,
-          servingSize: p.servingSize,
-          supplementForm: p.supplementForm,
-        ));
+        out.add(
+          DsldProductSummary(
+            dsldId: p.dsldId,
+            barcode: p.barcode,
+            productName: p.productName,
+            brandName: p.brandName,
+            servingSize: p.servingSize,
+            supplementForm: p.supplementForm,
+          ),
+        );
         if (out.length >= limit) break;
       }
     }

@@ -38,10 +38,7 @@ abstract final class LabelUnitText {
   /// Trả `null` khi chữ trống hoặc không có trong danh sách.
   static LabelUnit? parse(String? raw) {
     if (raw == null) return null;
-    final key = raw
-        .toLowerCase()
-        .replaceAll(RegExp(r'^[\s_]+|[\s_]+$'), '')
-        .replaceAll(RegExp(r'[\s_]+'), ' ');
+    final key = raw.toLowerCase().replaceAll(RegExp(r'^[\s_]+|[\s_]+$'), '').replaceAll(RegExp(r'[\s_]+'), ' ');
     if (key.isEmpty) return null;
     return _known[key];
   }

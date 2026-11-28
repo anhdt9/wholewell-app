@@ -17,8 +17,7 @@ import 'diary_controller.dart';
 export '../platform/backup_provider.dart';
 export '../platform/label_scanner.dart';
 export '../platform/notification_scheduler.dart';
-export 'db_session_controller.dart'
-    show DataStatus, DbSessionController, SessionStage, khungTamConsentVersion;
+export 'db_session_controller.dart' show DataStatus, DbSessionController, SessionStage, khungTamConsentVersion;
 export 'diary_controller.dart'
     show DayJournalData, DiaryController, DoseLogged, DoseLogOutcome, DoseNeedsExpiredChoice, FoodLogFeedback;
 export 'label_food_builder.dart';
@@ -65,17 +64,17 @@ class AppState extends ChangeNotifier {
     GoogleAuth? googleAuth,
     BackupProvider? driveBackupProvider,
     DrivePendingDeleteStore? drivePendingDeleteStore,
-  })  : _openFoodLibrary = openFoodLibrary,
-        _openDsldLibrary = openDsldLibrary,
-        _dsldLibrary = dsldLibrary,
-        ocrEngine = ocrEngine ?? MlKitOcrEngine(),
-        notificationScheduler = notificationScheduler ?? FakeNotificationScheduler(),
-        backupFileProvider = backupFileProvider ?? const AndroidBackupFileProvider(),
-        googleAuth = googleAuth ?? FakeGoogleAuth(),
-        driveBackupProvider = driveBackupProvider ?? FakeBackupProvider(),
-        drivePendingDeleteStore = drivePendingDeleteStore ?? InMemoryDrivePendingDeleteStore(),
-        session = DbSessionController(opener: opener),
-        diary = DiaryController(pack: pack, foodLibrary: foodLibrary) {
+  }) : _openFoodLibrary = openFoodLibrary,
+       _openDsldLibrary = openDsldLibrary,
+       _dsldLibrary = dsldLibrary,
+       ocrEngine = ocrEngine ?? MlKitOcrEngine(),
+       notificationScheduler = notificationScheduler ?? FakeNotificationScheduler(),
+       backupFileProvider = backupFileProvider ?? const AndroidBackupFileProvider(),
+       googleAuth = googleAuth ?? FakeGoogleAuth(),
+       driveBackupProvider = driveBackupProvider ?? FakeBackupProvider(),
+       drivePendingDeleteStore = drivePendingDeleteStore ?? InMemoryDrivePendingDeleteStore(),
+       session = DbSessionController(opener: opener),
+       diary = DiaryController(pack: pack, foodLibrary: foodLibrary) {
     session.addListener(notifyListeners);
     diary.addListener(notifyListeners);
   }
@@ -93,35 +92,35 @@ class AppState extends ChangeNotifier {
     GoogleAuth? googleAuth,
     BackupProvider? driveBackupProvider,
     DrivePendingDeleteStore? drivePendingDeleteStore,
-  })  : _openFoodLibrary = null,
-        _openDsldLibrary = null,
-        _dsldLibrary = dsldLibrary,
-        ocrEngine = ocrEngine ?? FakeOcrEngine(),
-        notificationScheduler = notificationScheduler ?? FakeNotificationScheduler(),
-        backupFileProvider = backupFileProvider ?? FakeBackupFileProvider(),
-        googleAuth = googleAuth ?? FakeGoogleAuth(),
-        driveBackupProvider = driveBackupProvider ?? FakeBackupProvider(),
-        drivePendingDeleteStore = drivePendingDeleteStore ?? InMemoryDrivePendingDeleteStore(),
-        session = DbSessionController(repo: repo, initialStatus: DataStatus.ready),
-        diary = DiaryController(pack: pack, repo: repo, foodLibrary: foodLibrary) {
+  }) : _openFoodLibrary = null,
+       _openDsldLibrary = null,
+       _dsldLibrary = dsldLibrary,
+       ocrEngine = ocrEngine ?? FakeOcrEngine(),
+       notificationScheduler = notificationScheduler ?? FakeNotificationScheduler(),
+       backupFileProvider = backupFileProvider ?? FakeBackupFileProvider(),
+       googleAuth = googleAuth ?? FakeGoogleAuth(),
+       driveBackupProvider = driveBackupProvider ?? FakeBackupProvider(),
+       drivePendingDeleteStore = drivePendingDeleteStore ?? InMemoryDrivePendingDeleteStore(),
+       session = DbSessionController(repo: repo, initialStatus: DataStatus.ready),
+       diary = DiaryController(pack: pack, repo: repo, foodLibrary: foodLibrary) {
     session.addListener(notifyListeners);
     diary.addListener(notifyListeners);
   }
 
   /// Nền tảng chưa có kho khóa: không mở, không ghi gì.
   AppState.unsupportedPlatform({required this.pack})
-      : _openFoodLibrary = null,
-        _openDsldLibrary = null,
-        _dsldLibrary = null,
-        ocrEngine = FakeOcrEngine(),
-        barcodeScanner = null,
-        notificationScheduler = FakeNotificationScheduler(),
-        backupFileProvider = FakeBackupFileProvider(),
-        googleAuth = FakeGoogleAuth(),
-        driveBackupProvider = FakeBackupProvider(),
-        drivePendingDeleteStore = InMemoryDrivePendingDeleteStore(),
-        session = DbSessionController(initialStatus: DataStatus.unsupportedPlatform),
-        diary = DiaryController(pack: pack) {
+    : _openFoodLibrary = null,
+      _openDsldLibrary = null,
+      _dsldLibrary = null,
+      ocrEngine = FakeOcrEngine(),
+      barcodeScanner = null,
+      notificationScheduler = FakeNotificationScheduler(),
+      backupFileProvider = FakeBackupFileProvider(),
+      googleAuth = FakeGoogleAuth(),
+      driveBackupProvider = FakeBackupProvider(),
+      drivePendingDeleteStore = InMemoryDrivePendingDeleteStore(),
+      session = DbSessionController(initialStatus: DataStatus.unsupportedPlatform),
+      diary = DiaryController(pack: pack) {
     session.addListener(notifyListeners);
     diary.addListener(notifyListeners);
   }
@@ -152,16 +151,18 @@ class AppState extends ChangeNotifier {
   void clearReadFailed() => diary.clearReadFailed();
 
   Future<void> start() async {
-    await session.start(onReady: () async {
-      diary.attachRepository(session.repo);
-      if (session.stage == SessionStage.ready) {
-        await diary.checkAgeBumpOnReady();
-      }
-      await _ensureFoodLibrary();
-      unawaited(_ensureDsldLibrary());
-      await diary.reload();
-      unawaited(syncNotifications());
-    });
+    await session.start(
+      onReady: () async {
+        diary.attachRepository(session.repo);
+        if (session.stage == SessionStage.ready) {
+          await diary.checkAgeBumpOnReady();
+        }
+        await _ensureFoodLibrary();
+        unawaited(_ensureDsldLibrary());
+        await diary.reload();
+        unawaited(syncNotifications());
+      },
+    );
     await _checkDriveStateAndPendingDelete();
   }
 
@@ -257,10 +258,12 @@ class AppState extends ChangeNotifier {
 
   Future<void> startOver() async {
     await notificationScheduler.syncSchedules(const []);
-    await session.startOver(onCleared: () {
-      diary.attachRepository(null);
-      diary.clear();
-    });
+    await session.startOver(
+      onCleared: () {
+        diary.attachRepository(null);
+        diary.clear();
+      },
+    );
   }
 
   /// Xóa toàn bộ dữ liệu trên máy (luôn xóa ngay), tùy chọn xóa cả bản trên Google Drive nếu đã bật.
@@ -442,8 +445,7 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<bool> grantDriveConsent(String contentVersion) =>
-      diary.grantDriveConsent(contentVersion);
+  Future<bool> grantDriveConsent(String contentVersion) => diary.grantDriveConsent(contentVersion);
 
   Future<GoogleAuthOutcome> signInGoogleDrive() async {
     final res = await googleAuth.signIn();
@@ -491,10 +493,7 @@ class AppState extends ChangeNotifier {
 
   Future<List<CloudBackupInfo>> listDriveBackups() => driveBackupProvider.listBackups();
 
-  Future<RestoreOutcome> restoreFromGoogleDrive({
-    required String backupId,
-    required String secret,
-  }) async {
+  Future<RestoreOutcome> restoreFromGoogleDrive({required String backupId, required String secret}) async {
     final bytes = await driveBackupProvider.download(backupId);
     final outcome = await restoreEncryptedBackupFile(backupBytes: bytes, secret: secret);
     if (outcome is RestoreSucceeded) {
@@ -576,10 +575,7 @@ class AppState extends ChangeNotifier {
     return saved;
   }
 
-  Future<RestoreOutcome> restoreEncryptedBackupFile({
-    required Uint8List backupBytes,
-    required String secret,
-  }) async {
+  Future<RestoreOutcome> restoreEncryptedBackupFile({required Uint8List backupBytes, required String secret}) async {
     return session.restoreFromBackup(
       backupBytes: backupBytes,
       secret: secret,

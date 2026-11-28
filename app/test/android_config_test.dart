@@ -5,8 +5,15 @@ import 'package:flutter_test/flutter_test.dart';
 // Cấu hình Android và phụ thuộc của CSDL mã hóa (docs/specs/encrypted-db.md, Tiêu chí đạt).
 void main() {
   const domains = [
-    'root', 'file', 'database', 'sharedpref', 'external',
-    'device_root', 'device_file', 'device_database', 'device_sharedpref',
+    'root',
+    'file',
+    'database',
+    'sharedpref',
+    'external',
+    'device_root',
+    'device_file',
+    'device_database',
+    'device_sharedpref',
   ];
 
   test('AndroidManifest tắt sao lưu tự động, dùng quy tắc loại khỏi sao lưu và chuyển máy', () {

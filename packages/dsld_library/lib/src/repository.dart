@@ -4,10 +4,7 @@ library;
 import 'models.dart';
 
 abstract interface class DsldLibraryAssetStore {
-  Future<String> prepareDatabaseFile({
-    required String libraryVersion,
-    required String expectedSha256,
-  });
+  Future<String> prepareDatabaseFile({required String libraryVersion, required String expectedSha256});
 }
 
 abstract interface class DsldLibraryRepository {

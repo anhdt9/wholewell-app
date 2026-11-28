@@ -114,15 +114,9 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               title: const Text('Tôi đồng ý bật thông báo nhắc giờ trên máy này'),
             ),
             const SizedBox(height: 12),
-            FilledButton(
-              onPressed: _checked && !_busy ? _enableFirstTime : null,
-              child: const Text('Bật nhắc giờ'),
-            ),
+            FilledButton(onPressed: _checked && !_busy ? _enableFirstTime : null, child: const Text('Bật nhắc giờ')),
             if (widget.firstSetupFlow)
-              TextButton(
-                onPressed: _busy ? null : () => Navigator.of(context).pop(false),
-                child: const Text('Để sau'),
-              ),
+              TextButton(onPressed: _busy ? null : () => Navigator.of(context).pop(false), child: const Text('Để sau')),
           ] else ...[
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
@@ -140,8 +134,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             if (showDetails) ...[
               const SizedBox(height: 8),
               const SafetyNote(
-                message:
-                    'Tên sản phẩm bổ sung sẽ hiển thị trên thông báo và màn hình khóa. App vẫn không hiện tên chất hay liều lượng.',
+                message: 'Tên sản phẩm bổ sung sẽ hiển thị trên thông báo và màn hình khóa. App vẫn không hiện tên chất hay liều lượng.',
               ),
             ],
           ],
@@ -160,9 +153,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           ],
           if (enabled && _hasPerm && !_exactOk) ...[
             const SizedBox(height: 12),
-            const SafetyNote(
-              message: 'Thông báo có thể đến lệch vài phút theo chế độ tiết kiệm pin.',
-            ),
+            const SafetyNote(message: 'Thông báo có thể đến lệch vài phút theo chế độ tiết kiệm pin.'),
           ],
         ],
       ),

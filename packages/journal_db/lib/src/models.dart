@@ -19,16 +19,10 @@ class HealthConsentStatus {
 }
 
 /// Tuổi, ngày nhập tuổi và câu trả lời chế độ thận trọng trong bảng `profile`.
-typedef ConsentProfileState = ({
-  int ageYears,
-  String ageEnteredOn,
-  bool caution,
-  String cautionAnsweredOn,
-});
+typedef ConsentProfileState = ({int ageYears, String ageEnteredOn, bool caution, String cautionAnsweredOn});
 
 /// Kết quả tính tự tăng tuổi theo chu kỳ 12 tháng dương lịch kể từ `age_entered_on`.
-({int newAgeYears, String newEnteredOn})? computeAgeBump(
-    int currentAge, String enteredOn, DateTime now) {
+({int newAgeYears, String newEnteredOn})? computeAgeBump(int currentAge, String enteredOn, DateTime now) {
   final parts = enteredOn.split('-');
   if (parts.length != 3) return null;
   final baseYear = int.tryParse(parts[0]);
@@ -117,16 +111,16 @@ class IntakeLine {
   });
 
   IntakeLine scaled(double f) => IntakeLine(
-        nutrientId: nutrientId,
-        freeName: freeName,
-        source: source,
-        form: form,
-        uncertain: uncertain,
-        labelAmount: labelAmount,
-        labelUnit: labelUnit,
-        amounts: {for (final e in amounts.entries) e.key: e.value * f},
-        ulAmounts: ulAmounts == null ? null : {for (final e in ulAmounts!.entries) e.key: e.value * f},
-      );
+    nutrientId: nutrientId,
+    freeName: freeName,
+    source: source,
+    form: form,
+    uncertain: uncertain,
+    labelAmount: labelAmount,
+    labelUnit: labelUnit,
+    amounts: {for (final e in amounts.entries) e.key: e.value * f},
+    ulAmounts: ulAmounts == null ? null : {for (final e in ulAmounts!.entries) e.key: e.value * f},
+  );
 }
 
 class FoodEntryInput {
@@ -290,14 +284,7 @@ class Product {
   final double unitsPerServing;
   final String? barcode;
   final bool archived;
-  const Product(
-    this.id,
-    this.name,
-    this.countUnit,
-    this.unitsPerServing, {
-    this.barcode,
-    this.archived = false,
-  });
+  const Product(this.id, this.name, this.countUnit, this.unitsPerServing, {this.barcode, this.archived = false});
 }
 
 class IngredientDraft {
@@ -361,11 +348,7 @@ class ProductDetail {
   final List<ProductIngredient> ingredients;
   final List<StockBox> boxes;
 
-  const ProductDetail({
-    required this.product,
-    required this.ingredients,
-    required this.boxes,
-  });
+  const ProductDetail({required this.product, required this.ingredients, required this.boxes});
 }
 
 class ProductSummary {
@@ -444,8 +427,7 @@ ProductSummary summarizeProduct({
     }
     dailyUnits = sum / 14.0;
   }
-  final int? daysLeft =
-      validRem > 0 && dailyUnits > 0 ? (validRem / dailyUnits).floor() : null;
+  final int? daysLeft = validRem > 0 && dailyUnits > 0 ? (validRem / dailyUnits).floor() : null;
   return ProductSummary(
     product: product,
     validRemaining: validRem,
@@ -529,20 +511,19 @@ class DayTimesSettings {
     bool? hasLunch,
     bool? hasDinner,
     bool? reminderShowDetails,
-  }) =>
-      DayTimesSettings(
-        wake: wake ?? this.wake,
-        breakfast: breakfast ?? this.breakfast,
-        lunch: lunch ?? this.lunch,
-        dinner: dinner ?? this.dinner,
-        sleep: sleep ?? this.sleep,
-        dayTimesConfirmed: dayTimesConfirmed ?? this.dayTimesConfirmed,
-        showTipCard: showTipCard ?? this.showTipCard,
-        hasBreakfast: hasBreakfast ?? this.hasBreakfast,
-        hasLunch: hasLunch ?? this.hasLunch,
-        hasDinner: hasDinner ?? this.hasDinner,
-        reminderShowDetails: reminderShowDetails ?? this.reminderShowDetails,
-      );
+  }) => DayTimesSettings(
+    wake: wake ?? this.wake,
+    breakfast: breakfast ?? this.breakfast,
+    lunch: lunch ?? this.lunch,
+    dinner: dinner ?? this.dinner,
+    sleep: sleep ?? this.sleep,
+    dayTimesConfirmed: dayTimesConfirmed ?? this.dayTimesConfirmed,
+    showTipCard: showTipCard ?? this.showTipCard,
+    hasBreakfast: hasBreakfast ?? this.hasBreakfast,
+    hasLunch: hasLunch ?? this.hasLunch,
+    hasDinner: hasDinner ?? this.hasDinner,
+    reminderShowDetails: reminderShowDetails ?? this.reminderShowDetails,
+  );
 }
 
 class WorkoutRecord {

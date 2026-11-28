@@ -25,15 +25,14 @@ class SupplementIngredientHelper {
     required double amount,
     required LabelUnit unit,
     required bool isCompound,
-  }) =>
-      IntakeLineInput(
-        nutrientId: nutrientId,
-        source: IntakeSource.supplement,
-        form: form,
-        amount: amount,
-        unit: unit,
-        compoundKind: _compoundKind(isCompound, form),
-      );
+  }) => IntakeLineInput(
+    nutrientId: nutrientId,
+    source: IntakeSource.supplement,
+    form: form,
+    amount: amount,
+    unit: unit,
+    compoundKind: _compoundKind(isCompound, form),
+  );
 
   static bool isUnitCompatible(
     ReferencePack pack, {
@@ -45,13 +44,9 @@ class SupplementIngredientHelper {
   }) {
     if (nutrientId == null || amount == null || amount <= 0) return true;
     try {
-      UnitConverter(pack).convertIntakeLine(_buildInput(
-        nutrientId: nutrientId,
-        form: form,
-        amount: amount,
-        unit: unit,
-        isCompound: isCompound,
-      ));
+      UnitConverter(pack).convertIntakeLine(
+        _buildInput(nutrientId: nutrientId, form: form, amount: amount, unit: unit, isCompound: isCompound),
+      );
       return true;
     } on ArgumentError {
       return false;
@@ -65,14 +60,9 @@ class SupplementIngredientHelper {
     required double amount,
     required LabelUnit unit,
     required bool isCompound,
-  }) =>
-      UnitConverter(pack).convertIntakeLine(_buildInput(
-        nutrientId: nutrientId,
-        form: form,
-        amount: amount,
-        unit: unit,
-        isCompound: isCompound,
-      ));
+  }) => UnitConverter(pack).convertIntakeLine(
+    _buildInput(nutrientId: nutrientId, form: form, amount: amount, unit: unit, isCompound: isCompound),
+  );
 
   static ({IngredientSanityResult sanity, bool unitIncompatible}) checkSanity(
     ReferencePack pack, {
@@ -86,31 +76,19 @@ class SupplementIngredientHelper {
     // Đơn vị trống: màn xác nhận đã hiện lời nhắc "Chưa rõ đơn vị", không kiểm thêm.
     if (nutrientId == null || amount == null || amount <= 0 || unit == null) {
       return (
-        sanity: const IngredientSanityResult(
-          suspectedUnitMistake: false,
-          exceedsSingleServingUl: false,
-        ),
+        sanity: const IngredientSanityResult(suspectedUnitMistake: false, exceedsSingleServingUl: false),
         unitIncompatible: false,
       );
     }
     try {
       final res = UnitConverter(pack).checkIngredientSanity(
         profile ?? _fallbackProfile,
-        _buildInput(
-          nutrientId: nutrientId,
-          form: form,
-          amount: amount,
-          unit: unit,
-          isCompound: isCompound,
-        ),
+        _buildInput(nutrientId: nutrientId, form: form, amount: amount, unit: unit, isCompound: isCompound),
       );
       return (sanity: res, unitIncompatible: false);
     } on ArgumentError {
       return (
-        sanity: const IngredientSanityResult(
-          suspectedUnitMistake: false,
-          exceedsSingleServingUl: false,
-        ),
+        sanity: const IngredientSanityResult(suspectedUnitMistake: false, exceedsSingleServingUl: false),
         unitIncompatible: true,
       );
     }
@@ -176,14 +154,14 @@ class SupplementIngredientHelper {
   /// Đơn vị nhãn tương ứng đơn vị chuẩn của chất trong gói; `null` khi không có (vd. `L`).
   /// Không có giá trị mặc định: chất trả `null` không được nhập theo đơn vị chuẩn.
   static LabelUnit? labelUnitForPackUnit(String packUnit) => switch (packUnit) {
-        'g' => LabelUnit.g,
-        'mg' => LabelUnit.mg,
-        'ug' => LabelUnit.ug,
-        'ug_RAE' => LabelUnit.ugRae,
-        'ug_DFE' => LabelUnit.ugDfe,
-        'mg_NE' => LabelUnit.mgNe,
-        _ => null,
-      };
+    'g' => LabelUnit.g,
+    'mg' => LabelUnit.mg,
+    'ug' => LabelUnit.ug,
+    'ug_RAE' => LabelUnit.ugRae,
+    'ug_DFE' => LabelUnit.ugDfe,
+    'mg_NE' => LabelUnit.mgNe,
+    _ => null,
+  };
 
   static IntakeLine? toOneOffIntakeLine(
     ReferencePack pack, {

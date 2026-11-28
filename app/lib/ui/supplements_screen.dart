@@ -57,9 +57,7 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
   }
 
   Future<void> _addProduct() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const ScanProductScreen()),
-    );
+    await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const ScanProductScreen()));
     await _load();
   }
 
@@ -96,18 +94,10 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
       );
     }
     if (_error != null) {
-      return ErrorState(
-        message: 'Không tải được danh sách sản phẩm.',
-        actionLabel: 'Thử lại',
-        onAction: _load,
-      );
+      return ErrorState(message: 'Không tải được danh sách sản phẩm.', actionLabel: 'Thử lại', onAction: _load);
     }
     if (_items.isEmpty) {
-      return EmptyState(
-        message: 'Chưa có sản phẩm bổ sung nào.',
-        actionLabel: 'Thêm sản phẩm',
-        onAction: _addProduct,
-      );
+      return EmptyState(message: 'Chưa có sản phẩm bổ sung nào.', actionLabel: 'Thêm sản phẩm', onAction: _addProduct);
     }
 
     final diary = AppScope.of(context).diary;
@@ -140,16 +130,19 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                   : Text(
                       [
                         for (final s in schedules)
-                          '${occMap[s.id]?.status == OccurrenceStatus.taken ? "✓" : occMap[s.id]?.status == OccurrenceStatus.skipped ? "—" : "○"} ${formatMinutesHhMm(s.timeOfDay)} ${prodMap[s.productId]?.name ?? ""}',
+                          '${occMap[s.id]?.status == OccurrenceStatus.taken
+                              ? "✓"
+                              : occMap[s.id]?.status == OccurrenceStatus.skipped
+                              ? "—"
+                              : "○"} ${formatMinutesHhMm(s.timeOfDay)} ${prodMap[s.productId]?.name ?? ""}',
                       ].join(' · '),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: tabularNumberStyle(t.bodySmall),
                     ),
               trailing: const Icon(LucideIcons.chevronRight),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen()),
-              ),
+              onTap: () =>
+                  Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const TodayDosesScreen())),
             ),
           ),
           Text('Kho', style: t.titleMedium),
@@ -160,134 +153,116 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
             child: Column(
               children: [
                 for (var i = 0; i < _items.length; i++) ...[
-                  if (i > 0)
-                    Divider(
-                      height: 1,
-                      color: ww.outlineSubtle.withValues(alpha: 0.5),
-                    ),
-                  Builder(builder: (ctx) {
-                    final s = _items[i];
-                    final p = s.product;
-                    final u = countUnitLabel(p.countUnit);
-                    final hasUl = schedFlags.isNotEmpty &&
-                        schedules.any((sc) => sc.productId == p.id);
-                    final hasNotice = schedNotices.any((n) => n.productIds.contains(p.id));
-                    final ratio = _stockBarRatio(s);
-                    final barColor = s.isLowStock || s.validRemaining <= 0
-                        ? ww.warningBorder
-                        : ww.foodSource;
+                  if (i > 0) Divider(height: 1, color: ww.outlineSubtle.withValues(alpha: 0.5)),
+                  Builder(
+                    builder: (ctx) {
+                      final s = _items[i];
+                      final p = s.product;
+                      final u = countUnitLabel(p.countUnit);
+                      final hasUl = schedFlags.isNotEmpty && schedules.any((sc) => sc.productId == p.id);
+                      final hasNotice = schedNotices.any((n) => n.productIds.contains(p.id));
+                      final ratio = _stockBarRatio(s);
+                      final barColor = s.isLowStock || s.validRemaining <= 0 ? ww.warningBorder : ww.foodSource;
 
-                    return InkWell(
-                      onTap: () async {
-                        await Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => ProductDetailScreen(productId: p.id),
-                          ),
-                        );
-                        await _load();
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppSpacing.lg),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: ResponsiveStatRow(
-                                    leading: Text(p.name, style: t.titleSmall),
-                                    trailing: Text(
-                                      s.validRemaining > 0
-                                          ? 'Còn ${fmt(s.validRemaining)} $u'
-                                          : 'Kho đã hết',
-                                      style: tabularNumberStyle(
-                                        t.bodyMedium?.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          color: s.validRemaining <= 0
-                                              ? cs.error
-                                              : cs.onSurface,
+                      return InkWell(
+                        onTap: () async {
+                          await Navigator.of(context)
+                              .push(MaterialPageRoute<void>(builder: (_) => ProductDetailScreen(productId: p.id)));
+                          await _load();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: ResponsiveStatRow(
+                                      leading: Text(p.name, style: t.titleSmall),
+                                      trailing: Text(
+                                        s.validRemaining > 0 ? 'Còn ${fmt(s.validRemaining)} $u' : 'Kho đã hết',
+                                        style: tabularNumberStyle(
+                                          t.bodyMedium?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                            color: s.validRemaining <= 0 ? cs.error : cs.onSurface,
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: AppSpacing.xs),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 2),
-                                  child: Icon(
-                                    LucideIcons.chevronRight,
-                                    size: 18,
-                                    color: cs.onSurfaceVariant,
+                                  const SizedBox(width: AppSpacing.xs),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: Icon(LucideIcons.chevronRight, size: 18, color: cs.onSurfaceVariant),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: AppSpacing.sm),
-                            Semantics(
-                              label: s.validRemaining > 0
-                                  ? 'Còn ${fmt(s.validRemaining)} $u'
-                                  : 'Kho đã hết',
-                              child: ClipRRect(
-                                borderRadius: AppRadius.pillRadius,
-                                child: LinearProgressIndicator(
-                                  value: ratio,
-                                  minHeight: 4,
-                                  backgroundColor: ww.subtleSurface,
-                                  valueColor: AlwaysStoppedAnimation<Color>(barColor),
-                                ),
-                              ),
-                            ),
-                            if (s.isLowStock ||
-                                s.nearestExpiryMonth != null ||
-                                s.expiredRemaining > 0 ||
-                                hasNotice ||
-                                hasUl) ...[
-                              const SizedBox(height: AppSpacing.sm),
-                              Wrap(
-                                spacing: AppSpacing.xs,
-                                runSpacing: AppSpacing.xs,
-                                children: [
-                                  if (s.isLowStock)
-                                    _StockStatusPill(
-                                      label: 'Sắp hết',
-                                      backgroundColor: ww.warningContainer,
-                                      foregroundColor: ww.onWarningContainer,
-                                      borderColor: ww.warningBorder,
-                                    ),
-                                  if (s.nearestExpiryMonth != null)
-                                    _StockStatusPill(
-                                      label: 'HSD ${fmtExpiryMonth(s.nearestExpiryMonth!)}',
-                                      backgroundColor: ww.subtleSurface,
-                                      foregroundColor: cs.onSurfaceVariant,
-                                    ),
-                                  if (s.expiredRemaining > 0)
-                                    _StockStatusPill(
-                                      label: 'Đã hết hạn: ${fmt(s.expiredRemaining)} $u',
-                                      backgroundColor: cs.errorContainer,
-                                      foregroundColor: cs.onErrorContainer,
-                                    ),
-                                  if (hasNotice)
-                                    _StockStatusPill(
-                                      label: 'Lưu ý lịch',
-                                      backgroundColor: ww.subtleSurface,
-                                      foregroundColor: cs.onSurfaceVariant,
-                                    ),
-                                  if (hasUl)
-                                    _StockStatusPill(
-                                      label: 'Lịch vượt giới hạn',
-                                      backgroundColor: ww.warningContainer,
-                                      foregroundColor: ww.onWarningContainer,
-                                      borderColor: ww.warningBorder,
-                                    ),
                                 ],
                               ),
+                              const SizedBox(height: AppSpacing.sm),
+                              Semantics(
+                                label: s.validRemaining > 0 ? 'Còn ${fmt(s.validRemaining)} $u' : 'Kho đã hết',
+                                child: ClipRRect(
+                                  borderRadius: AppRadius.pillRadius,
+                                  child: LinearProgressIndicator(
+                                    value: ratio,
+                                    minHeight: 4,
+                                    backgroundColor: ww.subtleSurface,
+                                    valueColor: AlwaysStoppedAnimation<Color>(barColor),
+                                  ),
+                                ),
+                              ),
+                              if (s.isLowStock ||
+                                  s.nearestExpiryMonth != null ||
+                                  s.expiredRemaining > 0 ||
+                                  hasNotice ||
+                                  hasUl) ...[
+                                const SizedBox(height: AppSpacing.sm),
+                                Wrap(
+                                  spacing: AppSpacing.xs,
+                                  runSpacing: AppSpacing.xs,
+                                  children: [
+                                    if (s.isLowStock)
+                                      _StockStatusPill(
+                                        label: 'Sắp hết',
+                                        backgroundColor: ww.warningContainer,
+                                        foregroundColor: ww.onWarningContainer,
+                                        borderColor: ww.warningBorder,
+                                      ),
+                                    if (s.nearestExpiryMonth != null)
+                                      _StockStatusPill(
+                                        label: 'HSD ${fmtExpiryMonth(s.nearestExpiryMonth!)}',
+                                        backgroundColor: ww.subtleSurface,
+                                        foregroundColor: cs.onSurfaceVariant,
+                                      ),
+                                    if (s.expiredRemaining > 0)
+                                      _StockStatusPill(
+                                        label: 'Đã hết hạn: ${fmt(s.expiredRemaining)} $u',
+                                        backgroundColor: cs.errorContainer,
+                                        foregroundColor: cs.onErrorContainer,
+                                      ),
+                                    if (hasNotice)
+                                      _StockStatusPill(
+                                        label: 'Lưu ý lịch',
+                                        backgroundColor: ww.subtleSurface,
+                                        foregroundColor: cs.onSurfaceVariant,
+                                      ),
+                                    if (hasUl)
+                                      _StockStatusPill(
+                                        label: 'Lịch vượt giới hạn',
+                                        backgroundColor: ww.warningContainer,
+                                        foregroundColor: ww.onWarningContainer,
+                                        borderColor: ww.warningBorder,
+                                      ),
+                                  ],
+                                ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
-                      ),
-                    );
-                  }),
+                      );
+                    },
+                  ),
                 ],
               ],
             ),
@@ -329,12 +304,7 @@ class _StockStatusPill extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: tabularNumberStyle(
-          t.labelSmall?.copyWith(
-            color: foregroundColor,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+        style: tabularNumberStyle(t.labelSmall?.copyWith(color: foregroundColor, fontWeight: FontWeight.w500)),
       ),
     );
   }
@@ -377,9 +347,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
   String? _lastLiveCode;
 
   bool get _useLiveMobileScanner =>
-      !kIsWeb &&
-      (defaultTargetPlatform == TargetPlatform.android ||
-          defaultTargetPlatform == TargetPlatform.iOS);
+      !kIsWeb && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS);
 
   Future<void> _handleBarcode(String code) async {
     final trimmed = code.trim();
@@ -392,9 +360,8 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
       if (found != null) {
         setState(() => _busy = false);
         AppFeedback.showSnack(context, 'Đã tìm thấy sản phẩm đã lưu.');
-        await Navigator.of(context).pushReplacement(
-          MaterialPageRoute<void>(builder: (_) => ProductDetailScreen(productId: found.id)),
-        );
+        await Navigator.of(context)
+            .pushReplacement(MaterialPageRoute<void>(builder: (_) => ProductDetailScreen(productId: found.id)));
         return;
       }
 
@@ -460,10 +427,12 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
                     return ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: Text(m.productName),
-                      subtitle: Text([
-                        if (m.brandName.isNotEmpty) m.brandName,
-                        if (m.servingSize.isNotEmpty) m.servingSize,
-                      ].join(' · ')),
+                      subtitle: Text(
+                        [
+                          if (m.brandName.isNotEmpty) m.brandName,
+                          if (m.servingSize.isNotEmpty) m.servingSize,
+                        ].join(' · '),
+                      ),
                       trailing: const Icon(LucideIcons.chevronRight),
                       onTap: () => Navigator.pop(ctx, m),
                     );
@@ -473,10 +442,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
               const SizedBox(height: 8),
               Align(
                 alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Đóng'),
-                ),
+                child: TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Đóng')),
               ),
             ],
           ),
@@ -513,9 +479,8 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
   }
 
   Future<void> _openDsldSearch() async {
-    final detail = await Navigator.of(context).push<DsldProductDetail>(
-      MaterialPageRoute<DsldProductDetail>(builder: (_) => const DsldSearchScreen()),
-    );
+    final detail = await Navigator.of(context)
+        .push<DsldProductDetail>(MaterialPageRoute<DsldProductDetail>(builder: (_) => const DsldSearchScreen()));
     if (detail != null && mounted) {
       _openDsldProduct(detail);
     }
@@ -581,7 +546,8 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
         _scannerPaused = false;
         _cameraDenied = false;
         _imagePaths.addAll(picked.paths);
-        _statusMsg = 'Đã thêm ${picked.paths.length} ảnh (tổng ${_imagePaths.length}). Có thể chụp thêm mặt khác rồi bấm Đọc thông tin.';
+        _statusMsg =
+            'Đã thêm ${picked.paths.length} ảnh (tổng ${_imagePaths.length}). Có thể chụp thêm mặt khác rồi bấm Đọc thông tin.';
       });
     } on Object {
       if (mounted) {
@@ -646,10 +612,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
       final pkg = ai == null ? parsed : SupplementLabelParser.crossCheckAi(ai, parsed, ocr.lines);
       if (!mounted) return;
       setState(() => _busy = false);
-      _openConfirm(
-        [for (final p in pkg.ingredients) EditableIngredient.fromParsed(p)],
-        pkg: pkg,
-      );
+      _openConfirm([for (final p in pkg.ingredients) EditableIngredient.fromParsed(p)], pkg: pkg);
     } on Object {
       if (mounted) {
         setState(() {
@@ -733,12 +696,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
               height: 110,
               child: SurfaceCard(
                 color: Colors.transparent,
-                child: Center(
-                  child: Text(
-                    ScanProductScreen.scanHint,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+                child: Center(child: Text(ScanProductScreen.scanHint, textAlign: TextAlign.center)),
               ),
             ),
           const SizedBox(height: 12),
@@ -752,10 +710,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
             const SizedBox(height: 12),
           ],
           if (_barcode != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text('Mã vạch đã quét: $_barcode'),
-            ),
+            Padding(padding: const EdgeInsets.only(bottom: 8), child: Text('Mã vạch đã quét: $_barcode')),
           if (_imagePaths.isNotEmpty) ...[
             Text('Ảnh đã chọn (${_imagePaths.length})', style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 4),
@@ -823,10 +778,7 @@ class _ScanProductScreenState extends State<ScanProductScreen> {
             label: Text(_imagePaths.isEmpty ? 'Chọn ảnh từ thư viện' : 'Chọn thêm ảnh từ thư viện'),
           ),
           const SizedBox(height: 8),
-          TextButton(
-            onPressed: _busy ? null : () => _openConfirm(const []),
-            child: const Text('Nhập tay từng dòng'),
-          ),
+          TextButton(onPressed: _busy ? null : () => _openConfirm(const []), child: const Text('Nhập tay từng dòng')),
         ],
       ),
     );

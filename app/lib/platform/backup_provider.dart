@@ -14,11 +14,7 @@ class PickedBackupFile {
 /// Giao diện chọn/lưu tệp qua bộ chọn của hệ thống (Android SAF; không cần quyền bộ nhớ).
 abstract interface class BackupFileProvider {
   /// Mở bộ chọn nơi lưu tệp. Trả về tên tệp đã lưu, hoặc `null` nếu người dùng hủy.
-  Future<String?> saveFile({
-    required String suggestedName,
-    required String mimeType,
-    required Uint8List bytes,
-  });
+  Future<String?> saveFile({required String suggestedName, required String mimeType, required Uint8List bytes});
 
   /// Mở bộ chọn tệp để đọc bản sao lưu. Trả về `null` nếu người dùng hủy.
   Future<PickedBackupFile?> pickFile();
@@ -31,11 +27,7 @@ class AndroidBackupFileProvider implements BackupFileProvider {
   const AndroidBackupFileProvider();
 
   @override
-  Future<String?> saveFile({
-    required String suggestedName,
-    required String mimeType,
-    required Uint8List bytes,
-  }) async {
+  Future<String?> saveFile({required String suggestedName, required String mimeType, required Uint8List bytes}) async {
     return _channel.invokeMethod<String>('saveFile', <String, Object?>{
       'suggestedName': suggestedName,
       'mimeType': mimeType,
@@ -61,12 +53,7 @@ class SavedFakeFile {
   final Uint8List bytes;
   final String returnedName;
 
-  SavedFakeFile({
-    required this.suggestedName,
-    required this.mimeType,
-    required this.bytes,
-    required this.returnedName,
-  });
+  SavedFakeFile({required this.suggestedName, required this.mimeType, required this.bytes, required this.returnedName});
 }
 
 /// Bản giả cho test `BackupFileProvider`.
@@ -79,11 +66,7 @@ class FakeBackupFileProvider implements BackupFileProvider {
   final List<SavedFakeFile> savedFiles = [];
 
   @override
-  Future<String?> saveFile({
-    required String suggestedName,
-    required String mimeType,
-    required Uint8List bytes,
-  }) async {
+  Future<String?> saveFile({required String suggestedName, required String mimeType, required Uint8List bytes}) async {
     if (saveError != null) Error.throwWithStackTrace(saveError!, StackTrace.current);
     if (cancelSave) return null;
     final name = nextSaveName ?? suggestedName;
@@ -254,12 +237,7 @@ class FakeBackupProvider implements BackupProvider {
   Object? errorOnDelete;
   int deleteAllCalls = 0;
 
-  void seedBackup({
-    required Uint8List bytes,
-    DateTime? modifiedAt,
-    String? id,
-    String? name,
-  }) {
+  void seedBackup({required Uint8List bytes, DateTime? modifiedAt, String? id, String? name}) {
     final idx = _seq++;
     final info = CloudBackupInfo(
       id: id ?? 'fake-cloud-$idx',
@@ -304,10 +282,7 @@ class FakeBackupProvider implements BackupProvider {
   @override
   Future<Uint8List> download(String id) async {
     if (errorOnDownload != null) Error.throwWithStackTrace(errorOnDownload!, StackTrace.current);
-    final rec = _records.cast<_FakeBackupRecord?>().firstWhere(
-          (r) => r?.info.id == id,
-          orElse: () => null,
-        );
+    final rec = _records.cast<_FakeBackupRecord?>().firstWhere((r) => r?.info.id == id, orElse: () => null);
     if (rec == null) throw StateError('No cloud backup with id $id');
     return Uint8List.fromList(rec.bytes);
   }

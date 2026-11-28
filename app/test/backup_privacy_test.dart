@@ -29,12 +29,8 @@ void main() {
     pack = ReferencePack.fromJsonString(packFile.readAsStringSync());
   });
 
-  DbOpener makeOpener(Directory dir, FakeSecureKeyStore keys) => DbOpener(
-        files: DbFiles(dir),
-        keys: keys,
-        executorFactory: sameIsolateExecutor,
-        retryDelay: Duration.zero,
-      );
+  DbOpener makeOpener(Directory dir, FakeSecureKeyStore keys) =>
+      DbOpener(files: DbFiles(dir), keys: keys, executorFactory: sameIsolateExecutor, retryDelay: Duration.zero);
 
   Future<Directory> makeTempDir(String prefix) async {
     final dir = Directory.systemTemp.createTempSync(prefix);
@@ -59,13 +55,7 @@ void main() {
     expect(res, isA<Opened>());
     final repo = (res as Opened).repository;
     await repo.saveProfile(
-      const Profile(
-        ageYears: 29,
-        sex: Sex.female,
-        heightCm: 160,
-        weightKg: 54,
-        activityLevel: ActivityLevel.active,
-      ),
+      const Profile(ageYears: 29, sex: Sex.female, heightCm: 160, weightKg: 54, activityLevel: ActivityLevel.active),
     );
     await repo.saveHideCalories(false);
     await repo.saveOnboardingStep(OnboardingStep.done);
@@ -93,9 +83,7 @@ void main() {
       final dir = await makeTempDir('ww_backup_ui_');
       final keys = FakeSecureKeyStore();
       final files = FakeBackupFileProvider();
-      final state = await tester.runAsync(
-        () => seedReadyApp(dir: dir, keys: keys, fileProvider: files),
-      );
+      final state = await tester.runAsync(() => seedReadyApp(dir: dir, keys: keys, fileProvider: files));
 
       await tester.pumpWidget(WholeWellApp(state: state!));
       await tester.pumpAndSettle();
@@ -159,20 +147,15 @@ void main() {
       expect(state.lastFileBackupAt, isNotNull);
     });
 
-    testWidgets('Khôi phục từ Chào mừng: sai mã báo lỗi giữ Welcome, đúng mã vào thẳng Hôm nay và sync thông báo',
-        (tester) async {
+    testWidgets('Khôi phục từ Chào mừng: sai mã báo lỗi giữ Welcome, đúng mã vào thẳng Hôm nay và sync thông báo', (
+      tester,
+    ) async {
       // Tạo bản sao lưu từ máy nguồn (có bật nhắc giờ và sản phẩm có lịch).
       final srcDir = await makeTempDir('ww_src_');
       final srcKeys = FakeSecureKeyStore();
       final srcFiles = FakeBackupFileProvider();
       final srcState = await tester.runAsync(
-        () => seedReadyApp(
-          dir: srcDir,
-          keys: srcKeys,
-          fileProvider: srcFiles,
-          waterMl: 450,
-          autoDispose: false,
-        ),
+        () => seedReadyApp(dir: srcDir, keys: srcKeys, fileProvider: srcFiles, waterMl: 450, autoDispose: false),
       );
       await tester.runAsync(() async {
         final r = srcState!.session.repo!;
@@ -180,11 +163,7 @@ void main() {
         final pid = await r.addProduct('Vitamin C', CountUnit.tablet, 1);
         await r.addSchedule(pid, 8 * 60, 1, validFrom: dayKey(DateTime.now()));
         await srcState.reload();
-        await srcState.createEncryptedBackupFile(
-          secret: 'mat-khau-bi-mat',
-          memoryKiB: 256,
-          iterations: 1,
-        );
+        await srcState.createEncryptedBackupFile(secret: 'mat-khau-bi-mat', memoryKiB: 256, iterations: 1);
         await srcState.session.repo?.close();
         srcState.dispose();
       });
@@ -225,10 +204,7 @@ void main() {
       await tester.enterText(find.byType(TextField), 'sai-mat-khau');
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Khôi phục'));
-      await _drainUntil(
-        tester,
-        () => find.text('Mã khôi phục không đúng hoặc tệp đã bị hỏng.').evaluate().isNotEmpty,
-      );
+      await _drainUntil(tester, () => find.text('Mã khôi phục không đúng hoặc tệp đã bị hỏng.').evaluate().isNotEmpty);
 
       expect(find.text('Mã khôi phục không đúng hoặc tệp đã bị hỏng.'), findsOneWidget);
       expect(dstState.status, DataStatus.welcome);
@@ -260,11 +236,7 @@ void main() {
         ),
       );
       await tester.runAsync(() async {
-        await srcState!.createEncryptedBackupFile(
-          secret: 'recover-err-99',
-          memoryKiB: 256,
-          iterations: 1,
-        );
+        await srcState!.createEncryptedBackupFile(secret: 'recover-err-99', memoryKiB: 256, iterations: 1);
         await srcState.session.repo?.close();
         srcState.dispose();
       });
@@ -273,10 +245,7 @@ void main() {
       final errDir = await makeTempDir('ww_cannot_open_');
       File('${errDir.path}/wholewell.db').writeAsBytesSync([1, 2, 3, 4]);
       final errFiles = FakeBackupFileProvider()
-        ..nextPickFile = PickedBackupFile(
-          name: 'err.wwbackup',
-          bytes: srcFiles.savedFiles.single.bytes,
-        );
+        ..nextPickFile = PickedBackupFile(name: 'err.wwbackup', bytes: srcFiles.savedFiles.single.bytes);
       final errState = AppState(
         pack: pack,
         opener: makeOpener(errDir, FakeSecureKeyStore()),
@@ -312,16 +281,16 @@ void main() {
       final dir = await makeTempDir('ww_newer_');
       final keys = FakeSecureKeyStore();
       final files = FakeBackupFileProvider();
-      final state = await tester.runAsync(
-        () => seedReadyApp(dir: dir, keys: keys, fileProvider: files, waterMl: 200),
+      final state = await tester.runAsync(() => seedReadyApp(dir: dir, keys: keys, fileProvider: files, waterMl: 200));
+      final futureBackup = await tester.runAsync(
+        () => BackupCodec.encryptSnapshot(
+          plainSqliteBytes: Uint8List.fromList([1, 2, 3, 4]),
+          schemaVersion: currentSchemaVersion + 2,
+          secret: 'future-pass',
+          memoryKiB: 256,
+          iterations: 1,
+        ),
       );
-      final futureBackup = await tester.runAsync(() => BackupCodec.encryptSnapshot(
-            plainSqliteBytes: Uint8List.fromList([1, 2, 3, 4]),
-            schemaVersion: currentSchemaVersion + 2,
-            secret: 'future-pass',
-            memoryKiB: 256,
-            iterations: 1,
-          ));
       files.nextPickFile = PickedBackupFile(name: 'future.wwbackup', bytes: futureBackup!);
 
       await tester.pumpWidget(WholeWellApp(state: state!));
@@ -344,24 +313,19 @@ void main() {
       await _drainUntil(
         tester,
         () => find
-            .text(
-              'Tệp sao lưu được tạo bởi phiên bản WholeWell mới hơn. Hãy cập nhật app trước khi khôi phục.',
-            )
+            .text('Tệp sao lưu được tạo bởi phiên bản WholeWell mới hơn. Hãy cập nhật app trước khi khôi phục.')
             .evaluate()
             .isNotEmpty,
       );
 
       expect(
-        find.text(
-          'Tệp sao lưu được tạo bởi phiên bản WholeWell mới hơn. Hãy cập nhật app trước khi khôi phục.',
-        ),
+        find.text('Tệp sao lưu được tạo bởi phiên bản WholeWell mới hơn. Hãy cập nhật app trước khi khôi phục.'),
         findsOneWidget,
       );
       expect(state.todayWaters.single.ml, 200);
     });
 
-    testWidgets('Quyền riêng tư: xuất JSON (cảnh báo không mã hóa), rút đồng ý và xóa toàn bộ dữ liệu',
-        (tester) async {
+    testWidgets('Quyền riêng tư: xuất JSON (cảnh báo không mã hóa), rút đồng ý và xóa toàn bộ dữ liệu', (tester) async {
       final dir = await makeTempDir('ww_privacy_');
       final keys = FakeSecureKeyStore();
       final files = FakeBackupFileProvider();
@@ -402,9 +366,7 @@ void main() {
       await tester.tap(find.widgetWithText(OutlinedButton, 'Rút đồng ý'));
       await tester.pumpAndSettle();
       expect(
-        find.text(
-          'Rút đồng ý sẽ xóa mọi dữ liệu trên máy này. Nếu có bản sao lưu, bạn có thể khôi phục sau.',
-        ),
+        find.text('Rút đồng ý sẽ xóa mọi dữ liệu trên máy này. Nếu có bản sao lưu, bạn có thể khôi phục sau.'),
         findsOneWidget,
       );
       await tester.tap(find.widgetWithText(FilledButton, 'Rút đồng ý'));
@@ -424,9 +386,7 @@ void main() {
       final files = FakeBackupFileProvider();
       final googleAuth = FakeGoogleAuth();
       final driveProvider = FakeBackupProvider();
-      final pendingStore = FileDrivePendingDeleteStore(
-        File('${dir.path}/drive_pending_delete.json'),
-      );
+      final pendingStore = FileDrivePendingDeleteStore(File('${dir.path}/drive_pending_delete.json'));
 
       final opener = makeOpener(dir, keys);
       final seeded = await tester.runAsync(() async {
@@ -435,13 +395,7 @@ void main() {
         );
         final repo = (res as Opened).repository;
         await repo.saveProfile(
-          const Profile(
-            ageYears: 27,
-            sex: Sex.male,
-            heightCm: 172,
-            weightKg: 66,
-            activityLevel: ActivityLevel.active,
-          ),
+          const Profile(ageYears: 27, sex: Sex.male, heightCm: 172, weightKg: 66, activityLevel: ActivityLevel.active),
         );
         await repo.saveHideCalories(false);
         await repo.saveOnboardingStep(OnboardingStep.done);
@@ -504,11 +458,7 @@ void main() {
       // Tải thêm 3 lần nữa -> tối đa chỉ giữ 3 bản gần nhất trên Drive.
       await tester.runAsync(() async {
         for (var i = 0; i < 3; i++) {
-          await state.createDriveBackup(
-            secret: 'drive-secret-$i',
-            memoryKiB: 256,
-            iterations: 1,
-          );
+          await state.createDriveBackup(secret: 'drive-secret-$i', memoryKiB: 256, iterations: 1);
         }
       });
       expect((await driveProvider.listBackups()).length, 3);
@@ -528,8 +478,7 @@ void main() {
       expect((await driveProvider.listBackups()).length, 3);
     });
 
-    testWidgets('Khôi phục từ Google Drive ở Chào mừng: không hỏi màn đồng ý, mang theo drive consent',
-        (tester) async {
+    testWidgets('Khôi phục từ Google Drive ở Chào mừng: không hỏi màn đồng ý, mang theo drive consent', (tester) async {
       // Tạo bản sao lưu có sẵn consents.kind = 'drive' đưa lên FakeBackupProvider.
       final srcDir = await makeTempDir('ww_drive_src_');
       final srcKeys = FakeSecureKeyStore();
@@ -601,106 +550,109 @@ void main() {
       expect(find.byType(TodayScreen), findsOneWidget);
     });
 
-    testWidgets('Rút đồng ý & Xóa toàn bộ khi bật Drive: mất mạng giữ pending_delete ngoài CSDL rồi tự xóa khi có mạng / hết phiên',
-        (tester) async {
-      final dir = await makeTempDir('ww_drive_del_');
-      final keys = FakeSecureKeyStore();
-      final pendingFile = File('${dir.path}/drive_pending_delete.json');
-      final pendingStore = FileDrivePendingDeleteStore(pendingFile);
-      final googleAuth = FakeGoogleAuth(
-        initialUser: const GoogleAuthAccount(id: 'u1', email: 'user@gmail.com'),
-      );
-      final driveProvider = FakeBackupProvider()
-        ..seedBackup(bytes: Uint8List.fromList([1, 2, 3]))
-        ..errorOnDelete = const SocketException('offline');
-
-      final state = await tester.runAsync(() async {
-        final opener = makeOpener(dir, keys);
-        final res = (await opener.createNew(
-          const ConsentInput(contentVersion: mvpConsentVersion, ageYears: 28, caution: false),
-        )) as Opened;
-        await res.repository.saveProfile(
-          const Profile(
-            ageYears: 28,
-            sex: Sex.male,
-            heightCm: 170,
-            weightKg: 65,
-            activityLevel: ActivityLevel.active,
-          ),
+    testWidgets(
+      'Rút đồng ý & Xóa toàn bộ khi bật Drive: mất mạng giữ pending_delete ngoài CSDL rồi tự xóa khi có mạng / hết phiên',
+      (tester) async {
+        final dir = await makeTempDir('ww_drive_del_');
+        final keys = FakeSecureKeyStore();
+        final pendingFile = File('${dir.path}/drive_pending_delete.json');
+        final pendingStore = FileDrivePendingDeleteStore(pendingFile);
+        final googleAuth = FakeGoogleAuth(
+          initialUser: const GoogleAuthAccount(id: 'u1', email: 'user@gmail.com'),
         );
-        await res.repository.saveHideCalories(false);
-        await res.repository.saveOnboardingStep(OnboardingStep.done);
-        await res.repository.grantDriveConsent(mvpConsentVersion);
-        await res.repository.close();
+        final driveProvider = FakeBackupProvider()
+          ..seedBackup(bytes: Uint8List.fromList([1, 2, 3]))
+          ..errorOnDelete = const SocketException('offline');
 
-        final s = AppState(
-          pack: pack,
-          opener: makeOpener(dir, keys),
-          googleAuth: googleAuth,
-          driveBackupProvider: driveProvider,
-          drivePendingDeleteStore: pendingStore,
-        );
-        await s.start();
-        return s;
-      });
-      final appState = state!;
-      addTearDown(() async {
-        await appState.session.repo?.close();
-        appState.dispose();
-      });
+        final state = await tester.runAsync(() async {
+          final opener = makeOpener(dir, keys);
+          final res = (await opener.createNew(
+            const ConsentInput(contentVersion: mvpConsentVersion, ageYears: 28, caution: false),
+          )) as Opened;
+          await res.repository.saveProfile(
+            const Profile(
+              ageYears: 28,
+              sex: Sex.male,
+              heightCm: 170,
+              weightKg: 65,
+              activityLevel: ActivityLevel.active,
+            ),
+          );
+          await res.repository.saveHideCalories(false);
+          await res.repository.saveOnboardingStep(OnboardingStep.done);
+          await res.repository.grantDriveConsent(mvpConsentVersion);
+          await res.repository.close();
 
-      await tester.pumpWidget(WholeWellApp(state: appState));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Tôi'));
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Quyền riêng tư'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Quyền riêng tư'));
-      await tester.pumpAndSettle();
+          final s = AppState(
+            pack: pack,
+            opener: makeOpener(dir, keys),
+            googleAuth: googleAuth,
+            driveBackupProvider: driveProvider,
+            drivePendingDeleteStore: pendingStore,
+          );
+          await s.start();
+          return s;
+        });
+        final appState = state!;
+        addTearDown(() async {
+          await appState.session.repo?.close();
+          appState.dispose();
+        });
 
-      // Kiểm tra hộp thoại Xóa toàn bộ: ô Xóa cả bản Drive KHÔNG đánh sẵn.
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Xóa toàn bộ dữ liệu'));
-      await tester.pumpAndSettle();
-      expect(tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value, isFalse);
-      await tester.tap(find.text('Hủy'));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(WholeWellApp(state: appState));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Tôi'));
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('Quyền riêng tư'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Quyền riêng tư'));
+        await tester.pumpAndSettle();
 
-      // Kiểm tra hộp thoại Rút đồng ý: ô Xóa cả bản Drive ĐÁNH SẴN.
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Rút đồng ý'));
-      await tester.pumpAndSettle();
-      expect(tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value, isTrue);
-      expect(find.text('Tệp sao lưu bạn đã xuất ra ngoài thì app không xóa được.'), findsOneWidget);
+        // Kiểm tra hộp thoại Xóa toàn bộ: ô Xóa cả bản Drive KHÔNG đánh sẵn.
+        await tester.tap(find.widgetWithText(OutlinedButton, 'Xóa toàn bộ dữ liệu'));
+        await tester.pumpAndSettle();
+        expect(tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value, isFalse);
+        await tester.tap(find.text('Hủy'));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.widgetWithText(FilledButton, 'Rút đồng ý'));
-      await _drainUntil(tester, () => appState.status == DataStatus.welcome);
+        // Kiểm tra hộp thoại Rút đồng ý: ô Xóa cả bản Drive ĐÁNH SẴN.
+        await tester.tap(find.widgetWithText(OutlinedButton, 'Rút đồng ý'));
+        await tester.pumpAndSettle();
+        expect(tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value, isTrue);
+        expect(find.text('Tệp sao lưu bạn đã xuất ra ngoài thì app không xóa được.'), findsOneWidget);
 
-      // Dữ liệu trên máy xóa ngay dù mất mạng, nhưng drive_pending_delete.json vẫn còn ngoài CSDL.
-      expect(appState.status, DataStatus.welcome);
-      expect(keys.key, isNull);
-      expect(pendingFile.existsSync(), isTrue);
-      expect(appState.drivePendingDeleteActive, isTrue);
-      expect(find.byType(PendingDriveDeleteCard), findsOneWidget);
+        await tester.tap(find.widgetWithText(FilledButton, 'Rút đồng ý'));
+        await _drainUntil(tester, () => appState.status == DataStatus.welcome);
 
-      // Mô phỏng hết phiên / thu hồi quyền ngoài Google Account -> hiện Đăng nhập để xóa.
-      driveProvider.errorOnDelete = null;
-      googleAuth.silentRevoked = true;
-      await tester.runAsync(appState.onAppResume);
-      await tester.pumpAndSettle();
-      expect(appState.drivePendingDeleteNeedsReauth, isTrue);
-      expect(find.text('Chưa xóa được bản trên Google Drive do hết phiên đăng nhập.'), findsOneWidget);
+        // Dữ liệu trên máy xóa ngay dù mất mạng, nhưng drive_pending_delete.json vẫn còn ngoài CSDL.
+        expect(appState.status, DataStatus.welcome);
+        expect(keys.key, isNull);
+        expect(pendingFile.existsSync(), isTrue);
+        expect(appState.drivePendingDeleteActive, isTrue);
+        expect(find.byType(PendingDriveDeleteCard), findsOneWidget);
 
-      // Bấm Đăng nhập để xóa -> xóa sạch trên Drive, xóa cờ và thu hồi quyền.
-      await tester.ensureVisible(find.text('Đăng nhập để xóa'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Đăng nhập để xóa'));
-      await _drainUntil(tester, () => !appState.drivePendingDeleteActive);
-      expect(pendingFile.existsSync(), isFalse);
-      expect(await driveProvider.listBackups(), isEmpty);
-      expect(googleAuth.disconnectCalls, 1);
-    });
+        // Mô phỏng hết phiên / thu hồi quyền ngoài Google Account -> hiện Đăng nhập để xóa.
+        driveProvider.errorOnDelete = null;
+        googleAuth.silentRevoked = true;
+        await tester.runAsync(appState.onAppResume);
+        await tester.pumpAndSettle();
+        expect(appState.drivePendingDeleteNeedsReauth, isTrue);
+        expect(find.text('Chưa xóa được bản trên Google Drive do hết phiên đăng nhập.'), findsOneWidget);
 
-    testWidgets('createDriveBackup: currentUser != null nhưng authHeaders == null vẫn gọi lại signInGoogleDrive()',
-        (tester) async {
+        // Bấm Đăng nhập để xóa -> xóa sạch trên Drive, xóa cờ và thu hồi quyền.
+        await tester.ensureVisible(find.text('Đăng nhập để xóa'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Đăng nhập để xóa'));
+        await _drainUntil(tester, () => !appState.drivePendingDeleteActive);
+        expect(pendingFile.existsSync(), isFalse);
+        expect(await driveProvider.listBackups(), isEmpty);
+        expect(googleAuth.disconnectCalls, 1);
+      },
+    );
+
+    testWidgets('createDriveBackup: currentUser != null nhưng authHeaders == null vẫn gọi lại signInGoogleDrive()', (
+      tester,
+    ) async {
       final dir = await makeTempDir('ww_drive_hdr_');
       final keys = FakeSecureKeyStore();
       final googleAuth = FakeGoogleAuth(
@@ -741,18 +693,15 @@ void main() {
 
       final beforeCalls = googleAuth.signInCalls;
       await tester.runAsync(() async {
-        await appState.createDriveBackup(
-          secret: 'reauth-secret-1',
-          memoryKiB: 256,
-          iterations: 1,
-        );
+        await appState.createDriveBackup(secret: 'reauth-secret-1', memoryKiB: 256, iterations: 1);
       });
       expect(googleAuth.signInCalls, beforeCalls + 1);
       expect((await driveProvider.listBackups()).length, 1);
     });
 
-    testWidgets('restoreFromGoogleDrive không gọi lại signInSilently; onAppResume không lặp vô hạn khi needsReauth',
-        (tester) async {
+    testWidgets('restoreFromGoogleDrive không gọi lại signInSilently; onAppResume không lặp vô hạn khi needsReauth', (
+      tester,
+    ) async {
       final srcDir = await makeTempDir('ww_drive_norepeat_src_');
       final keys = FakeSecureKeyStore();
       final srcOpener = makeOpener(srcDir, keys);
@@ -761,13 +710,15 @@ void main() {
           const ConsentInput(contentVersion: mvpConsentVersion, ageYears: 29, caution: false),
         );
         final srcRepo = (srcRes as Opened).repository;
-        await srcRepo.saveProfile(const Profile(
-          ageYears: 29,
-          sex: Sex.female,
-          heightCm: 160,
-          weightKg: 54,
-          activityLevel: ActivityLevel.active,
-        ));
+        await srcRepo.saveProfile(
+          const Profile(
+            ageYears: 29,
+            sex: Sex.female,
+            heightCm: 160,
+            weightKg: 54,
+            activityLevel: ActivityLevel.active,
+          ),
+        );
         await srcRepo.saveOnboardingStep(OnboardingStep.done);
         await srcRepo.grantDriveConsent(mvpConsentVersion);
         final exported = await srcOpener.exportBackup(
@@ -787,9 +738,7 @@ void main() {
         initialUser: const GoogleAuthAccount(id: 'u1', email: 'test@example.com'),
       );
       final driveProvider = FakeBackupProvider()..seedBackup(bytes: backupBytes);
-      final pendingStore = FileDrivePendingDeleteStore(
-        File('${dstDir.path}/drive_pending_delete.json'),
-      );
+      final pendingStore = FileDrivePendingDeleteStore(File('${dstDir.path}/drive_pending_delete.json'));
       final dstState = await tester.runAsync(() async {
         final s = AppState(
           pack: pack,
@@ -825,8 +774,7 @@ void main() {
       expect(googleAuth.signInSilentlyCalls, 1);
     });
 
-    testWidgets('start() không bật CredentialManager (signInSilentlyCalls == 0) khi pending == false',
-        (tester) async {
+    testWidgets('start() không bật CredentialManager (signInSilentlyCalls == 0) khi pending == false', (tester) async {
       final dir = await makeTempDir('ww_drive_cold_no_prompt_');
       final keys = FakeSecureKeyStore();
       final googleAuth = FakeGoogleAuth();
@@ -836,13 +784,9 @@ void main() {
           const ConsentInput(contentVersion: mvpConsentVersion, ageYears: 28, caution: false),
         );
         final repo = (res as Opened).repository;
-        await repo.saveProfile(const Profile(
-          ageYears: 28,
-          sex: Sex.male,
-          heightCm: 172,
-          weightKg: 68,
-          activityLevel: ActivityLevel.active,
-        ));
+        await repo.saveProfile(
+          const Profile(ageYears: 28, sex: Sex.male, heightCm: 172, weightKg: 68, activityLevel: ActivityLevel.active),
+        );
         await repo.saveHideCalories(false);
         await repo.saveOnboardingStep(OnboardingStep.done);
         await repo.grantDriveConsent(mvpConsentVersion);
@@ -855,9 +799,7 @@ void main() {
           opener: makeOpener(dir, keys),
           googleAuth: googleAuth,
           driveBackupProvider: FakeBackupProvider(),
-          drivePendingDeleteStore: FileDrivePendingDeleteStore(
-            File('${dir.path}/drive_pending_delete.json'),
-          ),
+          drivePendingDeleteStore: FileDrivePendingDeleteStore(File('${dir.path}/drive_pending_delete.json')),
         );
         await s.start();
         return s;

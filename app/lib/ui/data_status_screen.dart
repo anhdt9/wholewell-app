@@ -13,9 +13,7 @@ class DataStatusScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = AppScope.of(context);
     final restore = FilledButton.tonal(
-      onPressed: state.canRestoreFromFile
-          ? () => showRestoreSourcePicker(context, hasExistingData: false)
-          : null,
+      onPressed: state.canRestoreFromFile ? () => showRestoreSourcePicker(context, hasExistingData: false) : null,
       child: const Text('Khôi phục từ bản sao lưu'),
     );
     final retry = FilledButton(onPressed: state.start, child: const Text('Thử lại'));
@@ -23,21 +21,18 @@ class DataStatusScreen extends StatelessWidget {
       DataStatus.waitingForUnlock => ('Mở khóa máy để xem dữ liệu.', const <Widget>[]),
       DataStatus.keyStuck => ('Chưa đọc được khóa dữ liệu trên máy này.', [retry, restore]),
       DataStatus.cannotOpen => (
-          'Không mở được dữ liệu đã lưu trên máy.',
-          [
-            restore,
-            OutlinedButton(onPressed: () => _confirmStartOver(context, state), child: const Text('Bắt đầu lại')),
-          ]
-        ),
+        'Không mở được dữ liệu đã lưu trên máy.',
+        [restore, OutlinedButton(onPressed: () => _confirmStartOver(context, state), child: const Text('Bắt đầu lại'))],
+      ),
       DataStatus.installBroken => (
-          'Không mở được dữ liệu đã lưu trên máy. Hãy cài lại WholeWell từ cửa hàng ứng dụng.',
-          const <Widget>[]
-        ),
+        'Không mở được dữ liệu đã lưu trên máy. Hãy cài lại WholeWell từ cửa hàng ứng dụng.',
+        const <Widget>[],
+      ),
       DataStatus.needsUpdate => (
-          'Cần cập nhật WholeWell. Dữ liệu của bạn vẫn còn nguyên trên máy. '
-              'Hãy cập nhật app từ cửa hàng ứng dụng.',
-          const <Widget>[]
-        ),
+        'Cần cập nhật WholeWell. Dữ liệu của bạn vẫn còn nguyên trên máy. '
+            'Hãy cập nhật app từ cửa hàng ứng dụng.',
+        const <Widget>[],
+      ),
       DataStatus.lowStorage => ('Máy không còn đủ dung lượng. Hãy giải phóng bộ nhớ rồi mở lại.', [retry]),
       DataStatus.unsupportedPlatform => ('Bản này chưa chạy được trên thiết bị của bạn.', const <Widget>[]),
       _ => ('', const <Widget>[]),
@@ -73,10 +68,13 @@ class DataStatusScreen extends StatelessWidget {
         builder: (ctx) => StatefulBuilder(
           builder: (ctx, setState) => AlertDialog(
             title: const Text('Bắt đầu lại?'),
-            content: Column(mainAxisSize: MainAxisSize.min, children: [
-              const Text('Dữ liệu cũ trên máy sẽ bị xóa. Gõ XÓA để xác nhận.'),
-              TextField(controller: c, autofocus: true, onChanged: (_) => setState(() {})),
-            ]),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Dữ liệu cũ trên máy sẽ bị xóa. Gõ XÓA để xác nhận.'),
+                TextField(controller: c, autofocus: true, onChanged: (_) => setState(() {})),
+              ],
+            ),
             actions: [
               TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
               TextButton(

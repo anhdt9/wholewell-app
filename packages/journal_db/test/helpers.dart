@@ -25,16 +25,15 @@ DbOpener testOpener(
   int schemaVersion = currentSchemaVersion,
   Map<int, Migration>? migrations,
   DateTime Function() now = testNow,
-}) =>
-    DbOpener(
-      files: DbFiles(dir),
-      keys: keys,
-      executorFactory: sameIsolateExecutor,
-      schemaVersion: schemaVersion,
-      migrations: migrations,
-      retryDelay: Duration.zero,
-      now: now,
-    );
+}) => DbOpener(
+  files: DbFiles(dir),
+  keys: keys,
+  executorFactory: sameIsolateExecutor,
+  schemaVersion: schemaVersion,
+  migrations: migrations,
+  retryDelay: Duration.zero,
+  now: now,
+);
 
 /// Tạo CSDL ở bước Đồng ý; đóng tự động khi test xong.
 Future<DriftJournalRepository> createdRepo(DbOpener o) async {
@@ -68,20 +67,27 @@ Future<DriftJournalRepository> reopened(DbOpener o) async {
 IntakeLine line(String key, double v, {IntakeSource source = IntakeSource.food}) =>
     IntakeLine(nutrientId: key, source: source, amounts: {key: v});
 
-FoodEntryInput food(String name, DateTime at, List<IntakeLine> lines,
-        {Meal meal = Meal.breakfast, bool sugarKnown = true, double? basis, double qty = 1, String unit = 'bát'}) =>
-    FoodEntryInput(
-      at: at,
-      meal: meal,
-      name: name,
-      portionUnit: unit,
-      portionQty: qty,
-      labelBasisQty: basis,
-      labelBasisUnit: basis == null ? null : unit,
-      addedSugarKnown: sugarKnown,
-      packVersion: testPack,
-      lines: lines,
-    );
+FoodEntryInput food(
+  String name,
+  DateTime at,
+  List<IntakeLine> lines, {
+  Meal meal = Meal.breakfast,
+  bool sugarKnown = true,
+  double? basis,
+  double qty = 1,
+  String unit = 'bát',
+}) => FoodEntryInput(
+  at: at,
+  meal: meal,
+  name: name,
+  portionUnit: unit,
+  portionQty: qty,
+  labelBasisQty: basis,
+  labelBasisUnit: basis == null ? null : unit,
+  addedSugarKnown: sugarKnown,
+  packVersion: testPack,
+  lines: lines,
+);
 
 List<String> fileNames(Directory d) =>
     [for (final e in d.listSync()) e.uri.pathSegments.where((s) => s.isNotEmpty).last]..sort();

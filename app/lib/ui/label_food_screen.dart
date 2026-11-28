@@ -24,9 +24,9 @@ class _MicroFormRow {
   LabelFolateMode? folateMode;
 
   _MicroFormRow(this.nutrientId, {required ReferencePack pack})
-      : unit = _defaultUnit(nutrientId, pack),
-        form = NutrientForm.unknown,
-        folateMode = nutrientId == 'folate' ? LabelFolateMode.folateGeneral : null {
+    : unit = _defaultUnit(nutrientId, pack),
+      form = NutrientForm.unknown,
+      folateMode = nutrientId == 'folate' ? LabelFolateMode.folateGeneral : null {
     if (nutrientId == 'folicAcid') {
       unit = LabelUnit.ug;
       form = NutrientForm.folicAcid;
@@ -54,11 +54,7 @@ class LabelFoodScreen extends StatefulWidget {
   final Meal initialMeal;
   final String? initialName;
 
-  const LabelFoodScreen({
-    super.key,
-    required this.initialMeal,
-    this.initialName,
-  });
+  const LabelFoodScreen({super.key, required this.initialMeal, this.initialName});
 
   @override
   State<LabelFoodScreen> createState() => _LabelFoodScreenState();
@@ -168,9 +164,7 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
                         ListTile(
                           minTileHeight: 48,
                           title: Text(d.nameVi),
-                          subtitle: d.group == 'mineral'
-                              ? const Text('Nhập theo lượng nguyên tố ghi trên nhãn')
-                              : null,
+                          subtitle: d.group == 'mineral' ? const Text('Nhập theo lượng nguyên tố ghi trên nhãn') : null,
                           onTap: () => Navigator.pop(ctx, d.id),
                         ),
                     ],
@@ -258,28 +252,28 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
   }
 
   Future<bool?> _confirmUnitWarnings(List<UnitPlausibilityWarning> warnings) => showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Kiểm tra lại đơn vị'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (final w in warnings)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Text('${w.nutrientNameVi}: ${fmt(w.displayAmount)} ${unitLabel(w.displayUnit)}'),
-                ),
-              const SizedBox(height: 8),
-              const Text('Số liệu cao bất thường, kiểm tra lại mg và µg.'),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Kiểm tra lại')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Vẫn lưu')),
-          ],
-        ),
-      );
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Kiểm tra lại đơn vị'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final w in warnings)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text('${w.nutrientNameVi}: ${fmt(w.displayAmount)} ${unitLabel(w.displayUnit)}'),
+            ),
+          const SizedBox(height: 8),
+          const Text('Số liệu cao bất thường, kiểm tra lại mg và µg.'),
+        ],
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Kiểm tra lại')),
+        FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Vẫn lưu')),
+      ],
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -345,10 +339,7 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
                   TextFormField(
                     controller: _usedQty,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(
-                      labelText: 'Bạn đã dùng',
-                      suffixText: _basisUnit,
-                    ),
+                    decoration: InputDecoration(labelText: 'Bạn đã dùng', suffixText: _basisUnit),
                     validator: _validatePos,
                     onChanged: (_) => _usedManuallyEdited = true,
                   ),
@@ -410,18 +401,14 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
   }
 
   Widget _numField(TextEditingController ctrl, String label, {String? helper}) => Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: TextFormField(
-          controller: ctrl,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: InputDecoration(
-            labelText: label,
-            helperText: helper,
-            helperMaxLines: 3,
-          ),
-          validator: _validateNonNeg,
-        ),
-      );
+    padding: const EdgeInsets.only(bottom: 10),
+    child: TextFormField(
+      controller: ctrl,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      decoration: InputDecoration(labelText: label, helperText: helper, helperMaxLines: 3),
+      validator: _validateNonNeg,
+    ),
+  );
 
   Widget _buildMicroCard(int index, _MicroFormRow row, ReferencePack pack) {
     final def = pack.nutrients[row.nutrientId]!;
@@ -464,7 +451,9 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
                 items: const [
                   DropdownMenuItem(value: LabelFolateMode.folicAcidOnly, child: Text('Axit folic')),
                   DropdownMenuItem(
-                      value: LabelFolateMode.folateWithFolicAcid, child: Text('Folate tổng (có tách axit folic)')),
+                    value: LabelFolateMode.folateWithFolicAcid,
+                    child: Text('Folate tổng (có tách axit folic)'),
+                  ),
                   DropdownMenuItem(value: LabelFolateMode.folateGeneral, child: Text('Folate')),
                 ],
                 onChanged: (m) {
@@ -508,16 +497,11 @@ class _LabelFoodScreenState extends State<LabelFoodScreen> {
               TextFormField(
                 controller: row.secondaryFolicAcid,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'Trong đó axit folic (µg)',
-                ),
+                decoration: const InputDecoration(labelText: 'Trong đó axit folic (µg)'),
                 validator: _validateNonNeg,
               ),
             ],
-            if (_needsFormDropdown(row)) ...[
-              const SizedBox(height: 8),
-              _formSelector(row),
-            ],
+            if (_needsFormDropdown(row)) ...[const SizedBox(height: 8), _formSelector(row)],
             if (isMineral)
               Padding(
                 padding: const EdgeInsets.only(top: 6),

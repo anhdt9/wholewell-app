@@ -35,9 +35,7 @@ class DsldIngredientMapper {
   static DsldMappedProduct mapProduct(DsldProductDetail detail, ReferencePack pack) {
     final brand = detail.brandName.trim();
     final name = detail.productName.trim();
-    final displayName = brand.isNotEmpty && !name.toLowerCase().contains(brand.toLowerCase())
-        ? '$brand $name'
-        : name;
+    final displayName = brand.isNotEmpty && !name.toLowerCase().contains(brand.toLowerCase()) ? '$brand $name' : name;
 
     final servingInfo = _parseServing(detail.servingSize, detail.supplementForm);
     final lines = <EditableIngredient>[];
@@ -96,8 +94,7 @@ class DsldIngredientMapper {
     // `%` là phần trăm giá trị hằng ngày, không phải lượng: bỏ cả lượng và đơn vị.
     final isPercent = f.unit.trim() == '%';
     final rawAmount = double.tryParse(f.amount.trim().replaceAll(',', '.'));
-    final amount =
-        (!isPercent && rawAmount != null && rawAmount.isFinite && rawAmount >= 0) ? rawAmount : null;
+    final amount = (!isPercent && rawAmount != null && rawAmount.isFinite && rawAmount >= 0) ? rawAmount : null;
     // Đơn vị lạ để trống cho người dùng chọn theo nhãn, không lấy đơn vị chuẩn của chất.
     final unit = isPercent ? null : LabelUnitText.parse(f.unit);
 

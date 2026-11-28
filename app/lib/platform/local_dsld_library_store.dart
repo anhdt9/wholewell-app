@@ -18,10 +18,7 @@ class FlutterDsldLibraryAssetStore implements DsldLibraryAssetStore {
   }) : bundle = bundle ?? rootBundle;
 
   @override
-  Future<String> prepareDatabaseFile({
-    required String libraryVersion,
-    required String expectedSha256,
-  }) async {
+  Future<String> prepareDatabaseFile({required String libraryVersion, required String expectedSha256}) async {
     try {
       await supportDir.create(recursive: true);
       final targetName = 'dsld_library_$libraryVersion.db';
@@ -42,10 +39,7 @@ class FlutterDsldLibraryAssetStore implements DsldLibraryAssetStore {
       }
 
       final gzBytes = await bundle.load(assetPath);
-      final compressed = gzBytes.buffer.asUint8List(
-        gzBytes.offsetInBytes,
-        gzBytes.lengthInBytes,
-      );
+      final compressed = gzBytes.buffer.asUint8List(gzBytes.offsetInBytes, gzBytes.lengthInBytes);
       final decoded = gzip.decode(compressed);
       final tmp = File('${targetFile.path}.tmp');
       await tmp.writeAsBytes(decoded, flush: true);

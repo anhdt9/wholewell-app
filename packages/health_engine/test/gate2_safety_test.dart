@@ -11,119 +11,136 @@ void main() {
 
   group('Cổng 2: 0 lỗi đơn vị (Vitamin A, D, E, Folate, Niacin, Hợp chất)', () {
     test('Vitamin A: retinol IU/µg tính UL; beta-caroten không tính UL; unknown tính thận trọng UL', () {
-      final retIu = conv.convertIntakeLine(const IntakeLineInput(
-        nutrientId: 'vitA',
-        source: IntakeSource.supplement,
-        form: NutrientForm.retinol,
-        amount: 10000,
-        unit: LabelUnit.iu,
-      ));
+      final retIu = conv.convertIntakeLine(
+        const IntakeLineInput(
+          nutrientId: 'vitA',
+          source: IntakeSource.supplement,
+          form: NutrientForm.retinol,
+          amount: 10000,
+          unit: LabelUnit.iu,
+        ),
+      );
       expect(retIu.amounts['vitA'], closeTo(3000, 1e-9));
       expect(retIu.amounts['retinol'], closeTo(3000, 1e-9));
       expect(retIu.uncertain, isFalse);
 
-      final betaSup = conv.convertIntakeLine(const IntakeLineInput(
-        nutrientId: 'vitA',
-        source: IntakeSource.supplement,
-        form: NutrientForm.betaCarotene,
-        amount: 20000,
-        unit: LabelUnit.iu,
-      ));
+      final betaSup = conv.convertIntakeLine(
+        const IntakeLineInput(
+          nutrientId: 'vitA',
+          source: IntakeSource.supplement,
+          form: NutrientForm.betaCarotene,
+          amount: 20000,
+          unit: LabelUnit.iu,
+        ),
+      );
       expect(betaSup.amounts['vitA'], closeTo(6000, 1e-9));
       expect(betaSup.amounts.containsKey('retinol'), isFalse);
 
-      final unkSup = conv.convertIntakeLine(const IntakeLineInput(
-        nutrientId: 'vitA',
-        source: IntakeSource.supplement,
-        form: NutrientForm.unknown,
-        amount: 5000,
-        unit: LabelUnit.iu,
-      ));
+      final unkSup = conv.convertIntakeLine(
+        const IntakeLineInput(
+          nutrientId: 'vitA',
+          source: IntakeSource.supplement,
+          form: NutrientForm.unknown,
+          amount: 5000,
+          unit: LabelUnit.iu,
+        ),
+      );
       expect(unkSup.amounts['retinol'], closeTo(1500, 1e-9));
       expect(unkSup.uncertain, isTrue);
     });
 
     test('Vitamin E: phân biệt tổng hợp (0.45 RDA / 0.90 UL mỗi IU) vs tự nhiên (0.67 mỗi IU)', () {
-      final syn = conv.convertIntakeLine(const IntakeLineInput(
-        nutrientId: 'vitE',
-        source: IntakeSource.supplement,
-        form: NutrientForm.synthetic2r,
-        amount: 1000,
-        unit: LabelUnit.iu,
-      ));
+      final syn = conv.convertIntakeLine(
+        const IntakeLineInput(
+          nutrientId: 'vitE',
+          source: IntakeSource.supplement,
+          form: NutrientForm.synthetic2r,
+          amount: 1000,
+          unit: LabelUnit.iu,
+        ),
+      );
       expect(syn.amounts['vitE'], closeTo(450, 1e-9));
       expect(syn.ulAmounts?['vitE'], closeTo(1000000 / 1100, 1e-9));
 
-      final nat = conv.convertIntakeLine(const IntakeLineInput(
-        nutrientId: 'vitE',
-        source: IntakeSource.supplement,
-        form: NutrientForm.natural2r,
-        amount: 1000,
-        unit: LabelUnit.iu,
-      ));
+      final nat = conv.convertIntakeLine(
+        const IntakeLineInput(
+          nutrientId: 'vitE',
+          source: IntakeSource.supplement,
+          form: NutrientForm.natural2r,
+          amount: 1000,
+          unit: LabelUnit.iu,
+        ),
+      );
       expect(nat.amounts['vitE'], closeTo(670, 1e-9));
       expect(nat.ulAmounts, isNull);
     });
 
     test('Folate: DFE bổ sung nhân hệ số UL, natural_folate không tính UL, nhãn kép giữ secondaryFolicAcidUg', () {
-      final dfePair = conv.convertIntakeLine(const IntakeLineInput(
-        nutrientId: 'folate',
-        source: IntakeSource.supplement,
-        form: NutrientForm.folicAcid,
-        amount: 680,
-        unit: LabelUnit.ugDfe,
-        secondaryFolicAcidUg: 400,
-      ));
+      final dfePair = conv.convertIntakeLine(
+        const IntakeLineInput(
+          nutrientId: 'folate',
+          source: IntakeSource.supplement,
+          form: NutrientForm.folicAcid,
+          amount: 680,
+          unit: LabelUnit.ugDfe,
+          secondaryFolicAcidUg: 400,
+        ),
+      );
       expect(dfePair.amounts['folate'], 680);
       expect(dfePair.amounts['folicAcid'], 400);
 
-      final nat = conv.convertIntakeLine(const IntakeLineInput(
-        nutrientId: 'folate',
-        source: IntakeSource.food,
-        form: NutrientForm.naturalFolate,
-        amount: 500,
-        unit: LabelUnit.ugDfe,
-      ));
+      final nat = conv.convertIntakeLine(
+        const IntakeLineInput(
+          nutrientId: 'folate',
+          source: IntakeSource.food,
+          form: NutrientForm.naturalFolate,
+          amount: 500,
+          unit: LabelUnit.ugDfe,
+        ),
+      );
       expect(nat.amounts['folate'], 500);
       expect(nat.amounts.containsKey('folicAcid'), isFalse);
     });
 
     test('Vitamin D IU và tỷ lệ nguyên tố hợp chất canxi/sắt + unknown thận trọng', () {
-      final vitD = conv.convertIntakeLine(const IntakeLineInput(
-        nutrientId: 'vitD',
-        source: IntakeSource.supplement,
-        amount: 4000,
-        unit: LabelUnit.iu,
-      ));
+      final vitD = conv.convertIntakeLine(
+        const IntakeLineInput(nutrientId: 'vitD', source: IntakeSource.supplement, amount: 4000, unit: LabelUnit.iu),
+      );
       expect(vitD.amounts['vitD'], closeTo(100, 1e-9));
 
-      final caCarb = conv.convertIntakeLine(const IntakeLineInput(
-        nutrientId: 'calcium',
-        source: IntakeSource.supplement,
-        form: 'calcium_carbonate',
-        amount: 1000,
-        unit: LabelUnit.mg,
-        compoundKind: CompoundKind.compound,
-      ));
+      final caCarb = conv.convertIntakeLine(
+        const IntakeLineInput(
+          nutrientId: 'calcium',
+          source: IntakeSource.supplement,
+          form: 'calcium_carbonate',
+          amount: 1000,
+          unit: LabelUnit.mg,
+          compoundKind: CompoundKind.compound,
+        ),
+      );
       expect(caCarb.amounts['calcium'], closeTo(400, 1e-9));
 
-      final caCit = conv.convertIntakeLine(const IntakeLineInput(
-        nutrientId: 'calcium',
-        source: IntakeSource.supplement,
-        form: 'calcium_citrate',
-        amount: 1000,
-        unit: LabelUnit.mg,
-        compoundKind: CompoundKind.compound,
-      ));
+      final caCit = conv.convertIntakeLine(
+        const IntakeLineInput(
+          nutrientId: 'calcium',
+          source: IntakeSource.supplement,
+          form: 'calcium_citrate',
+          amount: 1000,
+          unit: LabelUnit.mg,
+          compoundKind: CompoundKind.compound,
+        ),
+      );
       expect(caCit.amounts['calcium'], closeTo(210, 1e-9));
 
-      final feUnk = conv.convertIntakeLine(const IntakeLineInput(
-        nutrientId: 'iron',
-        source: IntakeSource.supplement,
-        amount: 100,
-        unit: LabelUnit.mg,
-        compoundKind: CompoundKind.unknown,
-      ));
+      final feUnk = conv.convertIntakeLine(
+        const IntakeLineInput(
+          nutrientId: 'iron',
+          source: IntakeSource.supplement,
+          amount: 100,
+          unit: LabelUnit.mg,
+          compoundKind: CompoundKind.unknown,
+        ),
+      );
       // Thận trọng: RDA lấy tỷ lệ nhỏ nhất (gluconate 12%), UL lấy nguyên tố tối đa (100%).
       expect(feUnk.amounts['iron'], closeTo(12, 1e-9));
       expect(feUnk.ulAmounts?['iron'], closeTo(100, 1e-9));
@@ -133,13 +150,7 @@ void main() {
 
   group('Cổng 2: 0 vi phạm giới hạn UL đúng phạm vi & mốc chuyển nhóm tuổi', () {
     test('Magie, Vitamin E, Niacin, Folate, Vitamin A chỉ phạt đúng nguồn thuộc phạm vi UL', () {
-      const p = Profile(
-        ageYears: 30,
-        sex: Sex.male,
-        heightCm: 172,
-        weightKg: 68,
-        activityLevel: ActivityLevel.active,
-      );
+      const p = Profile(ageYears: 30, sex: Sex.male, heightCm: 172, weightKg: 68, activityLevel: ActivityLevel.active);
 
       // Lượng rất cao từ thực phẩm tự nhiên -> không bao giờ kích hoạt UL cho Mg, VitE, Niacin, Folate, Beta-carotene.
       final foodOnly = [
@@ -162,13 +173,7 @@ void main() {
         IntakeItem(
           label: 'Bổ sung đúng ngưỡng',
           source: IntakeSource.supplement,
-          nutrients: {
-            'magnesium': 350,
-            'vitE': 1000,
-            'niacin': 35,
-            'folicAcid': 1000,
-            'retinol': 3000,
-          },
+          nutrients: {'magnesium': 350, 'vitE': 1000, 'niacin': 35, 'folicAcid': 1000, 'retinol': 3000},
         ),
       ];
       expect(dailyReport(pack, p, atUl).ulFlags, isEmpty);
@@ -178,13 +183,7 @@ void main() {
         IntakeItem(
           label: 'Bổ sung vượt 0.1',
           source: IntakeSource.supplement,
-          nutrients: {
-            'magnesium': 350.1,
-            'vitE': 1000.1,
-            'niacin': 35.1,
-            'folicAcid': 1000.1,
-            'retinol': 3000.1,
-          },
+          nutrients: {'magnesium': 350.1, 'vitE': 1000.1, 'niacin': 35.1, 'folicAcid': 1000.1, 'retinol': 3000.1},
         ),
       ];
       final flagged = {for (final f in dailyReport(pack, p, overUl).ulFlags) f.nutrientId};
@@ -192,18 +191,9 @@ void main() {
     });
 
     test('Gần mốc 19 tuổi: lấy UL thấp hơn của nhóm 14-18 (2800 µg retinol thay vì 3000 µg)', () {
-      const near19 = Profile(
-        ageYears: 18,
-        sex: Sex.female,
-        heightCm: 160,
-        weightKg: 52,
-      );
+      const near19 = Profile(ageYears: 18, sex: Sex.female, heightCm: 160, weightKg: 52);
       final day = [
-        IntakeItem(
-          label: 'Retinol 2850',
-          source: IntakeSource.supplement,
-          nutrients: {'retinol': 2850},
-        ),
+        IntakeItem(label: 'Retinol 2850', source: IntakeSource.supplement, nutrients: {'retinol': 2850}),
       ];
       final rep = dailyReport(pack, near19, day);
       expect(rep.ulFlags.any((f) => f.nutrientId == 'retinol'), isTrue);
@@ -215,9 +205,21 @@ void main() {
     test('Đối chiếu các nhóm tuổi MVP 19..>70 với chuẩn DRI / EER', () {
       final samples = <Profile>[
         const Profile(ageYears: 25, sex: Sex.male, heightCm: 175, weightKg: 70, activityLevel: ActivityLevel.active),
-        const Profile(ageYears: 35, sex: Sex.female, heightCm: 160, weightKg: 55, activityLevel: ActivityLevel.lowActive),
+        const Profile(
+          ageYears: 35,
+          sex: Sex.female,
+          heightCm: 160,
+          weightKg: 55,
+          activityLevel: ActivityLevel.lowActive,
+        ),
         const Profile(ageYears: 55, sex: Sex.male, heightCm: 170, weightKg: 68, activityLevel: ActivityLevel.inactive),
-        const Profile(ageYears: 75, sex: Sex.female, heightCm: 155, weightKg: 50, activityLevel: ActivityLevel.lowActive),
+        const Profile(
+          ageYears: 75,
+          sex: Sex.female,
+          heightCm: 155,
+          weightKg: 50,
+          activityLevel: ActivityLevel.lowActive,
+        ),
       ];
       for (final p in samples) {
         final rep = dailyReport(pack, p, const []);
@@ -227,12 +229,8 @@ void main() {
         expect(rep.nutrients.length, greaterThanOrEqualTo(30));
       }
       // Mức sắt khuyến nghị nữ 35 tuổi là 18 mg, nữ 55 tuổi (mãn kinh) là 8 mg.
-      final f35 = dailyReport(pack, samples[1], const [])
-          .nutrients
-          .firstWhere((n) => n.nutrientId == 'iron');
-      final f75 = dailyReport(pack, samples[3], const [])
-          .nutrients
-          .firstWhere((n) => n.nutrientId == 'iron');
+      final f35 = dailyReport(pack, samples[1], const []).nutrients.firstWhere((n) => n.nutrientId == 'iron');
+      final f75 = dailyReport(pack, samples[3], const []).nutrients.firstWhere((n) => n.nutrientId == 'iron');
       expect(f35.target?.value, 18);
       expect(f75.target?.value, 8);
     });
@@ -294,10 +292,7 @@ void main() {
 
       // ulKey: vitA -> retinol (ulScope total), folate -> folicAcid (ulScope total).
       expect(lineCountsTowardUl(vitA, source: IntakeSource.food, amounts: const {'vitA': 500}), isFalse);
-      expect(
-        lineCountsTowardUl(vitA, source: IntakeSource.food, amounts: const {'vitA': 500, 'retinol': 300}),
-        isTrue,
-      );
+      expect(lineCountsTowardUl(vitA, source: IntakeSource.food, amounts: const {'vitA': 500, 'retinol': 300}), isTrue);
       expect(
         lineCountsTowardUl(
           vitA,
@@ -307,10 +302,7 @@ void main() {
         ),
         isTrue,
       );
-      expect(
-        lineCountsTowardUl(folate, source: IntakeSource.food, amounts: const {'folate': 400}),
-        isFalse,
-      );
+      expect(lineCountsTowardUl(folate, source: IntakeSource.food, amounts: const {'folate': 400}), isFalse);
       expect(
         lineCountsTowardUl(folate, source: IntakeSource.fortified, amounts: const {'folate': 400, 'folicAcid': 200}),
         isTrue,

@@ -34,21 +34,16 @@ class ParsedIngredientLine {
     this.needsCheck = false,
   });
 
-  ParsedIngredientLine copyWith({
-    String? form,
-    CompoundKind? compoundKind,
-    bool? needsCheck,
-  }) =>
-      ParsedIngredientLine(
-        rawLine: rawLine,
-        nutrientId: nutrientId,
-        freeName: freeName,
-        form: form ?? this.form,
-        amount: amount,
-        unit: unit,
-        compoundKind: compoundKind ?? this.compoundKind,
-        needsCheck: needsCheck ?? this.needsCheck,
-      );
+  ParsedIngredientLine copyWith({String? form, CompoundKind? compoundKind, bool? needsCheck}) => ParsedIngredientLine(
+    rawLine: rawLine,
+    nutrientId: nutrientId,
+    freeName: freeName,
+    form: form ?? this.form,
+    amount: amount,
+    unit: unit,
+    compoundKind: compoundKind ?? this.compoundKind,
+    needsCheck: needsCheck ?? this.needsCheck,
+  );
 }
 
 class ParsedLabelPackage {
@@ -199,10 +194,7 @@ class SupplementLabelParser {
       curr[0] = i;
       for (var j = 1; j <= b.length; j++) {
         final cost = a.codeUnitAt(i - 1) == b.codeUnitAt(j - 1) ? 0 : 1;
-        curr[j] = math.min(
-          math.min(curr[j - 1] + 1, prev[j] + 1),
-          prev[j - 1] + cost,
-        );
+        curr[j] = math.min(math.min(curr[j - 1] + 1, prev[j] + 1), prev[j - 1] + cost);
       }
       for (var j = 0; j <= b.length; j++) {
         prev[j] = curr[j];
@@ -246,8 +238,7 @@ class SupplementLabelParser {
       'mcgrae' || 'µgrae' || 'μgrae' || 'ugrae' => LabelUnit.ugRae,
       'mgne' => LabelUnit.mgNe,
       'mg' || 'mq' || 'm9' || 'milligram' || 'milligrams' => LabelUnit.mg,
-      'mcg' || 'µg' || 'μg' || 'ug' || 'meg' || 'ucg' || 'pcg' || 'u9' || 'microgram' || 'micrograms' =>
-        LabelUnit.ug,
+      'mcg' || 'µg' || 'μg' || 'ug' || 'meg' || 'ucg' || 'pcg' || 'u9' || 'microgram' || 'micrograms' => LabelUnit.ug,
       'iu' || 'ui' || '1u' || 'lu' || 'internationalunit' || 'internationalunits' => LabelUnit.iu,
       'g' || 'gram' || 'grams' => LabelUnit.g,
       _ => null,
@@ -309,10 +300,9 @@ class SupplementLabelParser {
       return (formId, CompoundKind.elemental);
     }
     final leads = _bareCompoundLeadWords[nutrientId] ?? const <String>[];
-    final bare = !prefix.contains('(') &&
-        prefixWords.every(
-          (w) => leads.any((l) => w == l || (l.length >= 5 && _fuzzyEquals(w, l, 2))),
-        );
+    final bare =
+        !prefix.contains('(') &&
+        prefixWords.every((w) => leads.any((l) => w == l || (l.length >= 5 && _fuzzyEquals(w, l, 2))));
     if (bare) return (formId, CompoundKind.compound);
     return (NutrientForm.unknown, CompoundKind.unknown);
   }
@@ -389,7 +379,8 @@ class SupplementLabelParser {
           suggestedUnit = CountUnit.tablet;
         }
       }
-      final nextIsAmountOnly = i + 1 < lines.length &&
+      final nextIsAmountOnly =
+          i + 1 < lines.length &&
           _amountUnitRe.hasMatch(lines[i + 1]) &&
           _matchNutrientId(lines[i + 1].toLowerCase()) == null;
       if (suggestedName == null &&
@@ -493,15 +484,17 @@ class SupplementLabelParser {
         form = NutrientForm.folicAcid;
       }
 
-      ingredients.add(ParsedIngredientLine(
-        rawLine: combinedLine,
-        nutrientId: matchedNid,
-        freeName: freeName,
-        form: form,
-        amount: amount,
-        unit: unit,
-        compoundKind: compoundKind,
-      ));
+      ingredients.add(
+        ParsedIngredientLine(
+          rawLine: combinedLine,
+          nutrientId: matchedNid,
+          freeName: freeName,
+          form: form,
+          amount: amount,
+          unit: unit,
+          compoundKind: compoundKind,
+        ),
+      );
       lastAddedRaw = indexed[i].$2;
     }
 
@@ -515,8 +508,7 @@ class SupplementLabelParser {
     );
   }
 
-  static List<ParsedIngredientLine> parseLines(List<String> rawLines) =>
-      parsePackage(rawLines).ingredients;
+  static List<ParsedIngredientLine> parseLines(List<String> rawLines) => parsePackage(rawLines).ingredients;
 
   /// Chuyển JSON từ Gemini Nano (on-device) thành [ParsedLabelPackage]; trả `null` nếu JSON lỗi hoặc rỗng.
   ///
@@ -539,12 +531,9 @@ class SupplementLabelParser {
         final unitStr = (item['unit'] as String?)?.trim();
         final unit = LabelUnitText.parse(unitStr);
         final formText = ((item['form'] as String?) ?? '').toLowerCase();
-        final explicitElemental = item['elemental'] == true ||
-            formText.contains('elemental') ||
-            formText.contains('nguyên tố');
-        final nid = _matchNutrientId(
-          '$name $formText ${unit == LabelUnit.ugDfe ? 'dfe' : ''}'.toLowerCase(),
-        );
+        final explicitElemental =
+            item['elemental'] == true || formText.contains('elemental') || formText.contains('nguyên tố');
+        final nid = _matchNutrientId('$name $formText ${unit == LabelUnit.ugDfe ? 'dfe' : ''}'.toLowerCase());
         final combined = '$name $formText'.toLowerCase();
 
         var form = NutrientForm.unknown;
@@ -573,15 +562,17 @@ class SupplementLabelParser {
           form = NutrientForm.folicAcid;
         }
 
-        ingredients.add(ParsedIngredientLine(
-          rawLine: '$name $amount ${unitStr ?? ''}'.trim(),
-          nutrientId: nid,
-          freeName: nid == null ? name : null,
-          form: form,
-          amount: amount,
-          unit: unit,
-          compoundKind: compoundKind,
-        ));
+        ingredients.add(
+          ParsedIngredientLine(
+            rawLine: '$name $amount ${unitStr ?? ''}'.trim(),
+            nutrientId: nid,
+            freeName: nid == null ? name : null,
+            form: form,
+            amount: amount,
+            unit: unit,
+            compoundKind: compoundKind,
+          ),
+        );
       }
       if (ingredients.isEmpty) return null;
 
@@ -601,8 +592,7 @@ class SupplementLabelParser {
     }
   }
 
-  static bool _sameAmount(double a, double b) =>
-      (a - b).abs() <= 1e-9 * math.max(1, a.abs());
+  static bool _sameAmount(double a, double b) => (a - b).abs() <= 1e-9 * math.max(1, a.abs());
 
   /// Đối chiếu từng dòng AI với chữ đọc từ ảnh (đặc tả Bổ sung 1, mục B1.5):
   /// - dòng khớp khi số và đơn vị có trên ảnh, bộ đọc chữ không gán cặp số đó cho dòng khác
@@ -610,11 +600,7 @@ class SupplementLabelParser {
   ///   ghi cùng chất bằng đơn vị khác trên cùng dòng, vd. "25 mcg (1,000 IU)");
   /// - dòng không khớp (kể cả đơn vị trống) mang `needsCheck`;
   /// - chất AI bỏ sót mà bộ đọc chữ thấy được thêm vào cuối.
-  static ParsedLabelPackage crossCheckAi(
-    ParsedLabelPackage ai,
-    ParsedLabelPackage parsed,
-    List<String> ocrLines,
-  ) {
+  static ParsedLabelPackage crossCheckAi(ParsedLabelPackage ai, ParsedLabelPackage parsed, List<String> ocrLines) {
     final tokens = <(double, LabelUnit, String, int)>[];
     for (final (seg, raw) in _splitSegmentsIndexed(ocrLines)) {
       for (final m in _amountUnitRe.allMatches(seg)) {
@@ -637,8 +623,7 @@ class SupplementLabelParser {
       final onImage = tokens.where((t) => t.$2 == unit && _sameAmount(t.$1, amount)).toList();
       final sameToken = parsed.ingredients.where((p) => same(p, amount, unit)).toList();
       // Cặp số đó đã thuộc dòng khác của bộ đọc chữ, kể cả dòng tên tự do.
-      final assignedElsewhere =
-          sameToken.isNotEmpty && !sameToken.any((p) => p.nutrientId == a.nutrientId);
+      final assignedElsewhere = sameToken.isNotEmpty && !sameToken.any((p) => p.nutrientId == a.nutrientId);
       // Bộ đọc chữ đọc cùng chất với số khác.
       final sameNutrient = a.nutrientId == null
           ? const <ParsedIngredientLine>[]
@@ -648,12 +633,9 @@ class SupplementLabelParser {
         final pUnit = p.unit;
         final pAmount = p.amount;
         if (pUnit == null || pAmount == null || pUnit == unit) return false;
-        return tokens.any(
-          (t) => onImageRaws.contains(t.$4) && t.$2 == pUnit && _sameAmount(t.$1, pAmount),
-        );
+        return tokens.any((t) => onImageRaws.contains(t.$4) && t.$2 == pUnit && _sameAmount(t.$1, pAmount));
       });
-      final conflict =
-          sameNutrient.isNotEmpty && !sameNutrient.any((p) => same(p, amount, unit)) && !dualUnit;
+      final conflict = sameNutrient.isNotEmpty && !sameNutrient.any((p) => same(p, amount, unit)) && !dualUnit;
       if (onImage.isEmpty || assignedElsewhere || conflict) {
         merged.add(a.copyWith(needsCheck: true));
         continue;
@@ -682,7 +664,8 @@ class SupplementLabelParser {
       final amount = p.amount;
       // Dòng tên tự do chỉ coi là đã có khi một dòng AI tên tự do khớp ảnh mang đúng số đó;
       // dòng AI lấy nhầm số của nó (đã gắn cần kiểm) không thay được dòng này.
-      final covered = amount != null &&
+      final covered =
+          amount != null &&
           merged.any(
             (a) =>
                 a.nutrientId == null &&

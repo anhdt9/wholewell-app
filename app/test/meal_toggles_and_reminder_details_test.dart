@@ -27,20 +27,16 @@ Future<AppState> _makeReadyState(
   );
   await state.start();
   await state.completeFirstConsent(ageYears: 30, caution: false);
-  await state.saveOnboardingBodyProfile(const Profile(
-    ageYears: 30,
-    sex: Sex.male,
-    heightCm: 170,
-    weightKg: 65,
-    activityLevel: ActivityLevel.active,
-  ));
+  await state.saveOnboardingBodyProfile(
+    const Profile(ageYears: 30, sex: Sex.male, heightCm: 170, weightKg: 65, activityLevel: ActivityLevel.active),
+  );
   return state;
 }
 
 Widget _wrap(AppState state, Widget child) => AppScope(
-      state: state,
-      child: MaterialApp(home: child),
-    );
+  state: state,
+  child: MaterialApp(home: child),
+);
 
 void main() {
   final pack = ReferencePack.fromJsonString(File('assets/reference_pack.json').readAsStringSync());
@@ -57,8 +53,9 @@ void main() {
       expect(DiaryController.defaultMealFor(DateTime(2026, 11, 27, 19, 15), noMeals), Meal.snack);
     });
 
-    testWidgets('DayTimesScreen bật/tắt bữa, giữ giờ cũ khi bật lại, tắt cả 3 hiện "Chỉ bữa phụ" trên MeScreen',
-        (tester) async {
+    testWidgets('DayTimesScreen bật/tắt bữa, giữ giờ cũ khi bật lại, tắt cả 3 hiện "Chỉ bữa phụ" trên MeScreen', (
+      tester,
+    ) async {
       final state = await _makeReadyState(pack);
       addTearDown(state.dispose);
 
@@ -99,19 +96,15 @@ void main() {
       expect(find.text('Chỉ bữa phụ'), findsOneWidget);
     });
 
-    testWidgets('AddFoodScreen, LabelFoodScreen, EditScheduleScreen ẩn bữa tắt; EditFoodScreen giữ được món cũ',
-        (tester) async {
+    testWidgets('AddFoodScreen, LabelFoodScreen, EditScheduleScreen ẩn bữa tắt; EditFoodScreen giữ được món cũ', (
+      tester,
+    ) async {
       final repo = InMemoryJournalRepository();
       final state = await _makeReadyState(pack, repo: repo);
       addTearDown(state.dispose);
 
       await state.diary.saveDayTimesSettings(
-        const DayTimesSettings(
-          hasBreakfast: false,
-          hasLunch: true,
-          hasDinner: false,
-          dayTimesConfirmed: true,
-        ),
+        const DayTimesSettings(hasBreakfast: false, hasLunch: true, hasDinner: false, dayTimesConfirmed: true),
       );
 
       // AddFoodScreen chỉ còn Trưa và Phụ.
@@ -182,8 +175,7 @@ void main() {
   });
 
   group('#27 Bỏ bước 4/4 Hiển thị calo trong onboarding', () {
-    testWidgets('CSDL cũ đang dở bước calorie_display (đã có profile) tự hoàn tất và vào Hôm nay',
-        (tester) async {
+    testWidgets('CSDL cũ đang dở bước calorie_display (đã có profile) tự hoàn tất và vào Hôm nay', (tester) async {
       final dir = Directory.systemTemp.createTempSync('ww_legacy_cal_');
       addTearDown(() {
         if (dir.existsSync()) dir.deleteSync(recursive: true);
@@ -198,13 +190,9 @@ void main() {
         const ConsentInput(contentVersion: mvpConsentVersion, ageYears: 29, caution: false),
       );
       final repo = (res as Opened).repository;
-      await repo.saveProfile(const Profile(
-        ageYears: 29,
-        sex: Sex.female,
-        heightCm: 162,
-        weightKg: 54,
-        activityLevel: ActivityLevel.active,
-      ));
+      await repo.saveProfile(
+        const Profile(ageYears: 29, sex: Sex.female, heightCm: 162, weightKg: 54, activityLevel: ActivityLevel.active),
+      );
       await repo.saveOnboardingStep(OnboardingStep.calorieDisplay);
       await repo.close();
 
@@ -226,8 +214,7 @@ void main() {
   });
 
   group('#28 Tùy chọn Hiện tên sản phẩm trên thông báo (mặc định tắt)', () {
-    testWidgets('Mặc định không gửi detailText; bật công tắc đồng bộ tên SP, tắt lập tức xóa sạch',
-        (tester) async {
+    testWidgets('Mặc định không gửi detailText; bật công tắc đồng bộ tên SP, tắt lập tức xóa sạch', (tester) async {
       final scheduler = FakeNotificationScheduler();
       final state = await _makeReadyState(pack, scheduler: scheduler);
       addTearDown(state.dispose);

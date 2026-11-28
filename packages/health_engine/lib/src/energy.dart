@@ -6,18 +6,18 @@ import 'models.dart';
 import 'reference_pack.dart';
 
 String _levelKey(ActivityLevel l) => switch (l) {
-      ActivityLevel.inactive => 'inactive',
-      ActivityLevel.lowActive => 'lowActive',
-      ActivityLevel.active => 'active',
-      ActivityLevel.veryActive => 'veryActive',
-    };
+  ActivityLevel.inactive => 'inactive',
+  ActivityLevel.lowActive => 'lowActive',
+  ActivityLevel.active => 'active',
+  ActivityLevel.veryActive => 'veryActive',
+};
 
 String _bmiKey(BmiClass b) => switch (b) {
-      BmiClass.underweight => 'underweight',
-      BmiClass.normal => 'normal',
-      BmiClass.overweight => 'overweight',
-      BmiClass.obese => 'obese',
-    };
+  BmiClass.underweight => 'underweight',
+  BmiClass.normal => 'normal',
+  BmiClass.overweight => 'overweight',
+  BmiClass.obese => 'obese',
+};
 
 double _tee(EerCoef c, Profile p, {int gestWeek = 0}) =>
     c.a + c.age * p.ageYears + c.height * p.heightCm + c.weight * p.weightKg + c.gestWeek * gestWeek;
@@ -44,8 +44,7 @@ int eerKcal(ReferencePack pack, Profile p) {
       } else {
         final bmi = p.prePregnancyBmi;
         if (bmi == null) throw const NotComputed(NotComputedReason.missingPrePregnancyBmi);
-        kcal = _tee(pack.eerPregnancy[level]!, p, gestWeek: week) +
-            pack.pregnancyDeposition[_bmiKey(bmi)]!;
+        kcal = _tee(pack.eerPregnancy[level]!, p, gestWeek: week) + pack.pregnancyDeposition[_bmiKey(bmi)]!;
       }
     case EerType.lactating:
       final base = _tee(pack.eerAdult['female']![level]!, p);

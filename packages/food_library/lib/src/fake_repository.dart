@@ -28,26 +28,29 @@ class FakeFoodLibraryRepository implements FoodLibraryRepository {
   @override
   Future<List<FoodSummary>> search(String query, {int limit = 30}) async {
     final q = normalizeSearchAscii(query);
-    final tokens = [for (final t in q.split(' ')) if (t.isNotEmpty) t];
+    final tokens = [
+      for (final t in q.split(' '))
+        if (t.isNotEmpty) t,
+    ];
     final out = <FoodSummary>[];
     for (final f in _foods) {
-      final haystack = normalizeSearchAscii(
-        '${f.nameVi} ${f.aliasesVi ?? ''} ${f.nameEn ?? ''}',
-      );
+      final haystack = normalizeSearchAscii('${f.nameVi} ${f.aliasesVi ?? ''} ${f.nameEn ?? ''}');
       if (tokens.every(haystack.contains)) {
         final dp = f.defaultPortion;
-        out.add(FoodSummary(
-          id: f.id,
-          kind: f.kind,
-          nameVi: f.nameVi,
-          nameEn: f.nameEn,
-          isEstimate: f.isEstimate,
-          addedSugarKnown: f.addedSugarKnown,
-          defaultPortionId: f.defaultPortionId,
-          defaultPortionLabel: dp?.labelVi,
-          defaultPortionGrams: dp?.grams,
-          energyKcalPer100g: f.displayAmountPer100g('energyKcal') ?? 0,
-        ));
+        out.add(
+          FoodSummary(
+            id: f.id,
+            kind: f.kind,
+            nameVi: f.nameVi,
+            nameEn: f.nameEn,
+            isEstimate: f.isEstimate,
+            addedSugarKnown: f.addedSugarKnown,
+            defaultPortionId: f.defaultPortionId,
+            defaultPortionLabel: dp?.labelVi,
+            defaultPortionGrams: dp?.grams,
+            energyKcalPer100g: f.displayAmountPer100g('energyKcal') ?? 0,
+          ),
+        );
         if (out.length >= limit) break;
       }
     }

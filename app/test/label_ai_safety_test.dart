@@ -20,13 +20,7 @@ final _pack = ReferencePack.fromJsonString(_packJson);
 Future<AppState> _readyState() async {
   final repo = InMemoryJournalRepository();
   await repo.saveProfileWithCaution(
-    const Profile(
-      ageYears: 30,
-      sex: Sex.male,
-      heightCm: 170,
-      weightKg: 65,
-      activityLevel: ActivityLevel.inactive,
-    ),
+    const Profile(ageYears: 30, sex: Sex.male, heightCm: 170, weightKg: 65, activityLevel: ActivityLevel.inactive),
     caution: false,
   );
   await repo.saveHideCalories(false);
@@ -37,12 +31,9 @@ Future<AppState> _readyState() async {
 }
 
 Widget _wrap(AppState state, Widget child) => AppScope(
-      state: state,
-      child: MaterialApp(
-        theme: buildWholeWellTheme(Brightness.light),
-        home: child,
-      ),
-    );
+  state: state,
+  child: MaterialApp(theme: buildWholeWellTheme(Brightness.light), home: child),
+);
 
 void _phoneViewport(WidgetTester tester) {
   tester.view.physicalSize = const Size(1080, 2600);
@@ -57,27 +48,20 @@ ParsedLabelPackage _cross(List<Map<String, Object?>> ai, List<String> ocr) =>
     SupplementLabelParser.crossCheckAi(_ai(ai), SupplementLabelParser.parsePackage(ocr), ocr);
 
 DsldProductDetail _dsld(List<DsldFact> facts) => DsldProductDetail(
-      dsldId: 1,
-      barcode: '012345678905',
-      productName: 'Test Multi',
-      brandName: 'Brand',
-      servingSize: '1 Tablet(s)',
-      supplementForm: 'Tablet',
-      netContents: '60 Tablet(s)',
-      suggestedUse: '',
-      otherIngredients: '',
-      facts: facts,
-    );
+  dsldId: 1,
+  barcode: '012345678905',
+  productName: 'Test Multi',
+  brandName: 'Brand',
+  servingSize: '1 Tablet(s)',
+  supplementForm: 'Tablet',
+  netContents: '60 Tablet(s)',
+  suggestedUse: '',
+  otherIngredients: '',
+  facts: facts,
+);
 
 DsldFact _fact(String ingredient, String amount, String unit, {String category = 'vitamin'}) =>
-    DsldFact(
-      ingredient: ingredient,
-      category: category,
-      amount: amount,
-      unit: unit,
-      dvPercent: '',
-      dvGroup: '',
-    );
+    DsldFact(ingredient: ingredient, category: category, amount: amount, unit: unit, dvPercent: '', dvGroup: '');
 
 void main() {
   group('LabelUnitText.parse', () {
@@ -128,11 +112,7 @@ void main() {
 
   group('Bộ đọc chữ OCR', () {
     test('đọc đơn vị viết liền và chữ mu Hy Lạp', () {
-      final lines = SupplementLabelParser.parseLines(const [
-        'Folate 667 mcgDFE',
-        'Vitamin D 25 μg',
-        'Niacin 16 mgNE',
-      ]);
+      final lines = SupplementLabelParser.parseLines(const ['Folate 667 mcgDFE', 'Vitamin D 25 μg', 'Niacin 16 mgNE']);
       expect(lines.map((l) => l.unit), [LabelUnit.ugDfe, LabelUnit.ug, LabelUnit.mgNe]);
     });
   });
@@ -413,9 +393,7 @@ void main() {
       labelBasisUnit: 'gói',
       createdAt: DateTime(2026, 11, 28),
       archived: false,
-      lines: const [
-        CustomFoodLine(nutrientId: 'vitC', labelAmount: 60, labelUnit: 'milli', source: IntakeSource.food),
-      ],
+      lines: const [CustomFoodLine(nutrientId: 'vitC', labelAmount: 60, labelUnit: 'milli', source: IntakeSource.food)],
     );
 
     test('ghi món đã lưu hỏng báo đúng lời, không bật cờ "Thử lại"', () async {
@@ -454,11 +432,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           state,
-          FoodPortionScreen.custom(
-            custom: corrupt,
-            initialMeal: Meal.breakfast,
-            initialAt: DateTime(2026, 11, 28, 8),
-          ),
+          FoodPortionScreen.custom(custom: corrupt, initialMeal: Meal.breakfast, initialAt: DateTime(2026, 11, 28, 8)),
         ),
       );
       await tester.pumpAndSettle();
@@ -470,17 +444,17 @@ void main() {
 
   group('Màn Xác nhận thành phần', () {
     List<EditableIngredient> lines() => [
-          EditableIngredient(nutrientId: 'folate', labelAmount: 667, origin: IngredientOrigin.ocr),
-          EditableIngredient(nutrientId: 'magnesium', labelUnit: LabelUnit.mg, origin: IngredientOrigin.ocr),
-          EditableIngredient(
-            nutrientId: 'vitC',
-            labelAmount: 50,
-            labelUnit: LabelUnit.mg,
-            origin: IngredientOrigin.ocr,
-            needsCheck: true,
-          ),
-          EditableIngredient(nutrientId: 'vitD', labelAmount: 25, labelUnit: LabelUnit.ug, origin: IngredientOrigin.ocr),
-        ];
+      EditableIngredient(nutrientId: 'folate', labelAmount: 667, origin: IngredientOrigin.ocr),
+      EditableIngredient(nutrientId: 'magnesium', labelUnit: LabelUnit.mg, origin: IngredientOrigin.ocr),
+      EditableIngredient(
+        nutrientId: 'vitC',
+        labelAmount: 50,
+        labelUnit: LabelUnit.mg,
+        origin: IngredientOrigin.ocr,
+        needsCheck: true,
+      ),
+      EditableIngredient(nutrientId: 'vitD', labelAmount: 25, labelUnit: LabelUnit.ug, origin: IngredientOrigin.ocr),
+    ];
 
     Future<void> pumpConfirm(WidgetTester tester, List<EditableIngredient> initial) async {
       _phoneViewport(tester);
@@ -488,11 +462,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           state,
-          ConfirmIngredientsScreen(
-            initialLines: initial,
-            showAiNote: true,
-            onConfirmed: (ctx, drafts) async {},
-          ),
+          ConfirmIngredientsScreen(initialLines: initial, showAiNote: true, onConfirmed: (ctx, drafts) async {}),
         ),
       );
       await tester.pumpAndSettle();
@@ -570,11 +540,7 @@ void main() {
 
   group('Kiểm toán', () {
     test('app/lib không còn chỗ mặc định đơn vị mg', () {
-      final banned = [
-        RegExp(r'_\s*=>\s*LabelUnit\.mg\b'),
-        RegExp(r'\?\?\s*LabelUnit\.mg\b'),
-        RegExp(r"\?\?\s*'mg'"),
-      ];
+      final banned = [RegExp(r'_\s*=>\s*LabelUnit\.mg\b'), RegExp(r'\?\?\s*LabelUnit\.mg\b'), RegExp(r"\?\?\s*'mg'")];
       final hits = <String>[];
       for (final f in Directory('lib').listSync(recursive: true).whereType<File>()) {
         if (!f.path.endsWith('.dart')) continue;

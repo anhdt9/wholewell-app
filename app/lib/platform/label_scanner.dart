@@ -134,9 +134,7 @@ class MlKitOcrEngine implements OcrEngine {
       }
       return OcrLabelResult(lines: merged);
     } on Object {
-      return const OcrLabelResult(
-        errorMessage: 'Không đọc được chữ rõ trên ảnh. Hãy chụp lại hoặc nhập tay.',
-      );
+      return const OcrLabelResult(errorMessage: 'Không đọc được chữ rõ trên ảnh. Hãy chụp lại hoặc nhập tay.');
     }
   }
 
@@ -163,9 +161,7 @@ class MlKitOcrEngine implements OcrEngine {
     if (ocrLines.isEmpty) return null;
     try {
       const channel = MethodChannel('vn.wholewell.app/genai_label');
-      return await channel.invokeMethod<String>('extractLabelJson', {
-        'ocrText': ocrLines.join('\n'),
-      });
+      return await channel.invokeMethod<String>('extractLabelJson', {'ocrText': ocrLines.join('\n')});
     } on Object {
       return null;
     }
@@ -213,8 +209,7 @@ class FakeOcrEngine implements OcrEngine {
   Future<OcrImagePickResult> pickLabelImageFromGallery() async => nextGalleryResult;
 
   @override
-  Future<OcrLabelResult> recognizeLabelFromImage(String imagePath) async =>
-      resultsByPath[imagePath] ?? nextOcrResult;
+  Future<OcrLabelResult> recognizeLabelFromImage(String imagePath) async => resultsByPath[imagePath] ?? nextOcrResult;
 
   @override
   Future<OcrLabelResult> recognizeLabelFromImages(List<String> imagePaths) async {

@@ -32,10 +32,7 @@ void main() {
         secret: recoveryKey,
       );
 
-      final decoded = await BackupCodec.decryptSnapshot(
-        backupBytes: encrypted,
-        secret: recoveryKey,
-      );
+      final decoded = await BackupCodec.decryptSnapshot(backupBytes: encrypted, secret: recoveryKey);
       expect(decoded.schemaVersion, currentSchemaVersion);
       expect(decoded.plainSqliteBytes, plain);
     });
@@ -51,10 +48,7 @@ void main() {
       );
 
       await expectLater(
-        () => BackupCodec.decryptSnapshot(
-          backupBytes: encrypted,
-          secret: 'mat-khau-sai-1234',
-        ),
+        () => BackupCodec.decryptSnapshot(backupBytes: encrypted, secret: 'mat-khau-sai-1234'),
         throwsA(isA<BackupWrongSecretException>()),
       );
     });
@@ -84,10 +78,7 @@ void main() {
       );
 
       await expectLater(
-        () => BackupCodec.decryptSnapshot(
-          backupBytes: Uint8List.fromList([1, 2, 3]),
-          secret: 'secret-1234',
-        ),
+        () => BackupCodec.decryptSnapshot(backupBytes: Uint8List.fromList([1, 2, 3]), secret: 'secret-1234'),
         throwsA(isA<BackupCorruptedException>()),
       );
     });
@@ -101,13 +92,7 @@ void main() {
       final repo1 = await createdRepo(opener);
 
       await repo1.saveProfile(
-        const Profile(
-          ageYears: 30,
-          sex: Sex.female,
-          heightCm: 160,
-          weightKg: 52,
-          activityLevel: ActivityLevel.active,
-        ),
+        const Profile(ageYears: 30, sex: Sex.female, heightCm: 160, weightKg: 52, activityLevel: ActivityLevel.active),
       );
       await repo1.addWater(testNow(), 350);
 
@@ -168,11 +153,7 @@ void main() {
         iterations: 1,
       );
 
-      final res = await opener.restoreFromBackup(
-        backupBytes: backupBytes,
-        secret: 'wrong-pass',
-        openRepository: repo,
-      );
+      final res = await opener.restoreFromBackup(backupBytes: backupBytes, secret: 'wrong-pass', openRepository: repo);
       expect(res, isA<RestoreWrongSecret>());
       // Repo cũ vẫn mở và giữ nguyên dữ liệu.
       final waters = await repo.waterOn(dayKey(testNow()));
@@ -208,19 +189,13 @@ void main() {
       final dstKeys = FakeSecureKeyStore();
       final dstOpener = testOpener(dstDir, dstKeys);
 
-      final tooNew = await dstOpener.restoreFromBackup(
-        backupBytes: futureBackup,
-        secret: 'cross-device-1',
-      );
+      final tooNew = await dstOpener.restoreFromBackup(backupBytes: futureBackup, secret: 'cross-device-1');
       expect(tooNew, isA<RestoreNeedsUpdate>());
       expect(dstOpener.files.db.existsSync(), isFalse);
       expect(dstOpener.files.restoreTmp.existsSync(), isFalse);
 
       // Khôi phục bản hợp lệ.
-      final ok = await dstOpener.restoreFromBackup(
-        backupBytes: backupBytes,
-        secret: 'cross-device-1',
-      );
+      final ok = await dstOpener.restoreFromBackup(backupBytes: backupBytes, secret: 'cross-device-1');
       expect(ok, isA<RestoreSucceeded>());
       final opened = (ok as RestoreSucceeded).openOutcome;
       expect(opened, isA<Opened>());
@@ -266,10 +241,7 @@ void main() {
       stuckOpener.files.wipeMarker.writeAsStringSync('wiped');
       stuckOpener.files.db.writeAsBytesSync([9, 8, 7]);
 
-      final badRes = await stuckOpener.restoreFromBackup(
-        backupBytes: badSqliteBackup,
-        secret: 'my-secret',
-      );
+      final badRes = await stuckOpener.restoreFromBackup(backupBytes: badSqliteBackup, secret: 'my-secret');
       expect(badRes, isA<RestoreCorrupted>());
       // wipeMarker và tệp db hỏng phải còn nguyên vì kiểm tra bản tạm thất bại.
       expect(stuckOpener.files.wipeMarker.existsSync(), isTrue);
@@ -277,10 +249,7 @@ void main() {
 
       // Khôi phục bản hợp lệ -> wipeMarker được dọn, khóa mới được tạo, mở thành công.
       stuckKeys.stuckOnRead = false;
-      final okRes = await stuckOpener.restoreFromBackup(
-        backupBytes: goodBackup,
-        secret: 'my-secret',
-      );
+      final okRes = await stuckOpener.restoreFromBackup(backupBytes: goodBackup, secret: 'my-secret');
       expect(okRes, isA<RestoreSucceeded>());
       final opened = (okRes as RestoreSucceeded).openOutcome;
       expect(opened, isA<Opened>());
@@ -315,12 +284,7 @@ void main() {
       await driftRepo.addWater(testNow(), 200);
       final pid = await driftRepo.addProduct('Vitamin D3', CountUnit.capsule, 1);
       await driftRepo.saveProductIngredients(pid, const [
-        IngredientDraft(
-          nutrientId: 'vit_d',
-          form: 'cholecalciferol',
-          amountPerServing: 25,
-          unit: 'mcg',
-        ),
+        IngredientDraft(nutrientId: 'vit_d', form: 'cholecalciferol', amountPerServing: 25, unit: 'mcg'),
       ]);
 
       final driftJson = await driftRepo.exportReadableJson();
@@ -383,10 +347,7 @@ void main() {
         now: testNow,
       );
 
-      final res = await realOpener.restoreFromBackup(
-        backupBytes: v1Backup,
-        secret: 'v1-secret',
-      );
+      final res = await realOpener.restoreFromBackup(backupBytes: v1Backup, secret: 'v1-secret');
       expect(res, isA<RestoreSucceeded>());
       final opened = (res as RestoreSucceeded).openOutcome;
       expect(opened, isA<Opened>());

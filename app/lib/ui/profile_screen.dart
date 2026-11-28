@@ -88,13 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final bool ok;
     try {
       ok = await state.saveProfileFromSettings(
-        Profile(
-          ageYears: age,
-          sex: _sex,
-          heightCm: hc.value!,
-          weightKg: wc.value!,
-          activityLevel: _level,
-        ),
+        Profile(ageYears: age, sex: _sex, heightCm: hc.value!, weightKg: wc.value!, activityLevel: _level),
         caution: _caution,
       );
     } finally {
@@ -105,11 +99,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Navigator.of(context).maybePop();
   }
 
-  Future<void> _wipeFromPregnancyCard() => confirmAndWipeAllData(
-        context,
-        isMounted: () => mounted,
-        onBusyChanged: (b) => setState(() => _saving = b),
-      );
+  Future<void> _wipeFromPregnancyCard() =>
+      confirmAndWipeAllData(context, isMounted: () => mounted, onBusyChanged: (b) => setState(() => _saving = b));
 
   @override
   Widget build(BuildContext context) {
@@ -127,10 +118,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             controller: _ageCtl,
             enabled: !_saving,
             keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: 'Tuổi',
-              errorText: _ageError,
-            ),
+            decoration: InputDecoration(labelText: 'Tuổi', errorText: _ageError),
             onChanged: (_) => setState(() => _ageError = _validateAge(minAge)),
           ),
           const SizedBox(height: 16),
@@ -176,11 +164,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Lưu'),
           ),
           const SizedBox(height: 24),

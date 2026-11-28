@@ -28,11 +28,7 @@ class FoodPortion {
   final String labelVi;
   final double grams;
 
-  const FoodPortion({
-    required this.id,
-    required this.labelVi,
-    required this.grams,
-  });
+  const FoodPortion({required this.id, required this.labelVi, required this.grams});
 }
 
 class FoodNutrientPer100g {

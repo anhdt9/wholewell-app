@@ -34,11 +34,7 @@ void main() {
                   semanticsLabel: 'Magie, vượt giới hạn',
                 ),
                 SizedBox(height: 12),
-                TwoSegmentProgressBar(
-                  foodAmount: 0,
-                  supplementAmount: 0,
-                  targetAmount: 0,
-                ),
+                TwoSegmentProgressBar(foodAmount: 0, supplementAmount: 0, targetAmount: 0),
               ],
             ),
           ),
@@ -54,12 +50,7 @@ void main() {
         _wrap(
           const Padding(
             padding: EdgeInsets.all(16),
-            child: TwoSegmentProgressBar(
-              foodAmount: 50,
-              supplementAmount: 50,
-              targetAmount: 80,
-              overLimit: true,
-            ),
+            child: TwoSegmentProgressBar(foodAmount: 50, supplementAmount: 50, targetAmount: 80, overLimit: true),
           ),
           brightness: Brightness.dark,
         ),
@@ -70,13 +61,7 @@ void main() {
 
     testWidgets('EnergyArcGauge hiển thị số tabular, tôn trọng hideCaloriesOverride', (tester) async {
       await tester.pumpWidget(
-        _wrap(
-          const EnergyArcGauge(
-            consumedKcal: 1150,
-            targetKcal: 2000,
-            hideCaloriesOverride: false,
-          ),
-        ),
+        _wrap(const EnergyArcGauge(consumedKcal: 1150, targetKcal: 2000, hideCaloriesOverride: false)),
       );
       await tester.pumpAndSettle();
 
@@ -84,13 +69,7 @@ void main() {
       expect(find.text('/ 2000 kcal'), findsOneWidget);
 
       await tester.pumpWidget(
-        _wrap(
-          const EnergyArcGauge(
-            consumedKcal: 1150,
-            targetKcal: 2000,
-            hideCaloriesOverride: true,
-          ),
-        ),
+        _wrap(const EnergyArcGauge(consumedKcal: 1150, targetKcal: 2000, hideCaloriesOverride: true)),
       );
       await tester.pumpAndSettle();
 
@@ -108,12 +87,7 @@ void main() {
               children: [
                 TargetRangeBar(percent: 8, minPercent: 10, maxPercent: 35),
                 SizedBox(height: 8),
-                TargetRangeBar(
-                  percent: 25,
-                  minPercent: 10,
-                  maxPercent: 35,
-                  semanticsLabel: 'Đạm 25%',
-                ),
+                TargetRangeBar(percent: 25, minPercent: 10, maxPercent: 35, semanticsLabel: 'Đạm 25%'),
                 SizedBox(height: 8),
                 TargetRangeBar(percent: 72, minPercent: 45, maxPercent: 65),
               ],
@@ -134,10 +108,7 @@ void main() {
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const EmptyState(
-                title: 'Chưa có dữ liệu',
-                message: 'Thêm món đầu tiên để bắt đầu.',
-              ),
+              const EmptyState(title: 'Chưa có dữ liệu', message: 'Thêm món đầu tiên để bắt đầu.'),
               ErrorState(
                 title: 'Không đọc được',
                 message: 'Kiểm tra lại kết nối hoặc thử lại.',
@@ -176,10 +147,7 @@ void main() {
                           children: [
                             const Text('Nội dung sheet'),
                             const SizedBox(height: AppSpacing.md),
-                            FilledButton(
-                              onPressed: () => Navigator.of(sheetCtx).pop('ok'),
-                              child: const Text('Chọn'),
-                            ),
+                            FilledButton(onPressed: () => Navigator.of(sheetCtx).pop('ok'), child: const Text('Chọn')),
                           ],
                         ),
                       ),
@@ -204,12 +172,7 @@ void main() {
 
     testWidgets('LoadingSkeletonBox render kích thước chuẩn và chạy animation an toàn', (tester) async {
       await tester.pumpWidget(
-        _wrap(
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: LoadingSkeletonBox(width: 200, height: 24),
-          ),
-        ),
+        _wrap(const Padding(padding: EdgeInsets.all(16), child: LoadingSkeletonBox(width: 200, height: 24))),
       );
       await tester.pump(const Duration(milliseconds: 280));
       final box = tester.renderObject<RenderBox>(find.byType(LoadingSkeletonBox));

@@ -79,16 +79,17 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
   }
 
   double get _currentKcal => LabelFoodBuilder.previewEditEntryKcal(
-        widget.entry,
-        qty: _qty,
-        unitLabel: _unitLabel,
-        libraryDetail: _libraryDetail,
-      );
+    widget.entry,
+    qty: _qty,
+    unitLabel: _unitLabel,
+    libraryDetail: _libraryDetail,
+  );
 
   double? _selectedGrams(FoodDetail detail) => detail.gramsForPortion(_unitLabel, _qty);
 
   void _stepQty(int dir) {
-    final isGram = _unitLabel.toLowerCase() == 'gram' || _unitLabel.toLowerCase() == 'g' || _unitLabel.toLowerCase() == 'ml';
+    final isGram =
+        _unitLabel.toLowerCase() == 'gram' || _unitLabel.toLowerCase() == 'g' || _unitLabel.toLowerCase() == 'ml';
     double next;
     if (isGram) {
       if (dir > 0) {
@@ -223,9 +224,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                 else
                   Wrap(
                     spacing: 8,
-                    children: [
-                      ChoiceChip(label: Text(_unitLabel), selected: true, onSelected: (_) {}),
-                    ],
+                    children: [ChoiceChip(label: Text(_unitLabel), selected: true, onSelected: (_) {})],
                   ),
                 const SizedBox(height: 12),
                 Row(
@@ -245,9 +244,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                         controller: _qtyCtrl,
                         textAlign: TextAlign.center,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: InputDecoration(
-                          suffixText: _unitLabel,
-                        ),
+                        decoration: InputDecoration(suffixText: _unitLabel),
                         onChanged: (raw) {
                           final v = double.tryParse(raw.trim().replaceAll(',', '.'));
                           setState(() {
@@ -280,10 +277,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                 Text('Bữa', style: t.titleSmall),
                 const SizedBox(height: 8),
                 SegmentedButton<Meal>(
-                  segments: enabledMealSegments(
-                    AppScope.of(context).diary.dayTimesSettings,
-                    alwaysInclude: _meal,
-                  ),
+                  segments: enabledMealSegments(AppScope.of(context).diary.dayTimesSettings, alwaysInclude: _meal),
                   selected: {_meal},
                   onSelectionChanged: (s) => setState(() => _meal = s.first),
                 ),

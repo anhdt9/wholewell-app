@@ -9,10 +9,10 @@ import '../design_system/tokens.dart';
 import '../labels.dart';
 
 String _ulScopeText(UlScope s) => switch (s) {
-      UlScope.total => 'Tính mọi nguồn',
-      UlScope.supplement => 'Chỉ tính bổ sung bạn ghi, không tính thức ăn',
-      UlScope.synthetic => 'Tính từ thực phẩm bổ sung và thực phẩm tăng cường',
-    };
+  UlScope.total => 'Tính mọi nguồn',
+  UlScope.supplement => 'Chỉ tính bổ sung bạn ghi, không tính thức ăn',
+  UlScope.synthetic => 'Tính từ thực phẩm bổ sung và thực phẩm tăng cường',
+};
 
 Future<void> presentFoodFeedback(
   BuildContext context, {
@@ -49,95 +49,92 @@ Future<void> presentFoodFeedback(
                 Row(
                   children: [
                     Expanded(child: Text(feedback.summaryText, style: t.bodyMedium)),
-                  if (onEdit != null)
-                    TextButton(
+                    if (onEdit != null)
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          onEdit();
+                        },
+                        child: const Text('Sửa'),
+                      ),
+                  ],
+                ),
+                for (final s in feedback.mealsOverSugar)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      'Bữa ${mealLabel(s.meal)} có ${fmt(s.grams)} g đường bổ sung, quá giới hạn ${fmt(pack.addedSugarMaxGramsPerMeal)} g mỗi bữa.',
+                      style: t.bodySmall,
+                    ),
+                  ),
+                const SizedBox(height: 8),
+                for (final f in feedback.newUlFlags) ...[
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(color: cs.errorContainer, borderRadius: BorderRadius.circular(12)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '⚠ ${pack.nutrients[f.nutrientId]?.nameVi ?? f.nutrientId} vượt giới hạn an toàn'
+                          '${f.isSevenDayAverage ? ' (trung bình ${f.dayCount} ngày)' : ''}',
+                          style: t.titleSmall?.copyWith(color: cs.onErrorContainer, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Đã ghi: ${fmt(f.amount)} ${unitLabel(pack.nutrients[f.nutrientId]?.unit ?? '')} · '
+                          'Giới hạn: ${fmt(f.ul)} · Vượt: ${fmt(f.excess)} (${f.percentOver.round()}%)',
+                          style: t.bodyMedium?.copyWith(color: cs.onErrorContainer),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(_ulScopeText(f.scope), style: t.bodySmall?.copyWith(color: cs.onErrorContainer)),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Hỏi bác sĩ hoặc dược sĩ nếu cần.',
+                          style: t.bodySmall?.copyWith(color: cs.onErrorContainer),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                if (feedback.stockShortfall > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Row(
+                      children: [
+                        const Icon(LucideIcons.package, size: 18),
+                        const SizedBox(width: 8),
+                        const Expanded(child: Text('Kho đã hết · Thêm hộp')),
+                        if (onAddBox != null)
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              onAddBox();
+                            },
+                            child: const Text('Thêm hộp'),
+                          ),
+                      ],
+                    ),
+                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('Đã hiểu')),
+                    ),
+                  ],
+                ),
+                if (onUndo != null)
+                  Center(
+                    child: TextButton(
                       onPressed: () {
                         Navigator.pop(ctx);
-                        onEdit();
+                        onUndo();
                       },
-                      child: const Text('Sửa'),
-                    ),
-                ],
-              ),
-              for (final s in feedback.mealsOverSugar)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(
-                    'Bữa ${mealLabel(s.meal)} có ${fmt(s.grams)} g đường bổ sung, quá giới hạn ${fmt(pack.addedSugarMaxGramsPerMeal)} g mỗi bữa.',
-                    style: t.bodySmall,
-                  ),
-                ),
-              const SizedBox(height: 8),
-              for (final f in feedback.newUlFlags) ...[
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: cs.errorContainer,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '⚠ ${pack.nutrients[f.nutrientId]?.nameVi ?? f.nutrientId} vượt giới hạn an toàn'
-                        '${f.isSevenDayAverage ? ' (trung bình ${f.dayCount} ngày)' : ''}',
-                        style: t.titleSmall?.copyWith(color: cs.onErrorContainer, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Đã ghi: ${fmt(f.amount)} ${unitLabel(pack.nutrients[f.nutrientId]?.unit ?? '')} · '
-                        'Giới hạn: ${fmt(f.ul)} · Vượt: ${fmt(f.excess)} (${f.percentOver.round()}%)',
-                        style: t.bodyMedium?.copyWith(color: cs.onErrorContainer),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(_ulScopeText(f.scope), style: t.bodySmall?.copyWith(color: cs.onErrorContainer)),
-                      const SizedBox(height: 4),
-                      Text('Hỏi bác sĩ hoặc dược sĩ nếu cần.', style: t.bodySmall?.copyWith(color: cs.onErrorContainer)),
-                    ],
-                  ),
-                ),
-              ],
-              if (feedback.stockShortfall > 0)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Row(
-                    children: [
-                      const Icon(LucideIcons.package, size: 18),
-                      const SizedBox(width: 8),
-                      const Expanded(child: Text('Kho đã hết · Thêm hộp')),
-                      if (onAddBox != null)
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(ctx);
-                            onAddBox();
-                          },
-                          child: const Text('Thêm hộp'),
-                        ),
-                    ],
-                  ),
-                ),
-              Row(
-                children: [
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      child: const Text('Đã hiểu'),
+                      child: const Text('Hoàn tác lần ghi'),
                     ),
                   ),
-                ],
-              ),
-              if (onUndo != null)
-                Center(
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      onUndo();
-                    },
-                    child: const Text('Hoàn tác lần ghi'),
-                  ),
-                ),
               ],
             ),
           ),

@@ -17,11 +17,7 @@ abstract interface class JournalRepository {
 
   Future<HealthConsentStatus?> latestHealthConsent();
   Future<ConsentProfileState?> loadConsentProfile();
-  Future<void> upgradeHealthConsent({
-    required String contentVersion,
-    required int ageYears,
-    required bool caution,
-  });
+  Future<void> upgradeHealthConsent({required String contentVersion, required int ageYears, required bool caution});
 
   /// null khi chưa xong Hồ sơ cơ thể (giới tính, chiều cao, cân nặng còn trống).
   Future<Profile?> loadProfile();
@@ -84,12 +80,7 @@ abstract interface class JournalRepository {
   Future<List<CustomFood>> searchCustomFoods(String query, {int limit = 30});
   Future<void> archiveCustomFood(int id);
 
-  Future<int> addProduct(
-    String name,
-    CountUnit unit,
-    double unitsPerServing, {
-    String? barcode,
-  });
+  Future<int> addProduct(String name, CountUnit unit, double unitsPerServing, {String? barcode});
   Future<Product> productById(int id);
   Future<Product?> productByBarcode(String barcode);
   Future<List<ProductSummary>> listProducts({bool includeArchived = false});
@@ -111,12 +102,7 @@ abstract interface class JournalRepository {
   Future<void> deleteBox(int boxId);
 
   Future<int> addSchedule(int productId, int timeOfDay, double servings, {required String validFrom});
-  Future<ScheduleChange> updateSchedule(
-    int id, {
-    int? timeOfDay,
-    double? servings,
-    required String today,
-  });
+  Future<ScheduleChange> updateSchedule(int id, {int? timeOfDay, double? servings, required String today});
   Future<void> endSchedule(int id, {required String today});
   Future<List<Schedule>> schedulesOn(String day);
   Future<List<Occurrence>> occurrencesOn(String day);
@@ -177,13 +163,11 @@ class InMemoryJournalRepository implements JournalRepository {
     int initialAgeYears = 30,
     String? initialAgeEnteredOn,
     String? initialCautionAnsweredOn,
-  })  : _consent = initialConsentVersion == null
-            ? null
-            : HealthConsentStatus(initialConsentVersion, DateTime.now()),
-        _ageYears = initialAgeYears,
-        _ageEnteredOn = initialAgeEnteredOn ?? dayKey(DateTime.now()),
-        _caution = initialCaution,
-        _cautionAnsweredOn = initialCautionAnsweredOn ?? dayKey(DateTime.now());
+  }) : _consent = initialConsentVersion == null ? null : HealthConsentStatus(initialConsentVersion, DateTime.now()),
+       _ageYears = initialAgeYears,
+       _ageEnteredOn = initialAgeEnteredOn ?? dayKey(DateTime.now()),
+       _caution = initialCaution,
+       _cautionAnsweredOn = initialCautionAnsweredOn ?? dayKey(DateTime.now());
 
   void _changed() => _changes.add(null);
 
@@ -194,12 +178,8 @@ class InMemoryJournalRepository implements JournalRepository {
   Future<HealthConsentStatus?> latestHealthConsent() async => _consent;
 
   @override
-  Future<ConsentProfileState?> loadConsentProfile() async => (
-        ageYears: _ageYears,
-        ageEnteredOn: _ageEnteredOn,
-        caution: _caution,
-        cautionAnsweredOn: _cautionAnsweredOn,
-      );
+  Future<ConsentProfileState?> loadConsentProfile() async =>
+      (ageYears: _ageYears, ageEnteredOn: _ageEnteredOn, caution: _caution, cautionAnsweredOn: _cautionAnsweredOn);
 
   @override
   Future<void> upgradeHealthConsent({
@@ -384,29 +364,32 @@ class InMemoryJournalRepository implements JournalRepository {
   }
 
   @override
-  Future<List<WaterRecord>> waterOn(String day) async => [
+  Future<List<WaterRecord>> waterOn(String day) async =>
+      [
         for (final w in _waters)
           if (dayKey(w.at) == day) w,
       ]..sort((a, b) {
-          final c = a.at.compareTo(b.at);
-          return c != 0 ? c : a.id.compareTo(b.id);
-        });
+        final c = a.at.compareTo(b.at);
+        return c != 0 ? c : a.id.compareTo(b.id);
+      });
 
   @override
-  Future<List<WaterRecord>> waterBetween(String fromDay, String toDay) async => [
+  Future<List<WaterRecord>> waterBetween(String fromDay, String toDay) async =>
+      [
         for (final w in _waters)
           if (dayKey(w.at).compareTo(fromDay) >= 0 && dayKey(w.at).compareTo(toDay) <= 0) w,
       ]..sort((a, b) {
-          final d = dayKey(a.at).compareTo(dayKey(b.at));
-          if (d != 0) return d;
-          final c = a.at.compareTo(b.at);
-          return c != 0 ? c : a.id.compareTo(b.id);
-        });
+        final d = dayKey(a.at).compareTo(dayKey(b.at));
+        if (d != 0) return d;
+        final c = a.at.compareTo(b.at);
+        return c != 0 ? c : a.id.compareTo(b.id);
+      });
 
   @override
   Future<double?> lastWaterMl() async {
     if (_waters.isEmpty) return null;
-    final sorted = [..._waters]..sort((a, b) {
+    final sorted = [..._waters]
+      ..sort((a, b) {
         final c = b.at.compareTo(a.at);
         return c != 0 ? c : b.id.compareTo(a.id);
       });
@@ -417,21 +400,23 @@ class InMemoryJournalRepository implements JournalRepository {
   Future<int> addFood(FoodEntryInput e) async {
     checkLinesWritable(e.lines);
     final id = _nextId++;
-    _foods.add(FoodEntry(
-      id: id,
-      at: e.at,
-      day: dayKey(e.at),
-      meal: e.meal,
-      name: e.name,
-      foodRef: e.foodRef,
-      portionUnit: e.portionUnit,
-      portionQty: e.portionQty,
-      labelBasisQty: e.labelBasisQty,
-      labelBasisUnit: e.labelBasisUnit,
-      addedSugarKnown: e.addedSugarKnown,
-      packVersion: e.packVersion,
-      lines: List.unmodifiable(e.lines),
-    ));
+    _foods.add(
+      FoodEntry(
+        id: id,
+        at: e.at,
+        day: dayKey(e.at),
+        meal: e.meal,
+        name: e.name,
+        foodRef: e.foodRef,
+        portionUnit: e.portionUnit,
+        portionQty: e.portionQty,
+        labelBasisQty: e.labelBasisQty,
+        labelBasisUnit: e.labelBasisUnit,
+        addedSugarKnown: e.addedSugarKnown,
+        packVersion: e.packVersion,
+        lines: List.unmodifiable(e.lines),
+      ),
+    );
     _changed();
     return id;
   }
@@ -560,21 +545,25 @@ class InMemoryJournalRepository implements JournalRepository {
   }
 
   @override
-  Future<List<FoodEntry>> foodsOn(String day) async =>
-      [for (final f in _foods) if (f.day == day) f]..sort((a, b) => a.at.compareTo(b.at));
+  Future<List<FoodEntry>> foodsOn(String day) async => [
+    for (final f in _foods)
+      if (f.day == day) f,
+  ]..sort((a, b) => a.at.compareTo(b.at));
 
   @override
-  Future<List<FoodEntry>> foodsBetween(String fromDay, String toDay) async => [
+  Future<List<FoodEntry>> foodsBetween(String fromDay, String toDay) async =>
+      [
         for (final f in _foods)
-          if (f.day.compareTo(fromDay) >= 0 && f.day.compareTo(toDay) <= 0) f
+          if (f.day.compareTo(fromDay) >= 0 && f.day.compareTo(toDay) <= 0) f,
       ]..sort((a, b) {
-          final c = a.day.compareTo(b.day);
-          return c != 0 ? c : a.at.compareTo(b.at);
-        });
+        final c = a.day.compareTo(b.day);
+        return c != 0 ? c : a.at.compareTo(b.at);
+      });
 
   @override
   Future<List<FoodEntry>> recentFoods({int limit = 20}) async {
-    final sorted = [..._foods]..sort((a, b) {
+    final sorted = [..._foods]
+      ..sort((a, b) {
         final c = b.at.compareTo(a.at);
         return c != 0 ? c : b.id.compareTo(a.id);
       });
@@ -593,16 +582,18 @@ class InMemoryJournalRepository implements JournalRepository {
   @override
   Future<int> saveCustomFood(CustomFoodInput input) async {
     final id = _nextId++;
-    _customFoods.add(CustomFood(
-      id: id,
-      name: input.name,
-      portionUnit: input.portionUnit,
-      labelBasisQty: input.labelBasisQty,
-      labelBasisUnit: input.labelBasisUnit,
-      createdAt: DateTime.now(),
-      archived: false,
-      lines: List.unmodifiable(input.lines),
-    ));
+    _customFoods.add(
+      CustomFood(
+        id: id,
+        name: input.name,
+        portionUnit: input.portionUnit,
+        labelBasisQty: input.labelBasisQty,
+        labelBasisUnit: input.labelBasisUnit,
+        createdAt: DateTime.now(),
+        archived: false,
+        lines: List.unmodifiable(input.lines),
+      ),
+    );
     _changed();
     return id;
   }
@@ -610,8 +601,10 @@ class InMemoryJournalRepository implements JournalRepository {
   @override
   Future<List<CustomFood>> searchCustomFoods(String query, {int limit = 30}) async {
     final q = normalizeSearchAscii(query);
-    final active = [for (final c in _customFoods) if (!c.archived) c]
-      ..sort((a, b) => b.id.compareTo(a.id));
+    final active = [
+      for (final c in _customFoods)
+        if (!c.archived) c,
+    ]..sort((a, b) => b.id.compareTo(a.id));
     final out = <CustomFood>[];
     for (final c in active) {
       if (q.isEmpty || normalizeSearchAscii(c.name).contains(q)) {
@@ -641,12 +634,7 @@ class InMemoryJournalRepository implements JournalRepository {
   }
 
   @override
-  Future<int> addProduct(
-    String name,
-    CountUnit unit,
-    double unitsPerServing, {
-    String? barcode,
-  }) async {
+  Future<int> addProduct(String name, CountUnit unit, double unitsPerServing, {String? barcode}) async {
     final id = _nextId++;
     _products.add(Product(id, name, unit, unitsPerServing, barcode: barcode));
     _changed();
@@ -674,18 +662,26 @@ class InMemoryJournalRepository implements JournalRepository {
     final active = await schedulesOn(today);
     for (final p in _products) {
       if (!includeArchived && p.archived) continue;
-      final boxes = [for (final b in _boxes) if (b.productId == p.id) b];
+      final boxes = [
+        for (final b in _boxes)
+          if (b.productId == p.id) b,
+      ];
       final recent = [
         for (final d in _doses)
           if (d.productId == p.id && d.day.compareTo(from) >= 0 && d.day.compareTo(today) <= 0) d,
       ];
-      out.add(summarizeProduct(
-        product: p,
-        boxes: boxes,
-        activeSchedules: [for (final s in active) if (s.productId == p.id) s],
-        recentDoses14Days: recent,
-        now: now,
-      ));
+      out.add(
+        summarizeProduct(
+          product: p,
+          boxes: boxes,
+          activeSchedules: [
+            for (final s in active)
+              if (s.productId == p.id) s,
+          ],
+          recentDoses14Days: recent,
+          now: now,
+        ),
+      );
     }
     return out;
   }
@@ -702,7 +698,10 @@ class InMemoryJournalRepository implements JournalRepository {
   @override
   Future<ProductDetail> productDetail(int productId) async {
     final p = await productById(productId);
-    final ing = [for (final i in _ingredients) if (i.productId == productId) i];
+    final ing = [
+      for (final i in _ingredients)
+        if (i.productId == productId) i,
+    ];
     final boxes = await boxesOf(productId);
     return ProductDetail(product: p, ingredients: ing, boxes: boxes);
   }
@@ -718,14 +717,7 @@ class InMemoryJournalRepository implements JournalRepository {
     final idx = _products.indexWhere((p) => p.id == id);
     if (idx < 0) throw StateError('Không có sản phẩm $id');
     final old = _products[idx];
-    _products[idx] = Product(
-      id,
-      name,
-      countUnit,
-      unitsPerServing,
-      barcode: barcode,
-      archived: old.archived,
-    );
+    _products[idx] = Product(id, name, countUnit, unitsPerServing, barcode: barcode, archived: old.archived);
     _changed();
   }
 
@@ -758,20 +750,22 @@ class InMemoryJournalRepository implements JournalRepository {
     await productById(productId);
     _ingredients.removeWhere((i) => i.productId == productId);
     for (final item in items) {
-      _ingredients.add(ProductIngredient(
-        id: _nextId++,
-        productId: productId,
-        nutrientId: item.nutrientId,
-        freeName: item.freeName,
-        form: item.form,
-        amountPerServing: item.amountPerServing,
-        unit: item.unit,
-        labelAmount: item.labelAmount,
-        labelUnit: item.labelUnit,
-        isCompound: item.isCompound,
-        origin: item.origin,
-        confirmed: item.confirmed,
-      ));
+      _ingredients.add(
+        ProductIngredient(
+          id: _nextId++,
+          productId: productId,
+          nutrientId: item.nutrientId,
+          freeName: item.freeName,
+          form: item.form,
+          amountPerServing: item.amountPerServing,
+          unit: item.unit,
+          labelAmount: item.labelAmount,
+          labelUnit: item.labelUnit,
+          isCompound: item.isCompound,
+          origin: item.origin,
+          confirmed: item.confirmed,
+        ),
+      );
     }
     _changed();
   }
@@ -785,8 +779,10 @@ class InMemoryJournalRepository implements JournalRepository {
   }
 
   @override
-  Future<List<StockBox>> boxesOf(int productId) async =>
-      [for (final b in _boxes) if (b.productId == productId) b];
+  Future<List<StockBox>> boxesOf(int productId) async => [
+    for (final b in _boxes)
+      if (b.productId == productId) b,
+  ];
 
   @override
   Future<void> updateBox(int boxId, {required double remaining, String? expiryMonth}) async {
@@ -816,17 +812,26 @@ class InMemoryJournalRepository implements JournalRepository {
     );
     var need = servings * prod.unitsPerServing;
     final month = monthKey(at);
-    final candidates = [for (final b in _boxes) if (b.productId == productId && b.remaining > 0) b]
-      ..sort((a, b) {
-        if (a.expiryMonth == null && b.expiryMonth == null) return a.id.compareTo(b.id);
-        if (a.expiryMonth == null) return 1;
-        if (b.expiryMonth == null) return -1;
-        final c = a.expiryMonth!.compareTo(b.expiryMonth!);
-        return c != 0 ? c : a.id.compareTo(b.id);
-      });
+    final candidates =
+        [
+          for (final b in _boxes)
+            if (b.productId == productId && b.remaining > 0) b,
+        ]..sort((a, b) {
+          if (a.expiryMonth == null && b.expiryMonth == null) return a.id.compareTo(b.id);
+          if (a.expiryMonth == null) return 1;
+          if (b.expiryMonth == null) return -1;
+          final c = a.expiryMonth!.compareTo(b.expiryMonth!);
+          return c != 0 ? c : a.id.compareTo(b.id);
+        });
     bool isExpired(StockBox b) => b.expiryMonth != null && b.expiryMonth!.compareTo(month) < 0;
-    final valid = [for (final b in candidates) if (!isExpired(b)) b];
-    final old = [for (final b in candidates) if (isExpired(b)) b];
+    final valid = [
+      for (final b in candidates)
+        if (!isExpired(b)) b,
+    ];
+    final old = [
+      for (final b in candidates)
+        if (isExpired(b)) b,
+    ];
     final List<StockBox> use;
     if (valid.isNotEmpty) {
       use = valid;
@@ -873,12 +878,7 @@ class InMemoryJournalRepository implements JournalRepository {
   }
 
   @override
-  Future<ScheduleChange> updateSchedule(
-    int id, {
-    int? timeOfDay,
-    double? servings,
-    required String today,
-  }) async {
+  Future<ScheduleChange> updateSchedule(int id, {int? timeOfDay, double? servings, required String today}) async {
     final idx = _schedules.indexWhere((s) => s.id == id);
     if (idx < 0) throw StateError('Không có lịch $id');
     final old = _schedules[idx];
@@ -888,14 +888,7 @@ class InMemoryJournalRepository implements JournalRepository {
     if (from.compareTo(old.validFrom) < 0) from = old.validFrom;
     _schedules[idx] = Schedule(old.id, old.productId, old.timeOfDay, old.servings, old.validFrom, from);
     final newId = _nextId++;
-    _schedules.add(Schedule(
-      newId,
-      old.productId,
-      timeOfDay ?? old.timeOfDay,
-      servings ?? old.servings,
-      from,
-      null,
-    ));
+    _schedules.add(Schedule(newId, old.productId, timeOfDay ?? old.timeOfDay, servings ?? old.servings, from, null));
     _changed();
     return ScheduleChange(newId, from);
   }
@@ -914,17 +907,20 @@ class InMemoryJournalRepository implements JournalRepository {
   }
 
   @override
-  Future<List<Schedule>> schedulesOn(String day) async => [
+  Future<List<Schedule>> schedulesOn(String day) async =>
+      [
         for (final s in _schedules)
           if (s.validFrom.compareTo(day) <= 0 && (s.validTo == null || s.validTo!.compareTo(day) > 0)) s,
       ]..sort((a, b) {
-          final c = a.timeOfDay.compareTo(b.timeOfDay);
-          return c != 0 ? c : a.id.compareTo(b.id);
-        });
+        final c = a.timeOfDay.compareTo(b.timeOfDay);
+        return c != 0 ? c : a.id.compareTo(b.id);
+      });
 
   @override
-  Future<List<Occurrence>> occurrencesOn(String day) async =>
-      [for (final o in _occurrences) if (o.day == day) o];
+  Future<List<Occurrence>> occurrencesOn(String day) async => [
+    for (final o in _occurrences)
+      if (o.day == day) o,
+  ];
 
   @override
   Future<void> skipOccurrence(OccurrenceRef o) async {
@@ -962,19 +958,9 @@ class InMemoryJournalRepository implements JournalRepository {
         throw StateError('Lần này đã đánh dấu đã uống');
       }
       if (idx >= 0) {
-        _occurrences[idx] = Occurrence(
-          newOccurrence.scheduleId,
-          newOccurrence.day,
-          OccurrenceStatus.taken,
-          doseId,
-        );
+        _occurrences[idx] = Occurrence(newOccurrence.scheduleId, newOccurrence.day, OccurrenceStatus.taken, doseId);
       } else {
-        _occurrences.add(Occurrence(
-          newOccurrence.scheduleId,
-          newOccurrence.day,
-          OccurrenceStatus.taken,
-          doseId,
-        ));
+        _occurrences.add(Occurrence(newOccurrence.scheduleId, newOccurrence.day, OccurrenceStatus.taken, doseId));
       }
     }
     _changed();
@@ -1000,18 +986,20 @@ class InMemoryJournalRepository implements JournalRepository {
       shortfall = res.shortfall;
     }
     final id = _nextId++;
-    _doses.add(DoseEntry(
-      id: id,
-      at: d.at,
-      day: dayKey(d.at),
-      productId: d.productId,
-      name: d.name,
-      kind: d.kind,
-      servings: d.servings,
-      packVersion: d.packVersion,
-      lines: List.unmodifiable(d.lines),
-      deductions: List.unmodifiable(deductions),
-    ));
+    _doses.add(
+      DoseEntry(
+        id: id,
+        at: d.at,
+        day: dayKey(d.at),
+        productId: d.productId,
+        name: d.name,
+        kind: d.kind,
+        servings: d.servings,
+        packVersion: d.packVersion,
+        lines: List.unmodifiable(d.lines),
+        deductions: List.unmodifiable(deductions),
+      ),
+    );
     if (d.occurrence != null) {
       final o = d.occurrence!;
       final idx = _occurrences.indexWhere((x) => x.scheduleId == o.scheduleId && x.day == o.day);
@@ -1108,28 +1096,28 @@ class InMemoryJournalRepository implements JournalRepository {
   }
 
   @override
-  Future<List<DoseEntry>> dosesOn(String day) async =>
-      [for (final d in _doses) if (d.day == day) d]..sort((a, b) => a.at.compareTo(b.at));
+  Future<List<DoseEntry>> dosesOn(String day) async => [
+    for (final d in _doses)
+      if (d.day == day) d,
+  ]..sort((a, b) => a.at.compareTo(b.at));
 
   @override
-  Future<List<DoseEntry>> dosesBetween(String fromDay, String toDay) async => [
+  Future<List<DoseEntry>> dosesBetween(String fromDay, String toDay) async =>
+      [
         for (final d in _doses)
-          if (d.day.compareTo(fromDay) >= 0 && d.day.compareTo(toDay) <= 0) d
+          if (d.day.compareTo(fromDay) >= 0 && d.day.compareTo(toDay) <= 0) d,
       ]..sort((a, b) {
-          final c = a.day.compareTo(b.day);
-          return c != 0 ? c : a.at.compareTo(b.at);
-        });
+        final c = a.day.compareTo(b.day);
+        return c != 0 ? c : a.at.compareTo(b.at);
+      });
 
   @override
   Future<int> addWorkout(DateTime startAt, WorkoutEntry w) async {
     final id = _nextId++;
     final d = dayKey(startAt);
-    _workouts.add(WorkoutRecord(
-      id,
-      startAt,
-      d,
-      WorkoutEntry(activityCode: w.activityCode, minutes: w.minutes, day: d),
-    ));
+    _workouts.add(
+      WorkoutRecord(id, startAt, d, WorkoutEntry(activityCode: w.activityCode, minutes: w.minutes, day: d)),
+    );
     _changed();
     return id;
   }
@@ -1155,61 +1143,61 @@ class InMemoryJournalRepository implements JournalRepository {
   }
 
   @override
-  Future<List<WorkoutRecord>> workoutsOn(String day) async =>
-      [for (final w in _workouts) if (w.day == day) w]..sort((a, b) => a.startAt.compareTo(b.startAt));
+  Future<List<WorkoutRecord>> workoutsOn(String day) async => [
+    for (final w in _workouts)
+      if (w.day == day) w,
+  ]..sort((a, b) => a.startAt.compareTo(b.startAt));
 
   @override
-  Future<List<WorkoutRecord>> workoutsBetween(String fromDay, String toDay) async => [
+  Future<List<WorkoutRecord>> workoutsBetween(String fromDay, String toDay) async =>
+      [
         for (final w in _workouts)
-          if (w.day.compareTo(fromDay) >= 0 && w.day.compareTo(toDay) <= 0) w
+          if (w.day.compareTo(fromDay) >= 0 && w.day.compareTo(toDay) <= 0) w,
       ]..sort((a, b) {
-          final c = a.day.compareTo(b.day);
-          return c != 0 ? c : a.startAt.compareTo(b.startAt);
-        });
+        final c = a.day.compareTo(b.day);
+        return c != 0 ? c : a.startAt.compareTo(b.startAt);
+      });
 
   @override
   Future<void> close() async => _changes.close();
 
   @override
   Future<Map<String, Object?>> exportReadableJson() async => {
-        'app': 'WholeWell',
-        'schemaVersion': currentSchemaVersion,
-        'exportedAt': DateTime.now().toUtc().toIso8601String(),
-        'consent': _consent == null
-            ? null
-            : {
-                'contentVersion': _consent!.contentVersion,
-                'grantedAt': _consent!.grantedAt.toUtc().toIso8601String(),
-              },
-        'profile': _profile == null
-            ? null
-            : {
-                'ageYears': _ageYears,
-                'caution': _caution,
-                'sex': _profile!.sex.name,
-                'heightCm': _profile!.heightCm,
-                'weightKg': _profile!.weightKg,
-                'activityLevel': _profile!.activityLevel.name,
-              },
-        'settings': {
-          'hideCalories': _hide,
-          'wake': _dayTimesSettings.wake,
-          'breakfast': _dayTimesSettings.breakfast,
-          'lunch': _dayTimesSettings.lunch,
-          'dinner': _dayTimesSettings.dinner,
-          'sleep': _dayTimesSettings.sleep,
-          'dayTimesConfirmed': _dayTimesSettings.dayTimesConfirmed,
-          'showTipCard': _dayTimesSettings.showTipCard,
-          'hasBreakfast': _dayTimesSettings.hasBreakfast,
-          'hasLunch': _dayTimesSettings.hasLunch,
-          'hasDinner': _dayTimesSettings.hasDinner,
-          'reminderShowDetails': _dayTimesSettings.reminderShowDetails,
-        },
-        'foodsCount': _foods.length,
-        'dosesCount': _doses.length,
-        'watersCount': _waters.length,
-        'workoutsCount': _workouts.length,
-        'productsCount': _products.length,
-        'schedulesCount': _schedules.length,
-      };
+    'app': 'WholeWell',
+    'schemaVersion': currentSchemaVersion,
+    'exportedAt': DateTime.now().toUtc().toIso8601String(),
+    'consent': _consent == null
+        ? null
+        : {'contentVersion': _consent!.contentVersion, 'grantedAt': _consent!.grantedAt.toUtc().toIso8601String()},
+    'profile': _profile == null
+        ? null
+        : {
+            'ageYears': _ageYears,
+            'caution': _caution,
+            'sex': _profile!.sex.name,
+            'heightCm': _profile!.heightCm,
+            'weightKg': _profile!.weightKg,
+            'activityLevel': _profile!.activityLevel.name,
+          },
+    'settings': {
+      'hideCalories': _hide,
+      'wake': _dayTimesSettings.wake,
+      'breakfast': _dayTimesSettings.breakfast,
+      'lunch': _dayTimesSettings.lunch,
+      'dinner': _dayTimesSettings.dinner,
+      'sleep': _dayTimesSettings.sleep,
+      'dayTimesConfirmed': _dayTimesSettings.dayTimesConfirmed,
+      'showTipCard': _dayTimesSettings.showTipCard,
+      'hasBreakfast': _dayTimesSettings.hasBreakfast,
+      'hasLunch': _dayTimesSettings.hasLunch,
+      'hasDinner': _dayTimesSettings.hasDinner,
+      'reminderShowDetails': _dayTimesSettings.reminderShowDetails,
+    },
+    'foodsCount': _foods.length,
+    'dosesCount': _doses.length,
+    'watersCount': _waters.length,
+    'workoutsCount': _workouts.length,
+    'productsCount': _products.length,
+    'schedulesCount': _schedules.length,
+  };
 }

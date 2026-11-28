@@ -143,7 +143,11 @@ void main() {
     addTearDown(db.close);
     final key = generateDbKey();
     debugKeyExecutor = (d, sql) => throw SqliteException(
-        extendedResultCode: 1, message: 'lỗi giả', causingStatement: sql, parametersToStatement: [sql]);
+      extendedResultCode: 1,
+      message: 'lỗi giả',
+      causingStatement: sql,
+      parametersToStatement: [sql],
+    );
     Object? caught;
     try {
       applyKey(db, key);

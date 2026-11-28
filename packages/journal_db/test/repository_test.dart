@@ -23,23 +23,31 @@ void main() {
     final repo = await createdRepo(o);
     await repo.saveProfile(_profile);
     await repo.addFood(food('Phở bò', t, [line('energyKcal', 450), line('protein', 25), line('calcium', 80)]));
-    await repo.recordDose(DoseInput(
-      at: t.add(const Duration(minutes: 5)),
-      name: 'Magie',
-      kind: DoseKind.oneOff,
-      servings: 1,
-      packVersion: testPack,
-      lines: [line('magnesium', 400, source: IntakeSource.supplement)],
-    ));
+    await repo.recordDose(
+      DoseInput(
+        at: t.add(const Duration(minutes: 5)),
+        name: 'Magie',
+        kind: DoseKind.oneOff,
+        servings: 1,
+        packVersion: testPack,
+        lines: [line('magnesium', 400, source: IntakeSource.supplement)],
+      ),
+    );
     await repo.addWater(t, 250);
     await repo.addWorkout(t, const WorkoutEntry(activityCode: '17200', minutes: 30));
 
     Future<(List<IntakeItem>, DailyReport, List<WorkoutRecord>, List<WaterRecord>)> snapshot(
-        DriftJournalRepository r) async {
+      DriftJournalRepository r,
+    ) async {
       final items = intakeItemsFor(await r.foodsOn(day), await r.dosesOn(day));
       final ws = await r.workoutsOn(day);
-      final report = dailyReport(_pack, (await r.loadProfile())!, items,
-          workouts: [for (final w in ws) w.workout], last7Days: [items]);
+      final report = dailyReport(
+        _pack,
+        (await r.loadProfile())!,
+        items,
+        workouts: [for (final w in ws) w.workout],
+        last7Days: [items],
+      );
       return (items, report, ws, await r.waterOn(day));
     }
 
@@ -52,7 +60,10 @@ void main() {
     expect(after.$1.map(show).toList(), before.$1.map(show).toList());
     expect(after.$1, hasLength(2));
     expect(after.$2.eerKcal, before.$2.eerKcal);
-    expect(after.$2.ulFlags.map((f) => (f.nutrientId, f.amount)), before.$2.ulFlags.map((f) => (f.nutrientId, f.amount)));
+    expect(
+      after.$2.ulFlags.map((f) => (f.nutrientId, f.amount)),
+      before.$2.ulFlags.map((f) => (f.nutrientId, f.amount)),
+    );
     expect(after.$2.ulFlags.map((f) => f.nutrientId), contains('magnesium'));
     expect(after.$3.single.workout.minutes, 30);
     expect(after.$3.single.workout.day, day);
@@ -85,17 +96,21 @@ void main() {
       pid = await repo.addProduct('Canxi D3', CountUnit.tablet, 1);
     });
 
-    DoseInput dose(double servings, {bool deduct = true, ExpiredBoxChoice expired = ExpiredBoxChoice.ask, int? product}) =>
-        DoseInput(
-          at: testNow(),
-          productId: product ?? pid,
-          kind: DoseKind.extra,
-          servings: servings,
-          packVersion: testPack,
-          lines: [line('calcium', 500 * servings, source: IntakeSource.supplement)],
-          deductStock: deduct,
-          expiredBoxes: expired,
-        );
+    DoseInput dose(
+      double servings, {
+      bool deduct = true,
+      ExpiredBoxChoice expired = ExpiredBoxChoice.ask,
+      int? product,
+    }) => DoseInput(
+      at: testNow(),
+      productId: product ?? pid,
+      kind: DoseKind.extra,
+      servings: servings,
+      packVersion: testPack,
+      lines: [line('calcium', 500 * servings, source: IntakeSource.supplement)],
+      deductStock: deduct,
+      expiredBoxes: expired,
+    );
 
     test('2 khẩu phần khi hộp đầu còn 1: trừ hai hộp, hoàn tác trả đúng', () async {
       final a = await repo.addBox(pid, 1, expiryMonth: '2027-01');
@@ -170,7 +185,8 @@ void main() {
 
     test('đổi thành phần sản phẩm sau khi ghi không đổi tổng của ngày đã ghi', () async {
       await repo.db.customStatement(
-          "INSERT INTO ingredients (product_id, nutrient_id, amount_per_serving, unit, origin) VALUES ($pid, 'calcium', 500, 'mg', 'manual')");
+        "INSERT INTO ingredients (product_id, nutrient_id, amount_per_serving, unit, origin) VALUES ($pid, 'calcium', 500, 'mg', 'manual')",
+      );
       await repo.recordDose(dose(1, deduct: false));
       await repo.db.customStatement('UPDATE ingredients SET amount_per_serving = 1000');
       final items = intakeItemsFor(const [], await repo.dosesOn(dayKey(testNow())));
@@ -199,16 +215,18 @@ void main() {
     test('đã uống theo lịch; bỏ đánh dấu xóa lần uống', () async {
       final s = await repo.addSchedule(pid, 20 * 60, 1, validFrom: '2026-11-01');
       const day = '2026-11-24';
-      final r = await repo.recordDose(DoseInput(
-        at: DateTime(2026, 11, 24, 20, 5),
-        productId: pid,
-        kind: DoseKind.scheduled,
-        servings: 1,
-        packVersion: testPack,
-        lines: [line('magnesium', 250, source: IntakeSource.supplement)],
-        occurrence: OccurrenceRef(s, day),
-        deductStock: false,
-      )) as DoseRecorded;
+      final r = await repo.recordDose(
+        DoseInput(
+          at: DateTime(2026, 11, 24, 20, 5),
+          productId: pid,
+          kind: DoseKind.scheduled,
+          servings: 1,
+          packVersion: testPack,
+          lines: [line('magnesium', 250, source: IntakeSource.supplement)],
+          occurrence: OccurrenceRef(s, day),
+          deductStock: false,
+        ),
+      ) as DoseRecorded;
       expect((await repo.occurrencesOn(day)).single.doseEntryId, r.id);
       await repo.clearOccurrence(OccurrenceRef(s, day));
       expect(await repo.occurrencesOn(day), isEmpty);
@@ -253,13 +271,15 @@ void main() {
       const vals = "'2026-11-24', 'energyKcal', 'food', '{}'";
       await expectLater(repo.db.customStatement('INSERT INTO intake_lines ($cols) VALUES ($vals)'), throwsA(anything));
       final f = await repo.addFood(food('Cơm', testNow(), const []));
-      final d = await repo.recordDose(DoseInput(
-              at: testNow(), kind: DoseKind.oneOff, servings: 1, packVersion: testPack, lines: const []))
-          as DoseRecorded;
+      final d = await repo.recordDose(
+        DoseInput(at: testNow(), kind: DoseKind.oneOff, servings: 1, packVersion: testPack, lines: const []),
+      ) as DoseRecorded;
       await expectLater(
-          repo.db.customStatement(
-              'INSERT INTO intake_lines (food_entry_id, dose_entry_id, $cols) VALUES ($f, ${d.id}, $vals)'),
-          throwsA(anything));
+        repo.db.customStatement(
+          'INSERT INTO intake_lines (food_entry_id, dose_entry_id, $cols) VALUES ($f, ${d.id}, $vals)',
+        ),
+        throwsA(anything),
+      );
     });
 
     test('đổi món sang ngày khác: dòng chất theo ngày mới, tổng hai ngày đúng', () async {
@@ -275,18 +295,24 @@ void main() {
     });
 
     test('món theo nhãn 100 ml: đổi 180 ml thành 250 ml thì mọi lượng × 250/180', () async {
-      final id = await repo.addFood(food(
-        'Sữa đậu nành',
-        testNow(),
-        [
-          IntakeLine(
-              nutrientId: 'calcium', source: IntakeSource.fortified, labelAmount: 120, labelUnit: 'mg',
-              amounts: const {'calcium': 216}),
-        ],
-        basis: 100,
-        qty: 180,
-        unit: 'ml',
-      ));
+      final id = await repo.addFood(
+        food(
+          'Sữa đậu nành',
+          testNow(),
+          [
+            IntakeLine(
+              nutrientId: 'calcium',
+              source: IntakeSource.fortified,
+              labelAmount: 120,
+              labelUnit: 'mg',
+              amounts: const {'calcium': 216},
+            ),
+          ],
+          basis: 100,
+          qty: 180,
+          unit: 'ml',
+        ),
+      );
       await repo.scaleLabelFoodPortion(id, 250);
       final f = (await repo.foodById(id))!;
       expect(f.portionQty, 250);
@@ -304,22 +330,31 @@ void main() {
     });
 
     test('Ghi một lần có tên thì đọc lại được tên đó', () async {
-      await repo.recordDose(DoseInput(
-          at: testNow(), name: 'Viên kẽm', kind: DoseKind.oneOff, servings: 1, packVersion: testPack,
-          lines: [line('zinc', 15, source: IntakeSource.supplement)]));
+      await repo.recordDose(
+        DoseInput(
+          at: testNow(),
+          name: 'Viên kẽm',
+          kind: DoseKind.oneOff,
+          servings: 1,
+          packVersion: testPack,
+          lines: [line('zinc', 15, source: IntakeSource.supplement)],
+        ),
+      );
       expect((await repo.dosesOn(dayKey(testNow()))).single.name, 'Viên kẽm');
     });
 
     test('ghi và kiểm tra giới hạn từ dòng có lượng tính giới hạn riêng (ulAmounts)', () async {
       const ul = IntakeLine(
-          nutrientId: 'vitE',
-          source: IntakeSource.supplement,
-          form: NutrientForm.synthetic2r,
-          uncertain: false,
-          amounts: {'vitE': 540},
-          ulAmounts: {'vitE': 1090.91});
-      final res = await repo.recordDose(DoseInput(
-          at: testNow(), kind: DoseKind.oneOff, servings: 1, packVersion: testPack, lines: const [ul]));
+        nutrientId: 'vitE',
+        source: IntakeSource.supplement,
+        form: NutrientForm.synthetic2r,
+        uncertain: false,
+        amounts: {'vitE': 540},
+        ulAmounts: {'vitE': 1090.91},
+      );
+      final res = await repo.recordDose(
+        DoseInput(at: testNow(), kind: DoseKind.oneOff, servings: 1, packVersion: testPack, lines: const [ul]),
+      );
       expect(res, isA<DoseRecorded>());
       final items = intakeItemsFor(const [], await repo.dosesOn(dayKey(testNow())));
       final flags = checkUlDay(_pack, _profile, items);
@@ -331,47 +366,55 @@ void main() {
       final d1 = DateTime(2026, 11, 20, 7, 30);
       final d2 = DateTime(2026, 11, 22, 12, 0);
       final d3 = DateTime(2026, 11, 24, 19, 0);
-      final id1 = await repo.addFood(FoodEntryInput(
-        at: d1,
-        meal: Meal.breakfast,
-        name: 'Phở bò',
-        foodRef: 'recipe:pho-bo',
-        portionUnit: 'bát',
-        portionQty: 1,
-        addedSugarKnown: true,
-        packVersion: testPack,
-        lines: [line('energyKcal', 450)],
-      ));
-      await repo.addFood(FoodEntryInput(
-        at: d2,
-        meal: Meal.lunch,
-        name: 'Cơm trắng',
-        foodRef: 'recipe:com-trang',
-        portionUnit: 'bát',
-        portionQty: 1,
-        addedSugarKnown: true,
-        packVersion: testPack,
-        lines: [line('energyKcal', 195)],
-      ));
-      await repo.addFood(FoodEntryInput(
-        at: d3,
-        meal: Meal.dinner,
-        name: 'Phở bò',
-        foodRef: 'recipe:pho-bo',
-        portionUnit: 'bát',
-        portionQty: 1.5,
-        addedSugarKnown: true,
-        packVersion: testPack,
-        lines: [line('energyKcal', 675)],
-      ));
-      await repo.recordDose(DoseInput(
-        at: d2,
-        name: 'Kẽm',
-        kind: DoseKind.oneOff,
-        servings: 1,
-        packVersion: testPack,
-        lines: [line('zinc', 15, source: IntakeSource.supplement)],
-      ));
+      final id1 = await repo.addFood(
+        FoodEntryInput(
+          at: d1,
+          meal: Meal.breakfast,
+          name: 'Phở bò',
+          foodRef: 'recipe:pho-bo',
+          portionUnit: 'bát',
+          portionQty: 1,
+          addedSugarKnown: true,
+          packVersion: testPack,
+          lines: [line('energyKcal', 450)],
+        ),
+      );
+      await repo.addFood(
+        FoodEntryInput(
+          at: d2,
+          meal: Meal.lunch,
+          name: 'Cơm trắng',
+          foodRef: 'recipe:com-trang',
+          portionUnit: 'bát',
+          portionQty: 1,
+          addedSugarKnown: true,
+          packVersion: testPack,
+          lines: [line('energyKcal', 195)],
+        ),
+      );
+      await repo.addFood(
+        FoodEntryInput(
+          at: d3,
+          meal: Meal.dinner,
+          name: 'Phở bò',
+          foodRef: 'recipe:pho-bo',
+          portionUnit: 'bát',
+          portionQty: 1.5,
+          addedSugarKnown: true,
+          packVersion: testPack,
+          lines: [line('energyKcal', 675)],
+        ),
+      );
+      await repo.recordDose(
+        DoseInput(
+          at: d2,
+          name: 'Kẽm',
+          kind: DoseKind.oneOff,
+          servings: 1,
+          packVersion: testPack,
+          lines: [line('zinc', 15, source: IntakeSource.supplement)],
+        ),
+      );
       await repo.addWorkout(d2, const WorkoutEntry(activityCode: '17200', minutes: 30));
 
       await repo.updateFoodMeta(id1, at: DateTime(2026, 11, 21, 12, 15), meal: Meal.lunch);
@@ -389,25 +432,29 @@ void main() {
       expect(recents.first.portionQty, 1.5);
 
       // Quy ước custom_foods với addedSugar = 0 vs bỏ trống
-      final cidZero = await repo.saveCustomFood(const CustomFoodInput(
-        name: 'Sữa chua không đường',
-        portionUnit: 'ml',
-        labelBasisQty: 100,
-        labelBasisUnit: 'ml',
-        lines: [
-          CustomFoodLine(nutrientId: 'energyKcal', labelAmount: 60, labelUnit: 'kcal', source: IntakeSource.food),
-          CustomFoodLine(nutrientId: 'addedSugar', labelAmount: 0, labelUnit: 'g', source: IntakeSource.food),
-        ],
-      ));
-      final cidUnknown = await repo.saveCustomFood(const CustomFoodInput(
-        name: 'Sữa đậu nành nhà làm',
-        portionUnit: 'ml',
-        labelBasisQty: 200,
-        labelBasisUnit: 'ml',
-        lines: [
-          CustomFoodLine(nutrientId: 'energyKcal', labelAmount: 90, labelUnit: 'kcal', source: IntakeSource.food),
-        ],
-      ));
+      final cidZero = await repo.saveCustomFood(
+        const CustomFoodInput(
+          name: 'Sữa chua không đường',
+          portionUnit: 'ml',
+          labelBasisQty: 100,
+          labelBasisUnit: 'ml',
+          lines: [
+            CustomFoodLine(nutrientId: 'energyKcal', labelAmount: 60, labelUnit: 'kcal', source: IntakeSource.food),
+            CustomFoodLine(nutrientId: 'addedSugar', labelAmount: 0, labelUnit: 'g', source: IntakeSource.food),
+          ],
+        ),
+      );
+      final cidUnknown = await repo.saveCustomFood(
+        const CustomFoodInput(
+          name: 'Sữa đậu nành nhà làm',
+          portionUnit: 'ml',
+          labelBasisQty: 200,
+          labelBasisUnit: 'ml',
+          lines: [
+            CustomFoodLine(nutrientId: 'energyKcal', labelAmount: 90, labelUnit: 'kcal', source: IntakeSource.food),
+          ],
+        ),
+      );
       final found = await repo.searchCustomFoods('sua');
       expect(found.map((c) => c.id), [cidUnknown, cidZero]);
       expect(found.firstWhere((c) => c.id == cidZero).addedSugarKnown, isTrue);
@@ -421,29 +468,33 @@ void main() {
   test('InMemoryJournalRepository khớp interface mở rộng với DriftJournalRepository', () async {
     final mem = InMemoryJournalRepository();
     final t = DateTime(2026, 11, 24, 8, 0);
-    final id = await mem.addFood(FoodEntryInput(
-      at: t,
-      meal: Meal.breakfast,
-      name: 'Sữa hạt',
-      portionUnit: 'ml',
-      portionQty: 200,
-      labelBasisQty: 100,
-      labelBasisUnit: 'ml',
-      addedSugarKnown: false,
-      packVersion: testPack,
-      lines: [line('calcium', 120, source: IntakeSource.fortified)],
-    ));
+    final id = await mem.addFood(
+      FoodEntryInput(
+        at: t,
+        meal: Meal.breakfast,
+        name: 'Sữa hạt',
+        portionUnit: 'ml',
+        portionQty: 200,
+        labelBasisQty: 100,
+        labelBasisUnit: 'ml',
+        addedSugarKnown: false,
+        packVersion: testPack,
+        lines: [line('calcium', 120, source: IntakeSource.fortified)],
+      ),
+    );
     await mem.scaleLabelFoodPortion(id, 300);
     expect((await mem.foodById(id))!.lines.single.amounts['calcium'], closeTo(180, 1e-9));
     await mem.updateFoodMeta(id, at: DateTime(2026, 11, 23, 19, 0), meal: Meal.dinner);
     expect((await mem.foodsBetween('2026-11-23', '2026-11-23')).single.meal, Meal.dinner);
-    final cid = await mem.saveCustomFood(const CustomFoodInput(
-      name: 'Trà xanh đóng chai',
-      portionUnit: 'chai',
-      labelBasisQty: 1,
-      labelBasisUnit: 'chai',
-      lines: [CustomFoodLine(nutrientId: 'addedSugar', labelAmount: 0, labelUnit: 'g', source: IntakeSource.food)],
-    ));
+    final cid = await mem.saveCustomFood(
+      const CustomFoodInput(
+        name: 'Trà xanh đóng chai',
+        portionUnit: 'chai',
+        labelBasisQty: 1,
+        labelBasisUnit: 'chai',
+        lines: [CustomFoodLine(nutrientId: 'addedSugar', labelAmount: 0, labelUnit: 'g', source: IntakeSource.food)],
+      ),
+    );
     expect((await mem.searchCustomFoods('tra xanh')).single.addedSugarKnown, isTrue);
     await mem.archiveCustomFood(cid);
     expect(await mem.searchCustomFoods(''), isEmpty);
@@ -454,8 +505,16 @@ void main() {
     final repo = await createdRepo(testOpener(tempDir(), FakeSecureKeyStore()));
     final cols = [for (final r in await repo.db.customSelect('PRAGMA table_info(profile)').get()) r.data['name']];
     expect(cols.toSet(), {
-      'id', 'age_years', 'age_entered_on', 'caution', 'caution_answered_on', 'sex', 'height_cm',
-      'weight_kg', 'activity_level', 'updated_at',
+      'id',
+      'age_years',
+      'age_entered_on',
+      'caution',
+      'caution_answered_on',
+      'sex',
+      'height_cm',
+      'weight_kg',
+      'activity_level',
+      'updated_at',
     });
   });
 
@@ -475,11 +534,7 @@ void main() {
       await repo.addFood(food('Bánh mì', testNow(), [line('energyKcal', 300)]));
 
       expect((await repo.latestHealthConsent())?.contentVersion, 'khung-tam-0');
-      await repo.upgradeHealthConsent(
-        contentVersion: mvpConsentVersion,
-        ageYears: 36,
-        caution: true,
-      );
+      await repo.upgradeHealthConsent(contentVersion: mvpConsentVersion, ageYears: 36, caution: true);
 
       final latest = await repo.latestHealthConsent();
       expect(latest?.contentVersion, mvpConsentVersion);
@@ -504,28 +559,17 @@ void main() {
       expect(computeAgeBump(30, '2025-11-25', DateTime(2025, 11, 25)), isNull);
       expect(computeAgeBump(30, '2025-11-25', DateTime(2026, 10, 25)), isNull);
       expect(computeAgeBump(30, '2025-11-25', DateTime(2026, 11, 24)), isNull);
-      expect(
-        computeAgeBump(30, '2025-11-25', DateTime(2026, 11, 25)),
-        (newAgeYears: 31, newEnteredOn: '2026-11-25'),
-      );
-      expect(
-        computeAgeBump(30, '2024-10-01', DateTime(2026, 11, 25)),
-        (newAgeYears: 32, newEnteredOn: '2026-10-01'),
-      );
+      expect(computeAgeBump(30, '2025-11-25', DateTime(2026, 11, 25)), (newAgeYears: 31, newEnteredOn: '2026-11-25'));
+      expect(computeAgeBump(30, '2024-10-01', DateTime(2026, 11, 25)), (newAgeYears: 32, newEnteredOn: '2026-10-01'));
       expect(computeAgeBump(30, '2024-02-29', DateTime(2025, 2, 27)), isNull);
-      expect(
-        computeAgeBump(30, '2024-02-29', DateTime(2025, 2, 28)),
-        (newAgeYears: 31, newEnteredOn: '2025-02-28'),
-      );
+      expect(computeAgeBump(30, '2024-02-29', DateTime(2025, 2, 28)), (newAgeYears: 31, newEnteredOn: '2025-02-28'));
 
       final dir = tempDir();
       final repo = DriftJournalRepository(
         (await createdRepo(testOpener(dir, FakeSecureKeyStore()))).db,
         now: () => DateTime(2024, 10, 1),
       );
-      await repo.db.customUpdate(
-        "UPDATE profile SET age_years = 30, age_entered_on = '2024-10-01' WHERE id = 1",
-      );
+      await repo.db.customUpdate("UPDATE profile SET age_years = 30, age_entered_on = '2024-10-01' WHERE id = 1");
       expect(await repo.bumpAgeIfDue(DateTime(2025, 9, 30)), isNull);
       expect(await repo.loadAgeBumpedNotice(), isNull);
       expect(await repo.bumpAgeIfDue(DateTime(2026, 11, 25)), 32);
@@ -594,21 +638,23 @@ void main() {
         expect(list.single.isLowStock, isFalse);
 
         // Ghi 1 lần uống với thành phần 500 mg Canxi.
-        final rec = await repo.recordDose(DoseInput(
-          at: now,
-          productId: pid,
-          kind: DoseKind.extra,
-          servings: 1,
-          packVersion: '2026.11.25-2',
-          lines: const [
-            IntakeLine(
-              nutrientId: 'calcium',
-              source: IntakeSource.supplement,
-              form: 'calcium_carbonate',
-              amounts: {'calcium': 500},
-            ),
-          ],
-        ));
+        final rec = await repo.recordDose(
+          DoseInput(
+            at: now,
+            productId: pid,
+            kind: DoseKind.extra,
+            servings: 1,
+            packVersion: '2026.11.25-2',
+            lines: const [
+              IntakeLine(
+                nutrientId: 'calcium',
+                source: IntakeSource.supplement,
+                form: 'calcium_carbonate',
+                amounts: {'calcium': 500},
+              ),
+            ],
+          ),
+        );
         expect(rec, isA<DoseRecorded>());
         final doseId = (rec as DoseRecorded).id;
         expect(rec.shortfall, 0);
@@ -631,21 +677,23 @@ void main() {
         expect(oldDoses.single.lines.single.amounts['calcium'], 500);
 
         // updateDose từ 1 -> 6 khẩu phần (hoàn lại 2 viên về 10, cần 12 viên): thiếu 2 (shortfall = 2).
-        final upd = await repo.updateDose(UpdateDoseInput(
-          doseId: doseId,
-          name: 'Canxi D3 Cập Nhật',
-          servings: 6,
-          at: now,
-          packVersion: '2026.11.25-2',
-          lines: const [
-            IntakeLine(
-              nutrientId: 'calcium',
-              source: IntakeSource.supplement,
-              form: 'calcium_carbonate',
-              amounts: {'calcium': 3600},
-            ),
-          ],
-        ));
+        final upd = await repo.updateDose(
+          UpdateDoseInput(
+            doseId: doseId,
+            name: 'Canxi D3 Cập Nhật',
+            servings: 6,
+            at: now,
+            packVersion: '2026.11.25-2',
+            lines: const [
+              IntakeLine(
+                nutrientId: 'calcium',
+                source: IntakeSource.supplement,
+                form: 'calcium_carbonate',
+                amounts: {'calcium': 3600},
+              ),
+            ],
+          ),
+        );
         expect(upd, isA<DoseRecorded>());
         expect((upd as DoseRecorded).shortfall, 2);
         expect((await repo.dosesOn('2026-11-25')).single.name, 'Canxi D3 Cập Nhật');
@@ -656,45 +704,55 @@ void main() {
         await repo.deleteBox(bValid);
 
         // Lúc này chỉ còn hộp hết hạn (6 viên): updateDose với ask -> trả NeedsExpiredChoice, không sửa dose!
-        final askUpd = await repo.updateDose(UpdateDoseInput(
-          doseId: doseId,
-          servings: 2,
-          at: now,
-          packVersion: '2026.11.25-2',
-          lines: const [
-            IntakeLine(
-              nutrientId: 'calcium',
-              source: IntakeSource.supplement,
-              form: 'calcium_carbonate',
-              amounts: {'calcium': 1200},
-            ),
-          ],
-        ));
+        final askUpd = await repo.updateDose(
+          UpdateDoseInput(
+            doseId: doseId,
+            servings: 2,
+            at: now,
+            packVersion: '2026.11.25-2',
+            lines: const [
+              IntakeLine(
+                nutrientId: 'calcium',
+                source: IntakeSource.supplement,
+                form: 'calcium_carbonate',
+                amounts: {'calcium': 1200},
+              ),
+            ],
+          ),
+        );
         expect(askUpd, isA<NeedsExpiredChoice>());
         expect((await repo.dosesOn('2026-11-25')).single.servings, 6);
         expect((await repo.boxesOf(pid)).single.remaining, 6);
 
         // Chọn deduct -> trừ hộp hết hạn còn 2.
-        final dedUpd = await repo.updateDose(UpdateDoseInput(
-          doseId: doseId,
-          servings: 2,
-          at: now,
-          packVersion: '2026.11.25-2',
-          lines: const [
-            IntakeLine(
-              nutrientId: 'calcium',
-              source: IntakeSource.supplement,
-              form: 'calcium_carbonate',
-              amounts: {'calcium': 1200},
-            ),
-          ],
-          expiredBoxes: ExpiredBoxChoice.deduct,
-        ));
+        final dedUpd = await repo.updateDose(
+          UpdateDoseInput(
+            doseId: doseId,
+            servings: 2,
+            at: now,
+            packVersion: '2026.11.25-2',
+            lines: const [
+              IntakeLine(
+                nutrientId: 'calcium',
+                source: IntakeSource.supplement,
+                form: 'calcium_carbonate',
+                amounts: {'calcium': 1200},
+              ),
+            ],
+            expiredBoxes: ExpiredBoxChoice.deduct,
+          ),
+        );
         expect(dedUpd, isA<DoseRecorded>());
         expect((await repo.boxesOf(pid)).single.remaining, 2);
 
         // updateProduct & archiveProduct
-        await repo.updateProduct(pid, name: 'Canxi D3 Mới', countUnit: CountUnit.capsule, unitsPerServing: 2, barcode: '999');
+        await repo.updateProduct(
+          pid,
+          name: 'Canxi D3 Mới',
+          countUnit: CountUnit.capsule,
+          unitsPerServing: 2,
+          barcode: '999',
+        );
         expect((await repo.productDetail(pid)).product.name, 'Canxi D3 Mới');
         await repo.archiveProduct(pid);
         expect(await repo.listProducts(), isEmpty);
@@ -765,16 +823,18 @@ void main() {
         expect((await repo.schedulesOn('2026-11-26')), hasLength(2));
 
         // Kho = 0 vẫn ghi được lần uống theo lịch và tính vào giới hạn.
-        final rec = await repo.recordDose(DoseInput(
-          at: DateTime(2026, 11, 26, 8, 5),
-          productId: pid,
-          name: 'Canxi D3',
-          kind: DoseKind.scheduled,
-          servings: 1,
-          packVersion: '1',
-          lines: const [],
-          occurrence: OccurrenceRef(sid1, '2026-11-26'),
-        ));
+        final rec = await repo.recordDose(
+          DoseInput(
+            at: DateTime(2026, 11, 26, 8, 5),
+            productId: pid,
+            name: 'Canxi D3',
+            kind: DoseKind.scheduled,
+            servings: 1,
+            packVersion: '1',
+            lines: const [],
+            occurrence: OccurrenceRef(sid1, '2026-11-26'),
+          ),
+        );
         expect(rec, isA<DoseRecorded>());
         final doseId = (rec as DoseRecorded).id;
         expect((await repo.occurrencesOn('2026-11-26')).single.scheduleId, sid1);

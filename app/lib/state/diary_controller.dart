@@ -115,12 +115,9 @@ class DiaryController extends ChangeNotifier {
   int _periodReportVersion = -1;
   PeriodReport? _cachedPeriodReport7Days;
 
-  DiaryController({
-    required this.pack,
-    JournalRepository? repo,
-    FoodLibraryRepository? foodLibrary,
-  })  : _repo = repo,
-        _foodLibrary = foodLibrary;
+  DiaryController({required this.pack, JournalRepository? repo, FoodLibraryRepository? foodLibrary})
+    : _repo = repo,
+      _foodLibrary = foodLibrary;
 
   FoodLibraryRepository? get foodLibrary => _foodLibrary;
   bool get foodLibraryBroken => _foodLibraryBroken;
@@ -228,12 +225,7 @@ class DiaryController extends ChangeNotifier {
   }
 
   /// Giờ mặc định khi ghi cho [day] và [meal]: hôm nay -> giờ hiện tại; ngày cũ -> giờ đại diện bữa.
-  static DateTime defaultAtFor(
-    DateTime day,
-    Meal meal, {
-    DateTime? now,
-    DayTimesSettings? settings,
-  }) {
+  static DateTime defaultAtFor(DateTime day, Meal meal, {DateTime? now, DayTimesSettings? settings}) {
     final current = now ?? DateTime.now();
     if (dayKey(day) == dayKey(current)) {
       return DateTime(day.year, day.month, day.day, current.hour, current.minute, current.second);
@@ -337,9 +329,7 @@ class DiaryController extends ChangeNotifier {
       _actualYesterdayOccurrences = await actualYestOccsF;
       _actualTodayDoses = await actualTodayDosesF;
       _allProducts = products;
-      _ingredientsByProduct = {
-        for (final p in products) p.product.id: allIngredients[p.product.id] ?? const [],
-      };
+      _ingredientsByProduct = {for (final p in products) p.product.id: allIngredients[p.product.id] ?? const []};
       _dismissedScheduleNoticeSig = await dismissedSigF;
       _hiddenTipDay = await hiddenTipDayF;
       final lastBackupRaw = await lastBackupRawF;
@@ -434,7 +424,10 @@ class DiaryController extends ChangeNotifier {
     return DayJournalData(
       foods: foodsByDay[toDay] ?? const [],
       doses: dosesByDay[toDay] ?? const [],
-      workouts: [for (final w in allWorkouts) if (w.day == toDay) w],
+      workouts: [
+        for (final w in allWorkouts)
+          if (w.day == toDay) w,
+      ],
       waters: waters,
       last7: last7,
       window7Days: window7,
@@ -478,9 +471,9 @@ class DiaryController extends ChangeNotifier {
       false;
 
   Future<void> saveProfileAndDone(Profile p) => _write((repo) async {
-        await repo.saveProfile(p);
-        await repo.saveOnboardingStep(OnboardingStep.done);
-      });
+    await repo.saveProfile(p);
+    await repo.saveOnboardingStep(OnboardingStep.done);
+  });
 
   Future<bool> saveProfileFromSettings(Profile p, {required bool caution}) async =>
       (await _write((repo) async {
@@ -592,26 +585,25 @@ class DiaryController extends ChangeNotifier {
       }
     }
     // Fallback an toàn cho món nhãn, món custom hoặc món không còn trong thư viện mới.
-    return _recordFoodEntry(FoodEntryInput(
-      at: useAt,
-      meal: meal,
-      name: sample.name,
-      foodRef: sample.foodRef,
-      portionUnit: sample.portionUnit,
-      portionQty: sample.portionQty,
-      labelBasisQty: sample.labelBasisQty,
-      labelBasisUnit: sample.labelBasisUnit,
-      addedSugarKnown: sample.addedSugarKnown,
-      packVersion: sample.packVersion,
-      lines: sample.lines,
-    ));
+    return _recordFoodEntry(
+      FoodEntryInput(
+        at: useAt,
+        meal: meal,
+        name: sample.name,
+        foodRef: sample.foodRef,
+        portionUnit: sample.portionUnit,
+        portionQty: sample.portionQty,
+        labelBasisQty: sample.labelBasisQty,
+        labelBasisUnit: sample.labelBasisUnit,
+        addedSugarKnown: sample.addedSugarKnown,
+        packVersion: sample.packVersion,
+        lines: sample.lines,
+      ),
+    );
   }
 
   /// Ghi món từ Nhập theo nhãn (tùy chọn lưu vào `custom_foods`).
-  Future<FoodLogFeedback> recordLabelFood(
-    LabelFoodDraft draft, {
-    required bool saveForReuse,
-  }) async {
+  Future<FoodLogFeedback> recordLabelFood(LabelFoodDraft draft, {required bool saveForReuse}) async {
     final repo = _repo;
     if (repo == null) {
       return const FoodLogFeedback(summaryText: 'Chưa lưu được. Thử lại', failed: true);
@@ -665,13 +657,7 @@ class DiaryController extends ChangeNotifier {
   }) {
     final FoodEntryInput input;
     try {
-      input = LabelFoodBuilder.entryFromCustomFood(
-        custom,
-        usedQty: usedQty,
-        meal: meal,
-        at: at,
-        pack: pack,
-      );
+      input = LabelFoodBuilder.entryFromCustomFood(custom, usedQty: usedQty, meal: meal, at: at, pack: pack);
     } on FormatException {
       // Món đã lưu có đơn vị không đọc được: không ghi, không đoán đơn vị. Thử lại cũng không được,
       // nên không bật `_saveFailed` (cờ đó hiện snackbar "Chưa lưu được. Thử lại").
@@ -719,9 +705,7 @@ class DiaryController extends ChangeNotifier {
           if (ref != null && !ref.startsWith('custom:') && _foodLibrary != null && !_foodLibraryBroken) {
             detail = await _foodLibrary!.getById(ref);
           }
-          final grams = detail == null
-              ? null
-              : (newGramsIfLibrary ?? detail.gramsForPortion(targetUnit, newQty));
+          final grams = detail == null ? null : (newGramsIfLibrary ?? detail.gramsForPortion(targetUnit, newQty));
           if (detail != null && grams != null && grams > 0) {
             updatedLines = _foodLibrary!.computeLines(detail, grams, pack: pack);
             await repo.replaceFoodLines(
@@ -787,10 +771,7 @@ class DiaryController extends ChangeNotifier {
 
   Future<void> deleteFoodEntry(int id) => _write((repo) => repo.deleteFood(id));
 
-  Future<FoodLogFeedback> _recordFoodEntry(
-    FoodEntryInput input, {
-    String summaryVerb = 'Đã ghi',
-  }) async {
+  Future<FoodLogFeedback> _recordFoodEntry(FoodEntryInput input, {String summaryVerb = 'Đã ghi'}) async {
     final repo = _repo;
     if (repo == null) {
       return const FoodLogFeedback(summaryText: 'Chưa lưu được. Thử lại', failed: true);
@@ -826,9 +807,7 @@ class DiaryController extends ChangeNotifier {
     if (nextReport == null) {
       return FoodLogFeedback(savedFoodId: savedFoodId, summaryText: summaryText);
     }
-    final prevKeys = {
-      for (final f in prevReport?.ulFlags ?? const <UlFlag>[]) (f.nutrientId, f.kind),
-    };
+    final prevKeys = {for (final f in prevReport?.ulFlags ?? const <UlFlag>[]) (f.nutrientId, f.kind)};
     final newFlags = [
       for (final f in nextReport.ulFlags)
         if (!prevKeys.contains((f.nutrientId, f.kind))) f,
@@ -843,7 +822,8 @@ class DiaryController extends ChangeNotifier {
       for (final f in nextReport.ulFlags) {
         if (f.kind == UlFlagKind.daily && seenNut.add(f.nutrientId)) {
           final ulDef = pack.nutrients[f.nutrientId];
-          final touches = addedKeys.contains(f.nutrientId) ||
+          final touches =
+              addedKeys.contains(f.nutrientId) ||
               (ulDef?.id == 'retinol' && addedKeys.contains('retinol')) ||
               (ulDef?.id == 'folicAcid' && addedKeys.contains('folicAcid'));
           if (touches && ulDef != null) {
@@ -876,23 +856,27 @@ class DiaryController extends ChangeNotifier {
           nutrientId: k,
           source: it.source,
           amounts: it.nutrients.containsKey(k) ? {k: it.nutrients[k]!} : const {},
-          ulAmounts: it.ulNutrients != null && it.ulNutrients!.containsKey(k)
-              ? {k: it.ulNutrients![k]!}
-              : null,
+          ulAmounts: it.ulNutrients != null && it.ulNutrients!.containsKey(k) ? {k: it.ulNutrients![k]!} : null,
         ),
     ];
     final at = it.at ?? atNow();
     if (it.source == IntakeSource.supplement) {
-      return _write((repo) => repo.recordDose(DoseInput(
+      return _write(
+        (repo) => repo.recordDose(
+          DoseInput(
             at: at,
             name: it.label,
             kind: DoseKind.oneOff,
             servings: 1,
             packVersion: pack.version,
             lines: lines,
-          )));
+          ),
+        ),
+      );
     }
-    return _write((repo) => repo.addFood(FoodEntryInput(
+    return _write(
+      (repo) => repo.addFood(
+        FoodEntryInput(
           at: at,
           meal: _mealFromSlot(it.meal),
           name: it.label,
@@ -901,17 +885,16 @@ class DiaryController extends ChangeNotifier {
           addedSugarKnown: it.addedSugarKnown,
           packVersion: pack.version,
           lines: lines,
-        )));
+        ),
+      ),
+    );
   }
 
-  Future<void> recordDose(String name, List<IntakeLine> lines) => _write((repo) => repo.recordDose(DoseInput(
-        at: atNow(),
-        name: name,
-        kind: DoseKind.oneOff,
-        servings: 1,
-        packVersion: pack.version,
-        lines: lines,
-      )));
+  Future<void> recordDose(String name, List<IntakeLine> lines) => _write(
+    (repo) => repo.recordDose(
+      DoseInput(at: atNow(), name: name, kind: DoseKind.oneOff, servings: 1, packVersion: pack.version, lines: lines),
+    ),
+  );
 
   Future<void> deleteDoseEntry(int id) => _write((repo) => repo.deleteDose(id));
 
@@ -955,20 +938,14 @@ class DiaryController extends ChangeNotifier {
     required List<IngredientDraft> ingredients,
     double? initialBoxRemaining,
     String? initialBoxExpiryMonth,
-  }) =>
-      _write((repo) async {
-        final pid = await repo.addProduct(
-          name,
-          countUnit,
-          unitsPerServing,
-          barcode: barcode,
-        );
-        await repo.saveProductIngredients(pid, ingredients);
-        if (initialBoxRemaining != null && initialBoxRemaining >= 0) {
-          await repo.addBox(pid, initialBoxRemaining, expiryMonth: initialBoxExpiryMonth);
-        }
-        return pid;
-      });
+  }) => _write((repo) async {
+    final pid = await repo.addProduct(name, countUnit, unitsPerServing, barcode: barcode);
+    await repo.saveProductIngredients(pid, ingredients);
+    if (initialBoxRemaining != null && initialBoxRemaining >= 0) {
+      await repo.addBox(pid, initialBoxRemaining, expiryMonth: initialBoxExpiryMonth);
+    }
+    return pid;
+  });
 
   Future<bool> updateProductInfo(
     int id, {
@@ -1003,18 +980,10 @@ class DiaryController extends ChangeNotifier {
       }) ??
       false;
 
-  Future<int?> addProductBox(
-    int productId, {
-    required double remaining,
-    String? expiryMonth,
-  }) =>
+  Future<int?> addProductBox(int productId, {required double remaining, String? expiryMonth}) =>
       _write((repo) => repo.addBox(productId, remaining, expiryMonth: expiryMonth));
 
-  Future<bool> updateProductBox(
-    int boxId, {
-    required double remaining,
-    String? expiryMonth,
-  }) async =>
+  Future<bool> updateProductBox(int boxId, {required double remaining, String? expiryMonth}) async =>
       await _write((repo) async {
         await repo.updateBox(boxId, remaining: remaining, expiryMonth: expiryMonth);
         return true;
@@ -1029,48 +998,51 @@ class DiaryController extends ChangeNotifier {
       false;
 
   /// Chuyển danh sách thành phần sản phẩm thành `IntakeLine` cho [servings] khẩu phần.
-  List<IntakeLine> buildDoseLinesFromIngredients(
-    List<ProductIngredient> ingredients,
-    double servings,
-  ) {
+  List<IntakeLine> buildDoseLinesFromIngredients(List<ProductIngredient> ingredients, double servings) {
     final conv = UnitConverter(pack);
     final out = <IntakeLine>[];
     for (final ing in ingredients) {
       if (ing.nutrientId == null || ing.labelAmount == null || ing.labelUnit == null) {
         if (ing.freeName != null && ing.freeName!.trim().isNotEmpty) {
-          out.add(IntakeLine(
-            freeName: ing.freeName,
-            source: IntakeSource.supplement,
-            form: ing.form,
-            labelAmount: ing.labelAmount == null ? null : ing.labelAmount! * servings,
-            labelUnit: ing.labelUnit,
-            amounts: const {},
-          ));
+          out.add(
+            IntakeLine(
+              freeName: ing.freeName,
+              source: IntakeSource.supplement,
+              form: ing.form,
+              labelAmount: ing.labelAmount == null ? null : ing.labelAmount! * servings,
+              labelUnit: ing.labelUnit,
+              amounts: const {},
+            ),
+          );
         }
         continue;
       }
       final lu = LabelUnit.values.where((u) => u.name == ing.labelUnit).firstOrNull;
       if (lu == null) continue;
-      final converted = conv.convertIntakeLine(IntakeLineInput(
-        nutrientId: ing.nutrientId,
-        source: IntakeSource.supplement,
-        form: ing.form,
-        amount: ing.labelAmount! * servings,
-        unit: lu,
-        compoundKind: ing.isCompound
-            ? (ing.form == NutrientForm.unknown ? CompoundKind.unknown : CompoundKind.compound)
-            : CompoundKind.elemental,
-      ));
-      out.add(IntakeLine(
-        nutrientId: ing.nutrientId,
-        source: IntakeSource.supplement,
-        form: ing.form,
-        uncertain: converted.uncertain,
-        labelAmount: ing.labelAmount! * servings,
-        labelUnit: ing.labelUnit,
-        amounts: converted.amounts,
-        ulAmounts: converted.ulAmounts,
-      ));
+      final converted = conv.convertIntakeLine(
+        IntakeLineInput(
+          nutrientId: ing.nutrientId,
+          source: IntakeSource.supplement,
+          form: ing.form,
+          amount: ing.labelAmount! * servings,
+          unit: lu,
+          compoundKind: ing.isCompound
+              ? (ing.form == NutrientForm.unknown ? CompoundKind.unknown : CompoundKind.compound)
+              : CompoundKind.elemental,
+        ),
+      );
+      out.add(
+        IntakeLine(
+          nutrientId: ing.nutrientId,
+          source: IntakeSource.supplement,
+          form: ing.form,
+          uncertain: converted.uncertain,
+          labelAmount: ing.labelAmount! * servings,
+          labelUnit: ing.labelUnit,
+          amounts: converted.amounts,
+          ulAmounts: converted.ulAmounts,
+        ),
+      );
     }
     return out;
   }
@@ -1099,40 +1071,41 @@ class DiaryController extends ChangeNotifier {
         }
       }
       final before = await _reportForDay(repo, at);
-      final res = await repo.recordDose(DoseInput(
-        at: at,
-        productId: productId,
-        name: name,
-        kind: resolvedOcc != null
-            ? DoseKind.scheduled
-            : (productId == null ? DoseKind.oneOff : DoseKind.extra),
-        servings: servings,
-        packVersion: pack.version,
-        lines: lines,
-        expiredBoxes: expiredBoxes,
-        occurrence: resolvedOcc,
-      ));
+      final res = await repo.recordDose(
+        DoseInput(
+          at: at,
+          productId: productId,
+          name: name,
+          kind: resolvedOcc != null ? DoseKind.scheduled : (productId == null ? DoseKind.oneOff : DoseKind.extra),
+          servings: servings,
+          packVersion: pack.version,
+          lines: lines,
+          expiredBoxes: expiredBoxes,
+          occurrence: resolvedOcc,
+        ),
+      );
       if (res is NeedsExpiredChoice) {
         return const DoseNeedsExpiredChoice();
       }
       final recorded = res as DoseRecorded;
       final after = await _reportForDay(repo, at);
       await reload();
-      return DoseLogged(_buildDoseFeedback(
-        doseId: recorded.id,
-        shortfall: recorded.shortfall,
-        productId: productId,
-        summaryLabel: summaryLabel,
-        before: before,
-        after: after,
-      ));
+      return DoseLogged(
+        _buildDoseFeedback(
+          doseId: recorded.id,
+          shortfall: recorded.shortfall,
+          productId: productId,
+          summaryLabel: summaryLabel,
+          before: before,
+          after: after,
+        ),
+      );
     } on StorageFullException {
       _saveFailed = true;
       notifyListeners();
-      return const DoseLogged(FoodLogFeedback(
-        summaryText: 'Máy không còn đủ dung lượng. Hãy giải phóng bộ nhớ.',
-        failed: true,
-      ));
+      return const DoseLogged(
+        FoodLogFeedback(summaryText: 'Máy không còn đủ dung lượng. Hãy giải phóng bộ nhớ.', failed: true),
+      );
     } on JournalStorageException {
       _saveFailed = true;
       notifyListeners();
@@ -1157,47 +1130,43 @@ class DiaryController extends ChangeNotifier {
     }
     try {
       final before = await _reportForDay(repo, at);
-      final res = await repo.updateDose(UpdateDoseInput(
-        doseId: doseId,
-        name: name,
-        servings: servings,
-        at: at,
-        packVersion: pack.version,
-        lines: lines,
-        expiredBoxes: expiredBoxes,
-      ));
+      final res = await repo.updateDose(
+        UpdateDoseInput(
+          doseId: doseId,
+          name: name,
+          servings: servings,
+          at: at,
+          packVersion: pack.version,
+          lines: lines,
+          expiredBoxes: expiredBoxes,
+        ),
+      );
       if (res is NeedsExpiredChoice) {
         return const DoseNeedsExpiredChoice();
       }
       if (relinkSchedule && productId != null) {
-        final match = await findUnmarkedWindowMatch(
-          productId: productId,
-          at: at,
-          ignoringDoseId: doseId,
-        );
-        await repo.relinkDoseOccurrence(
-          doseId,
-          match == null ? null : OccurrenceRef(match.scheduleId, match.day),
-        );
+        final match = await findUnmarkedWindowMatch(productId: productId, at: at, ignoringDoseId: doseId);
+        await repo.relinkDoseOccurrence(doseId, match == null ? null : OccurrenceRef(match.scheduleId, match.day));
       }
       final recorded = res as DoseRecorded;
       final after = await _reportForDay(repo, at);
       await reload();
-      return DoseLogged(_buildDoseFeedback(
-        doseId: recorded.id,
-        shortfall: recorded.shortfall,
-        productId: productId,
-        summaryLabel: summaryLabel,
-        before: before,
-        after: after,
-      ));
+      return DoseLogged(
+        _buildDoseFeedback(
+          doseId: recorded.id,
+          shortfall: recorded.shortfall,
+          productId: productId,
+          summaryLabel: summaryLabel,
+          before: before,
+          after: after,
+        ),
+      );
     } on StorageFullException {
       _saveFailed = true;
       notifyListeners();
-      return const DoseLogged(FoodLogFeedback(
-        summaryText: 'Máy không còn đủ dung lượng. Hãy giải phóng bộ nhớ.',
-        failed: true,
-      ));
+      return const DoseLogged(
+        FoodLogFeedback(summaryText: 'Máy không còn đủ dung lượng. Hãy giải phóng bộ nhớ.', failed: true),
+      );
     } on JournalStorageException {
       _saveFailed = true;
       notifyListeners();
@@ -1213,9 +1182,7 @@ class DiaryController extends ChangeNotifier {
     required DailyReport? before,
     required DailyReport? after,
   }) {
-    final beforeKeys = {
-      for (final f in before?.ulFlags ?? const <UlFlag>[]) (f.nutrientId, f.kind),
-    };
+    final beforeKeys = {for (final f in before?.ulFlags ?? const <UlFlag>[]) (f.nutrientId, f.kind)};
     final newFlags = [
       for (final f in after?.ulFlags ?? const <UlFlag>[])
         if (!beforeKeys.contains((f.nutrientId, f.kind))) f,
@@ -1227,9 +1194,7 @@ class DiaryController extends ChangeNotifier {
         stillOver.add('Đã vượt giới hạn $name');
       }
     }
-    final summary = shortfall > 0 && newFlags.isEmpty
-        ? 'Đã ghi $summaryLabel · Kho đã hết'
-        : 'Đã ghi $summaryLabel';
+    final summary = shortfall > 0 && newFlags.isEmpty ? 'Đã ghi $summaryLabel · Kho đã hết' : 'Đã ghi $summaryLabel';
     return FoodLogFeedback(
       savedDoseId: doseId,
       stockShortfall: shortfall,
@@ -1257,8 +1222,7 @@ class DiaryController extends ChangeNotifier {
 
   Future<void> addWorkout(WorkoutEntry w) => _write((repo) => repo.addWorkout(atNow(), w));
 
-  Future<void> addWorkoutAt(DateTime startAt, WorkoutEntry w) =>
-      _write((repo) => repo.addWorkout(startAt, w));
+  Future<void> addWorkoutAt(DateTime startAt, WorkoutEntry w) => _write((repo) => repo.addWorkout(startAt, w));
 
   Future<void> updateWorkout(int id, DateTime startAt, WorkoutEntry w) =>
       _write((repo) => repo.updateWorkout(id, startAt, w));
@@ -1296,12 +1260,7 @@ class DiaryController extends ChangeNotifier {
     if (_periodReportVersion == _reportDataVersion && _cachedPeriodReport7Days != null) {
       return _cachedPeriodReport7Days;
     }
-    final res = averageReport(
-      pack,
-      p,
-      _data.last7,
-      workouts7: _data.workouts7,
-    );
+    final res = averageReport(pack, p, _data.last7, workouts7: _data.workouts7);
     _cachedPeriodReport7Days = res;
     _periodReportVersion = _reportDataVersion;
     return res;
@@ -1371,22 +1330,14 @@ class DiaryController extends ChangeNotifier {
   Future<int?> addSchedule(int productId, int timeOfDay, double servings, {required String validFrom}) =>
       _write((repo) => repo.addSchedule(productId, timeOfDay, servings, validFrom: validFrom));
 
-  Future<ScheduleChange?> updateSchedule(
-    int id, {
-    int? timeOfDay,
-    double? servings,
-    required String today,
-  }) =>
+  Future<ScheduleChange?> updateSchedule(int id, {int? timeOfDay, double? servings, required String today}) =>
       _write((repo) => repo.updateSchedule(id, timeOfDay: timeOfDay, servings: servings, today: today));
 
-  Future<void> endSchedule(int id, {required String today}) =>
-      _write((repo) => repo.endSchedule(id, today: today));
+  Future<void> endSchedule(int id, {required String today}) => _write((repo) => repo.endSchedule(id, today: today));
 
-  Future<void> skipOccurrence(OccurrenceRef o) =>
-      _write((repo) => repo.skipOccurrence(o));
+  Future<void> skipOccurrence(OccurrenceRef o) => _write((repo) => repo.skipOccurrence(o));
 
-  Future<void> clearOccurrence(OccurrenceRef o) =>
-      _write((repo) => repo.clearOccurrence(o));
+  Future<void> clearOccurrence(OccurrenceRef o) => _write((repo) => repo.clearOccurrence(o));
 
   /// Khớp lần ghi lúc [at] vào một lần theo lịch chưa đánh dấu trong khung ±2 giờ (xét cả ngày trước).
   Future<ScheduleMatch?> findUnmarkedWindowMatch({
@@ -1453,12 +1404,14 @@ class DiaryController extends ChangeNotifier {
         });
       }
       if (nuts.isNotEmpty) {
-        items.add(IntakeItem(
-          label: prodMap[s.productId] ?? 'Bổ sung #${s.productId}',
-          source: IntakeSource.supplement,
-          nutrients: nuts,
-          ulNutrients: ulNuts.isEmpty ? null : ulNuts,
-        ));
+        items.add(
+          IntakeItem(
+            label: prodMap[s.productId] ?? 'Bổ sung #${s.productId}',
+            source: IntakeSource.supplement,
+            nutrients: nuts,
+            ulNutrients: ulNuts.isEmpty ? null : ulNuts,
+          ),
+        );
       }
     }
     return checkUlSchedule(pack, p, items);
@@ -1485,20 +1438,13 @@ class DiaryController extends ChangeNotifier {
           nuts.add(ScheduledNutrient(nutrientId: l.nutrientId!, form: l.form ?? 'unknown', amount: val));
         }
       }
-      inputs.add(ScheduledDoseInput(
-        scheduleId: s.id,
-        productId: s.productId,
-        timeOfDay: s.timeOfDay,
-        nutrients: nuts,
-      ));
+      inputs.add(ScheduledDoseInput(scheduleId: s.id, productId: s.productId, timeOfDay: s.timeOfDay, nutrients: nuts));
     }
     return evaluateScheduleRules(pack, mealTimes, inputs);
   }
 
   String scheduleNoticeSignature(List<ScheduleNotice> notices) {
-    final keys = [
-      for (final n in notices) '${n.ruleId}@${n.timeOfDay}@${n.productIds.join(",")}',
-    ]..sort();
+    final keys = [for (final n in notices) '${n.ruleId}@${n.timeOfDay}@${n.productIds.join(",")}']..sort();
     return keys.join('|');
   }
 
@@ -1546,9 +1492,7 @@ class DiaryController extends ChangeNotifier {
           timeOfDayMinutes: t,
           itemCount: byTime[t]!.length,
           scheduleIds: byTime[t]!,
-          detailText: showDetails && (namesByTime[t]?.isNotEmpty ?? false)
-              ? namesByTime[t]!.join(', ')
-              : null,
+          detailText: showDetails && (namesByTime[t]?.isNotEmpty ?? false) ? namesByTime[t]!.join(', ') : null,
         ),
     ];
   }
@@ -1597,9 +1541,9 @@ class DiaryController extends ChangeNotifier {
       false;
 
   static Meal _mealFromSlot(MealSlot? s) => switch (s) {
-        MealSlot.breakfast => Meal.breakfast,
-        MealSlot.lunch => Meal.lunch,
-        MealSlot.dinner => Meal.dinner,
-        MealSlot.snack || null => Meal.snack,
-      };
+    MealSlot.breakfast => Meal.breakfast,
+    MealSlot.lunch => Meal.lunch,
+    MealSlot.dinner => Meal.dinner,
+    MealSlot.snack || null => Meal.snack,
+  };
 }

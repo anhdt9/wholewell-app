@@ -78,10 +78,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         content: const Text('App cần đồng ý này để tính toán. Bạn có thể quay lại bất cứ lúc nào.'),
         actions: [
           TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Quay lại')),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Về màn Chào mừng'),
-          ),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Về màn Chào mừng')),
         ],
       ),
     );
@@ -179,11 +176,13 @@ class _UpgradeConsentFlowState extends State<UpgradeConsentFlow> {
     super.didChangeDependencies();
     if (_prefilled) return;
     _prefilled = true;
-    unawaited(AppScope.of(context).consentAgeYears().then((age) {
-      if (mounted && age != null && _ageCtl.text.isEmpty) {
-        setState(() => _ageCtl.text = '$age');
-      }
-    }));
+    unawaited(
+      AppScope.of(context).consentAgeYears().then((age) {
+        if (mounted && age != null && _ageCtl.text.isEmpty) {
+          setState(() => _ageCtl.text = '$age');
+        }
+      }),
+    );
   }
 
   @override
@@ -360,10 +359,8 @@ class _OnboardingBodyProfileScreenState extends State<OnboardingBodyProfileScree
 
   void _revalidate() {
     setState(() {
-      _heightCheck =
-          _heightCtl.text.trim().isEmpty ? null : BodyMeasureValidation.validateHeight(_heightCtl.text);
-      _weightCheck =
-          _weightCtl.text.trim().isEmpty ? null : BodyMeasureValidation.validateWeight(_weightCtl.text);
+      _heightCheck = _heightCtl.text.trim().isEmpty ? null : BodyMeasureValidation.validateHeight(_heightCtl.text);
+      _weightCheck = _weightCtl.text.trim().isEmpty ? null : BodyMeasureValidation.validateWeight(_weightCtl.text);
       _saveError = null;
     });
   }
@@ -383,13 +380,9 @@ class _OnboardingBodyProfileScreenState extends State<OnboardingBodyProfileScree
     });
     final state = AppScope.of(context);
     final age = await state.consentAgeYears() ?? state.pack.minProfileAge;
-    final ok = await state.saveOnboardingBodyProfile(Profile(
-      ageYears: age,
-      sex: _sex!,
-      heightCm: hc.value!,
-      weightKg: wc.value!,
-      activityLevel: _level!,
-    ));
+    final ok = await state.saveOnboardingBodyProfile(
+      Profile(ageYears: age, sex: _sex!, heightCm: hc.value!, weightKg: wc.value!, activityLevel: _level!),
+    );
     if (!mounted) return;
     setState(() {
       _saving = false;
@@ -401,12 +394,7 @@ class _OnboardingBodyProfileScreenState extends State<OnboardingBodyProfileScree
   Widget build(BuildContext context) {
     final hc = _heightCheck;
     final wc = _weightCheck;
-    final canSubmit = _sex != null &&
-        _level != null &&
-        hc != null &&
-        wc != null &&
-        hc.isValid &&
-        wc.isValid;
+    final canSubmit = _sex != null && _level != null && hc != null && wc != null && hc.isValid && wc.isValid;
 
     return StepScaffold(
       stepLabel: '3/3',
@@ -456,18 +444,9 @@ class _WelcomeView extends StatelessWidget {
     final state = AppScope.of(context);
 
     const commitments = [
-      (
-        icon: LucideIcons.shieldCheck,
-        text: 'Chỉ để tham khảo, không thay lời khuyên của bác sĩ',
-      ),
-      (
-        icon: LucideIcons.smartphone,
-        text: 'Dữ liệu chỉ nằm trên máy này, không gửi đi đâu',
-      ),
-      (
-        icon: LucideIcons.wifiOff,
-        text: 'Không cần mạng',
-      ),
+      (icon: LucideIcons.shieldCheck, text: 'Chỉ để tham khảo, không thay lời khuyên của bác sĩ'),
+      (icon: LucideIcons.smartphone, text: 'Dữ liệu chỉ nằm trên máy này, không gửi đi đâu'),
+      (icon: LucideIcons.wifiOff, text: 'Không cần mạng'),
     ];
 
     return StepScaffold(
@@ -511,10 +490,7 @@ class _WelcomeView extends StatelessWidget {
                       Container(
                         width: 32,
                         height: 32,
-                        decoration: BoxDecoration(
-                          color: ww.subtleSurface,
-                          shape: BoxShape.circle,
-                        ),
+                        decoration: BoxDecoration(color: ww.subtleSurface, shape: BoxShape.circle),
                         child: Icon(commitments[i].icon, size: 16, color: cs.primary),
                       ),
                       const SizedBox(width: AppSpacing.md),
@@ -545,11 +521,7 @@ class _WelcomeEmblemPainter extends CustomPainter {
   final Color leafColor;
   final Color accentColor;
 
-  const _WelcomeEmblemPainter({
-    required this.dropColor,
-    required this.leafColor,
-    required this.accentColor,
-  });
+  const _WelcomeEmblemPainter({required this.dropColor, required this.leafColor, required this.accentColor});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -557,10 +529,7 @@ class _WelcomeEmblemPainter extends CustomPainter {
     final h = size.height;
 
     final bgPaint = Paint()..color = dropColor;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromLTWH(0, 0, w, h), const Radius.circular(18)),
-      bgPaint,
-    );
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(0, 0, w, h), const Radius.circular(18)), bgPaint);
 
     // Hình giọt mềm phía trái.
     final dropPath = Path()
@@ -644,10 +613,7 @@ class _EligibilityView extends StatelessWidget {
             controller: ageCtl,
             keyboardType: TextInputType.number,
             style: tabularNumberStyle(null),
-            decoration: InputDecoration(
-              labelText: 'Tuổi',
-              errorText: ageError,
-            ),
+            decoration: InputDecoration(labelText: 'Tuổi', errorText: ageError),
             onChanged: onAgeChanged,
           ),
           const SizedBox(height: 20),
@@ -711,12 +677,7 @@ class _NotEligibleView extends StatelessWidget {
   final VoidCallback onBack;
   final VoidCallback? onWipeAll;
 
-  const _NotEligibleView({
-    required this.isUpgrade,
-    required this.busy,
-    required this.onBack,
-    this.onWipeAll,
-  });
+  const _NotEligibleView({required this.isUpgrade, required this.busy, required this.onBack, this.onWipeAll});
 
   @override
   Widget build(BuildContext context) {
@@ -737,10 +698,7 @@ class _NotEligibleView extends StatelessWidget {
           ),
           if (isUpgrade) ...[
             const SizedBox(height: 16),
-            Text(
-              'Trên máy vẫn còn dữ liệu cũ.',
-              style: TextStyle(color: cs.onSurfaceVariant),
-            ),
+            Text('Trên máy vẫn còn dữ liệu cũ.', style: TextStyle(color: cs.onSurfaceVariant)),
           ],
         ],
       ),
@@ -813,9 +771,7 @@ class _ConsentView extends StatelessWidget {
         children: [
           Text('Dữ liệu sức khỏe của bạn', style: t.titleLarge),
           const SizedBox(height: 12),
-          const Text(
-            'App lưu tuổi, chiều cao, cân nặng, món ăn, bổ sung bạn ghi để so với mức tham chiếu.',
-          ),
+          const Text('App lưu tuổi, chiều cao, cân nặng, món ăn, bổ sung bạn ghi để so với mức tham chiếu.'),
           const SizedBox(height: 12),
           const Text('• Lưu mã hóa trên máy này'),
           const SizedBox(height: 6),
@@ -842,9 +798,9 @@ class _ConsentView extends StatelessWidget {
                 style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
                 onPressed: busy
                     ? null
-                    : () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(builder: (_) => const PrivacyPolicyScreen()),
-                        ),
+                    : () =>
+                          Navigator.of(context)
+                              .push(MaterialPageRoute<void>(builder: (_) => const PrivacyPolicyScreen())),
                 child: const Text('Chính sách quyền riêng tư'),
               ),
             ],

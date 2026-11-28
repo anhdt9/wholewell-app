@@ -5,19 +5,13 @@ import 'package:health_engine/health_engine.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
-final _pack = ReferencePack.fromJsonString(
-  File('../health_engine/assets/reference_pack.json').readAsStringSync(),
-);
+final _pack = ReferencePack.fromJsonString(File('../health_engine/assets/reference_pack.json').readAsStringSync());
 
 class _TempStore implements FoodLibraryAssetStore {
   final String path;
   _TempStore(this.path);
   @override
-  Future<String> prepareDatabaseFile({
-    required String libraryVersion,
-    required String expectedSha256,
-  }) async =>
-      path;
+  Future<String> prepareDatabaseFile({required String libraryVersion, required String expectedSha256}) async => path;
 }
 
 String _createSampleLibraryDb(Directory dir) {
@@ -69,9 +63,7 @@ String _createSampleLibraryDb(Directory dir) {
     );
   ''');
 
-  db.execute(
-    "INSERT INTO meta VALUES ('2026.11.25-1', 'FDC 2026-10', 'FPED 2021-2023', '2026-11-25', '2026.11.25-2')",
-  );
+  db.execute("INSERT INTO meta VALUES ('2026.11.25-1', 'FDC 2026-10', 'FPED 2021-2023', '2026-11-25', '2026.11.25-2')");
 
   // 1. Công thức Phở bò (estimate)
   db.execute(
@@ -79,9 +71,13 @@ String _createSampleLibraryDb(Directory dir) {
     "'pho bo tai nam beef noodle soup', 1, 1, 0, 0, 'p_pho_bat')",
   );
   db.execute("INSERT INTO food_portions VALUES ('p_pho_bat', 'recipe:pho-bo', '1 bát vừa', 450)");
-  db.execute("INSERT INTO food_nutrients_per_100g VALUES ('recipe:pho-bo', 'energyKcal', 'food', NULL, 100, NULL, 'kcal')");
+  db.execute(
+    "INSERT INTO food_nutrients_per_100g VALUES ('recipe:pho-bo', 'energyKcal', 'food', NULL, 100, NULL, 'kcal')",
+  );
   db.execute("INSERT INTO food_nutrients_per_100g VALUES ('recipe:pho-bo', 'addedSugar', 'food', NULL, 0, NULL, 'g')");
-  db.execute("INSERT INTO food_nutrients_per_100g VALUES ('recipe:pho-bo', 'totalSugar', 'food', NULL, 1.5, NULL, 'g')");
+  db.execute(
+    "INSERT INTO food_nutrients_per_100g VALUES ('recipe:pho-bo', 'totalSugar', 'food', NULL, 1.5, NULL, 'g')",
+  );
 
   // 2. Ngũ cốc tăng cường (folicAcid + vitE ul_amount * 2)
   db.execute(
@@ -89,9 +85,15 @@ String _createSampleLibraryDb(Directory dir) {
     "'ngu coc an sang', 'ngu coc an sang tang cuong breakfast cereal fortified', 0, 1, 1, 0, 'p_cereal_chen')",
   );
   db.execute("INSERT INTO food_portions VALUES ('p_cereal_chen', 'usda:173904', '1 chén', 30)");
-  db.execute("INSERT INTO food_nutrients_per_100g VALUES ('usda:173904', 'folicAcid', 'fortified', 'folic_acid', 200, NULL, 'ug')");
-  db.execute("INSERT INTO food_nutrients_per_100g VALUES ('usda:173904', 'folate', 'food', 'natural_folate', 40, NULL, 'ug_DFE')");
-  db.execute("INSERT INTO food_nutrients_per_100g VALUES ('usda:173904', 'vitE', 'fortified', 'synthetic_2r', 15, 30, 'mg')");
+  db.execute(
+    "INSERT INTO food_nutrients_per_100g VALUES ('usda:173904', 'folicAcid', 'fortified', 'folic_acid', 200, NULL, 'ug')",
+  );
+  db.execute(
+    "INSERT INTO food_nutrients_per_100g VALUES ('usda:173904', 'folate', 'food', 'natural_folate', 40, NULL, 'ug_DFE')",
+  );
+  db.execute(
+    "INSERT INTO food_nutrients_per_100g VALUES ('usda:173904', 'vitE', 'fortified', 'synthetic_2r', 15, 30, 'mg')",
+  );
   db.execute("INSERT INTO food_nutrients_per_100g VALUES ('usda:173904', 'vitE', 'food', NULL, 2, NULL, 'mg')");
 
   // 3. Món có footnote RRR-alpha-tocopherol + folate unseparated
@@ -99,7 +101,9 @@ String _createSampleLibraryDb(Directory dir) {
     "INSERT INTO foods VALUES ('usda:999001', 'usda_sr', 'Sữa hạt RRR vitamin E', 'Soy milk RRR vit E', NULL, "
     "'sua hat rrr vitamin e soy milk rrr vit e', 0, 0, 0, 1, NULL)",
   );
-  db.execute("INSERT INTO food_nutrients_per_100g VALUES ('usda:999001', 'vitE', 'fortified', 'natural_2r', 10, NULL, 'mg')");
+  db.execute(
+    "INSERT INTO food_nutrients_per_100g VALUES ('usda:999001', 'vitE', 'fortified', 'natural_2r', 10, NULL, 'mg')",
+  );
   db.execute("INSERT INTO food_nutrients_per_100g VALUES ('usda:999001', 'folate', 'food', NULL, 50, NULL, 'ug_DFE')");
 
   db.execute("INSERT INTO foods_fts(foods_fts) VALUES ('rebuild')");
@@ -149,10 +153,7 @@ void main() {
     addTearDown(() => dir.deleteSync(recursive: true));
     final path = _createSampleLibraryDb(dir);
     final hash = await computeFileSha256(path);
-    final repo = await SqliteFoodLibraryRepository.openVerifiedPath(
-      path: path,
-      expectedSha256: hash,
-    );
+    final repo = await SqliteFoodLibraryRepository.openVerifiedPath(path: path, expectedSha256: hash);
     addTearDown(repo.close);
 
     // Món có totalSugar chỉ để hiển thị

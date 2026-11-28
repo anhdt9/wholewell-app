@@ -2,8 +2,7 @@
 library;
 
 export 'src/backup_codec.dart';
-export 'src/connection.dart'
-    show DbOpenException, DbOpenStage, dbCipher, dbLogStatements, looksLikePlainSqlite;
+export 'src/connection.dart' show DbOpenException, DbOpenStage, dbCipher, dbLogStatements, looksLikePlainSqlite;
 export 'src/db_files.dart';
 export 'src/drift_repository.dart';
 export 'src/intake.dart';

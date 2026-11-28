@@ -96,12 +96,7 @@ class _LogTile extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _LogTile({
-    required this.icon,
-    required this.accent,
-    required this.label,
-    required this.onTap,
-  });
+  const _LogTile({required this.icon, required this.accent, required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -126,10 +121,7 @@ class _LogTile extends StatelessWidget {
                 Container(
                   width: 48,
                   height: 48,
-                  decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.14),
-                    shape: BoxShape.circle,
-                  ),
+                  decoration: BoxDecoration(color: accent.withValues(alpha: 0.14), shape: BoxShape.circle),
                   child: Icon(icon, size: 22, color: accent),
                 ),
                 const SizedBox(height: AppSpacing.sm),
