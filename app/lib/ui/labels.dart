@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:health_engine/health_engine.dart';
 import 'package:journal_db/journal_db.dart';
 
@@ -133,6 +134,30 @@ String fmtExpiryMonth(String yyyyMm) {
 }
 
 /// Kiểm hợp lệ `MM/YYYY` (tháng `01..12`, năm 4 chữ số) và chuyển sang `YYYY-MM`.
+/// Ô hạn dùng `MM/YYYY`: chỉ nhận số, gõ đủ 2 số tháng thì tự thêm `/`.
+/// Số đầu từ 2 đến 9 chỉ có thể là tháng một chữ số nên thêm `0` phía trước (`8` thành `08/`).
+/// Xóa lùi qua dấu `/` thì không thêm lại.
+class ExpiryMonthInputFormatter extends TextInputFormatter {
+  const ExpiryMonthInputFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    var digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    if (digits.isNotEmpty && digits.codeUnitAt(0) > 0x31) digits = '0$digits';
+    if (digits.length > 6) digits = digits.substring(0, 6);
+    final deleting = newValue.text.length < oldValue.text.length;
+    final String text;
+    if (digits.length < 2) {
+      text = digits;
+    } else if (digits.length == 2) {
+      text = deleting && !newValue.text.endsWith('/') ? digits : '$digits/';
+    } else {
+      text = '${digits.substring(0, 2)}/${digits.substring(2)}';
+    }
+    return TextEditingValue(text: text, selection: TextSelection.collapsed(offset: text.length));
+  }
+}
+
 ({bool ok, String? yyyyMm}) parseExpiryMmYyyy(String raw) {
   final t = raw.trim();
   if (t.isEmpty) return (ok: true, yyyyMm: null);

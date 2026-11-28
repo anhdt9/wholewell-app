@@ -156,7 +156,7 @@ flowchart LR
 ```
 
 - Đơn vị đếm (`CountUnit`): `Viên`, `Viên nang`, `Viên nang mềm`, `Gói`, `Giọt`, `ml`, `g`.
-- Hạn dùng nhập `MM/YYYY` (kiểm hợp lệ tháng `01..12`, năm 4 chữ số), đổi sang `YYYY-MM` khi lưu. Để trống nếu không ghi hạn dùng.
+- Hạn dùng nhập `MM/YYYY` (kiểm hợp lệ tháng `01..12`, năm 4 chữ số), đổi sang `YYYY-MM` khi lưu. Để trống nếu không ghi hạn dùng. Bàn phím số; gõ đủ 2 số tháng thì app tự thêm `/`, chỉ cần gõ tiếp năm (số đầu từ 2 đến 9 thì thêm `0` phía trước: `8` thành `08/`); xóa lùi qua `/` không bị thêm lại (chủ dự án yêu cầu 28/11/2026).
 
 ### 5. Chi tiết sản phẩm & Quản lý hộp
 

@@ -166,6 +166,41 @@ void main() {
       expect(pkg.ingredients[1].unit, LabelUnit.ug);
     });
 
+    group('ô hạn dùng tự thêm dấu /', () {
+      const f = ExpiryMonthInputFormatter();
+      String type(String old, String next) => f
+          .formatEditUpdate(
+            TextEditingValue(text: old),
+            TextEditingValue(text: next),
+          )
+          .text;
+
+      test('gõ đủ 2 số tháng thì thêm /, rồi chỉ cần gõ năm', () {
+        expect(type('', '1'), '1');
+        expect(type('1', '11'), '11/');
+        expect(type('11/', '11/2'), '11/2');
+        expect(type('11/202', '11/2027'), '11/2027');
+        expect(parseExpiryMmYyyy(type('11/202', '11/2027')).yyyyMm, '2027-11');
+      });
+
+      test('số đầu từ 2 đến 9 là tháng một chữ số', () {
+        expect(type('', '8'), '08/');
+        expect(type('', '0'), '0');
+      });
+
+      test('xóa lùi qua dấu / không bị thêm lại', () {
+        expect(type('08/', '08'), '08');
+        expect(type('08', '0'), '0');
+        expect(type('08/2', '08/'), '08/');
+      });
+
+      test('chỉ nhận số, tối đa 6 chữ số; dán 08/2027 giữ nguyên', () {
+        expect(type('', '08/2027'), '08/2027');
+        expect(type('08/2027', '08/20275'), '08/2027');
+        expect(type('', 'ab'), '');
+      });
+    });
+
     test('parseExpiryMmYyyy kiểm hợp lệ tháng 01..12 và chuyển sang YYYY-MM', () {
       expect(parseExpiryMmYyyy('').ok, isTrue);
       expect(parseExpiryMmYyyy('').yyyyMm, isNull);

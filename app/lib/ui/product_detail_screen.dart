@@ -201,6 +201,8 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
                 Expanded(
                   child: TextField(
                     controller: _boxExpiry,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: const [ExpiryMonthInputFormatter()],
                     decoration: const InputDecoration(
                       labelText: 'Hạn dùng',
                       hintText: 'MM/YYYY',
@@ -580,6 +582,8 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                 TextField(
                   controller: expCtrl,
                   enabled: !saving,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: const [ExpiryMonthInputFormatter()],
                   decoration: const InputDecoration(
                     labelText: 'Hạn dùng (tùy chọn)',
                     hintText: 'MM/YYYY',
