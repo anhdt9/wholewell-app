@@ -36,6 +36,8 @@ dev_dependencies:
     sdk: flutter
 
 flutter:
+  # Flavor mặc định khi không ghi --flavor: dev (app id riêng, không đụng dữ liệu của bản thật).
+  default-flavor: dev
   uses-material-design: true
   fonts:
     - family: BeVietnamPro

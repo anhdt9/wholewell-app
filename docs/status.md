@@ -133,7 +133,7 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
     - `docs/adr/`: 15 ADR (đã duyệt 28/11/2026) sinh từ mục 2 của refactor-plan, mỗi ADR có mục "Thực hiện"; ADR 0015 chứa đủ chi tiết làm mới theo bảng (chép từ mục 3.4, mục 3.4 của plan chỉ còn điều kiện bắt buộc).
     - `AGENTS.md`: quy tắc AI theo lời đã duyệt ở mục 7.2 (AI tạo sinh chỉ trên máy, chỉ gọi khi mô hình có sẵn, không tự tải); cấu trúc repo theo workspace; mục "Kiến trúc" (luật phụ thuộc, đặt tên); viết lại quy tắc 4 theo tên service ở mục 3.2, giữ `BackgroundJobs`, `SpeechInput`, `HomeWidgetBridge` cho giai đoạn sau và câu "mỗi interface có bản giả".
     - **Chính sách quyền riêng tư** (`docs/privacy-policy.md` và bản trong app, cập nhật 29/11/2026): thêm việc dùng Gemini Nano trên máy để gợi ý tách thành phần, không tự tải mô hình, ảnh và chữ không ra khỏi thiết bị, người dùng xác nhận từng dòng. Đổi chữ hiển thị trong màn Chính sách quyền riêng tư; chủ dự án duyệt câu chữ trong PR.
-26. **Hiệu năng sớm (PR 0e, không cần đặc tả)** (nhánh `perf/early-startup`):
+26. **Hiệu năng sớm (PR 0e, không cần đặc tả)** (**PR #51 đã gộp** 29/11/2026, CI qua):
     - `tools/perf/run_perf.py`: build profile arm64, cài đè bằng `adb install -r` (**không bao giờ gỡ app**; không dùng `flutter run`/`flutter drive` vì hai lệnh này tự gỡ bản cũ khi cài đè lỗi). Đo khởi động nguội (`am start -W`; "tới Hôm nay có dữ liệu" = từ `Start proc` tới mốc `today_ready`), từng bước khởi động, độ trễ isolate giao diện 6 s đầu, khung hình 5 s đầu và khi cuộn Hôm nay, kích thước APK. Kết quả: `docs/perf/`.
     - `PerfProbe` (`app/lib/platform/perf_probe.dart`): log `WW_PERF` chỉ ở bản profile. Không dùng `reportFullyDrawn` của Android vì `FlutterActivity` tự báo ở khung hình đầu (lúc còn màn chờ).
     - Tối ưu: `BundledDbAssetStore` thay 2 store, giải nén DSLD `.gz` theo luồng trong isolate nền (lần mở đầu không còn giải nén 113 MB trên isolate giao diện; RAM đỉnh tăng ~30 MB thay vì ~213 MB, đo trên máy tính); thư viện món và `diary.reload()` chạy song song.
@@ -141,6 +141,18 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
     - **Không làm SHA-256 trong `Isolate.run`** (khác plan): đo thấy chậm hơn ~35 ms do dựng isolate, không có lợi vì băm bất đồng bộ theo khối vốn không chặn giao diện.
     - **Chưa đo được trên máy:** lần mở đầu (phải xóa dữ liệu app), gõ tìm món/DSLD (cần điều khiển giao diện, chờ bản dev ở PR 0f để thử an toàn).
     - **Đề xuất (cần duyệt vì đổi hành vi màn Ghi món):** không chờ thư viện món trước khi hiện Hôm nay (như thư viện DSLD), bớt thêm ~160 ms; màn Ghi món cần trạng thái "đang chuẩn bị thư viện".
+27. **Build và phát hành (PR 0f, hạ tầng, không cần đặc tả)** (nhánh `build/flavors-signing`):
+    - Flavor `dev` (`vn.wholewell.app.dev`, "WholeWell Dev") và `prod` (`vn.wholewell.app`, "WholeWell"); `default-flavor: dev` trong `app/pubspec.yaml`, nên `flutter run`/`flutter build` không ghi flavor là bản dev (dữ liệu, khóa Keystore riêng). Tên app lấy từ `@string/app_name` theo flavor.
+    - Ký bản release: biến môi trường `WW_KEYSTORE_PATH`, `WW_KEYSTORE_PASSWORD`, `WW_KEY_ALIAS`, `WW_KEY_PASSWORD` (CI) hoặc `app/android/key.properties` (máy dev, không commit); thiếu thì ký bằng khóa debug như trước.
+    - `release.yml`: lấy khóa từ secrets (`WW_KEYSTORE_BASE64` và 3 secret trên), thiếu thì dừng; build prod với `--obfuscate --split-debug-info`, lưu symbol thành artifact 90 ngày; kiểm APK không ký bằng khóa debug.
+    - CI: build APK prod arm64 mỗi PR, báo lỗi khi vượt ngân sách 105.000.000 byte (mốc 101.497.154); APK cài thử khi chạy tay là bản dev; test JVM là `testProdDebugUnitTest`.
+    - `tools/perf/run_perf.py --flavor prod|dev` (mặc định prod).
+    - **Chủ dự án tự làm (mục 7.4 của plan), trước bản phát hành đầu tiên:**
+      1. Tạo khóa tải lên, cất ngoài repo và sao lưu: `keytool -genkeypair -v -keystore wholewell-upload.jks -keyalg RSA -keysize 4096 -validity 10000 -alias upload`.
+      2. GitHub secrets: `WW_KEYSTORE_BASE64` (base64 của tệp `.jks`), `WW_KEYSTORE_PASSWORD`, `WW_KEY_ALIAS`, `WW_KEY_PASSWORD`.
+      3. Trong cùng dự án Google Cloud của web client hiện tại: Android OAuth client `vn.wholewell.app` với SHA-1 của khóa tải lên (sau này thêm SHA-1 khóa Play App Signing); Android OAuth client `vn.wholewell.app.dev` với SHA-1 khóa debug của máy dev (`22:67:58:F9:82:63:E3:8A:9F:16:0D:26:59:D5:77:C0:ED:18:A5:91`). Giữ client cũ (`vn.wholewell.app` + SHA-1 khóa debug) tới khi chuyển xong.
+      4. Bản `vn.wholewell.app` đang cài ký bằng khóa debug nên không cài đè được bằng bản ký khóa tải lên: tạo `.wwbackup` trong app, gỡ app, cài bản mới, khôi phục. Chưa làm bước này thì đừng đặt `key.properties` trên máy dev.
+    - APK dev build trên CI ký bằng khóa debug ngẫu nhiên của máy CI nên đăng nhập Drive không chạy; thử Drive ở bản dev thì build trên máy dev.
 
 ## Để sau MVP (giai đoạn 2)
 

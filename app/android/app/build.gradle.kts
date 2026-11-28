@@ -1,8 +1,21 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// Khóa ký bản phát hành (ADR 0014): CI đọc biến môi trường từ secrets; máy dev đọc android/key.properties
+// (không commit, xem .gitignore). Thiếu khóa thì bản release ký bằng khóa debug như trước, chỉ để thử ở máy;
+// release.yml chặn việc phát hành khi thiếu khóa.
+val keyProps = Properties().apply {
+    val f = rootProject.file("key.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+fun releaseKey(name: String, env: String): String? = System.getenv(env) ?: keyProps.getProperty(name)
+val releaseStoreFile = releaseKey("storeFile", "WW_KEYSTORE_PATH")
+val hasReleaseKey = releaseStoreFile != null && file(releaseStoreFile).exists()
 
 android {
     namespace = "vn.wholewell.app"
@@ -33,11 +46,38 @@ android {
         }
     }
 
+    signingConfigs {
+        if (hasReleaseKey) {
+            create("release") {
+                storeFile = file(releaseStoreFile!!)
+                storePassword = releaseKey("storePassword", "WW_KEYSTORE_PASSWORD")
+                keyAlias = releaseKey("keyAlias", "WW_KEY_ALIAS")
+                keyPassword = releaseKey("keyPassword", "WW_KEY_PASSWORD")
+            }
+        }
+    }
+
+    // Flavor (ADR 0012): dev có app id riêng nên dữ liệu, khóa Keystore riêng, cài song song với bản thật.
+    // Đăng nhập Google Drive ở bản dev cần Android OAuth client riêng trong cùng dự án Google Cloud.
+    buildFeatures {
+        resValues = true
+    }
+    flavorDimensions += "env"
+    productFlavors {
+        create("dev") {
+            dimension = "env"
+            applicationIdSuffix = ".dev"
+            resValue("string", "app_name", "WholeWell Dev")
+        }
+        create("prod") {
+            dimension = "env"
+            resValue("string", "app_name", "WholeWell")
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (hasReleaseKey) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

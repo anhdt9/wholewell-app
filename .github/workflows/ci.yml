@@ -100,7 +100,7 @@ jobs:
 
   app:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -139,25 +139,33 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache: gradle
-      - name: Tạo cấu hình Gradle (tạo gradlew không build APK)
-        if: github.event_name != 'workflow_dispatch'
+      - name: Build APK prod arm64 và kiểm kích thước (ADR 0014)
         working-directory: app
-        run: flutter build apk --config-only
-      - name: Build Android (debug, arm64-v8a cho S24 Ultra)
+        env:
+          # Ngân sách APK prod arm64 (byte). Mốc 29/11/2026: 101.497.154. Muốn tăng thì ghi lý do vào status.md.
+          APK_BUDGET_BYTES: "105000000"
+        run: |
+          flutter build apk --release --flavor prod --target-platform android-arm64
+          size=$(stat -c %s build/app/outputs/flutter-apk/app-prod-release.apk)
+          echo "APK prod arm64: $size byte (ngân sách $APK_BUDGET_BYTES)"
+          if [ "$size" -gt "$APK_BUDGET_BYTES" ]; then
+            echo "::error::APK prod arm64 $size byte vượt ngân sách $APK_BUDGET_BYTES"; exit 1
+          fi
+      - name: Build APK dev (debug, arm64) để cài thử
         if: github.event_name == 'workflow_dispatch'
         working-directory: app
-        run: flutter build apk --debug --target-platform android-arm64
-      - name: Lưu APK debug để cài thử (chỉ thử nội bộ)
+        run: flutter build apk --debug --flavor dev --target-platform android-arm64
+      - name: Lưu APK dev ("WholeWell Dev", app riêng, không đụng dữ liệu bản thật)
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
-          name: wholewell-debug-apk
-          path: app/build/app/outputs/flutter-apk/app-debug.apk
+          name: wholewell-dev-debug-apk
+          path: app/build/app/outputs/flutter-apk/app-dev-debug.apk
           retention-days: 14
           if-no-files-found: error
       - name: Test JVM phần Kotlin (kho khóa)
         working-directory: app/android
-        run: ./gradlew :app:testDebugUnitTest --no-daemon
+        run: ./gradlew :app:testProdDebugUnitTest --no-daemon
 
   ci-ok:
     if: always()
