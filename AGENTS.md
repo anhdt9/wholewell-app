@@ -88,7 +88,7 @@ cd packages/dsld_library && dart analyze && dart test
 cd app && flutter analyze && flutter test && flutter run
 ```
 
-`flutter analyze` trong CI thất bại cả với mức info (vd. API đã ngừng dùng), nên phải sạch hoàn toàn. Đổi phụ thuộc thì chạy lại `flutter pub get` ở gốc và commit `pubspec.lock`; CI dùng `--enforce-lockfile`.
+Lint: một `analysis_options.yaml` ở gốc cho mọi package (`very_good_analysis` + strict), không thêm tệp lint riêng trong package. `flutter analyze` trong CI thất bại cả với mức info (vd. API đã ngừng dùng), nên phải sạch hoàn toàn. Đổi phụ thuộc thì chạy lại `flutter pub get` ở gốc và commit `pubspec.lock`; CI dùng `--enforce-lockfile`.
 
 ## Quy tắc khi sửa code
 

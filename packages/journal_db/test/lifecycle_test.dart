@@ -68,7 +68,7 @@ void main() {
     await repo.saveHideCalories(true);
     await repo.close();
 
-    final nextVer = currentSchemaVersion + 1;
+    const nextVer = currentSchemaVersion + 1;
     final broken = testOpener(
       dir,
       keys,

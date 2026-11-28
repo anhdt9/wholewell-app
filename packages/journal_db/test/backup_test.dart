@@ -290,10 +290,10 @@ void main() {
       final driftJson = await driftRepo.exportReadableJson();
       expect(driftJson['app'], 'WholeWell');
       expect(driftJson['schemaVersion'], currentSchemaVersion);
-      final tables = driftJson['tables'] as Map<String, Object?>;
-      expect((tables['water_entries'] as List).length, 1);
-      expect((tables['products'] as List).length, 1);
-      expect((tables['ingredients'] as List).length, 1);
+      final tables = driftJson['tables']! as Map<String, Object?>;
+      expect((tables['water_entries']! as List).length, 1);
+      expect((tables['products']! as List).length, 1);
+      expect((tables['ingredients']! as List).length, 1);
 
       final memRepo = InMemoryJournalRepository();
       addTearDown(memRepo.close);
@@ -321,7 +321,7 @@ void main() {
         );
         db.execute('INSERT INTO settings (id) VALUES (1)');
         db.execute(
-          "INSERT INTO profile (id, age_years, age_entered_on, caution, caution_answered_on, sex, height_cm, weight_kg, activity_level, updated_at) "
+          'INSERT INTO profile (id, age_years, age_entered_on, caution, caution_answered_on, sex, height_cm, weight_kg, activity_level, updated_at) '
           "VALUES (1, 28, '2026-11-24', 0, '2026-11-24', 'male', 170, 65, 'lowActive', 1700000000000)",
         );
       } finally {

@@ -100,7 +100,8 @@ class ActivitySummary {
 
 /// Tổng hợp vận động theo Physical Activity Guidelines (phút vừa, mạnh, tương đương vừa, số ngày tập tăng cơ).
 ActivitySummary activitySummary(ReferencePack pack, Iterable<WorkoutEntry> workouts, {int days = 7}) {
-  var mod = 0.0, vig = 0.0;
+  var mod = 0.0;
+  var vig = 0.0;
   final strengthDayKeys = <String>{};
   var anonIndex = 0;
   for (final w in workouts) {

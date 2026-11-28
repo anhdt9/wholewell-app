@@ -1,8 +1,8 @@
 /// Kết nối drift tới CSDL đã mở và kiểm.
 ///
-/// Lược đồ do [DbOpener] tạo và di chuyển (kèm bản sao trước khi di chuyển), nên
+/// Lược đồ do `DbOpener` tạo và di chuyển (kèm bản sao trước khi di chuyển), nên
 /// drift chạy với `enableMigrations: false` và không có bảng sinh mã: truy vấn viết
-/// bằng SQL ([customSelect], [customStatement]).
+/// bằng SQL (`customSelect`, `customStatement`).
 library;
 
 import 'dart:io';

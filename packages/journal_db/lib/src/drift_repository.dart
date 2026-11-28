@@ -54,11 +54,11 @@ OnboardingStep _step(String s) => switch (s) {
   _ => OnboardingStep.bodyProfile,
 };
 
-double _d(Object? v) => (v as num).toDouble();
+double _d(Object? v) => (v! as num).toDouble();
 double? _dn(Object? v) => v == null ? null : (v as num).toDouble();
 
 Map<String, double> _decode(Object? json) => {
-  for (final e in (jsonDecode(json as String) as Map<String, dynamic>).entries) e.key: (e.value as num).toDouble(),
+  for (final e in (jsonDecode(json! as String) as Map<String, dynamic>).entries) e.key: (e.value as num).toDouble(),
 };
 
 class DriftJournalRepository implements JournalRepository {
@@ -137,7 +137,7 @@ class DriftJournalRepository implements JournalRepository {
     return (t.toUtc().millisecondsSinceEpoch, l.timeZoneOffset.inMinutes, dayKey(l));
   }
 
-  static DateTime _at(Object? ms) => DateTime.fromMillisecondsSinceEpoch(ms as int, isUtc: true).toLocal();
+  static DateTime _at(Object? ms) => DateTime.fromMillisecondsSinceEpoch(ms! as int, isUtc: true).toLocal();
 
   int get _nowMs => _now().toUtc().millisecondsSinceEpoch;
 
@@ -155,8 +155,8 @@ class DriftJournalRepository implements JournalRepository {
     }
     final level = r['activity_level'] as String?;
     return Profile(
-      ageYears: r['age_years'] as int,
-      sex: Sex.values.byName(r['sex'] as String),
+      ageYears: r['age_years']! as int,
+      sex: Sex.values.byName(r['sex']! as String),
       heightCm: _d(r['height_cm']),
       weightKg: _d(r['weight_kg']),
       activityLevel: level == null ? ActivityLevel.inactive : ActivityLevel.values.byName(level),
@@ -166,15 +166,15 @@ class DriftJournalRepository implements JournalRepository {
   @override
   Future<HealthConsentStatus?> latestHealthConsent() => _guard(() async {
     final rows = await _select(
-      "SELECT content_version, granted_at FROM consents "
+      'SELECT content_version, granted_at FROM consents '
       "WHERE kind = 'health_data' AND withdrawn_at IS NULL "
-      "ORDER BY granted_at DESC, id DESC LIMIT 1",
+      'ORDER BY granted_at DESC, id DESC LIMIT 1',
     );
     if (rows.isEmpty) {
       return null;
     }
     final r = rows.first;
-    return HealthConsentStatus(r['content_version'] as String, _at(r['granted_at']));
+    return HealthConsentStatus(r['content_version']! as String, _at(r['granted_at']));
   });
 
   /// Tuổi, ngày nhập và câu thuốc, bệnh đã lưu ở bước Đồng ý.
@@ -188,10 +188,10 @@ class DriftJournalRepository implements JournalRepository {
     }
     final r = rows.first;
     return (
-      ageYears: r['age_years'] as int,
-      ageEnteredOn: r['age_entered_on'] as String,
+      ageYears: r['age_years']! as int,
+      ageEnteredOn: r['age_entered_on']! as String,
       caution: r['caution'] == 1,
-      cautionAnsweredOn: r['caution_answered_on'] as String,
+      cautionAnsweredOn: r['caution_answered_on']! as String,
     );
   });
 
@@ -273,7 +273,7 @@ class DriftJournalRepository implements JournalRepository {
         return null;
       }
       final r = rows.first;
-      final bump = computeAgeBump(r['age_years'] as int, r['age_entered_on'] as String, now);
+      final bump = computeAgeBump(r['age_years']! as int, r['age_entered_on']! as String, now);
       if (bump == null) return null;
       await _update('UPDATE profile SET age_years = ?, age_entered_on = ?, updated_at = ? WHERE id = 1', [
         bump.newAgeYears,
@@ -307,11 +307,11 @@ class DriftJournalRepository implements JournalRepository {
       'FROM settings WHERE id = 1',
     )).first;
     return DayTimesSettings(
-      wake: r['wake'] as int,
-      breakfast: r['breakfast'] as int,
-      lunch: r['lunch'] as int,
-      dinner: r['dinner'] as int,
-      sleep: r['sleep'] as int,
+      wake: r['wake']! as int,
+      breakfast: r['breakfast']! as int,
+      lunch: r['lunch']! as int,
+      dinner: r['dinner']! as int,
+      sleep: r['sleep']! as int,
       dayTimesConfirmed: r['day_times_confirmed'] == 1,
       showTipCard: r['show_tip_card'] == 1,
       hasBreakfast: r['has_breakfast'] == 1,
@@ -359,7 +359,7 @@ class DriftJournalRepository implements JournalRepository {
       return null;
     }
     final r = rows.first;
-    return HealthConsentStatus(r['content_version'] as String, _at(r['granted_at']));
+    return HealthConsentStatus(r['content_version']! as String, _at(r['granted_at']));
   });
 
   Future<void> _grantConsent(String kind, String contentVersion) => _guard(
@@ -401,7 +401,7 @@ class DriftJournalRepository implements JournalRepository {
   @override
   Future<OnboardingStep> loadOnboardingStep() => _guard(
     () async =>
-        _step((await _select('SELECT onboarding_step FROM meta WHERE id = 1')).first['onboarding_step'] as String),
+        _step((await _select('SELECT onboarding_step FROM meta WHERE id = 1')).first['onboarding_step']! as String),
   );
 
   @override
@@ -411,7 +411,7 @@ class DriftJournalRepository implements JournalRepository {
   @override
   Future<String?> getUiState(String key) => _guard(() async {
     final rows = await _select('SELECT value FROM ui_state WHERE key = ?', [key]);
-    return rows.isEmpty ? null : rows.first['value'] as String;
+    return rows.isEmpty ? null : rows.first['value']! as String;
   });
 
   @override
@@ -463,7 +463,7 @@ class DriftJournalRepository implements JournalRepository {
   static IntakeLine _line(Map<String, Object?> r) => IntakeLine(
     nutrientId: r['nutrient_id'] as String?,
     freeName: r['free_name'] as String?,
-    source: IntakeSource.values.byName(r['source'] as String),
+    source: IntakeSource.values.byName(r['source']! as String),
     form: r['form'] as String?,
     uncertain: r['uncertain'] == 1,
     labelAmount: _dn(r['label_amount']),
@@ -479,7 +479,7 @@ class DriftJournalRepository implements JournalRepository {
       [fromDay, toDay],
     );
     for (final r in rows) {
-      (out[r[column] as int] ??= []).add(_line(r));
+      (out[r[column]! as int] ??= []).add(_line(r));
     }
     return out;
   }
@@ -490,7 +490,7 @@ class DriftJournalRepository implements JournalRepository {
     final out = <int, List<IntakeLine>>{};
     final rows = await _select('SELECT * FROM intake_lines WHERE $column IN ($marks) ORDER BY id', ids);
     for (final r in rows) {
-      (out[r[column] as int] ??= []).add(_line(r));
+      (out[r[column]! as int] ??= []).add(_line(r));
     }
     return out;
   }
@@ -543,7 +543,7 @@ class DriftJournalRepository implements JournalRepository {
         fromDay,
         toDay,
       ]))
-        _food(r, lines[r['id'] as int] ?? const []),
+        _food(r, lines[r['id']! as int] ?? const []),
     ];
   });
 
@@ -554,15 +554,15 @@ class DriftJournalRepository implements JournalRepository {
     final seen = <String>{};
     for (final r in rows) {
       final ref = r['food_ref'] as String?;
-      final name = r['name'] as String;
+      final name = r['name']! as String;
       final key = ref ?? 'label:${name.trim().toLowerCase()}';
       if (seen.add(key)) {
         picked.add(r);
         if (picked.length >= limit) break;
       }
     }
-    final lines = await _linesForIds('food_entry_id', [for (final r in picked) r['id'] as int]);
-    return [for (final r in picked) _food(r, lines[r['id'] as int] ?? const [])];
+    final lines = await _linesForIds('food_entry_id', [for (final r in picked) r['id']! as int]);
+    return [for (final r in picked) _food(r, lines[r['id']! as int] ?? const [])];
   });
 
   @override
@@ -576,18 +576,18 @@ class DriftJournalRepository implements JournalRepository {
   });
 
   static FoodEntry _food(Map<String, Object?> r, List<IntakeLine> lines) => FoodEntry(
-    id: r['id'] as int,
+    id: r['id']! as int,
     at: _at(r['at']),
-    day: r['day'] as String,
-    meal: Meal.values.byName(r['meal'] as String),
-    name: r['name'] as String,
+    day: r['day']! as String,
+    meal: Meal.values.byName(r['meal']! as String),
+    name: r['name']! as String,
     foodRef: r['food_ref'] as String?,
-    portionUnit: r['portion_unit'] as String,
+    portionUnit: r['portion_unit']! as String,
     portionQty: _d(r['portion_qty']),
     labelBasisQty: _dn(r['label_basis_qty']),
     labelBasisUnit: r['label_basis_unit'] as String?,
     addedSugarKnown: r['added_sugar_known'] == 1,
-    packVersion: r['pack_version'] as String,
+    packVersion: r['pack_version']! as String,
     lines: List.unmodifiable(lines),
   );
 
@@ -670,12 +670,12 @@ class DriftJournalRepository implements JournalRepository {
         if (at != null) {
           (ms, tz, day) = _when(at);
         } else {
-          ms = cur['at'] as int;
-          tz = cur['tz_offset'] as int;
-          day = cur['day'] as String;
+          ms = cur['at']! as int;
+          tz = cur['tz_offset']! as int;
+          day = cur['day']! as String;
         }
-        final nextMeal = meal?.name ?? (cur['meal'] as String);
-        final nextUnit = portionUnit ?? (cur['portion_unit'] as String);
+        final nextMeal = meal?.name ?? (cur['meal']! as String);
+        final nextUnit = portionUnit ?? (cur['portion_unit']! as String);
         await _update(
           'UPDATE food_entries SET portion_qty = ?, portion_unit = ?, at = ?, tz_offset = ?, day = ?, meal = ?, pack_version = ? WHERE id = ?',
           [portionQty, nextUnit, ms, tz, day, nextMeal, packVersion, id],
@@ -715,14 +715,14 @@ class DriftJournalRepository implements JournalRepository {
     final rows = await _select('SELECT * FROM custom_foods WHERE archived = 0 ORDER BY created_at DESC, id DESC');
     final matched = <Map<String, Object?>>[];
     for (final r in rows) {
-      final name = r['name'] as String;
+      final name = r['name']! as String;
       if (q.isEmpty || normalizeSearchAscii(name).contains(q)) {
         matched.add(r);
         if (matched.length >= limit) break;
       }
     }
     if (matched.isEmpty) return const [];
-    final ids = [for (final r in matched) r['id'] as int];
+    final ids = [for (final r in matched) r['id']! as int];
     final marks = List.filled(ids.length, '?').join(',');
     final lineRows = await _select(
       'SELECT * FROM custom_food_lines WHERE custom_food_id IN ($marks) ORDER BY rowid',
@@ -730,27 +730,27 @@ class DriftJournalRepository implements JournalRepository {
     );
     final byId = <int, List<CustomFoodLine>>{};
     for (final lr in lineRows) {
-      (byId[lr['custom_food_id'] as int] ??= []).add(
+      (byId[lr['custom_food_id']! as int] ??= []).add(
         CustomFoodLine(
-          nutrientId: lr['nutrient_id'] as String,
+          nutrientId: lr['nutrient_id']! as String,
           form: lr['form'] as String?,
           labelAmount: _d(lr['label_amount']),
-          labelUnit: lr['label_unit'] as String,
-          source: IntakeSource.values.byName(lr['source'] as String),
+          labelUnit: lr['label_unit']! as String,
+          source: IntakeSource.values.byName(lr['source']! as String),
         ),
       );
     }
     return [
       for (final r in matched)
         CustomFood(
-          id: r['id'] as int,
-          name: r['name'] as String,
-          portionUnit: r['portion_unit'] as String,
+          id: r['id']! as int,
+          name: r['name']! as String,
+          portionUnit: r['portion_unit']! as String,
           labelBasisQty: _d(r['label_basis_qty']),
-          labelBasisUnit: r['label_basis_unit'] as String,
+          labelBasisUnit: r['label_basis_unit']! as String,
           createdAt: _at(r['created_at']),
           archived: r['archived'] == 1,
-          lines: List.unmodifiable(byId[r['id'] as int] ?? const <CustomFoodLine>[]),
+          lines: List.unmodifiable(byId[r['id']! as int] ?? const <CustomFoodLine>[]),
         ),
     ];
   });
@@ -764,7 +764,7 @@ class DriftJournalRepository implements JournalRepository {
     () async =>
         (await _select('SELECT count(*) AS n FROM food_entries WHERE day = ? AND added_sugar_known = 0', [
               day,
-            ])).first['n']
+            ])).first['n']!
             as int,
   );
 
@@ -780,9 +780,9 @@ class DriftJournalRepository implements JournalRepository {
   );
 
   Product _productFromRow(Map<String, Object?> r) => Product(
-    r['id'] as int,
-    r['name'] as String,
-    CountUnit.values.byName(r['count_unit'] as String),
+    r['id']! as int,
+    r['name']! as String,
+    CountUnit.values.byName(r['count_unit']! as String),
     _d(r['units_per_serving']),
     barcode: r['barcode'] as String?,
     archived: (r['archived'] as int? ?? 0) != 0,
@@ -841,17 +841,17 @@ class DriftJournalRepository implements JournalRepository {
   });
 
   ProductIngredient _rowToIngredient(Map<String, Object?> r) => ProductIngredient(
-    id: r['id'] as int,
-    productId: r['product_id'] as int,
+    id: r['id']! as int,
+    productId: r['product_id']! as int,
     nutrientId: r['nutrient_id'] as String?,
     freeName: r['free_name'] as String?,
-    form: r['form'] as String,
+    form: r['form']! as String,
     amountPerServing: r['amount_per_serving'] == null ? null : _d(r['amount_per_serving']),
     unit: r['unit'] as String?,
     labelAmount: r['label_amount'] == null ? null : _d(r['label_amount']),
     labelUnit: r['label_unit'] as String?,
     isCompound: (r['is_compound'] as int? ?? 0) != 0,
-    origin: IngredientOrigin.values.byName(r['origin'] as String),
+    origin: IngredientOrigin.values.byName(r['origin']! as String),
     confirmed: (r['confirmed'] as int? ?? 0) != 0,
   );
 
@@ -952,7 +952,7 @@ class DriftJournalRepository implements JournalRepository {
   Future<List<StockBox>> boxesOf(int productId) => _guard(
     () async => [
       for (final r in await _select('SELECT * FROM boxes WHERE product_id = ? ORDER BY id', [productId]))
-        StockBox(r['id'] as int, r['product_id'] as int, _d(r['remaining']), r['expiry_month'] as String?),
+        StockBox(r['id']! as int, r['product_id']! as int, _d(r['remaining']), r['expiry_month'] as String?),
     ],
   );
 
@@ -1000,7 +1000,7 @@ class DriftJournalRepository implements JournalRepository {
         today,
       ])).isNotEmpty;
       var from = marked ? nextDay(today) : today;
-      final oldFrom = old['valid_from'] as String;
+      final oldFrom = old['valid_from']! as String;
       if (from.compareTo(oldFrom) < 0) from = oldFrom;
       await _update('UPDATE schedules SET valid_to = ? WHERE id = ?', [from, id]);
       final newId = await _insert(
@@ -1026,7 +1026,7 @@ class DriftJournalRepository implements JournalRepository {
         today,
       ])).isNotEmpty;
       var to = marked ? nextDay(today) : today;
-      final oldFrom = old['valid_from'] as String;
+      final oldFrom = old['valid_from']! as String;
       if (to.compareTo(oldFrom) < 0) to = oldFrom;
       await _update('UPDATE schedules SET valid_to = ? WHERE id = ?', [to, id]);
     }),
@@ -1042,11 +1042,11 @@ class DriftJournalRepository implements JournalRepository {
         [day, day],
       ))
         Schedule(
-          r['id'] as int,
-          r['product_id'] as int,
-          r['time_of_day'] as int,
+          r['id']! as int,
+          r['product_id']! as int,
+          r['time_of_day']! as int,
           _d(r['servings']),
-          r['valid_from'] as String,
+          r['valid_from']! as String,
           r['valid_to'] as String?,
         ),
     ],
@@ -1057,9 +1057,9 @@ class DriftJournalRepository implements JournalRepository {
     () async => [
       for (final r in await _select('SELECT * FROM dose_occurrences WHERE day = ?', [day]))
         Occurrence(
-          r['schedule_id'] as int,
-          r['day'] as String,
-          OccurrenceStatus.values.byName(r['status'] as String),
+          r['schedule_id']! as int,
+          r['day']! as String,
+          OccurrenceStatus.values.byName(r['status']! as String),
           r['dose_entry_id'] as int?,
         ),
     ],
@@ -1186,7 +1186,7 @@ class DriftJournalRepository implements JournalRepository {
             final rem = _d(b['remaining']);
             final take = rem < need ? rem : need;
             await _update('UPDATE boxes SET remaining = remaining - ? WHERE id = ?', [take, b['id']]);
-            deductions.add(BoxDeduction(b['id'] as int, take));
+            deductions.add(BoxDeduction(b['id']! as int, take));
             need -= take;
           }
           shortfall = need > 1e-9 ? need : 0;
@@ -1273,13 +1273,13 @@ class DriftJournalRepository implements JournalRepository {
         }
 
         if (productId != null && input.expiredBoxes == ExpiredBoxChoice.ask) {
-          final restoredByBox = <int, double>{for (final r in oldDeductions) r['box_id'] as int: _d(r['amount'])};
+          final restoredByBox = <int, double>{for (final r in oldDeductions) r['box_id']! as int: _d(r['amount'])};
           final allBoxes = await _select('SELECT id, remaining, expiry_month FROM boxes WHERE product_id = ?', [
             productId,
           ]);
           final effective = [
             for (final b in allBoxes)
-              if (_d(b['remaining']) + (restoredByBox[b['id'] as int] ?? 0) > 0) b,
+              if (_d(b['remaining']) + (restoredByBox[b['id']! as int] ?? 0) > 0) b,
           ];
           final hasValid = effective.any((b) => !expired(b));
           final hasOld = effective.any(expired);
@@ -1357,7 +1357,7 @@ class DriftJournalRepository implements JournalRepository {
       'JOIN dose_entries d ON d.id = x.dose_entry_id WHERE d.day >= ? AND d.day <= ?',
       [fromDay, toDay],
     )) {
-      (deductions[r['dose_entry_id'] as int] ??= []).add(BoxDeduction(r['box_id'] as int, _d(r['amount'])));
+      (deductions[r['dose_entry_id']! as int] ??= []).add(BoxDeduction(r['box_id']! as int, _d(r['amount'])));
     }
     return [
       for (final r in await _select('SELECT * FROM dose_entries WHERE day >= ? AND day <= ? ORDER BY day, at, id', [
@@ -1365,16 +1365,16 @@ class DriftJournalRepository implements JournalRepository {
         toDay,
       ]))
         DoseEntry(
-          id: r['id'] as int,
+          id: r['id']! as int,
           at: _at(r['at']),
-          day: r['day'] as String,
+          day: r['day']! as String,
           productId: r['product_id'] as int?,
           name: r['name'] as String?,
-          kind: _doseKind(r['kind'] as String),
+          kind: _doseKind(r['kind']! as String),
           servings: _d(r['servings']),
-          packVersion: r['pack_version'] as String,
-          lines: List.unmodifiable(lines[r['id'] as int] ?? const <IntakeLine>[]),
-          deductions: List.unmodifiable(deductions[r['id'] as int] ?? const <BoxDeduction>[]),
+          packVersion: r['pack_version']! as String,
+          lines: List.unmodifiable(lines[r['id']! as int] ?? const <IntakeLine>[]),
+          deductions: List.unmodifiable(deductions[r['id']! as int] ?? const <BoxDeduction>[]),
         ),
     ];
   });
@@ -1419,7 +1419,7 @@ class DriftJournalRepository implements JournalRepository {
         fromDay,
         toDay,
       ]))
-        WaterRecord(r['id'] as int, _at(r['at']), _d(r['ml'])),
+        WaterRecord(r['id']! as int, _at(r['at']), _d(r['ml'])),
     ],
   );
 
@@ -1468,10 +1468,14 @@ class DriftJournalRepository implements JournalRepository {
         [fromDay, toDay],
       ))
         WorkoutRecord(
-          r['id'] as int,
+          r['id']! as int,
           _at(r['start_at']),
-          r['day'] as String,
-          WorkoutEntry(activityCode: r['activity_code'] as String, minutes: _d(r['minutes']), day: r['day'] as String),
+          r['day']! as String,
+          WorkoutEntry(
+            activityCode: r['activity_code']! as String,
+            minutes: _d(r['minutes']),
+            day: r['day']! as String,
+          ),
         ),
     ],
   );

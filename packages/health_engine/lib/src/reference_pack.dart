@@ -95,7 +95,11 @@ class NutrientDef {
 }
 
 class EerCoef {
-  final double a, age, height, weight, gestWeek;
+  final double a;
+  final double age;
+  final double height;
+  final double weight;
+  final double gestWeek;
   const EerCoef(this.a, this.age, this.height, this.weight, [this.gestWeek = 0]);
 
   factory EerCoef.fromJson(Map<String, dynamic> j) => EerCoef(
@@ -116,7 +120,8 @@ class Activity {
 }
 
 class Range {
-  final double min, max;
+  final double min;
+  final double max;
   const Range(this.min, this.max);
   bool contains(double v) => v >= min && v <= max;
 }
@@ -206,8 +211,10 @@ class ReferencePack {
   final Map<String, double> energyPerGram;
 
   final Map<String, Activity> activities;
-  final double moderateMinMet, vigorousMinMet;
-  final Range weeklyModerateMin, weeklyVigorousMin;
+  final double moderateMinMet;
+  final double vigorousMinMet;
+  final Range weeklyModerateMin;
+  final Range weeklyVigorousMin;
   final int strengthDaysPerWeek;
   final Map<String, double> palSuggestionThresholds;
 
@@ -391,6 +398,6 @@ class ReferencePack {
   }
 }
 
-double _d(Object? v) => (v as num).toDouble();
+double _d(Object? v) => (v! as num).toDouble();
 
-Map<String, double> _numMap(Object? m) => {for (final e in (m as Map<String, dynamic>).entries) e.key: _d(e.value)};
+Map<String, double> _numMap(Object? m) => {for (final e in (m! as Map<String, dynamic>).entries) e.key: _d(e.value)};

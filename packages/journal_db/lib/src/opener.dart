@@ -218,7 +218,7 @@ class DbOpener {
       verifyEncryption(db);
       final rows = db.select('SELECT schema_version FROM meta WHERE id = 1');
       if (rows.isEmpty) return const CannotOpen();
-      version = rows.first.values.first as int;
+      version = rows.first.values.first! as int;
       if (version > schemaVersion) return const NeedsUpdate();
       if (version < schemaVersion) {
         db.execute('PRAGMA journal_mode = WAL');

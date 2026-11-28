@@ -137,7 +137,7 @@ void setUpConnection(Database db, Uint8List key) {
 /// đầu tệp không phải SQLite thường.
 void verifyFileEncrypted(Database db, File file) {
   db.execute('PRAGMA wal_checkpoint(TRUNCATE)');
-  final pageSize = db.select('PRAGMA page_size').first.values.first as int;
+  final pageSize = db.select('PRAGMA page_size').first.values.first! as int;
   final len = file.lengthSync();
   if (len < pageSize) throw const DbOpenException(DbOpenStage.notEncrypted);
   if (looksLikePlainSqlite(file)) throw const DbOpenException(DbOpenStage.notEncrypted);
@@ -179,7 +179,7 @@ int verifyPlainBackupFile(File file) {
       throw const DbOpenException(DbOpenStage.wrongKeyOrCorrupt);
     }
     db.select('SELECT count(*) FROM consents');
-    return rows.first.values.first as int;
+    return rows.first.values.first! as int;
   } finally {
     db.close();
   }

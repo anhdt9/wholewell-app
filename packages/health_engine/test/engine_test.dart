@@ -378,7 +378,7 @@ void main() {
       test(name, () {
         final got = (useExt ? extConv : conv).convertIntakeLine(lineInputOf(c['input'] as Map<String, dynamic>));
         final w = expectConv[name] as Map<String, dynamic>;
-        final wAmounts = (w['amounts'] as Map<String, dynamic>);
+        final wAmounts = w['amounts'] as Map<String, dynamic>;
         expect(got.amounts.keys.toSet(), wAmounts.keys.toSet());
         for (final k in wAmounts.keys) {
           expect(got.amounts[k], closeTo((wAmounts[k] as num).toDouble(), 1e-7), reason: k);

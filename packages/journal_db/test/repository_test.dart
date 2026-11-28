@@ -300,12 +300,12 @@ void main() {
           'Sữa đậu nành',
           testNow(),
           [
-            IntakeLine(
+            const IntakeLine(
               nutrientId: 'calcium',
               source: IntakeSource.fortified,
               labelAmount: 120,
               labelUnit: 'mg',
-              amounts: const {'calcium': 216},
+              amounts: {'calcium': 216},
             ),
           ],
           basis: 100,
@@ -542,7 +542,7 @@ void main() {
       expect(cp?.ageYears, 36);
       expect(cp?.caution, isTrue);
       expect(await repo.foodsOn(dayKey(testNow())), hasLength(1));
-      expect(await _count(repo, "SELECT count(*) FROM consents WHERE withdrawn_at IS NULL"), 1);
+      expect(await _count(repo, 'SELECT count(*) FROM consents WHERE withdrawn_at IS NULL'), 1);
       await repo.close();
     });
 
@@ -629,7 +629,7 @@ void main() {
 
         final bValid = await repo.addBox(pid, 10, expiryMonth: '2027-08');
         final bExpired = await repo.addBox(pid, 4, expiryMonth: '2026-09');
-        var list = await repo.listProducts();
+        final list = await repo.listProducts();
         expect(list.single.validRemaining, 10);
         expect(list.single.expiredRemaining, 4);
         expect(list.single.nearestExpiryMonth, '2027-08');
@@ -820,7 +820,7 @@ void main() {
         final pid = await repo.addProduct('Canxi D3', CountUnit.tablet, 1);
         final sid1 = await repo.addSchedule(pid, 480, 1, validFrom: '2026-11-20');
         final sid2 = await repo.addSchedule(pid, 1200, 1, validFrom: '2026-11-20');
-        expect((await repo.schedulesOn('2026-11-26')), hasLength(2));
+        expect(await repo.schedulesOn('2026-11-26'), hasLength(2));
 
         // Kho = 0 vẫn ghi được lần uống theo lịch và tính vào giới hạn.
         final rec = await repo.recordDose(
