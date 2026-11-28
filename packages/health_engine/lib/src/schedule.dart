@@ -246,7 +246,7 @@ ScheduleMatch? matchDoseToScheduleWindow(DateTime doseAt, int productId, List<Sc
       c.timeOfDay ~/ 60,
       c.timeOfDay % 60,
     );
-    final diffMin = (doseAt.difference(schedAt).inSeconds).abs() / 60.0;
+    final diffMin = doseAt.difference(schedAt).inSeconds.abs() / 60.0;
     if (diffMin <= 120.0 + 1e-9) {
       final better =
           best == null ||

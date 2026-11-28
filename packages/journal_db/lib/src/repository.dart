@@ -10,7 +10,7 @@ import 'models.dart';
 import 'schema.dart';
 
 /// Phần lưu trữ mà trạng thái app dùng. Kho, lịch uống chỉ có ở bản CSDL
-/// ([DriftJournalRepository]); bản bộ nhớ dùng để test giao diện.
+/// (`DriftJournalRepository`); bản bộ nhớ dùng để test giao diện.
 abstract interface class JournalRepository {
   /// Phát sau mỗi lần ghi.
   Stream<void> get changes;

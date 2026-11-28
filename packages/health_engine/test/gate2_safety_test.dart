@@ -154,7 +154,7 @@ void main() {
 
       // Lượng rất cao từ thực phẩm tự nhiên -> không bao giờ kích hoạt UL cho Mg, VitE, Niacin, Folate, Beta-carotene.
       final foodOnly = [
-        IntakeItem(
+        const IntakeItem(
           label: 'Thực phẩm tự nhiên dồi dào',
           source: IntakeSource.food,
           nutrients: {
@@ -170,7 +170,7 @@ void main() {
 
       // Vừa chạm đúng ngưỡng UL (== UL): chưa vượt -> chưa báo cờ.
       final atUl = [
-        IntakeItem(
+        const IntakeItem(
           label: 'Bổ sung đúng ngưỡng',
           source: IntakeSource.supplement,
           nutrients: {'magnesium': 350, 'vitE': 1000, 'niacin': 35, 'folicAcid': 1000, 'retinol': 3000},
@@ -180,7 +180,7 @@ void main() {
 
       // Vượt 0.1 trên ngưỡng UL (> UL): lập tức bắt đủ cả 5 chất.
       final overUl = [
-        IntakeItem(
+        const IntakeItem(
           label: 'Bổ sung vượt 0.1',
           source: IntakeSource.supplement,
           nutrients: {'magnesium': 350.1, 'vitE': 1000.1, 'niacin': 35.1, 'folicAcid': 1000.1, 'retinol': 3000.1},
@@ -193,7 +193,7 @@ void main() {
     test('Gần mốc 19 tuổi: lấy UL thấp hơn của nhóm 14-18 (2800 µg retinol thay vì 3000 µg)', () {
       const near19 = Profile(ageYears: 18, sex: Sex.female, heightCm: 160, weightKg: 52);
       final day = [
-        IntakeItem(label: 'Retinol 2850', source: IntakeSource.supplement, nutrients: {'retinol': 2850}),
+        const IntakeItem(label: 'Retinol 2850', source: IntakeSource.supplement, nutrients: {'retinol': 2850}),
       ];
       final rep = dailyReport(pack, near19, day);
       expect(rep.ulFlags.any((f) => f.nutrientId == 'retinol'), isTrue);
@@ -224,8 +224,8 @@ void main() {
       for (final p in samples) {
         final rep = dailyReport(pack, p, const []);
         expect(rep.eerKcal, isNotNull);
-        expect(rep.eerKcal!, greaterThan(1000));
-        expect(rep.eerKcal!, lessThan(4500));
+        expect(rep.eerKcal, greaterThan(1000));
+        expect(rep.eerKcal, lessThan(4500));
         expect(rep.nutrients.length, greaterThanOrEqualTo(30));
       }
       // Mức sắt khuyến nghị nữ 35 tuổi là 18 mg, nữ 55 tuổi (mãn kinh) là 8 mg.

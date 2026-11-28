@@ -108,14 +108,19 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
     - Sửa lỗi thử trên máy (28/11/2026): giơ máy vào mã vạch lâu thì mở nhiều màn Xác nhận thành phần. Camera giờ chỉ nhận mã khi màn quét ở trên cùng và không bận, không mở lại mã vừa mở khi bấm quay lại. Hiện dòng hướng dẫn dưới khung camera như thiết kế màn 2. Test `scan_product_gate_test.dart`.
     - Ô Hạn dùng (Thông tin sản phẩm, Thêm/Sửa hộp): bàn phím số, gõ đủ 2 số tháng thì tự thêm `/` (chủ dự án yêu cầu 28/11/2026; ghi vào thiết kế màn Thông tin sản phẩm). Test trong `label_scan_inventory_test.dart`.
     - Test: `label_ai_safety_test.dart`, `LabelGenAiRulesTest.kt`, sửa `label_scan_inventory_test.dart`. Đã đối chiếu nguyên văn 21 CFR 101.36(b)(2)(ii) và (d) bằng Claude in Chrome qua API eCFR (28/11/2026). Chủ dự án thử trên S24 Ultra rồi gộp.
-22. **Workspace và phiên bản (PR 0a, hạ tầng, không cần đặc tả)** (nhánh `infra/workspace-pin`):
+22. **Workspace và phiên bản (PR 0a, hạ tầng, không cần đặc tả)** (**PR #47 đã gộp** 29/11/2026, CI qua):
     - Pub Workspaces: `pubspec.yaml` gốc khai `app` và 4 package, `hooks` sqlite3mc khai một lần ở gốc; một `pubspec.lock` chung ở gốc, commit vào repo; mỗi package `resolution: workspace`, sàn Dart `^3.13.0`; app Flutter `>=3.47.0`, `material_ui ^1.11.1`.
     - `.fvmrc` ghim Flutter 3.50.1. Mọi job CI (kể cả `release.yml` và job của package thuần Dart) dùng `flutter-action` với `flutter-version-file: .fvmrc`, `flutter pub get --enforce-lockfile` một lần ở gốc; bỏ `setup-dart`.
     - `dart format` toàn repo (độ rộng 120, commit riêng chỉ có định dạng); CI chạy `dart format --set-exit-if-changed app packages`.
     - Gỡ APK khỏi git (không viết lại lịch sử, theo mục 7.3 của plan); `app/build/` không còn trong repo.
-    - Tạm tắt 2 lint đòi đổi cú pháp constructor khi sàn Dart lên 3.13 (`unnecessary_type_name_in_constructor`, `prefer_initializing_formals`); PR 0b quyết.
+    - Tạm tắt 2 lint đòi đổi cú pháp constructor khi sàn Dart lên 3.13 (`unnecessary_type_name_in_constructor`, `prefer_initializing_formals`); PR 0b quyết (việc 23).
     - Sửa mục "Lệnh" của `AGENTS.md` theo workspace.
     - **Test phụ thuộc giờ thật:** `batch1_audit_fixes_test.dart` ("P1: chạm lại tab Hôm nay…") hỏng khi chạy trong khoảng 23:54–23:59 giờ máy, vì cộng 6 phút vào `DateTime.now()` thì qua ngày. CI chạy giờ UTC nên ít gặp. Sửa ở PR 3a (`clock.now()` + `fake_async`).
+23. **Lint strict (PR 0b, hạ tầng, không cần đặc tả)** (nhánh `infra/lint-strict`):
+    - Một `analysis_options.yaml` ở gốc cho mọi package: `very_good_analysis` + `strict-casts`, `strict-inference`, `strict-raw-types`; danh sách rule đang tắt của app chuyển lên đây; `exclude` tính từ gốc (`app/build/**`, `app/android/**`). `very_good_analysis` khai trong `dev_dependencies` của `pubspec.yaml` gốc.
+    - Xóa tệp lint riêng của `app`, `health_engine`, `journal_db`; bỏ `lints`, `flutter_lints`.
+    - Giữ tắt hẳn `unnecessary_type_name_in_constructor` (đòi constructor `new(...)`) và `prefer_initializing_formals` (đòi tham số tên riêng `this._x`): cú pháp mới của Dart 3.13; giữ cách viết như tài liệu và ví dụ chính thức của Flutter.
+    - Sửa 120 cảnh báo mới ở `health_engine`, `journal_db` (`dart fix`, không đổi hành vi): đọc cột `r['x']! as T` thay cho `r['x'] as T` (cùng ném `TypeError` khi null), `const`, nháy đơn, mỗi dòng một khai báo, ngoặc thừa; 4 tham chiếu trong chú thích đổi sang `code`.
 
 ## Để sau MVP (giai đoạn 2)
 

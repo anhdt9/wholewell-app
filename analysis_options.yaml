@@ -1,4 +1,50 @@
-# Tạm thời chỉ khai độ rộng dòng cho dart format, áp cho package chưa có tệp lint riêng
-# (food_library, dsld_library). PR 0b chuyển toàn bộ lint lên tệp này.
+# Lint chung cho mọi package của workspace (docs/refactor-plan.md, ADR 13, PR 0b).
+# Analyzer tự tìm tệp này ở thư mục cha, nên package không có tệp lint riêng.
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  # Đường dẫn tính từ gốc repo.
+  exclude:
+    - app/build/**
+    - app/android/**
+
+# dart format (CI chạy --set-exit-if-changed).
 formatter:
   page_width: 120
+
+linter:
+  rules:
+    # Giữ tất cả rule phát hiện bug tiềm ẩn (unawaited_futures, discarded_futures,
+    # use_build_context_synchronously, cast_nullable_to_non_nullable, only_throw_errors, v.v.)
+    # và chỉ tắt các rule thuần định dạng/cú pháp để tránh nhiễu.
+    # Hai lint dưới đòi cú pháp mới của Dart 3.13 (constructor `new(...)`, tham số tên riêng `this._x`).
+    # Giữ cách viết cũ, như tài liệu và ví dụ chính thức của Flutter (quyết ở PR 0b).
+    unnecessary_type_name_in_constructor: false
+    prefer_initializing_formals: false
+    always_put_required_named_parameters_first: false
+    always_use_package_imports: false
+    async_return_with_no_await: false
+    avoid_catching_errors: false
+    avoid_redundant_argument_values: false
+    avoid_slow_async_io: false
+    cascade_invocations: false
+    combinators_ordering: false
+    directives_ordering: false
+    leading_newlines_in_multiline_strings: false
+    lines_longer_than_80_chars: false
+    omit_local_variable_types: false
+    prefer_constructors_over_static_methods: false
+    prefer_foreach: false
+    prefer_if_elements_to_conditional_expressions: false
+    prefer_int_literals: false
+    public_member_api_docs: false
+    require_trailing_commas: false
+    sort_constructors_first: false
+    sort_pub_dependencies: false
+    specify_nonobvious_property_types: false
+    unnecessary_raw_strings: false
+    use_setters_to_change_properties: false

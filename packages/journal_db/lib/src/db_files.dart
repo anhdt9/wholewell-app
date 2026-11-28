@@ -42,7 +42,7 @@ class DbFiles {
 
   List<File> preMigrationCopies() {
     if (!dir.existsSync()) return const [];
-    final prefix = '$dbName.pre-v';
+    const prefix = '$dbName.pre-v';
     return [
       for (final e in dir.listSync())
         if (e is File && p.basename(e.path).startsWith(prefix)) e,

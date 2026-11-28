@@ -176,7 +176,10 @@ List<NutrientStatus> _computeNutrientStatuses(
     final ul = ulFor(pack, p, ulDef.id);
     if (t == null && ul == null) continue;
 
-    var food = 0.0, fort = 0.0, supp = 0.0, ulAmt = 0.0;
+    var food = 0.0;
+    var fort = 0.0;
+    var supp = 0.0;
+    var ulAmt = 0.0;
     for (final day in days) {
       for (final it in day) {
         final v = it.amount(def.id);

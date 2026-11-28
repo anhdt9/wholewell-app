@@ -158,7 +158,7 @@ void main() {
     final text = caught.toString();
     expect(text.contains(_hex(key)), isFalse);
     expect(text.toUpperCase().contains('PRAGMA'), isFalse);
-    expect((caught as DbOpenException).stage, DbOpenStage.key);
+    expect((caught! as DbOpenException).stage, DbOpenStage.key);
   });
 
   test('pragma sau khi mở: WAL, khóa ngoại bật, bảng tạm trong bộ nhớ', () async {
