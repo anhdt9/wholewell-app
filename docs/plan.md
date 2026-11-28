@@ -16,7 +16,7 @@ WholeWell giúp người Việt (hướng tới người khỏe mạnh, MVP từ
 | Nguồn | Chính phủ Mỹ và số liệu NASEM (nhãn A), LPI chỉ cho ODA (nhãn B); nguồn không nói rõ thì không có quy tắc; không thuê chuyên gia |
 | Dữ liệu người dùng | Trên máy, SQLite mã hóa; sao lưu tệp mã hóa, Google Drive tùy chọn; không máy chủ, không iCloud, không thiết bị đeo |
 | Gói dữ liệu | Số liệu và quy tắc đi kèm bản cài đã ký, cập nhật qua cửa hàng ứng dụng; không tải từ máy chủ |
-| Chuyên môn | Chỉ dựa vào chuẩn (mức khuyến nghị, giới hạn, ODA); không lưu ý chuyên môn y tế riêng (bệnh, gen, hút thuốc, dị ứng), người nhạy cảm chỉ có dòng nhắc chung; không AI tạo sinh, lời giải thích viết sẵn theo mẫu |
+| Chuyên môn | Chỉ dựa vào chuẩn (mức khuyến nghị, giới hạn, ODA); không lưu ý chuyên môn y tế riêng (bệnh, gen, hút thuốc, dị ứng), người nhạy cảm chỉ có dòng nhắc chung; AI tạo sinh chỉ chạy trên máy, chỉ để gợi ý tách thành phần từ chữ trên nhãn (quyết 28/11/2026), lời giải thích viết sẵn theo mẫu |
 | Công nghệ | Flutter; Android trước, iOS khi có Mac, Windows và macOS ở giai đoạn 2, web sau cùng |
 | Doanh thu | Miễn phí toàn bộ. Mọi việc về quảng cáo làm ở giai đoạn sau (MVP không có, không chừa chỗ); khi làm chỉ AdMob không cá nhân hóa, không bao giờ ở màn Hôm nay, màn cảnh báo, thông báo, widget |
 | Pháp lý | Không thuê luật sư; tự đối chiếu văn bản gốc; chỗ không chắc thì bỏ hoặc thu hẹp |

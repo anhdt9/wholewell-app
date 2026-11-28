@@ -47,22 +47,38 @@ Plan đầy đủ: [docs/plan.md](docs/plan.md). Trạng thái và việc tiếp
 - Sao lưu: tệp mã hóa (mặc định); Google Drive appDataFolder là tùy chọn, mã hóa Argon2id, khóa chỉ người dùng giữ. Mọi client OAuth (Android, iOS, desktop) phải nằm trong **một dự án Google Cloud duy nhất**.
 - **Gói dữ liệu (số liệu, quy tắc) đi kèm bản cài đã ký**, cập nhật qua cửa hàng ứng dụng; không tải từ máy chủ.
 - **Không nhúng SDK phân tích hay báo lỗi** của bên thứ ba. Theo dõi crash qua Play Console / App Store Connect.
-- **Không dùng AI tạo sinh** (chốt 24/11/2026): engine quyết định mọi số và cảnh báo; lời giải thích viết sẵn theo mẫu. App chỉ dựa vào chuẩn (mức khuyến nghị, giới hạn, ODA), không thêm lưu ý chuyên môn y tế riêng (bệnh, gen, hút thuốc, dị ứng); người nhạy cảm chỉ có dòng nhắc chung của chế độ thận trọng.
+- **AI tạo sinh chỉ chạy trên máy** (Gemini Nano qua Android AICore) để gợi ý tách thành phần từ chữ OCR trên nhãn; không gửi dữ liệu ra ngoài; người dùng xác nhận từng dòng; engine quyết định mọi số và cảnh báo (chủ dự án quyết 28/11/2026, thay quy tắc "không dùng AI tạo sinh" ngày 24/11/2026). Chỉ gọi khi mô hình đã có sẵn trên máy, không tự tải mô hình. Lời giải thích viết sẵn theo mẫu. App chỉ dựa vào chuẩn (mức khuyến nghị, giới hạn, ODA), không thêm lưu ý chuyên môn y tế riêng (bệnh, gen, hút thuốc, dị ứng); người nhạy cảm chỉ có dòng nhắc chung của chế độ thận trọng.
 - Chỉ dùng dữ liệu giả lập khi phát triển và kiểm thử.
 
 ## Cấu trúc repo
 
 ```
-docs/                     plan.md, tools.md, status.md, specs/ (đặc tả), design/ (thiết kế UX + nguyên tắc)
+pubspec.yaml              Pub Workspace gốc (app + packages/*), hooks sqlite3mc, very_good_analysis
+pubspec.lock              lock chung, commit
+analysis_options.yaml     lint chung cho mọi package
+.fvmrc                    ghim Flutter 3.50.1
+docs/                     plan.md, refactor-plan.md, architecture.md, adr/, status.md, handoff.md, specs/ (đặc tả), design/ (thiết kế UX + nguyên tắc)
 tools/                    Python: nguồn số liệu và kiểm tra
   build_pack.py           NGUỒN SỐ LIỆU DUY NHẤT → sinh reference_pack.json (engine + app)
   verify_pack.py          kiểm cấu trúc + ô đối chiếu bảng NASEM gốc
   reference_engine.py     engine viết lại bằng Python → packages/health_engine/test/fixtures/cases.json
 packages/health_engine/   engine thuần Dart (không I/O, không Flutter, không mạng) + test
-packages/journal_db/      CSDL mã hóa thuần Dart (drift + SQLite3MultipleCiphers): khóa, lược đồ, mở, xóa, nhật ký + test
+packages/journal_db/      CSDL mã hóa thuần Dart (drift + SQLite3MultipleCiphers); models.dart chỉ chứa model
+packages/food_library/    thư viện món chỉ đọc (SQLite FTS5)
+packages/dsld_library/    thư viện bổ sung NIH DSLD chỉ đọc (SQLite FTS5)
 app/                      app Flutter (dùng package:material_ui, không dùng package:flutter/material.dart)
-.github/workflows/ci.yml  CI: build/verify pack, dart analyze + test, flutter analyze + test
+.github/workflows/        ci.yml (pack, analyze, test, format, golden), release.yml (tag v*)
 ```
+
+Cấu trúc đích (thêm `app_core`, `design_system`, `platform_bridge`; `app/lib/` chia `data/`, `domain/`, `ui/<feature>/`): [docs/architecture.md](docs/architecture.md).
+
+## Kiến trúc
+
+Đọc [docs/architecture.md](docs/architecture.md) trước khi viết code; quyết định và lý do trong [docs/adr/](docs/adr/README.md). Đang chuyển dần theo [docs/refactor-plan.md](docs/refactor-plan.md) (đã duyệt 28/11/2026): code mới viết theo kiến trúc đích, code cũ chỉ chuyển trong PR của giai đoạn tương ứng.
+
+- **MVVM:** View → ViewModel (`ChangeNotifier`, `Command`, `Result<T>`) → (use case) → Repository → Service → package. DI bằng `provider`, điều hướng bằng `go_router`, model viết tay, không codegen cho model.
+- **Luật phụ thuộc:** repository không import repository khác; service không import repository; ViewModel không import `material_ui`; widget và ViewModel chỉ import `package:journal_db/models.dart`, không import `journal_db.dart`; widget không import `data/`, `mobile_scanner`, `google_mlkit_*`, `image_picker`, không dùng `MethodChannel`; feature không import feature khác. Test kiểm toán `app/test/architecture_rules_test.dart`: danh sách vi phạm chỉ được giảm, không thêm.
+- **Đặt tên:** `XViewModel` (`x_view_model.dart`), `XScreen` (`x_screen.dart`), `XRepository`, `XService`, `XUseCase`; widget dùng chung ở `ui/core/`; không trùng tên lớp đã có trong package.
 
 ## Lệnh
 
@@ -95,7 +111,7 @@ Test app: dựng trạng thái và màn qua `app/test/helpers/pump_app.dart` (`t
 1. **Số liệu chỉ sửa trong `tools/build_pack.py`**, không sửa tay `reference_pack.json` hay `cases.json`. Mỗi số mới phải có nguồn kiểm được; thêm ô đối chiếu vào `verify_pack.py`. Không đoán số: nếu nguồn chưa rõ, để engine trả `NotComputed` kèm lý do.
 2. **Đổi logic engine thì đổi cả `tools/reference_engine.py`** và sinh lại fixtures; test Dart so với kết quả Python.
 3. Tiêu chí bắt buộc: **0 vi phạm UL, 0 lỗi đơn vị**. UL đúng phạm vi: magie chỉ tính bổ sung; niacin, vitamin E chỉ tính từ bổ sung + thực phẩm tăng cường (theo nguồn, kể cả vitamin E tự nhiên trong viên); vitamin A chỉ retinol; folate chỉ axit folic. Thành phần bổ sung tính theo từng chất và dạng; dạng chưa rõ thì tính giới hạn theo cách thận trọng nhất.
-4. Engine và giao diện chỉ gọi interface cho phần phụ thuộc nền tảng: NotificationScheduler, BackgroundJobs, SecureKeyStore, OcrEngine, BarcodeScanner, SpeechInput, GoogleAuth, BackupProvider, HomeWidgetBridge (AdService chỉ thêm ở giai đoạn có quảng cáo). Mỗi interface có bản giả để test.
+4. Engine không gọi nền tảng. Giao diện và ViewModel chỉ tới phần phụ thuộc nền tảng qua service (`app/lib/data/services/`): `JournalDbService`, `NotificationService`, `OcrService`, `LabelAiService`, `BarcodeService`, `DriveService`, `BackupFileService`; khóa an toàn, lưu/chọn tệp, mở cài đặt qua plugin `platform_bridge`. Giai đoạn sau thêm `BackgroundJobs`, `SpeechInput`, `HomeWidgetBridge` (`AdService` chỉ thêm ở giai đoạn có quảng cáo). Mỗi interface có bản giả để test (`app/testing/fakes/`). Tới khi chuyển xong (PR 4a, 4b, 5a-2), interface cũ trong `app/lib/platform/` (`NotificationScheduler`, `OcrEngine`, `BarcodeScanner`, `GoogleAuth`, `BackupProvider`, `BackupFileProvider`) và `SecureKeyStore` của `journal_db` vẫn dùng, mỗi cái có bản giả.
 5. **Không code tính năng khi chưa có đặc tả và thiết kế UX đã duyệt** (xem mục "Quy trình bắt buộc" bên dưới). Chủ dự án duyệt và gộp; agent không tự gộp vào `main`, không tự phát hành.
 6. Commit nhỏ, thông điệp tiếng Việt, mô tả việc đã làm.
 7. Xong việc nào thì cập nhật `docs/status.md` trong cùng PR.
