@@ -549,14 +549,18 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                     const SizedBox(height: AppSpacing.md),
                   ],
                   DropdownButtonFormField<String>(
+                    isExpanded: true,
                     initialValue: _isFree ? '__free__' : _nutrientId,
                     decoration: const InputDecoration(labelText: 'Chất dinh dưỡng'),
                     items: [
                       for (final d in nutrients)
-                        DropdownMenuItem(value: d.id, child: Text(d.nameVi)),
+                        DropdownMenuItem(
+                          value: d.id,
+                          child: Text(d.nameVi, overflow: TextOverflow.ellipsis),
+                        ),
                       const DropdownMenuItem(
                         value: '__free__',
-                        child: Text('Chất khác (không tính giới hạn)'),
+                        child: Text('Chất khác (không tính giới hạn)', overflow: TextOverflow.ellipsis),
                       ),
                     ],
                     onChanged: (v) {
@@ -640,6 +644,7 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                   if (!_isFree && compounds != null && compounds.isNotEmpty) ...[
                     const SizedBox(height: AppSpacing.md),
                     DropdownButtonFormField<String>(
+                      isExpanded: true,
                       initialValue: !_isCompound
                           ? '__elemental__'
                           : (compounds.containsKey(_form) ? _form : NutrientForm.unknown),
@@ -649,7 +654,7 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                         for (final fid in compounds.keys)
                           DropdownMenuItem(
                             value: fid,
-                            child: Text(compoundMeta?[fid]?.nameVi ?? fid),
+                            child: Text(compoundMeta?[fid]?.nameVi ?? fid, overflow: TextOverflow.ellipsis),
                           ),
                         const DropdownMenuItem(
                           value: NutrientForm.unknown,
@@ -672,6 +677,7 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                   if (!_isFree && _nutrientId == 'vitE') ...[
                     const SizedBox(height: AppSpacing.md),
                     DropdownButtonFormField<String>(
+                      isExpanded: true,
                       initialValue: _form == NutrientForm.natural2r || _form == NutrientForm.synthetic2r
                           ? _form
                           : NutrientForm.unknown,
@@ -687,6 +693,7 @@ class _EditIngredientSheetState extends State<_EditIngredientSheet> {
                   if (!_isFree && _nutrientId == 'vitA') ...[
                     const SizedBox(height: AppSpacing.md),
                     DropdownButtonFormField<String>(
+                      isExpanded: true,
                       initialValue: _form == NutrientForm.retinol || _form == NutrientForm.betaCarotene
                           ? _form
                           : NutrientForm.unknown,

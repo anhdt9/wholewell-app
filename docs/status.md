@@ -104,7 +104,7 @@ Mỗi việc cần đặc tả (và thiết kế UX nếu có giao diện) đã 
     - Bỏ cả 7 chỗ đoán đơn vị: `LabelUnitText.parse` đọc đơn vị của AI và DSLD theo danh sách cố định (thêm `μg` U+03BC); DSLD bỏ lượng khi đơn vị là `%`; dòng mới, dòng chưa rõ đơn vị và khi đổi chất không còn tự chọn đơn vị; `labelUnitForPackUnit` thay 3 bản sao; món đã lưu có đơn vị không đọc được thì báo lỗi.
     - Đối chiếu dòng AI với chữ OCR (`crossCheckAi`): dòng chưa khớp phải kiểm qua bảng sửa dòng; chất AI bỏ sót được thêm từ bộ đọc chữ; màn Xác nhận thành phần có ghi chú AI, dòng đếm số dòng cần kiểm, lời nhắc theo thứ tự ưu tiên.
     - Kotlin chỉ gọi Gemini Nano khi `checkStatus()` là `AVAILABLE` (`LabelGenAiRules`, có test JVM); bỏ `download()`.
-    - B1.8: `Calcium (as calcium carbonate) 500 mg` tính 500 mg canxi nguyên tố; thêm nguồn `fda_21cfr_101_36` và `supplementFactsElemental` vào gói (`2026.11.28-1`) kèm ô kiểm.
+    - B1.8: `Calcium (as calcium carbonate) 500 mg` tính 500 mg canxi nguyên tố; thêm nguồn `fda_21cfr_101_36` và `supplementFactsElemental` vào gói (giữ phiên bản `2026.11.25-2` vì không đổi con số nào; thư viện món ghi phiên bản gói) kèm ô kiểm.
     - Test: `label_ai_safety_test.dart`, `LabelGenAiRulesTest.kt`, sửa `label_scan_inventory_test.dart`. **Còn lại trước khi gộp:** kiểm nguyên văn 21 CFR 101.36(b)(2)(ii) trên eCFR bằng Claude in Chrome; thử 5 nhãn thật trên S24 Ultra.
 
 ## Để sau MVP (giai đoạn 2)

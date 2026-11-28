@@ -14,7 +14,7 @@ import sys
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-PACK_VERSION = "2026.11.28-1"
+PACK_VERSION = "2026.11.25-2"
 RETRIEVED = "2026-11-25"
 
 # ---------------------------------------------------------------- nguồn
